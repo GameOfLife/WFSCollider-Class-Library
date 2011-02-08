@@ -21,6 +21,9 @@ ListSpec : Spec {
 		indexMap = sortedList.collect({ |item| list.indexOfEqual( item ); });
 	}
 	
+	default { ^this.at( defaultIndex ) }
+	default_ { |value| defaultIndex = this.unmap( value ); }
+	
 	at { |index| ^list.at( index ); }
 	put { |index, value| list.put( index, value ); this.init; }
 	add { |value| list = list.add( value ); this.init; }

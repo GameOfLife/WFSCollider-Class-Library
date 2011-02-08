@@ -1,3 +1,10 @@
++ Spec {
+	adaptFromObject { ^this }
+	
+	viewNumLines { ^1 }
+}
+
+
 + ControlSpec {
 	makeView { |parent, bounds, label, action, resize|
 		var vw = EZSmoothSlider( parent, bounds, label !? { label.asString ++ " " }, 
@@ -7,13 +14,26 @@
 	}
 	
 	setView { |view, value, active = false|
-		view.value = this.unmap( value );
+		view.value = value;
 		if( active ) { view.doAction };
 	}
 	
 	mapSetView { |view, value, active = false|
-		view.value = value;
+		view.value = this.map(value);
 		if( active ) { view.doAction };
+	}
+	
+	adaptFromObject { |object| // if object out of range; change range
+		if( object.isArray ) {
+			^this.asRangeSpec.adaptFromObject( object );
+		} {
+			if( object.inclusivelyBetween( minval, maxval ).not ) {
+				^this.copy
+					.minval_( minval.min( object ) )
+					.maxval_( maxval.max( object ) )
+			};
+			^this;
+		};
 	}
 }
 
@@ -52,6 +72,16 @@
 			if( active ) { view.doAction };
 		}.defer;
 	}
+	
+	adaptFromObject { |object|
+		if( list.any({ |item| item == object }).not ) {
+			^this.copy.add( object )
+		} {
+			^this
+		};
+	}
+	
+	
 }
 
 + PointSpec {
@@ -69,4 +99,18 @@
 		if( resize.notNil ) { vw.view.resize = resize };
 		^vw;		
 	}
+	
+	adaptFromObject { |object|
+		if( object.isArray.not ) {
+			^this.asControlSpec.adaptFromObject( object );
+		} {	
+			if(  (object.minItem < minval) or: (object.maxItem > maxval) ) {
+				^this.copy
+					.minval_( minval.min( object.minItem ) )
+					.maxval_( maxval.max( object.maxItem ) )
+			};
+			^this;
+		};
+	}
+
 }

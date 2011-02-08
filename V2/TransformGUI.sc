@@ -35,7 +35,7 @@ TransformGUI {
 			var vw;
 			
 			vw = ObjectView( composite, nil, transform, key, 
-					transform.def.specs[key], nil, controller );
+					transform.def.specs[key], controller );
 			
 			vw.action = { action.value( this, key, value ); };
 			
