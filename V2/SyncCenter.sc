@@ -28,7 +28,7 @@ SyncCenter {
 	classvar <>global;
 	classvar <>ready = false;
 	
-	classvar <>inBus = -28, <>outBus = 0;
+	classvar <>inBus = 0, <>outBus = 14;
 	
 	var <>localCount, <>localTime;
 	
@@ -45,6 +45,7 @@ SyncCenter {
 		servers = [];
 		remoteCounts = Order();	
 		global = this.new;
+		masterCount = Ref(-1);
 	}
 	
 	*add { |server|
@@ -54,28 +55,31 @@ SyncCenter {
 			if( servers.includes( server ) ) { 
 				"%.add: server '%' was already added".format( this, server ).warn; 
 			} { 
-				servers = servers.add( server ); 
+				servers = servers.add( server );
+				remoteCounts.put(servers.size-1,Ref(-1));
 			}
 		};
 	}
 		
 	*addAll { |array| array.do( this.add( _ ) ); }
 	
-	*recDef { ^SynthDef( "sync_receive", { |id = 100, in = 0 |
-		// waits for an impulse
-		var trig;
-		trig = Trig1.ar( SoundIn.ar( in ) );
-		SendTrig.ar( trig, id, BlockOffset.ar( trig ) );
-		FreeSelf.kr( T2K.kr( trig ) );
+	*recDef { 
+		^SynthDef( "sync_receive", { |id = 100, in = 0 |
+			// waits for an impulse
+			var trig;
+			trig = Trig1.ar( SoundIn.ar( in ) );
+			SendTrig.ar( trig, id, BlockOffset.ar( trig ) );
+			//FreeSelf.kr( T2K.kr( trig ) );
 		});
 	}
 			
-	*masterDef { ^SynthDef( "sync_master", { |out = 0, amp = 0.1, id = 99|
-		var trig;
-		trig = OneImpulse.ar;
-		OffsetOut.ar( out, trig );
-		SendTrig.ar( trig, id, SampleOffset.ir.poll );
-		FreeSelf.kr( T2K.kr( trig ) );
+	*masterDef { 
+		^SynthDef( "sync_master", { |out = 0, amp = 0.1, id = 99|
+			var trig;
+			trig = OneImpulse.ar;
+			OffsetOut.ar( out, trig );
+			SendTrig.ar( trig, id, SpawnOffset.ir );
+			//FreeSelf.kr( T2K.kr( trig ) );
 		});
 	}
 	
@@ -99,8 +103,10 @@ SyncCenter {
 		if( mode === 'sample' ) {
 			recdev = this.recDef;
 			recSynths = recSynths.addAll( 
-				servers.collect({ |server, i|  ("playing receve sync synthdef for server "++i).postln; 
-				recdev.play( server, [\id, 100+i,\in,inBus] ).register }) 
+				servers.collect({ |server, i|  
+					("playing receve sync synthdef for server "++i).postln; 
+					Synth( "sync_receive", [\id, 100+i,\in,inBus], server ).register
+				}) 
 			); 
 		}
 	}
@@ -112,32 +118,32 @@ SyncCenter {
 			oldRemoteCounts = remoteCounts;
 			oldMasterCount = masterCount;
 			oldMasterCountTime = masterCountTime;
-			
-			remoteCounts = Order();
-			masterCount = nil;
-			
+					
 			if( responder.notNil ) {
 				responder.remove; "removing responder".postln 
 			};
+			
+			masterCount.value_(-1);
+			remoteCounts.do{ |c| c.value_(-1) };
 				
 			responder = OSCresponderNode( nil, '/tr', { |time, resp, msg|
 				("Received: "++[time, resp, msg] ).postln;
 				case{ msg[ 2 ] == 99 }
-					{ masterCount = (msg[4] * master.options.blockSize) + msg[3]; "setting master counts".postln; }
+					{ masterCount.value_( (msg[4] * master.options.blockSize) + msg[3]) .changed; "setting master counts".postln; }
 					{ msg[2].exclusivelyBetween( 99, 100 + servers.size ) }
-					{ remoteCounts[ msg[2] - 100 ] = 
-						//(msg[4] * master.options.blockSize) + msg[3]; 
-						(msg[4] * servers[ msg[2] - 100 ].options.blockSize) + msg[3];//shouldn't it be relative to slave blocksize ?
-					("Setting remoteCounts for server "++(msg[2] - 100)++" : "++ remoteCounts[ msg[2] - 100 ]).postln;	
+					{ 
+						("serverNumber "++( msg[2] - 100 ) ).postln;
+						remoteCounts[ msg[2] - 100 ].value_( (msg[4] * servers[ msg[2] - 100 ].options.blockSize) + msg[3] ).changed;
+						("Setting remoteCounts for server "++(msg[2] - 100)++" : "++ remoteCounts[ msg[2] - 100 ].value).postln;	
 					 }; 
 						
-				if( (remoteCounts.size >= servers.size) && masterCount.notNil ) { 
+				if( remoteCounts.collect{ |v| v.value != -1 }.reduce('&&') && (masterCount.value != -1) ) { 
 					resp.remove; responder = nil; "received all counts".postln; ready = true;
 				};
 			}).add;
 			"adding responder".postln;				
 			
-			this.masterDef.send( master );
+			//this.masterDef.send( master );
 			this.playRecDefs;
 			
 			{
@@ -153,6 +159,7 @@ SyncCenter {
 				responder = nil;
 				recSynths.do({ |synth| if(synth.isPlaying){synth.free} });
 				recSynths = nil;
+				
 			}.r.play;
 		};
 	}
@@ -163,21 +170,27 @@ SyncCenter {
 	}
 	
 	*getSchedulingSampleCount{ |delta = 1, serverIndex = 0|
-		^(remoteCounts[serverIndex] + (((master.options.blockSize*master.blockCount) + (delta*master.sampleRate)) - masterCount))
-	
+		^(remoteCounts[serverIndex].value + (((master.options.blockSize*master.blockCount) + (delta*master.sampleRate)) - masterCount.value))
 	}
 	
 	*getSchedulingSampleCountS{ |delta = 1, server|
-		var serverIndex = servers.indexOf(server);
-		
+		var serverIndex = servers.indexOf(server).postln;
 		^this.getSchedulingSampleCount(delta,serverIndex);
 	}
 	
-	*sendPosBundle{ |delta = 1, bundle,server|
+	*listSendPosBundle{ |delta = 1, msgs, server|
+		server.listSendPosBundle(this.getSchedulingSampleCountS(delta,server),msgs) 
+	}
+	
+	*sendPosBundle{ |delta = 1, server ... msgs|
+		server.sendPosBundle(this.getSchedulingSampleCountS(delta,server),*msgs) 
+	}
+	
+	*sendPosOSCBundle{ |delta = 1, bundle,server|
 		bundle.sendPos(server,this.getSchedulingSampleCountS(delta,server)) 
 	}
 	
-	*sendPosBundleAll{ |delta = 1, bundle|
+	*sendPosOSCBundleAll{ |delta = 1, bundle|
 		servers.do{ |server| this.sendPosBundle(delta,bundle,server) }
 	}
 
