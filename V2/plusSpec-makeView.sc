@@ -54,6 +54,7 @@
 		if( multipleActions.not ) {
 			vw.globalAction = { |vw| action.value( vw, list[vw.value] ) };
 		};
+		vw.labelWidth = 60; // same as EZSlider
 		vw.applySkin( RoundView.skin ); // compat with smooth views
 		if( resize.notNil ) { vw.view.resize = resize };
 		^vw
@@ -84,6 +85,52 @@
 	
 }
 
++ BoolSpec {	
+	
+	makeView { |parent, bounds, label, action, resize| 
+		var vws, view, labelWidth;
+		vws = ();
+		
+		// this is basically an EZButton
+		
+		bounds.isNil.if{bounds= 160@20};
+		
+		#view, bounds = EZGui().prMakeMarginGap.prMakeView( parent, bounds );
+		 vws[ \view ] = view;
+		 		
+		if( label.notNil ) {
+			labelWidth = (RoundView.skin ? ()).labelWidth ? 60;
+			vws[ \labelView ] = StaticText( vws[ \view ], labelWidth @ bounds.height )
+				.string_( label.asString ++ " " )
+				.align_( \right )
+				.resize_( 4 )
+				.applySkin( RoundView.skin );
+		} {
+			labelWidth = 0;
+		};
+		
+		vws[ \buttonView ] = RoundButton( vws[ \view ], 
+				Rect( labelWidth + 2, 0, bounds.width-(labelWidth+2), bounds.height ) )
+			.label_( [ falseLabel, trueLabel ] )
+			.value_( this.unmap( this.constrain( default ) ) )
+			.action_({ |bt| action.value( vws, this.map( bt.value ) ) })
+			.resize_( 5 );
+		if( resize.notNil ) { vws[ \view ].resize = resize };
+		
+		^vws;
+	}
+	
+	setView { |view, value, active = false|
+		view[ \buttonView ].value = this.unmap( this.constrain( value ) );
+		if( active ) { view[ \buttonView ].doAction };
+	}
+	
+	mapSetView { |view, value, active = false|
+		view[ \buttonView ].value = this.map(  value );
+		if( active ) { view[ \buttonView ].doAction };
+	}
+}
+	
 + PointSpec {
 	makeView {
 	}
@@ -113,4 +160,21 @@
 		};
 	}
 
+}
+
+
++ EZPopUpMenu {
+	
+	labelWidth { ^labelView !? { labelView.bounds.width } ? 0 }
+	
+	labelWidth_ { |width = 60|
+		var delta;
+		if( layout === \horz && { labelView.notNil } ) { // only for horizontal sliders
+			delta = labelView.bounds.width - width;
+			labelView.bounds = labelView.bounds.width_( width );
+			widget.bounds = widget.bounds
+				.width_( widget.bounds.width + delta )
+				.left_( widget.bounds.left - delta );
+		};
+	}
 }

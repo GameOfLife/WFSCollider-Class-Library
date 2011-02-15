@@ -57,8 +57,8 @@ ObjectView {
 		controller.put( key, { |obj, key, value| spec.setView( views, value, false ) });
 	}
 	
-	update { |obj, inKey, value|
-		spec.setView( views, object.perform( inKey ? key ) ); 
+	update {
+		spec.setView( views, object.perform( key ) ); 
 	}
 	
 	remove { composite.remove }

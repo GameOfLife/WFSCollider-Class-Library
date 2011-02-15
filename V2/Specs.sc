@@ -10,15 +10,16 @@ ListSpec : Spec {
 	}
 	
 	init { 
-		list = list.collect({ |item| 
-			if( item.isString ) { 
+		var tempList;
+		tempList = list.collect({ |item| 
+			if( item.isNumber.not ) { 
 				item.asSymbol;
 			} { 
 				item;
 			};
 		});
-		sortedList = list.copy.sort;
-		indexMap = sortedList.collect({ |item| list.indexOfEqual( item ); });
+		sortedList = tempList.copy.sort;
+		indexMap = sortedList.collect({ |item| tempList.indexOfEqual( item ); });
 	}
 	
 	default { ^this.at( defaultIndex ) }
@@ -36,14 +37,45 @@ ListSpec : Spec {
 	}
 	
 	unmap { |value|
-		if( value.isString ) { value = value.asSymbol };
-		^indexMap[ sortedList.indexIn( value ) ] ? defaultIndex;
+		var index;
+		index = list.indexOf( value ); // first try direct (faster)
+		if( index.notNil ) {
+			^index;
+		} {
+			if( value.isNumber.not ) { value = value.asSymbol; };
+			^indexMap[ sortedList.indexIn( value ) ] ? defaultIndex;
+		};
 	}
 	
 	map { |value|
 		^list[ value.asInt ] ?? { list[ defaultIndex ] };
 	}
 	
+}
+
+BoolSpec : Spec {
+	var <default = true;
+	var <>trueLabel, <>falseLabel;
+	
+	*new { |default, trueLabel, falseLabel|
+		^super.newCopyArgs( default ? true, trueLabel ? "true", falseLabel ? "false" );
+	}
+	
+	map { |value|
+		^value.booleanValue;
+	}
+	
+	unmap { |value|
+		^value.binaryValue;
+	}
+	
+	constrain { |value|
+		^value.booleanValue;
+	}
+	
+	default_ { |value| 
+		default = this.constrain( value );
+	}
 }
 
 PointSpec : Spec {
@@ -106,7 +138,8 @@ RangeSpec : ControlSpec {
 	// a <= b, maxRange >= (b-a) >= minRange
 	// the spec is a ControlSpec or possibly a ListSpec with numbers
 	
-	*new { |minval=0.0, maxval=1.0, minRange=0, maxRange = inf, warp='lin', step=0.0, default, units|
+	*new { |minval=0.0, maxval=1.0, minRange=0, maxRange = inf, warp='lin', step=0.0,
+			 default, units|
 		^super.new( minval, maxval, warp, step, default ? [minval,maxval], units )
 			.minRange_( minRange ).maxRange_( maxRange )
 	}
