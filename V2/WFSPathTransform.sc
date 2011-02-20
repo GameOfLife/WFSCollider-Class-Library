@@ -1,9 +1,28 @@
+/*
+// example:
+
+p = WFSPath.circle; // create a WFSPath
+
+WFSPathTransformDef( \scale, { |path, x = 1, y = 1| 
+	path.positions = path.positions.collect({ |item| item * (x@y) });
+});
+
+x = WFSPathTransform( \scale ).makeCopy_( true ); // make a copy of the transformed event
+
+x.value( p, (..6), 2, 2 ).plotSmooth; // performs on selection
+
+x.def.setSpec( \x, [-10,10]); // set the specs
+x.def.setSpec( \y, [-10,10]);
+
+y = x.gui; // create a gui (a TransformGUI)
+
+y.action = { x.value( p ).plotSmooth; }; // action for the gui
+*/
+
 WFSPathTransformDef : TransformDef {
 	classvar <>all;
 	
-	*initClass {
-		this.all = IdentityDictionary();
-	}
+	var <>useSelection = true;
 	
 	*defaultFunc { 
 		^{ |path, mul = 1, add = 0| 
@@ -18,8 +37,29 @@ WFSPathTransform : Transform {
 	
 	*defClass { ^WFSPathTransformDef }
 	
-	prValue { |path, selection|
-		^def.func.value( path, selection, *this.values );
+	value { |path, selection ...inArgs|
+		this.values = inArgs;
+		if( def.bypassFunc.value( this ).not ) { 
+			if( makeCopy ) { path = path.copyNew };
+			if( def.useSelection ) { 
+				^this.prValueSelection( path, selection );
+			} {
+				^this.prValue( path ); 
+			};
+		} {
+			^path;
+		};
+	}
+	
+	prValueSelection { |path, selection|
+		var result;
+		result = this.prValue( path.copySelection( selection ) );
+		path.putSelection( selection, result );
+		^path;
+	}
+	
+	prValue { |path| // no selection
+		^def.func.value( path, *this.values );
 	}	
 	
 }
@@ -37,7 +77,7 @@ WFSPathTransform : Transform {
 	
 	putSelection { |indices, selectionPath| // in place operation !!
 		selectionPath = selectionPath.asWFSPath; 
-		indices = indices ?? { (..selectionPath.positios.size-1) };
+		indices = indices ?? { (..selectionPath.positions.size-1) };
 		indices.do({ |item, i|
 			positions.put( item, selectionPath.positions[i].copy );
 			if( i < selectionPath.times.size ) { times.put( item, selectionPath.times[i] ) };

@@ -5,7 +5,6 @@ GenericDef {
 	var <>argSpecs;
 	
 	*new { |name, args|
-		"bla".postln;
 		^super.new.initArgSpecs( args ).addToAll( name.asSymbol );
 	}
 	

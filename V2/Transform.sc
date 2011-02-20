@@ -62,10 +62,16 @@ TransformDef : GenericDef {
 	}
 	
 	init { |inFunc|
-		func = inFunc;
+		func = inFunc ? this.class.defaultFunc;
 		argSpecs = ArgSpec.fromFunc( func, argSpecs )[1..]; // leave out the first arg 
 		bypassFunc = { |tr| tr.values == tr.def.values }; // if default values
 	} 
+	
+	*defaultFunc {
+		^{ |in, mul = 1, add = 0| 
+			(in * mul) + add;
+		};
+	}
 	
 	*allNamesForCategory { |category = \default|
 		var array;
