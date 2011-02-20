@@ -1,3 +1,42 @@
+/*
+
+// example
+
+x = WFSUnitDef( \sine, { |freq = 440, amp = 0.1| 
+	Out.ar( 0, SinOsc.ar( freq, 0, amp ) ) 
+} );
+
+y = WFSUnit( \sine, [ \freq, 880 ] );
+
+y.gui;
+
+y.def.loadSynthDef;
+
+y.start;
+y.stop;
+
+(
+// a styled gui in user-defined window
+// -- to be replaced by WFSChainGUI --
+w = Window( "x", Rect( 300,25,200,200 ) ).front;
+w.addFlowLayout;
+RoundView.useWithSkin( ( 
+	labelWidth: 40, 
+	font: Font( Font.defaultSansFace, 10 ), 
+	hiliteColor: Color.gray(0.25)
+), { 
+	y = x.units.collect({ |item|
+		StaticText( w, (w.view.bounds.width - 8)@16 )
+			.string_( " " ++ item.defName.asString )
+			.font_( RoundView.skin.font.boldVariant )
+			.background_( Color.gray(0.8) );
+		item.gui( w );
+	}); 
+});
+)
+
+*/
+
 WFSUnitDef : GenericDef {
 	
 	classvar <>all;
@@ -89,9 +128,9 @@ WFSUnit : ObjectWithArgs {
 	  	this.init( name.asSymbol, if( keepArgs ) { args } { [] }); // keep args
 	}
 	
-	start { |server| 
+	start { |server| // call this from inside Server:makeBundle
 		var synth;
-		synth = Synth( def.synthDefName, args, server )
+		synth = Synth( def.synthDefName, args, server, \addToTail )
 				.startAction_({ |synth|
 					synths = synths ++ [ synth ]; 
 						// only add if started (in case this is a bundle)
@@ -113,4 +152,11 @@ WFSUnit : ObjectWithArgs {
 	
 	defName { ^def.name }
 	
+	asWFSUnit { ^this }
+	
+}
+
+
++ Symbol { 
+	asWFSUnit { |args| ^WFSUnit( this, args ) }
 }
