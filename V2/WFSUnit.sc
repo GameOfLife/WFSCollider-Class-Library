@@ -2,9 +2,11 @@
 
 // example
 
+(
 x = WFSUnitDef( \sine, { |freq = 440, amp = 0.1| 
 	Out.ar( 0, SinOsc.ar( freq, 0, amp ) ) 
 } );
+)
 
 y = WFSUnit( \sine, [ \freq, 880 ] );
 
@@ -17,21 +19,19 @@ y.stop;
 
 (
 // a styled gui in user-defined window
-// -- to be replaced by WFSChainGUI --
-w = Window( "x", Rect( 300,25,200,200 ) ).front;
+w = Window( y.defName, Rect( 300,25,200,200 ) ).front;
 w.addFlowLayout;
 RoundView.useWithSkin( ( 
 	labelWidth: 40, 
 	font: Font( Font.defaultSansFace, 10 ), 
 	hiliteColor: Color.gray(0.25)
 ), { 
-	y = x.units.collect({ |item|
-		StaticText( w, (w.view.bounds.width - 8)@16 )
-			.string_( " " ++ item.defName.asString )
-			.font_( RoundView.skin.font.boldVariant )
-			.background_( Color.gray(0.8) );
-		item.gui( w );
-	}); 
+	SmoothButton( w, 16@16 )
+		.label_( ['power', 'power'] )
+		.hiliteColor_( Color.green.alpha_(0.5) )
+		.action_( [ { y.start }, { y.stop } ] )
+		.value_( (y.synths.size > 0).binaryValue );
+	y.gui( w );
 });
 )
 
@@ -81,6 +81,18 @@ WFSUnitDef : GenericDef {
 	load { |server| this.loadSynthDef( server ) }
 	send { |server| this.sendSynthDef( server ) }
 	
+	// these may differ in subclasses of WFSUnitDef
+	createSynth { |unit, server|
+		if( server.isNil ) { server = Server.default; };
+		^server.asCollection.collect({ |server|
+			Synth( this.synthDefName, unit.args, server, \addToTail )
+		});
+	}
+	
+	setSynth { |unit ...keyValuePairs|
+		unit.synths.do(_.set(*keyValuePairs));
+	}
+	
 	*allNames { ^this.class.all.keys.as( Array ).sort }
 	
 }
@@ -108,7 +120,7 @@ WFSUnit : ObjectWithArgs {
 	
 	set { |key, value|
 		this.setArg( key, value );
-		synths.do(_.set(key, value));
+		def.setSynth( this, key, value );
 	}
 	
 	get { |key|
@@ -130,25 +142,27 @@ WFSUnit : ObjectWithArgs {
 	
 	start { |server| // call this from inside Server:makeBundle
 		var synth;
-		synth = Synth( def.synthDefName, args, server, \addToTail )
-				.startAction_({ |synth|
-					synths = synths ++ [ synth ]; 
-						// only add if started (in case this is a bundle)
-					this.changed( \go, synth ); 
-				})
-				.freeAction_({ |synth| 
-					synths.remove( synth ); 
-					this.changed( \end, synth ); 
-				});
-		this.changed( \start, synth );
-		^synth;
-		}
+		^def.createSynth( this, server ).asCollection.do({ |synth|
+			synth.startAction_({ |synth|
+				synths = synths ++ [ synth ];
+				this.changed( \go, synth ); 
+			});
+			synth.freeAction_({ |synth| 
+				synths.remove( synth ); 
+				this.changed( \end, synth ); 
+			});
+			this.changed( \start, synth );
+		});
+	}
 	
 	free { synths.do(_.free) } 
 	stop { this.free }
 	
 	resetSynths { synths = []; } // after unexpected server quit
-	resetArgs { this.values = this.def.values.deepCopy; synths.do(_.set( *args )) }
+	resetArgs {
+		this.values = this.def.values.deepCopy; 
+		def.setSynth( this, *args );
+	}
 	
 	defName { ^def.name }
 	
