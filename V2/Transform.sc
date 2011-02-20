@@ -4,10 +4,12 @@
 // functions are stored in a named bank of defs: TransformDef.all
 
 /*
-
-TransformDef( \add, { |in, add = 0, mul = 1| (in*mul) + add }); // create and store a def
+TransformDef( \add, { |in, mul = 1, add = 0| (in*mul) + add }); // create and store a def
 
 x = Transform( \add ); // create a transform
+
+x.values; // -> [1,0]
+x.argNames; // -> [ mul, add ]
 
 x.value( 10 ); // -> 10 (func is bypassed when no arguments are changed)
 
@@ -15,7 +17,7 @@ x.add = 5; // change argument
 
 x.value( 10 ); // -> 15
 
-x.value( 10, 2 ); // -> 12 (change argument on the fly)
+x.value( 10, 2 ); // -> 25 (change argument on the fly)
 
 // it also sends a 'changed' message at each argument change
 
@@ -23,8 +25,8 @@ x.doOnChange( \add, { |tr, key, value| [ key, value].postln }, false );
 
 x.add = 7; // -> [ add, 7 ]
 
-x.def.specs[ \add ] = [-10,10]; // define a controlspec for add parameter
-x.def.specs[ \mul ] = [0,2];
+x.def.setSpec( \mul, [0,2]);   // define a controlspec for 'mul' parameter
+x.def.setSpec( \add, [-10,10]); 
 
 y = x.gui; // a TransformGUI
 
@@ -32,115 +34,55 @@ y.action = { x.value( 10 ).postln };
 
 x.add = 5; // watch the slider move
 
+(
+// a styled gui in user-defined window
+// watch the slider move in both windows
+w = Window( "x", Rect( 300,25,200,200 ) ).front;
+w.addFlowLayout;
+RoundView.useWithSkin( ( 
+	labelWidth: 40, 
+	font: Font( Font.defaultSansFace, 10 ), 
+	hiliteColor: Color.gray(0.25)
+), { 
+	z = x.gui( w ); 
+});
+)
+
 */
 
-ObjectWithArgs {
-	
-	var <args;
-	
-	// args are an array of key, value pairs: [ key, value, key, value ...etc ]
-	
-	keys { ^(args ? [])[0,2..] }
-	argNames { ^this.keys }
-	
-	values { ^(args ? [])[1,3..] }
-	values_ { |newValues|  
-		var keys = this.keys;
-		newValues[..keys.size-1].do({ |val, i|
-			this.setArg( keys[i], val )
-		});
-	}
-
-	setArg { |key, value|
-		var index;
-		index = this.keys.indexOf( key );
-		if( index.notNil ) { 
-			args[ (index * 2) + 1 ] = value;
-			this.changed( key, value );
-		} {
-			"%:% arg % not found".format( this.class, thisMethod.name, key ).warn;
-		};	
-	}
-	
-	getArg { |key|
-		var index;
-		index = this.keys.indexOf( key );
-		if( index.notNil ) { 
-			^args[ (index * 2) + 1 ] 
-		} { 
-			"%:% arg % not found".format( this.class, thisMethod.name, key ).warn;
-			^nil 
-		};
-	}
-	
-	at { |key| ^this.getArg( key ) }
-	put { |key| ^this.setArg( key ) }
-
-	doesNotUnderstand { |selector ...args| 
-		// bypasses errors; warning if arg not found
-		if( selector.isSetter ) { 
-			this.setArg( selector.asGetter, *args ) 
-		} {
-			^this.getArg( selector );
-		};	
-	}
-
-}
-
-TransformDef : ObjectWithArgs {
+TransformDef : GenericDef {
 	
 	classvar <>all;
 	
 	var <>func, <>category;
-	var <>bypassFunc, <startIndex;
-	var <>specs;
+	var <>bypassFunc;
 	
-	*initClass {
-		this.all = IdentityDictionary();
+	*new { |name, func, args, category|
+		^super.new( name, args ).init( func ).category_( category ? \default );
 	}
 	
-	*new { |name, func, args, category = \default|
-		^super.new.init( func, args ).addToAll( name.asSymbol );
-	}
-	
-	*defaultFunc { ^{ |in, mul = 1, add = 0| (in * mul) + add } }
-	
-	*defaultStartIndex { ^1 }
-	
-	startIndex_ { |newIndex = 1| startIndex = newIndex; this.init; }
-	
-	init { |inFunc, inArgs|
-		var argNames, values;
-		
-		func = inFunc ?? { this.defaultFunc };
-		
-		startIndex = startIndex ? this.class.defaultStartIndex;
-		
-		specs = IdentityDictionary();
-		
-		argNames = (func.argNames ? #[])[startIndex..]; // first arg is input
-		values = func.def.prototypeFrame ? #[];
-		inArgs = inArgs ? args ? #[]; // keep old args at re-init
-		
-		args = argNames.collect({ |key, i|
-			[ key, inArgs.pairsAt( key ) ?? { values[i+startIndex] } ]
-		}).flatten(1);
-		
+	init { |inFunc|
+		func = inFunc;
+		argSpecs = ArgSpec.fromFunc( func, argSpecs )[1..]; // leave out the first arg 
 		bypassFunc = { |tr| tr.values == tr.def.values }; // if default values
+	} 
+	
+	*allNamesForCategory { |category = \default|
+		var array;
+		this.class.all.keysValuesDo({ |key, value| 
+			if( value.category == category ) {
+				array = array.add( key );
+			};
+		});
+		^array;
 	}
 	
-	addToAll { |name|
-		this.class.all[ name ] = this;
+	*allCategories { 
+		var categories = Set();
+		this.class.all.do({ |item| categories.add( item.category ) });
+		^categories.asArray.sort;
 	}
 	
-	name { ^all.findKeyForValue( this ); }
-	
-	name_ { |name|
-		this.class.all[ this.name ] = nil;
-		this.class.all[ name.asSymbol ] = this;
-	}
-	
-	*allNames { ^this.class.all.keys.as( Array ).sort }
 }
 
 
@@ -155,32 +97,26 @@ Transform : ObjectWithArgs {
 	*defClass { ^TransformDef }
 	
 	init { |inName, inArgs|
-		def = this.class.defClass.all[ inName.asSymbol ];
+		def = this.class.defClass.fromName( inName );
 		if( def.notNil ) {	
-			args = def.args.deepCopy;
-			inArgs.keysValuesDo({ |key, value|
-				args.pairsPut( key, value );
-			});
+			args = def.asArgsArray( inArgs ); // create ordered array of args
 		} { 
 			"defName '%' not found".format(inName).warn; 
 		};
 	}
 	
-	value { |...inArgs| // in place by default
-		this.values = inArgs[ def.startIndex..];
+	value { |input ...inArgs| // in place by default
+		this.values = inArgs;
 		if( def.bypassFunc.value( this ).not ) { 
-			if( makeCopy) { inArgs[0] = inArgs[0].copyNew };
-			^this.prValue( *inArgs[..def.startIndex - 1] ); 
+			if( makeCopy) { input = input.copyNew };
+			^this.prValue( input, *inArgs ); 
 		} {
-			^(inArgs ? #[])[0] 
+			^input;
 		};
 	}
 	
-	prValue { |...inArgs|
-		^def.func.value( 
-			*(( inArgs.extend( def.startIndex, nil ) ++ this.values )
-				.collect(_.value)) // support functions and streams
-		);
+	prValue { |input|
+		^def.func.value( input, *(this.values.collect(_.value)) );
 	}	
 	
 	defName_ { |name, keepArgs = true|
@@ -192,22 +128,3 @@ Transform : ObjectWithArgs {
 	defName { ^def.name }
 }
 
-
-+ SequenceableCollection {
-	
-	pairsAt { |key| // could be optimized
-		var index = this[0,2..].indexOf( key );
-		if( index.notNil ) { 
-			^this.at( (index * 2) + 1 );
-		} {
-			^nil 
-		};
-	}
-	
-	pairsPut { |key, value| // only puts if key is found
-		var index = this[0,2..].indexOf( key );
-		if( index.notNil ) { 
-			this.put((index * 2) + 1, value);
-		};
-	}
-}

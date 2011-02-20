@@ -31,11 +31,11 @@ TransformGUI {
 		
 		views = ();
 		
-		transform.args.pairsDo({ |key, value|
+		transform.args.pairsDo({ |key, value, i|
 			var vw;
 			
 			vw = ObjectView( composite, nil, transform, key, 
-					transform.def.specs[key], controller );
+					transform.def.specs[i/2], controller );
 			
 			vw.action = { action.value( this, key, value ); };
 			

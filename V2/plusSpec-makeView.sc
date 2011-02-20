@@ -109,14 +109,23 @@
 			labelWidth = 0;
 		};
 		
-		vws[ \buttonView ] = RoundButton( vws[ \view ], 
-				Rect( labelWidth + 2, 0, bounds.width-(labelWidth+2), bounds.height ) )
-			.label_( [ falseLabel, trueLabel ] )
-			.value_( this.unmap( this.constrain( default ) ) )
-			.action_({ |bt| action.value( vws, this.map( bt.value ) ) })
-			.resize_( 5 );
-		if( resize.notNil ) { vws[ \view ].resize = resize };
+		if( trueLabel.isNil && falseLabel.isNil ) {
+			vws[ \buttonView ] = SmoothButton( vws[ \view ], 
+					Rect( labelWidth + 2, 0, bounds.height, bounds.height ) )
+				.label_( [ "", 'x' ] )
+		} {	
+			vws[ \buttonView ] = SmoothButton( vws[ \view ], 
+					Rect( labelWidth + 2, 0, bounds.width-(labelWidth+2), bounds.height ) )
+				.label_( [ falseLabel, trueLabel ] );
+		};
 		
+		vws[ \buttonView ]
+				.radius_( bounds.height / 8 )
+				.value_( this.unmap( this.constrain( default ) ) )
+				.action_({ |bt| action.value( vws, this.map( bt.value ) ) })
+				.resize_( 5 );
+
+		if( resize.notNil ) { vws[ \view ].resize = resize };
 		^vws;
 	}
 	
@@ -161,7 +170,6 @@
 	}
 
 }
-
 
 + EZPopUpMenu {
 	

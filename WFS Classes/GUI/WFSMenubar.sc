@@ -113,6 +113,7 @@ WFSMenubar {
 			var scoreEditor = WFSScoreEditor.current;
 			if(scoreEditor.notNil){	 
 				WFSScoreEditor.current.score.sort; 
+				WFSScoreEditor.current.createWFSEventViews;
 				WFSScoreEditor.current.update; 
 			}
 		});

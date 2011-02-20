@@ -54,11 +54,20 @@ ListSpec : Spec {
 }
 
 BoolSpec : Spec {
+	
 	var <default = true;
 	var <>trueLabel, <>falseLabel;
 	
 	*new { |default, trueLabel, falseLabel|
-		^super.newCopyArgs( default ? true, trueLabel ? "true", falseLabel ? "false" );
+		^super.newCopyArgs( default ? true, trueLabel, falseLabel );
+	}
+	
+	*testObject { |obj|
+		^[ True, False ].includes( obj.class );
+	}
+	
+	*newFromObject { |obj|
+		^this.new( obj );
 	}
 	
 	map { |value|
@@ -83,10 +92,27 @@ PointSpec : Spec {
 	var clipRect;
 	
 	*new { |rect, step, default, units|
-		^super.newCopyArgs( rect.asRect, (step ? 0).asPoint, default, units ? "" ).init;
+		^super.newCopyArgs( rect, (step ? 0).asPoint, default, units ? "" ).init;
+	}
+	
+	*testObject { |obj|
+		^obj.class == Point;
+	}
+	
+	*newFromObject { |obj|
+		var cspecs;
+		cspecs = obj.asArray.collect({ |item| ControlSpec.newFromObject( item ) });
+		^this.new( Rect.fromPoints( 
+			(cspecs[0].minval)@(cspecs[1].minval), 
+			(cspecs[0].maxval)@(cspecs[1].maxval) ),
+			(cspecs[0].step)@(cspecs[1].step),
+			obj );
 	}
 	
 	init {
+		// number becomes radius
+		if( rect.isNumber ) { rect = Rect.aboutPoint( 0@0, rect, rect ); };
+		rect = rect.asRect;
 		clipRect = Rect.fromPoints( rect.leftTop, rect.rightBottom );
 	}
 	
@@ -130,6 +156,82 @@ PointSpec : Spec {
 	}
 }
 
+PolarSpec : Spec {
+	
+	var <>maxRadius, <step, >default, <>units; // constrains inside rect
+	var clipRect;
+	
+	*new { |maxRadius, step, default, units| 			
+		^super.newCopyArgs( maxRadius, (step ? 0), default, units ? "" ).init;
+	}
+	
+	*testObject { |obj|
+		^obj.class == Polar;
+	}
+	
+	*newFromObject { |obj|
+		var cspec;
+		cspec = ControlSpec.newFromObject( obj.rho );
+		^this.new( cspec.maxval, cspec.step, obj );
+	}
+	
+	init {
+		if( step.class != Polar ) {
+			step = Polar( step ? 0, 0 );
+		};
+	}
+	
+	default { ^default ?? { clipRect.center.round( step ); } }
+	
+	step_ { |inStep| step = this.makePolar( inStep ) }
+	
+	makePolar { |value|
+		if( value.class != Polar ) {
+			if( value.isArray ) {
+				^Polar( *value );
+			} {
+				^value.asPoint.asPolar;
+			};
+		} {
+			^value.copy;
+		};
+	}
+	
+	clipRadius { |value|
+		value = this.makePolar( value );
+		if( maxRadius.notNil ) {
+			value.rho = value.rho.clip2( maxRadius ); // can be negative too
+		};
+		^value;
+	}
+	
+	roundToStep { |value|
+		value = this.makePolar( value );
+		value.rho = value.rho.round( step.rho );
+		value.theta = value.theta.round( step.theta );
+		^value;
+	}
+	
+	scaleRho { |value, amt = 1|
+		value = this.makePolar( value );
+		value.rho = value.rho * amt;
+		^value;
+	}
+	
+	constrain { |value|
+		value = this.clipRadius( value );
+		^this.roundToStep( value );
+	}
+	
+	map { |value|
+		^this.constrain( this.scaleRho( value, maxRadius ? 1 ) );
+	}
+	
+	unmap { |value|
+		^this.scaleRho( this.constrain( value ), 1/(maxRadius ? 1));
+	}	
+}
+
 RangeSpec : ControlSpec {
 	var <>minRange, <>maxRange;
 	var realDefault;
@@ -151,6 +253,23 @@ RangeSpec : ControlSpec {
 			similar.warp.asSpecifier, 
 			similar.step, similar.default, similar.units)
 	}
+	
+	*testObject { |obj|
+		^obj.isArray && { (obj.size == 2) && { obj.every(_.isNumber) } };
+	}
+	
+	*newFromObject { |obj|
+		var cspecs;
+		cspecs = obj.collect({ |item| ControlSpec.newFromObject( item ) });
+		^this.new( 
+			cspecs.collect(_.minval).minItem, 
+			cspecs.collect(_.maxval).maxItem, 
+			0, inf, \lin, 
+			cspecs.collect(_.step).minItem, 
+			obj
+			);
+	}
+	
 	
 	default_ { |range| realDefault = default = this.constrain( range ); }
 	default { ^realDefault ?? 
@@ -209,6 +328,14 @@ BufferSpec : Spec {
 		^super.newCopyArgs( numChannels, numFrames, isWavetable ).init;
 	}
 	
+	*testObject { |obj|
+		^obj.class == Buffer; // change to bufferholder later
+	}
+	
+	*newFromObject { |obj|
+		^this.new( obj.numChannels );
+	}
+	
 	init {
 		if( numFrames.isNumber ) { numFrames = [numFrames,numFrames].asSpec }; // single value
 		if( numFrames.isNil ) { numFrames = [0,inf].asSpec }; // endless
@@ -238,14 +365,125 @@ SoundFileSpec : BufferSpec {
 	var <>sampleRates = \any; // 'any', value or array
 	var <>diskIn = false;
 	
+	*testObject { |obj|
+		^obj.class == SoundFile;
+	}
 	
+	*newFromObject { |obj|
+		^this.new;
+	}
 	
+}
+
+MultiSpec : Spec {
+	
+	// an ordered and named collection of specs, with the option to re-map to another spec
+	
+	var <names, <specs, <>defaultSpecIndex = 0;
+	var <>toSpec;
+	
+	*new { |...specNamePairs|
+		specNamePairs = specNamePairs.clump(2).flop;
+		^super.newCopyArgs( specNamePairs[0], specNamePairs[1] ).init;
+	}
+	
+	init {
+		names = names.asCollection.collect(_.asSymbol);
+		specs = specs.asCollection;
+		specs = names.collect({ |item, i| specs[i].asSpec });
+	}
+	
+	findSpecForName { |name| // name or index
+		name = name ? defaultSpecIndex;
+		if( name.isNumber.not ) { name = names.indexOf( name.asSymbol ) ? defaultSpecIndex };
+		^specs[ name ];
+	}
+	
+	default { |name| // each spec has it's own default
+		^this.findSpecForName(name).default;
+	}
+	
+	defaultName { ^names[ defaultSpecIndex ] }
+	defaultName_ { |name| defaultSpecIndex = names.indexOf( name.asSymbol ) ? defaultSpecIndex }
+	
+	defaultSpec { ^specs[ defaultSpecIndex ] }
+	
+	constrain { |value, name|
+		^this.findSpecForName(name).constrain( value );
+	}
+	
+	map { |value, name|
+		if( toSpec.notNil ) { value = toSpec.asSpec.unmap( value ) };
+		^this.findSpecForName(name).map( value );
+	}
+	
+	unmap { |value, name|
+		if( toSpec.notNil ) { value = toSpec.asSpec.map( value ) };
+		^this.findSpecForName(name).unmap( value );
+	}
+	
+	mapToDefault { |value, from|
+		if( from.isNil ) { value = this.unmap( value, from ); };
+		^this.map( value, defaultSpecIndex );
+	}
+	
+	unmapFromDefault { |value, to|
+		value = this.unmap( value, defaultSpecIndex );
+		if( to.isNil ) { 
+			^this.map( value, to ); 
+		} {
+			^value
+		};	
+	}
+	
+	mapFromTo { |value, from, to|
+		^this.map( this.unmap( value, from ), to );
+	}
+	
+	unmapFromTo { |value, from, to|
+		^this.mapFromTo( value, to, from );
+	}
+}
+
++ Spec {
+	*testObject { ^false }
+	
+	*forObject { |obj|
+		var specClass;
+		specClass = [ ControlSpec, RangeSpec, BoolSpec, PointSpec, PolarSpec ]
+			.detect({ |item| item.testObject( obj ) });
+		if( specClass.notNil ) {
+			^specClass.newFromObject( obj );
+		} {
+			^nil;
+		};
+	}
+	
+	*newFromObject { ^this.new }
 }
 
 
 + ControlSpec { 
 	asRangeSpec { ^RangeSpec.newFrom( this ) }
 	asControlSpec { ^this }
+	
+	*testObject { |obj| ^obj.isNumber }
+	
+	*newFromObject { |obj| // float or int
+		var range;
+		
+		if( obj.isNegative ) {
+			range = obj.abs.round(1).asInt.nextPowerOfTwo * [-1,1];
+		} {
+			range = [ 0, obj.round(1).asInt.nextPowerOfTwo ];
+		};
+		
+		if( obj.isFloat ) {
+			^this.new( range[0], range[1], \lin, 0, obj );
+		} {
+			^this.new( range[0], range[1], \lin, 1, obj );
+		};	
+	}
 }
 
 + Nil {
