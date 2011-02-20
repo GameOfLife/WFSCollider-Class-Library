@@ -1,43 +1,28 @@
-WFSUnitDef2 : ObjectWithArgs {
+WFSUnitDef : GenericDef {
 	
 	classvar <>all;
 	
 	var <>func, <>category;
 	var <>synthDef;
-	var <>specs;
 	
 	*initClass {
 		this.all = IdentityDictionary();
 	}
 	
-	*new { |name, func, args, category = \default|
-		^super.new.init( func, args, category, name ).addToAll( name.asSymbol );
-	}
-	
-	*fromName { |name|
-		^all[ name.asSymbol ];
+	*new { |name, func, args, category|
+		^super.new( name, args ).init( func, name ).category_( category ? \default );
 	}
 	
 	*prefix { ^"wfsu_" }
 		
-	init { |inFunc, inArgs, inCategory, name|
+	init { |inFunc, name|
 		var argNames, values;
 		
 		func = inFunc;
-		category = inCategory;
 		
 		synthDef = SynthDef( this.class.prefix ++ name.asString, func );
 		
-		specs = IdentityDictionary();
-		
-		argNames = func.argNames ? #[]; // first arg is input
-		values = func.def.prototypeFrame ? #[];
-		inArgs = inArgs ? args ? #[]; // keep old args at re-init
-		
-		args = argNames.collect({ |key, i|
-			[ key, inArgs.pairsAt( key ) ?? { values[i] } ]
-		}).flatten(1);
-		
+		argSpecs = ArgSpec.fromFunc( func, argSpecs ); // leave out the first arg 
 	}
 	
 	addToAll { |name|
@@ -57,18 +42,11 @@ WFSUnitDef2 : ObjectWithArgs {
 	load { |server| this.loadSynthDef( server ) }
 	send { |server| this.sendSynthDef( server ) }
 	
-	name { ^all.findKeyForValue( this ); }
-	
-	name_ { |name|
-		this.class.all[ this.name ] = nil;
-		this.class.all[ name.asSymbol ] = this;
-	}
-	
 	*allNames { ^this.class.all.keys.as( Array ).sort }
 	
 }
 
-WFSUnit2 : ObjectWithArgs {
+WFSUnit : ObjectWithArgs {
 	
 	var <def;
 	var <>synths;
@@ -77,15 +55,12 @@ WFSUnit2 : ObjectWithArgs {
 		^super.new.init( defName, args ? [] );
 	}
 	
-	*defClass { ^WFSUnitDef2 }
+	*defClass { ^WFSUnitDef }
 	
 	init { |inName, inArgs|
 		def = this.class.defClass.fromName( inName.asSymbol );
 		if( def.notNil ) {	
-			args = def.args.deepCopy;
-			inArgs.keysValuesDo({ |key, value|
-				args.pairsPut( key, value );
-			});
+			args = def.asArgsArray( inArgs );
 		} { 
 			"defName '%' not found".format(inName).warn; 
 		};
@@ -97,8 +72,8 @@ WFSUnit2 : ObjectWithArgs {
 		synths.do(_.set(key, value));
 	}
 	
-	get { |key, value|
-		this.getArg( key, value );
+	get { |key|
+		^this.getArg( key );
 	}
 	
 	doesNotUnderstand { |selector ...args| 
@@ -118,7 +93,8 @@ WFSUnit2 : ObjectWithArgs {
 		var synth;
 		synth = Synth( def.synthDefName, args, server )
 				.startAction_({ |synth|
-					synths = synths ++ [ synth ]; // only add if started (in case this is a bundle)
+					synths = synths ++ [ synth ]; 
+						// only add if started (in case this is a bundle)
 					this.changed( \go, synth ); 
 				})
 				.freeAction_({ |synth| 
@@ -130,7 +106,7 @@ WFSUnit2 : ObjectWithArgs {
 		}
 	
 	free { synths.do(_.free) } 
-	stop { synths.do(_.free) }
+	stop { this.free }
 	
 	resetSynths { synths = []; } // after unexpected server quit
 	resetArgs { this.values = this.def.values.deepCopy; synths.do(_.set( *args )) }
