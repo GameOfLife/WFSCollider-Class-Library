@@ -53,13 +53,13 @@ WFS {
 			if(dict[\hostname].notNil){
 				"starting server mode".postln;
 				WFSConfiguration.default = wfsConf.partial(dict[\serverNumber],dict[\numberOfServers]);
-				WFS.startupServer( dict[\hostname], dict[\startPort], dict[\serversPerSystem] );
+				WFS.startupServer( dict[\hostname], dict[\startPort] ? 58000, dict[\serversPerSystem] ? 8 );
 			};
 			
 			if(dict[\ips].notNil){
 				"starting client mode".postln;
 				WFSConfiguration.default = wfsConf;
-				WFS.startupClient( dict[\ips], dict[\startPorts], dict[\serversPerSystem], dict[\hostnames] );
+				WFS.startupClient( dict[\ips], dict[\startPorts] ?? { 58000 ! 2 }, dict[\serversPerSystem] ? 8, dict[\hostnames] );
 			};
 			
 		}{
