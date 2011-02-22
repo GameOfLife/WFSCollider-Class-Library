@@ -2,7 +2,10 @@ SyncCenterGui {
 	classvar <window, <controllers;
 	
 	*new{
-		var font = Font( Font.defaultSansFace, 11 ), masterText, masterUV;		
+		var font = Font( Font.defaultSansFace, 11 ), masterText, masterUV, readyUV;		
+		
+		controllers = List.new;
+		
 		if( window.notNil ){
 			if( window.isClosed.not) {
 				controllers.do(_.remove);
@@ -23,11 +26,20 @@ SyncCenterGui {
 				SyncCenter.remoteSync			
 			});
 			
+		StaticText(window,100@20).string_("SyncStatus:");
+		readyUV = UserView(window,20@20).background_(Color.red);
+		controllers.add(Updater(SyncCenter.ready, { |ready|
+			{
+				readyUV.background_( if( ready.value ) {Color.green} {Color.red} )
+			}.defer
+		}));
+		
+		
 		window.view.decorator.nextLine;
 		
 		masterText = StaticText(window,100@20).string_("Master:");
 		masterUV = UserView(window,20@20).background_(Color.red);
-		controllers = List.new;
+		
 		controllers.add(Updater(SyncCenter.masterCount, { |mCount|
 			{
 				masterText.string_("Master: "++mCount.value);
@@ -42,9 +54,10 @@ SyncCenterGui {
 			controllers.add(Updater(SyncCenter.remoteCounts[i], { |count|
 				{
 					text.string_(server.name++": "+count.value);
-					uv.background_(Color.green)
+					uv.background_( if( count.value != -1 ) {Color.green} {Color.red} );
 				}.defer
 			}));
+			
 			window.view.decorator.nextLine;
 		};
 		

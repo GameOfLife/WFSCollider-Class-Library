@@ -26,8 +26,8 @@ SyncCenter {
 	classvar <>oldRemoteCounts, <>oldMasterCount, <>oldMasterCountTime;
 	classvar <>responder;
 	classvar <>global;
-	classvar <>ready = false;
-	
+	classvar <>ready;
+	classvar <>serverControllers;
 	classvar <>inBus = 0, <>outBus = 14;
 	
 	var <>localCount, <>localTime;
@@ -37,6 +37,7 @@ SyncCenter {
 	}
 	
 	*initClass {
+		
 		if( this.testSampleSched ) {
 			mode = 'sample'; 
 		} { 
@@ -46,9 +47,14 @@ SyncCenter {
 		remoteCounts = Order();	
 		global = this.new;
 		masterCount = Ref(-1);
+		ready = Ref(false);
+		serverControllers !? { serverControllers.do(_.remove) };
+		serverControllers = List.new;
+		
 	}
 	
 	*add { |server|
+		var index;
 		if( server.isKindOf( Server ).not ) { 
 				"%.add: added item should be a Server".format( this ).warn; 
 		} {
@@ -57,6 +63,15 @@ SyncCenter {
 			} { 
 				servers = servers.add( server );
 				remoteCounts.put(servers.size-1,Ref(-1));
+				index = remoteCounts.size - 1;
+				serverControllers.add(
+					Updater(server, { |name,msg|
+						if(msg == \serverRunning) {
+							remoteCounts[index].value_(-1).changed;
+						}
+					})
+				)
+							
 			}
 		};
 	}
@@ -113,7 +128,7 @@ SyncCenter {
 		
 	*remoteSync { |waitTime = 0.5|
 		var counter=0;
-		ready = false;
+		ready.value_(false).changed;
 		if( mode === 'sample' ) { 
 			oldRemoteCounts = remoteCounts;
 			oldMasterCount = masterCount;
@@ -123,8 +138,8 @@ SyncCenter {
 				responder.remove; "removing responder".postln 
 			};
 			
-			masterCount.value_(-1);
-			remoteCounts.do{ |c| c.value_(-1) };
+			masterCount.value_(-1).changed;
+			remoteCounts.do{ |c| c.value_(-1).changed };
 				
 			responder = OSCresponderNode( nil, '/tr', { |time, resp, msg|
 				("Received: "++[time, resp, msg] ).postln;
@@ -137,8 +152,11 @@ SyncCenter {
 						("Setting remoteCounts for server "++(msg[2] - 100)++" : "++ remoteCounts[ msg[2] - 100 ].value).postln;	
 					 }; 
 						
-				if( remoteCounts.collect{ |v| v.value != -1 }.reduce('&&') && (masterCount.value != -1) ) { 
-					resp.remove; responder = nil; "received all counts".postln; ready = true;
+				if( 
+					remoteCounts.collect{ |v,i| if( servers[i].serverRunning ) { v.value != -1 } { true }  }.reduce('&&') 
+					&& (masterCount.value != -1) 
+				) { 
+					resp.remove; responder = nil; "received all counts".postln; ready.value_(true).changed;
 				};
 			}).add;
 			"adding responder".postln;				
@@ -154,7 +172,7 @@ SyncCenter {
 					0.1.wait;
 					counter = counter + 0.1;
 				};
-				if(ready){ "Sync successful!".postln}{"No Sync".postln};
+				if(ready.value){ "Sync successful!".postln}{"No Sync".postln};
 				responder.remove;
 				responder = nil;
 				recSynths.do({ |synth| if(synth.isPlaying){synth.free} });
@@ -176,18 +194,6 @@ SyncCenter {
 	*getSchedulingSampleCountS{ |delta = 1, server|
 		var serverIndex = servers.indexOf(server).postln;
 		^this.getSchedulingSampleCount(delta,serverIndex);
-	}
-	
-	*listSendPosBundle{ |delta = 1, msgs, server|
-		server.listSendPosBundle(this.getSchedulingSampleCountS(delta,server),msgs) 
-	}
-	
-	*sendPosBundle{ |delta = 1, server ... msgs|
-		server.sendPosBundle(this.getSchedulingSampleCountS(delta,server),*msgs) 
-	}
-	
-	*sendPosOSCBundle{ |delta = 1, bundle,server|
-		bundle.sendPos(server,this.getSchedulingSampleCountS(delta,server)) 
 	}
 	
 	*sendPosOSCBundleAll{ |delta = 1, bundle|
