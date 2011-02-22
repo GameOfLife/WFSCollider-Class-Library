@@ -1,7 +1,3 @@
-
-
-
-
 (
 WFS.startup;
 WFS.debugMode = true;
@@ -41,13 +37,15 @@ SyncCenter.master_(~master);
 		"jack_disconnect  system:capture_"++(i+1)++" scsynth-01:in"++(i+1)++" && "++
 		"jack_disconnect  system:capture_"++(i+1)++" scsynth-02:in"++(i+1)++" && "
 	}.reduce('++') ++ "jack_connect scsynth:out1 scsynth-01:in1 && jack_connect scsynth:out1 scsynth-02:in1").runInTerminal;
-	
-	SyncCenter.sendDefs;
-	
+		
 
 }.fork;
 
 )		
-
+Server.killAll
 issues:
+
+SyncCenter.sendDefs
+
+SyncCenter.writeDefs
 

@@ -69,3 +69,51 @@ SyncCenterGui {
 		controllers.do(_.remove);
 	}
 }
+
+SyncCenterStatusWidget{
+	var <controller, <view;
+	
+	*new{ |parent, size = 20|
+		^super.new.init(parent,size)
+	}
+	
+	init{ |parent,size| 
+		view = UserView(parent,size@size).background_(Color.red);
+		controller = Updater(SyncCenter.ready, { |ready|
+			{
+				view.background_( if( ready.value ) {Color.green(0.7) } {Color.red(0.7) } )
+			}.defer
+		})
+	}
+	
+	remove{
+		controller.remove
+	}
+}
+
+SyncCenterServerWidget{
+	var <controller, <view;
+	
+	*new{ |parent, bounds, server|
+		if(SyncCenter.servers.includes(server) ) {
+			^super.new.init(parent,bounds,server)
+		}
+	}
+	
+	init{ |parent,bounds,server| 
+		view = RoundNumberBox(parent,bounds).background_(Color.red);
+		controller = Updater(SyncCenter.remoteCounts[SyncCenter.servers.indexOf(server)], { |count|
+			{
+				view.value_(count.value);
+				view.background_( if( count.value != -1 ) { Color.green(0.7) } { Color.red(0.7) } );
+			}.defer
+		})
+	}
+	
+	remove{
+		controller.remove
+	}
+}
+
+	
+		

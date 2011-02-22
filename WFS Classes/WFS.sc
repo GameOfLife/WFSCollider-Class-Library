@@ -137,7 +137,9 @@ WFS {
 				.do({ |sv| sv.sendMsg( "/n_set", 1, label, val ); });
 		};
 		// end life eq
-		server.makeWindow;	
+		server.makeWindow;
+		SyncCenter.loadMasterDef;
+		SyncCenter.writeDefs;
 		
 		server.m.waitForBoot({ 
 			"\n\tWelcome to the WFS System".postln; 
@@ -168,6 +170,7 @@ WFS {
 			allTypes = WFSSynthDef.allTypes( server.wfsConfigurations[0] );
 			allTypes.do({ |def| def.def.writeDefFile });
 			server.writeServerSyncSynthDefs;
+			SyncCenter.writeDefs;
 			server.multiServers[0].servers.do({ |server|
 				server.loadDirectory( SynthDef.synthDefDir );
 				});
