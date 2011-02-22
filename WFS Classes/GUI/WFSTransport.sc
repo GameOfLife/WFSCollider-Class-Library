@@ -23,6 +23,7 @@ WFSTransport {
 	classvar <>nowPlaying;
 	classvar <>autoReturnToZero = false;
 	classvar <>autoSwitchToNext = false;
+	classvar <>advancePosRoutine;
 	
 	classvar <>endAction; // NEW ADDITION
 	
@@ -98,7 +99,38 @@ WFSTransport {
 				 } );
 
 		window.playAction = { |tw|
-				WFSScoreEditor.current.play2(t2.pos);		 
+			WFSTransport.nowPlaying = WFSScoreEditor.current;
+			
+			WFSScoreEditor.current.score.play2(tw.pos);
+			advancePosRoutine = Routine({
+				var delta = 0.2;
+				loadViews[ \text ].string_( "loading....." )
+                    .stringColor_( Color.red(0.75) );
+                loadViews[ \wait ].start;
+				WFSEvent.wait.wait;
+				loadViews[ \text ].string_( "playing" )
+                    .stringColor_( Color.green(0.5) );
+                loadViews[ \wait ].stop; 
+                inf.do{
+					delta.wait;
+					tw.pos = tw.pos + delta;
+					tw.update;
+					if( WFSTransport.nowPlaying.notNil ){
+						if( window.pos > WFSTransport.nowPlaying.score.duration.ceil ) {
+							window.stop;
+                            if( autoSwitchToNext ) {
+                               WFSScoreEditor.makeNextCurrent;
+                             };
+						} { 
+                            if( WFS.graphicsMode === \fast ) {
+                            	WFSTransport.nowPlaying.update;
+                            };
+                     	};
+					}
+                         
+				}
+			}).play(AppClock);
+					 
 		};
 		
 		RoundButton( window.window, Rect( window.window.bounds.width - 100, 62, 95, 16 ) )
@@ -153,11 +185,8 @@ WFSTransport {
 			OSCresponder.remove( resp );
 			tw.playRoutine.stop;
 			WFSScore.stop;
-			WFSServers.default.stopPulses;
-			WFSServers.default.stopCounter;
-			
+			advancePosRoutine.stop;
 			WFSClickTrack.stop;
-			WFSExternalSyncCenter.stop;
 			WFSTransport.videoAddr.sendMsg( "/video", "stop" );
 			//{ tw.name = "WFSTransport" }.defer;
 			{ loadViews[ \text ].string_( "" ); loadViews[ \wait ].stop; }.defer;

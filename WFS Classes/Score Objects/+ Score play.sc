@@ -26,9 +26,7 @@
 				event.wfsSynth.playNow( wfsServers, event.startTime );
 				currentTime = currentTime + delta;
 				});
-			}, WFSSynth.clock).start;
+		}, WFSSynth.clock).start;
 		
-		}
 	}
-	
 }

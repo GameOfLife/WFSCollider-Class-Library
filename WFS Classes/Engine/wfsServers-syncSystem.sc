@@ -37,7 +37,6 @@
 			SystemClock.clear;
 			WFSSynth.freeAllSynths;
 			WFSSynth.freeAllBuffers; 
-			WFSSynth.resetUsedNodeIDs;
 			WFSSynth.resetLoadedSynths;
 			WFSServers.default.resetActivity;
 			WFSServers.default.resetDictActivity;
@@ -98,125 +97,108 @@
 
 	
 	loadBuffers { |servers|
-			if( buffersLoaded.not )
-			  {	
-			  	if(wfsPath.class == WFSPath ) 
-						{ wfsPath.loadBuffers2( servers ); };
-					
-				if( [ 'linear', 'cubic', 'switch','static','plane']
-						.includes( wfsDefName.wfsIntType ) )
-					{ delayBuffer = WFSPan2D.makeBuffer( servers ); };	
-				//delayBuffer = WFSPan2D.makeBuffer( servers );
-						
-				servers.asCollection.do({ |oneServer|
-										
-					case { wfsDefName.wfsAudioType === 'buf' }
-						{ sfBuffer = sfBuffer.asCollection.add(
-							if( WFS.scVersion === \new,
-							{	Buffer.readChannel( 
-									oneServer, filePath, startFrame ? 0,
-									numFrames: this.samplesPlayed, //only load needed
-									channels: [0] // only the first channel
-									)  },
-							{	Buffer.read( 
-									oneServer, filePath, startFrame ? 0,
-									numFrames: (-1)
-									)   })
-							);
-							if( WFSPan2D.silent )
-								{ 
-							if( sfBuffer.size > 1 )
-									{ 
-							WFS.debug( "'%' read to buffers %\n",
-									filePath.basename, 
-										sfBuffer.collect({ |buf|
-											[oneServer.name, buf.bufnum]})
-									//sfBuffer.collect(_.bufnum)
-									 )
-									};
-								 };
-						}
-						{ wfsDefName.wfsAudioType === 'disk'}
-						{ sfBuffer = sfBuffer.asCollection.add(						Buffer.cueSoundFile( oneServer, filePath, startFrame ? 0,
-								numChannels:1,
-								bufferSize: 32768 * 2
-								 ) );
-							if( WFSPan2D.silent )
-								{ 
-								if( sfBuffer.size > 1 )
-									{  WFS.debug( "'%' cued in buffers %\n",
-									filePath.basename, 
-										sfBuffer.collect({ |buf|
-											[oneServer.name, buf.bufnum]})) 
-									}; };
-						 	};
-					});
-				buffersLoaded = true;
+		if( buffersLoaded.not ) {	
+		  	if(wfsPath.class == WFSPath ) {
+		  		wfsPath.loadBuffers2( servers );
+		  	};
 				
-			  } { "WFSSynth-loadBuffers: Buffers are probably already loaded".postln; };
+			if( [ 'linear', 'cubic', 'switch','static','plane']
+					.includes( wfsDefName.wfsIntType ) ) {
+				delayBuffer = WFSPan2D.makeBuffer( servers ); 
+			};	
+					
+			servers.asCollection.do({ |oneServer|
+									
+				case { wfsDefName.wfsAudioType === 'buf' }
+					{ sfBuffer = sfBuffer.asCollection.add(
+						if( WFS.scVersion === \new,
+						{	Buffer.readChannel( 
+								oneServer, filePath, startFrame ? 0,
+								numFrames: this.samplesPlayed, //only load needed
+								channels: [0] // only the first channel
+								)  },
+						{	Buffer.read( 
+								oneServer, filePath, startFrame ? 0,
+								numFrames: (-1)
+								)   })
+						);
+						if( WFSPan2D.silent )
+							{ 
+						if( sfBuffer.size > 1 )
+								{ 
+						WFS.debug( "'%' read to buffers %\n",
+								filePath.basename, 
+									sfBuffer.collect({ |buf|
+										[oneServer.name, buf.bufnum]})
+								//sfBuffer.collect(_.bufnum)
+								 )
+								};
+							 };
+					}
+					{ wfsDefName.wfsAudioType === 'disk'}
+					{ sfBuffer = sfBuffer.asCollection.add(
+							Buffer.cueSoundFile( oneServer, filePath, startFrame ? 0,
+							numChannels:1,
+							bufferSize: 32768 * 2
+					) );
+					if( WFSPan2D.silent ) { 
+						if( sfBuffer.size > 1 )
+							{  WFS.debug( "'%' cued in buffers %\n",
+							filePath.basename, 
+								sfBuffer.collect({ |buf|
+									[oneServer.name, buf.bufnum]})) 
+							}; };
+					 };
+				});
+			buffersLoaded = true;
+			
+		  } { "WFSSynth-loadBuffers: Buffers are probably already loaded".postln; };
 		
 	}
 				
-	load { |servers, nodeID|
-			var defName, time, delta;
+	load { |servers|
+		var defName, time, delta;
 			
-			//[servers, nodeID].postln;
-			
-			if( loaded.not )
-			  {
-			  	this.loadBuffers( servers );
-			  	delta = WFSEvent.wait * 0.9;
-			  	// wait with loading synth for 1/2 wait time
-			  	// so all buffers have been allocated already
-			  		
-		  		if( useFocused.not ) {
-		  			defName = ("WFS_" ++ this.intType ++ "Out_" ++ this.audioType).asSymbol;
-		  		} {
-		  			defName = wfsDefName
-		  		};
-		  	 	
-		  	 	synth = WFSSynth.generateSynth( wfsDefName, wfsPath, nodeID,
-						servers, delayBuffer, sfBuffer, 
-						pbRate, level, loop, dur, input, args, fadeTimes,
-						wfsPathStartIndex, delta );
-						
-				synth.register(true);
-				
-				syn.freeAction_({ 
-					this.freeBuffers; isRunning = false; loadedSynths.remove( this );
-					WFSServers.default.removeDictActivity( this.typeActivity, servers );
-					WFS.debug("loaded synths: % (removed one)", loadedSynths.size);
-				});
-				
-						
-				if(WFS.debugMode){
-					("STARTING SYNTH "++thisThread.seconds++"nodeID: "++nodeID++" wfsDefName:"++wfsDefName).postln;											time = thisThread.seconds;
+	  	this.loadBuffers( servers );
+	  	delta = WFSEvent.wait;
+	  	// wait with loading synth 
+	  	// so all buffers have been allocated already
+	  		
+  		if( useFocused.not ) {
+  			defName = ("WFS_" ++ this.intType ++ "Out_" ++ this.audioType).asSymbol;
+  		} {
+  			defName = wfsDefName
+  		};
+  	 	
+  	 	synth = WFSSynth.generateSynth( wfsDefName, wfsPath,
+				servers, delayBuffer, sfBuffer, 
+				pbRate, level, loop, dur, input, args, fadeTimes,
+				wfsPathStartIndex, delta );
 		
-					synth.do{ |syn|
-						var didUnpause = false;
-						syn.register(true);
-						syn.runAction_({ 
-							(" "++ (thisThread.seconds - time) ++" synth "++syn.nodeID++" unpaused").postln;
-							didUnpause = true;
-						});
-						syn.freeAction_({ 
-							("synth "++syn.nodeID++" freed").postln; 
-							if(didUnpause.not){
-								("SYNTH FAILED TO UNPAUSE nodeid: "++syn.nodeID++", wfsDefName:"++wfsDefName).postln;
-							}
-						});
-						
-					};
-				};
+		synth.do{ |syn|
+			syn.register(true);
+			
+			syn.freeAction_({ 
+				this.freeBuffers;
+				isRunning = false;
+				loadedSynths.remove( this );
+				WFSServers.default.removeDictActivity( this.typeActivity, servers );
+				WFS.debug("loaded synths: % (removed one)", loadedSynths.size);
+			})
+		};
+		
+				
+		if(WFS.debugMode){
+			("STARTING SYNTH "++thisThread.seconds++" wfsDefName:"++wfsDefName).postln;												time = thisThread.seconds;
 
+		};
 									
-				loaded = true;
-				loadedSynths = loadedSynths.asCollection.add( this );
-				WFS.debug("loaded synths: % ( added one )",loadedSynths.size);
-				
-				
-			  } { "WFSSynth-load: WFSSynth is probably already loaded".postln; };
-			}
+		loaded = true;
+		loadedSynths = loadedSynths.asCollection.add( this );
+		WFS.debug("loaded synths: % ( added one )",loadedSynths.size);
+			
+			
+	}
 			
 	prepareForPlayback { 
 			if( wfsPath.class == WFSPath )
@@ -249,7 +231,7 @@
 				
 		nodeID = servers.nextNodeID;
 			
-		this.loadFree( servers, nodeID );
+		this.loadFree( servers );
 		
 		clock.sched( WFSEvent.wait - 0.1, // sync latency = 0.1 
 			{ loadedSynths.asCollection.do({ |synth|
@@ -281,14 +263,12 @@
 		this.prepareForPlayback;
 					 
 		WFS.debug( "% - s:%, %", WFS.secsToTimeCode( startTime ), serverIndex, filePath );
-		
-		nodeID = this.nextNodeID(startTime, true);
-			
-		this.loadFree( servers, nodeID );
+					
+		this.load( servers );
 	}		
 			
 		
-	*generateSynth { |wfsDefName, wfsPath, nodeID, servers, delayBuffer, sfBuffer, pbRate = 1, level = 1, loop = 1,
+	*generateSynth { |wfsDefName, wfsPath, servers, delayBuffer, sfBuffer, pbRate = 1, level = 1, loop = 1,
 		dur = 5, input = 0, args, fadeTimes, wfsPathStartIndex = 0, delta = 1|
 		
 		var sfBufNum = 0, wfsDefIntType;
@@ -369,10 +349,8 @@
 					\i_fadeInTime, fadeTimes.wrapAt(0),
 					\i_fadeOutTime, fadeTimes.wrapAt(1)  ];
 			};
-			
-		//allArgs.dopostln;
-		
-		^Synth.newWFS( wfsDefName, allArgs ++ args, servers, nodeID, delta: delta ); 
+					
+		^Synth.newWFS( wfsDefName, allArgs ++ args, servers, delta: delta ); 
 	}
 	
 	*freeAllBuffers { loadedSynths.do({ |item| item.freeBuffers }) }
@@ -382,8 +360,8 @@
 	
 + Synth {
 	
-	*newWFS { arg defName, args, servers, nodeID, addAction=\addToHead, delta = 1;
-		var synths, addNum, inTargets;
+	*newWFS { arg defName, args, servers, addAction=\addToHead, delta = 1;
+		var synths, addNum, inTargets, nodeID;
 		
 		//wfsServers = wfsServers ? WFSServers.default;
 		servers = servers.asCollection;
@@ -394,8 +372,8 @@
 		
 		//"newSynth nodeID: %\n".postf( nodeID );
 
-		synths = servers.collect({ |server| 
-			this.basicNew(defName, server, nodeID); 
+		synths = servers.collect({ |server,i| 
+			this.basicNew(defName, server, nodeID[i]); 
 		});
 			
 		if (addNum < 2)
@@ -408,9 +386,11 @@
 			server.sendSyncedBundle(delta, 
 				[9, defName, nodeID[i], addNum, inTargets[i].nodeID] ++ 
 				args.atArgValue( i ) ++
-				WFSEQ.currentArgsDict.asArgsArray, 
+				WFSEQ.currentArgsDict.asArgsArray 
 			); // "s_new"
 		});
+		
+		^synths
 	}	
 }
 
