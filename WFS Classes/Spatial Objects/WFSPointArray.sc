@@ -255,6 +255,7 @@ WFSMixedArray[slot] : WFSArrayBase {
 		var wfsPlotSmooth;
 		var currentIndex;
 		var toRect, newRect, factor, height, mousePos, mouseMod, originalPos, originalPath, bounds;
+		var writePaths = false;
 		/*
 		window = SCWindow(this.class.asString, Rect(128, 64, 400, 400)).front;
 		window.view.background_(Color.black);
@@ -265,37 +266,50 @@ WFSMixedArray[slot] : WFSArrayBase {
 		window.onClose_({ if( routine.notNil ) { routine.stop } });
 		
 		wfsPaths = this.select( _.isWFSPath );
-		if( wfsPaths.size != 0 )
-		{		originalCurrentTimes = wfsPaths.collect( _.currentTime);
-				wfsPaths.do( _.resetTempPlotPath );
-				maxDuration = wfsPaths
-					.collect({ |item| item.length - item.currentTime; }).maxItem;
-				
-				WFSPlotSmooth.playButton = RoundButton(window, Rect(375,5,20,20) )
-					.states_( [
-						[ \play, Color.white,Color.white.alpha_(0.25)],
-						[ \stop, Color.white,Color.red.alpha_(0.25) ],						[ \return, Color.white,Color.green.alpha_(0.25)]
-						] )
-					.action_({ |button|
-						case { button.value == 1 }
-						{ routine = Routine({ ((maxDuration / 0.05) + 1).do({ |i|
-							
-								wfsPaths.do({ |item| item.currentTime = 
-									item.currentTime + 0.05; });
-								{ window.view.refresh }.defer;
-								0.05.wait; });
-								{ button.value = 2 }.defer;
-							}).play; }
-							
-						{ button.value == 2 }
-							{ routine.stop; }
-						{ button.value == 0 }
-						{  wfsPaths.do({ |item, i| 
-							item.currentTime = originalCurrentTimes[i]; });
-							window.view.refresh; }
-						})
-					.resize_( 3 ); 
-			};
+		if( wfsPaths.size != 0 ) {
+			originalCurrentTimes = wfsPaths.collect( _.currentTime);
+			wfsPaths.do( _.resetTempPlotPath );
+			maxDuration = wfsPaths
+				.collect({ |item| item.length - item.currentTime; }).maxItem;
+			
+			WFSPlotSmooth.playButton = RoundButton(window, Rect(345,5,20,20) )
+				.states_( [
+					[ \play, Color.white,Color.white.alpha_(0.25)],
+					[ \stop, Color.white,Color.red.alpha_(0.25) ],
+					[ \return, Color.white,Color.green.alpha_(0.25)]
+					] )
+				.action_({ |button|
+					case { button.value == 1 }
+					{ routine = Routine({ ((maxDuration / 0.05) + 1).do({ |i|
+						
+							wfsPaths.do({ |item| item.currentTime = 
+								item.currentTime + 0.05; });
+							{ window.view.refresh }.defer;
+							0.05.wait; });
+							{ button.value = 2 }.defer;
+						}).play; }
+						
+					{ button.value == 2 }
+						{ routine.stop; }
+					{ button.value == 0 }
+					{  wfsPaths.do({ |item, i| 
+						item.currentTime = originalCurrentTimes[i]; });
+						window.view.refresh; }
+					})
+				.resize_( 3 ); 
+		};
+		
+		RoundButton(window, Rect(375,5,20,20) )
+			.canFocus_(false)
+			.states_( [
+				[ \sign, Color.black,Color.grey(0.3) ],
+				[ \sign, Color.black,Color.grey(0.7) ],
+			] )
+			.action_({
+				writePaths = writePaths.not;
+				WFSPlotSmooth.view.refresh;
+			})
+			.resize_( 3 );
 		
 		fromRect = this.asRect;
 		
@@ -317,10 +331,31 @@ WFSMixedArray[slot] : WFSArrayBase {
 				
 			this.do( _.plotSmoothInput( bounds, fromRect: fromRect ) );
 			
+			Pen.font = Font( "Monaco", 9 );
+			Pen.color = Color.white.alpha_(0.8);
+			
+			if( writePaths ) {
+				this.do{ |obj,i|
+					var st;
+					if( obj.isWFSPoint ) {
+						x = obj.x;
+						y = obj.y;
+					} {
+						x = obj.center.x;
+						y = obj.center.y;
+					};
+					st = PathName(events[i].filePath).fileName.removeExtension;
+					if( st.notNil ) {
+						Pen.stringAtPoint(
+							st.asString,
+							WFSPoint(x,y).toScreenCoord(bounds,fromRect).asPoint + Point(5,0)
+						)
+					}
+				};
+			};
 			//post x,y positions when moving
 			if(currentIndex.notNil) {
-				Pen.font = Font( "Monaco", 9 );
-				Pen.color = Color.white.alpha_(0.8);
+				
 				if( this[currentIndex].isWFSPoint ) {
 					x = this[currentIndex].x;
 					y = this[currentIndex].y;
@@ -328,7 +363,7 @@ WFSMixedArray[slot] : WFSArrayBase {
 					x = this[currentIndex].center.x;
 					y = this[currentIndex].center.y;
 				};
-				Pen.stringAtPoint("x: "++x.round(0.1)++", y: "++y.round(0.1),mousePos + Point(7,0))
+				Pen.stringAtPoint("x: "++x.round(0.1)++", y: "++y.round(0.1), Point(20,20))
 			}
 		})
 		.mouseDownAction_({|v, x, y, mod|

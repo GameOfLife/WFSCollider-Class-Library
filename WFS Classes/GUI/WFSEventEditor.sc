@@ -35,8 +35,8 @@ WFSEventEditor {
 			};
 		}
 	
-	*new { arg event, leftTop, closeOldWindow = true, parent;
-		^super.newCopyArgs( event.asWFSEvent, parent ).newWindow( closeOldWindow, leftTop );
+	*new { arg event, leftTop, closeOldWindow = true, parent, toFront = false;
+		^super.newCopyArgs( event.asWFSEvent, parent ).newWindow( closeOldWindow, leftTop, toFront);
 		}
 		
 	storeUndoState{
@@ -80,7 +80,7 @@ WFSEventEditor {
 			};
 		}
 		
-	newWindow { |closeOldWindow = true, leftTop|
+	newWindow { |closeOldWindow = true, leftTop, toFront|
 		var windowBounds;
 		var timeBoxes = [], typeSwitches, composite;
 		var intTypeBounds = Rect(4, 102 + 30, 190, 54 );
@@ -100,6 +100,9 @@ WFSEventEditor {
 					window = this.class.current.window;
 					window.asView.removeAll; // don't close, just empty
 					this.class.current.event.removeDependant(this.class.current);
+					if( toFront ) {
+						window.front
+					}
 		} {
 					window = Window( "WFSEventEditor" ++ ( ( parent !? 
 						{ " (" ++ parent.id ++ ")" } ) ? ""), windowBounds, false ).front; 

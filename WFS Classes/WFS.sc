@@ -179,7 +179,7 @@ WFS {
 				});
 
 			("System ready; playing lifesign for "++hostName).postln;
-			(hostName ++ " server, ready").speak
+			(hostName ++ ", server ready").speak
 
 		}).play( AppClock );
 		^server // returns an instance of WFSServers for assignment

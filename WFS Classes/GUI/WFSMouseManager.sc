@@ -134,14 +134,14 @@ WFSMouseEventsManager {
 	}
 	
 	mouseXDelta{ |mousePos,scaledUserView|
-		^mousePos.x.clip(scaledUserView.drawBounds.left,scaledUserView.drawBounds.left+scaledUserView.drawBounds.width) - mouseDownPos.x
+		^mousePos.x - mouseDownPos.x
 	}
 	
 	mouseYDelta{ |mousePos,scaledUserView|
 		^mousePos.y - mouseDownPos.y
 	}
 	
-	mouseMoveEvent{ |mousePos,unscaledMousePos,scaledUserView,snap|
+	mouseMoveEvent{ |mousePos,unscaledMousePos,scaledUserView,snap,shiftDown|
 		var deltaX, deltaY, scoreEvents, selEvents, newEvents, newEventViews;
 		
 		//check if movement exceeds threshold
@@ -176,7 +176,7 @@ WFSMouseEventsManager {
 				deltaX = this.mouseXDelta(mousePos,scaledUserView);
 				deltaY = this.mouseYDelta(mousePos,scaledUserView).round( scaledUserView.gridSpacingV );
 				if(state == \moving) {
-					deltaX = 	deltaX.max(xLimit.neg);
+					deltaX = deltaX.max(xLimit.neg);
 					deltaY = deltaY.max(yLimit.neg);	
 				};
 				
@@ -185,10 +185,10 @@ WFSMouseEventsManager {
 					
 					this.selectedEvents.do{ |eventView|
 						("resizing "++eventView);
-						eventView.mouseMoveEvent(deltaX,deltaY,state,snap)
+						eventView.mouseMoveEvent(deltaX,deltaY,state,snap,shiftDown)
 					}
 				} {
-					event.mouseMoveEvent(deltaX,deltaY,state,snap)
+					event.mouseMoveEvent(deltaX,deltaY,state,snap,shiftDown)
 				}				
 
 			} {

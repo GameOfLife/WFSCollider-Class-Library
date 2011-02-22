@@ -71,7 +71,8 @@ WFSMenubar {
 		SCMenuItem.new(addEvent, "Audiofile").action_({
 			var scoreEditor = WFSScoreEditor.current;
 			if(scoreEditor.notNil){	 WFSScoreEditor.current.addAudioFiles}
-		});
+		}).setShortCut("A",true);
+		
 		SCMenuItem.new(addEvent, "Test Event").action_({
 			var scoreEditor = WFSScoreEditor.current;
 			if(scoreEditor.notNil){	 WFSScoreEditor.current.addTestEvent }
@@ -79,7 +80,7 @@ WFSMenubar {
 		SCMenuItem.new(events, "duplicate").action_({
 			var scoreEditor = WFSScoreEditor.current;
 			if(scoreEditor.notNil){	 WFSScoreEditor.current.duplicateSelected }
-		}).setShortCut("+",true);	
+		}).setShortCut("D",true);	
 		
 		SCMenuSeparator.new(events);
 		
@@ -132,12 +133,12 @@ WFSMenubar {
 		SCMenuItem.new(events, "Mute selected").action_({
 			var scoreEditor = WFSScoreEditor.current;
 			if(scoreEditor.notNil){	 WFSScoreEditor.current.muteSelected }
-		});
+		}).setShortCut("m",true);
 		
 		SCMenuItem.new(events, "Unmute selected").action_({
 			var scoreEditor = WFSScoreEditor.current;
 			if(scoreEditor.notNil){	 WFSScoreEditor.current.unmuteSelected }
-		});
+		}).setShortCut("u",true);
 		
 		SCMenuItem.new(events, "Unmute all").action_({
 			var scoreEditor = WFSScoreEditor.current;
@@ -147,19 +148,24 @@ WFSMenubar {
 		SCMenuItem.new(events, "Solo selected").action_({
 			var scoreEditor = WFSScoreEditor.current;
 			if(scoreEditor.notNil){	 WFSScoreEditor.current.soloSelected }
-		});
+		}).setShortCut("p",true);
 		
 		SCMenuSeparator.new(events);
-		
+		//TRIM
 		SCMenuItem.new(events, "Trim start").action_({
 			var scoreEditor = WFSScoreEditor.current;
 			if(scoreEditor.notNil){	 WFSScoreEditor.current.trimEventsStartAtPos }
-		});
+		}).setShortCut("t",true);
 			
 		SCMenuItem.new(events, "Trim end").action_({
 			var scoreEditor = WFSScoreEditor.current;
 			if(scoreEditor.notNil){	 WFSScoreEditor.current.trimEventsEndAtPos }
-		});
+		}).setShortCut("y",true);
+		
+		SCMenuItem.new(events, "Split").action_({
+			var scoreEditor = WFSScoreEditor.current;
+			if(scoreEditor.notNil){	 WFSScoreEditor.current.splitEventsAtPos }
+		}).setShortCut("x",true);
 		
 		//tracks
 		SCMenuSeparator.new(events);
@@ -180,19 +186,39 @@ WFSMenubar {
 		SCMenuItem.new(events, "Folder from selected events").action_({
 			var scoreEditor = WFSScoreEditor.current;
 			if(scoreEditor.notNil){	 WFSScoreEditor.current.folderFromSelectedEvents }
-		});
+		}).setShortCut("f",true);
 		
 		SCMenuItem.new(events, "Unpack selected folders").action_({
 			var scoreEditor = WFSScoreEditor.current;
 			if(scoreEditor.notNil){	 WFSScoreEditor.current.unpackSelectedFolders }
-		});
+		}).setShortCut("j",true);
 		
 		SCMenuSeparator.new(events);
 		
 		SCMenuItem.new(events, "Batch change").action_({
 			WFSBatch.new
+		}).setShortCut("B",true);
+		
+		SCMenuSeparator.new(events);
+		// PLOT
+		SCMenuItem.new(events, "Plot at timeline").action_({
+			var scoreEditor = WFSScoreEditor.current;
+			if(scoreEditor.notNil){	 WFSScoreEditor.current.plotAtTimeline }
 		});
 		
+		SCMenuSeparator.new(events);
+		
+		// UNDO/ REDO
+		
+		SCMenuItem.new(events, "Undo").action_({
+			var scoreEditor = WFSScoreEditor.current;
+			if(scoreEditor.notNil){	 WFSScoreEditor.current.undo }
+		}).setShortCut("z",true);
+		
+		SCMenuItem.new(events, "Redo").action_({
+			var scoreEditor = WFSScoreEditor.current;
+			if(scoreEditor.notNil){	 WFSScoreEditor.current.redo }
+		}).setShortCut("Z",true);	
 		
 		
 		//paths			
@@ -244,7 +270,7 @@ WFSMenubar {
 
 		//view
 		viewMenu = SCMenuGroup.new(nil, "View", index + 3);
-		SCMenuItem.new(viewMenu, "All").action_( {WFSEQ.new; WFSTransport.new; WFSLevelBus.makeWindow;}).setShortCut("t",true);
+		SCMenuItem.new(viewMenu, "All").action_( {WFSEQ.new; WFSTransport.new; WFSLevelBus.makeWindow;}).setShortCut("T",true);
 		SCMenuSeparator.new(viewMenu);
 		SCMenuItem.new(viewMenu, "EQ").action_( {WFSEQ.new; });
 		SCMenuItem.new(viewMenu, "Transport").action_( {WFSTransport.new; });		SCMenuItem.new(viewMenu, "Level").action_( {WFSLevelBus.makeWindow; });

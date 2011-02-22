@@ -311,7 +311,7 @@ WFSEventView {
 		
 	}
 	
-	mouseMoveEvent{ |deltaTime, deltaTrack, overallState, snap|
+	mouseMoveEvent{ |deltaTime, deltaTrack, overallState, snap, moveVert|
 		
 		if(event.isFolder.not) {
 			switch(overallState)
@@ -326,7 +326,9 @@ WFSEventView {
 			}
 			{\moving}
 			{
-				event.startTime = (originalStartTime + deltaTime).round(snap);
+				if( moveVert.not ) {
+					event.startTime = (originalStartTime + deltaTime).round(snap)
+				};
 				event.track = originalTrack + deltaTrack;
 			}
 			{\fadeIn}
@@ -341,7 +343,9 @@ WFSEventView {
 			}
 		} {
 			if(overallState == \moving) {
-				event.startTime = (originalStartTime + deltaTime).round(snap);
+				if( moveVert.not ) {
+					event.startTime = (originalStartTime + deltaTime).round(snap)
+				};
 				event.track = originalTrack + deltaTrack;
 			}
 		}		
