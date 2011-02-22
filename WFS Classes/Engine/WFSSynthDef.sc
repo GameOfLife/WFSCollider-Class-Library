@@ -87,12 +87,12 @@ WFSSynthDef {
 			("WFS_" ++ intType ++ "_" ++ audioType ++ extraName), 
 			{ |bufD, totalTime, extraTime = 0.01, level = 1,
 				i_fadeInTime = 0, i_fadeOutTime = 0,
-				outOffset = 0, gate = 1, i_delayOffset = 0|
+				outOffset = 0, gate = 1|
 				
 				var out, env, pos, in, busLevel, scaledIn;
 				
-				env = EnvGen.kr( Env.new([0,0,1,1,0], 
-					[i_delayOffset, i_fadeInTime, 
+				env = EnvGen.kr( Env.new([0,1,1,0], 
+					[ i_fadeInTime, 
 						(totalTime - (i_fadeInTime + i_fadeOutTime)).max(0) + extraTime, 
 						i_fadeOutTime]), doneAction:2) *
 					 EnvGen.kr( Env.new([1,1,0], [0, 0.2], \lin, 0), gate, doneAction:2);
@@ -111,35 +111,35 @@ WFSSynthDef {
 				
 				out = (
 						static:	{ WFSPan2D.arBufN( scaledIn,  // no buffers for static / plane
-							bufD, pos, conf, i_delayOffset ) },
+							bufD, pos, conf ) },
 						staticOut:
 								{ WFSPan2D.arBufN( scaledIn,  // no buffers for static / plane
-							bufD, pos, conf, i_delayOffset, useFocused: false ) },
+							bufD, pos, conf, useFocused: false ) },
 						plane: 	{ WFSPan2D.arBufN( scaledIn, 
-							bufD, pos, conf, i_delayOffset ) },
+							bufD, pos, conf ) },
 						
 						/*	
-						linear: 	{ WFSPan2D.ar( scaledIn, pos, conf, i_delayOffset )  },
-						cubic:  	{ WFSPan2D.arC( scaledIn, pos, conf, i_delayOffset ) },
+						linear: 	{ WFSPan2D.ar( scaledIn, pos, conf )  },
+						cubic:  	{ WFSPan2D.arC( scaledIn, pos, conf ) },
 						*/
 						
 						linear: 	{ WFSPan2D.arBufL( scaledIn, 
-							bufD, pos, conf, i_delayOffset )  },
+							bufD, pos, conf )  },
 							
 						linearOut: 	{ WFSPan2D.arBufL( scaledIn, 
-							bufD, pos, conf, i_delayOffset, useFocused: false )  },
+							bufD, pos, conf, useFocused: false )  },
 							
 						cubic:  	{ WFSPan2D.arBufC( scaledIn,
-							bufD, pos, conf, i_delayOffset ) },
+							bufD, pos, conf ) },
 						
 						cubicOut:  	{ WFSPan2D.arBufC( scaledIn,
-							bufD, pos, conf, i_delayOffset, useFocused: false  ) },
+							bufD, pos, conf, useFocused: false  ) },
 	
 						switch:	{  WFSPan2D.arBufSwitch( scaledIn, 
-							bufD, pos, conf, i_delayOffset )  },
+							bufD, pos, conf )  },
 						
 							
-						index: { DelayN.ar( scaledIn * pos[1], 0.05, i_delayOffset ) } )
+						index: { DelayN.ar( scaledIn * pos[1], 0.05 ) } )
 					[intType].value;
 				
 				case { intType == \index }	

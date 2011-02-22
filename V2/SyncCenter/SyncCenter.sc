@@ -199,6 +199,10 @@ SyncCenter {
 	*sendPosOSCBundleAll{ |delta = 1, bundle|
 		servers.do{ |server| this.sendPosBundle(delta,bundle,server) }
 	}
+	
+	*makeWindow {
+		SyncCenterGui.new
+	}
 
 }
 	

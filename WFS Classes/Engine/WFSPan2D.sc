@@ -328,33 +328,33 @@ WFSPan2D {
 	}
 
 	
-*getDelayTimes { |distArray, delayOffset = 0|
-	^(distArray / speedOfSound) + (negativeDistance / speedOfSound) + delayOffset;
+*getDelayTimes { |distArray|
+	^(distArray / speedOfSound) + (negativeDistance / speedOfSound);
 	}
 
 
 	
 ///// basic versions
 
-*ar { arg sound = 0, location, speakerSpec, delayOffset = 0, dcomp = 0;
+*ar { arg sound = 0, location, speakerSpec, dcomp = 0;
 	var distArray, switch; 
 	distArray = this.getDistances( location, speakerSpec );
 	switch = this.getSwitch(location, speakerSpec, nonMoving: false);
 	^DelayL.ar(this.distanceFilter( sound, location ), 
 		(maxDist / speedOfSound) * 2,	
-		this.getDelayTimes( distArray * switch[0], delayOffset)
+		this.getDelayTimes( distArray * switch[0])
 			- (( location.dist(0) * dcomp ) / speedOfSound ),
 		this.getAmps( distArray, this.getCrossFades( location, speakerSpec, switch[0] ) ) 			* switch[1]
 		
 			);
 	}
 	
-*arN { arg sound = 0, location, speakerSpec, delayOffset = 0, dcomp = 0;
+*arN { arg sound = 0, location, speakerSpec, dcomp = 0;
 	var distArray, switch;
 	distArray = this.getDistances( location, speakerSpec );
 	switch = this.getSwitch(location, speakerSpec, nonMoving: true);
 	^DelayN.ar(this.distanceFilter( sound, location ), (maxDist / speedOfSound) * 2,	
-		this.getDelayTimes( distArray * switch[0], delayOffset)
+		this.getDelayTimes( distArray * switch[0])
 			- (( location.dist(0) * dcomp ) / speedOfSound ),
 		this.getAmps( distArray, 
 			this.getCrossFades( location, speakerSpec, switch[0] ) )// no switch[1] needed
@@ -362,12 +362,12 @@ WFSPan2D {
 		);
 	}
 	
-*arC { arg sound = 0, location, speakerSpec, delayOffset = 0, dcomp = 0;
+*arC { arg sound = 0, location, speakerSpec, dcomp = 0;
 	var distArray, switch;
 	distArray = this.getDistances( location, speakerSpec );
 	switch = this.getSwitch(location, speakerSpec, nonMoving: false);
 	^DelayC.ar(sound, (maxDist / speedOfSound) * 2,	
-		this.getDelayTimes( distArray * switch[0], delayOffset)
+		this.getDelayTimes( distArray * switch[0])
 			- (( location.dist(0) * dcomp ) / speedOfSound ),
 		this.getAmps( distArray, this.getCrossFades( location, speakerSpec, switch[0] ) ) 
 			* switch[1]
@@ -378,12 +378,12 @@ WFSPan2D {
 //// optimized versions using specified buffer as delay buffer
 
 *basicBuf {  arg delayClass, sound = 0, bufnum, location, 
-	speakerSpec, delayOffset = 0, nonMoving = false, dcomp = 0, useFocused = true;
+	speakerSpec, nonMoving = false, dcomp = 0, useFocused = true;
 	var distArray, switch;
 	distArray = this.getDistances( location, speakerSpec );
 	switch = this.getSwitch(location, speakerSpec, nonMoving: nonMoving);
 	
-	^delayClass.ar(bufnum, this.distanceFilter( sound, location ),		this.getDelayTimes( distArray * switch[0], delayOffset )
+	^delayClass.ar(bufnum, this.distanceFilter( sound, location ),		this.getDelayTimes( distArray * switch[0] )
 			- (( location.dist(0) * dcomp ) / speedOfSound ),
 		this.getAmps( 
 			distArray, 
@@ -398,48 +398,48 @@ WFSPan2D {
 		);
 	}
 	
-*arBufL {  arg sound = 0, bufnum, location, speakerSpec, delayOffset = 0, dcomp = 0, 
+*arBufL {  arg sound = 0, bufnum, location, speakerSpec, dcomp = 0, 
 		useFocused = true;
-	^this.basicBuf( BufDelayL, sound, bufnum, location, speakerSpec, delayOffset, dcomp: dcomp,
+	^this.basicBuf( BufDelayL, sound, bufnum, location, speakerSpec, dcomp: dcomp,
 			useFocused: useFocused );
 	}
 	
-*arBufN {  arg sound = 0, bufnum, location, speakerSpec, delayOffset = 0, dcomp = 0, 
+*arBufN {  arg sound = 0, bufnum, location, speakerSpec, dcomp = 0, 
 		useFocused = true;
-	^this.basicBuf( BufDelayN, sound, bufnum, location, speakerSpec, delayOffset, true, 
+	^this.basicBuf( BufDelayN, sound, bufnum, location, speakerSpec, true, 
 		dcomp: dcomp, useFocused: useFocused );
 	}
 	
-*arBufC {  arg sound = 0, bufnum, location, speakerSpec, delayOffset = 0, dcomp = 0, 
+*arBufC {  arg sound = 0, bufnum, location, speakerSpec, dcomp = 0, 
 		useFocused = true;
 
-	^this.basicBuf( BufDelayC, sound, bufnum, location, speakerSpec, delayOffset, dcomp: dcomp, 
+	^this.basicBuf( BufDelayC, sound, bufnum, location, speakerSpec, dcomp: dcomp, 
 		useFocused: useFocused  );
 	}
 	
-*arBufI {  arg sound = 0, bufnum, location, speakerSpec, delayOffset = 0, dcomp = 0, 
+*arBufI {  arg sound = 0, bufnum, location, speakerSpec, dcomp = 0, 
 		useFocused = true;
 
-	^this.basicBuf( BufDelayN, sound, bufnum, location, speakerSpec, delayOffset, true, 
+	^this.basicBuf( BufDelayN, sound, bufnum, location, speakerSpec, true, 
 		dcomp: dcomp, useFocused: useFocused  );
 	}
 
-*arBuf { arg sound = 0, bufnum, location, speakerSpec, delayOffset = 0, dcomp = 0, 
+*arBuf { arg sound = 0, bufnum, location, speakerSpec, dcomp = 0, 
 		useFocused = true;
 
-	^this.arBufL( sound, bufnum, location, speakerSpec, delayOffset, dcomp: dcomp, 
+	^this.arBufL( sound, bufnum, location, speakerSpec, dcomp: dcomp, 
 		useFocused: useFocused  );
 	}
 	
 // switch version (stick around speaker array and delay for distance @ 90 degrees)
 
 *arBufSwitch { arg sound = 0, bufnum, location, 
-	speakerSpec, delayOffset = 0, nonMoving = false, dcomp = 0;
+	speakerSpec, nonMoving = false, dcomp = 0;
 	var distArray, switch;
 	distArray = this.getSwitchDistances( location, speakerSpec );
 	switch = this.getSwitch(location, speakerSpec, nonMoving: nonMoving);
 	^BufDelayL.ar(bufnum, sound,	
-		this.getDelayTimes( distArray, delayOffset )
+		this.getDelayTimes( distArray )
 			- (( location.dist(0) * dcomp ) / speedOfSound ),
 		this.getAmps( distArray.abs, this.getSwitchCrossFades( location, speakerSpec, switch[0] ),
 			speakerSpec, 
@@ -450,44 +450,3 @@ WFSPan2D {
 	}
 
 }
-
-
-/*
-	
-*arBufL { arg sound = 0, bufnum, location, speakerSpec, delayOffset = 0;
-	var distArray;
-	distArray = WFSPan2D.getDistances( location, speakerSpec );
-	^BufDelayL.ar(bufnum, sound,	
-		this.getDelayTimes( distArray, delayOffset ),
-		this.getAmps( distArray )
-			);
-	}
-	
-*arBufN { arg sound = 0, bufnum, location, speakerSpec, delayOffset = 0;
-	var distArray;
-	distArray = WFSPan2D.getDistances( location, speakerSpec );
-	^BufDelayN.ar(bufnum, sound,	
-		this.getDelayTimes( distArray, delayOffset ),
-		this.getAmps( distArray )
-			);
-	}
-	
-*arBufC { arg sound = 0, bufnum, location, speakerSpec, delayOffset = 0;
-	var distArray;
-	distArray = WFSPan2D.getDistances( location, speakerSpec );
-	^BufDelayC.ar(bufnum, sound,	
-		this.getDelayTimes( distArray, delayOffset ),
-		this.getAmps( distArray )
-			);
-	}
-	
-*arBufI { arg sound = 0, bufnum, i_location, speakerSpec, delayOffset = 0; 
-	// non moving location; no difference yet
-	var distArray;
-	distArray = WFSPan2D.getDistances( i_location, speakerSpec );
-	^BufDelayN.ar(bufnum, sound,	
-		this.getDelayTimes( distArray, delayOffset ),
-		this.getAmps( distArray )
-			);
-	}
-*/

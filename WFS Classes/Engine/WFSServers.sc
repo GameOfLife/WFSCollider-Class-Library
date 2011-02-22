@@ -96,7 +96,11 @@ WFSServers {
 		activityDict = IdentityDictionary[];
 		multiServers.do({ |ms| ms.servers.do({ |srv| activityDict[ srv ] = 0 }) });
 		
-		}
+		if( this.isMaster ){
+			SyncCenter.addAll(multiServers.collect{ |msv| msv.servers }.flat);
+			SyncCenterGui.new;
+		}	
+	}
 		
 	m { ^masterServer; }
 	
