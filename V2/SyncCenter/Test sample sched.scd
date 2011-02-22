@@ -1,6 +1,10 @@
-//test sync
+
+
+
 
 (
+WFS.startup;
+WFS.debugMode = true;
 ~soptions = ServerOptions()
 .memSize_(8192*12)
 .numAudioBusChannels_(150)
@@ -11,29 +15,23 @@
 .blockAllocClass_( ContiguousBlockAllocator )
 .device_("JackRouter");
 
-~slaves = [
-	Server(\slave1,NetAddr("localhost", 57456),~soptions),
-	Server(\slave2,NetAddr("localhost", 57458),~soptions)
-];
-
-~master = Server(\master,NetAddr("localhost", 57368),~soptions);
-
-(~slaves++[~master]).do(_.makeWindow);
+~slaves = WFSServers.default.multiServers.collect(_.servers).flat;
+~master = WFSServers.default.masterServer;
 
 SyncCenter.inBus = 0;
 SyncCenter.outBus = 0;
-SyncCenter.addAll(~slaves);
 SyncCenter.master_(~master);
-SyncCenterGui.new;
 
 {
 	~master.boot;
 	2.wait;
-	~slaves[0].boot;
-	2.wait;
-	~slaves[1].boot;
+	~slaves.do{ |sv|
+		sv.options_(~soptions);
+		sv.boot;
+		2.wait;
+	};
 	
-	while({ ~master.serverBooting || ~slaves[0].serverBooting || ~slaves[1].serverBooting }) {
+	while({ (~slaves++[~master]).collect(_.serverBooting).reduce('and')}) {
 		1.wait;
 	};
 	"servers booted".postln;
@@ -49,67 +47,7 @@ SyncCenterGui.new;
 
 }.fork;
 
-)
+)		
 
+issues:
 
-~slaves.do({ arg server;
-	SynthDef("sine", { arg out=0, freq=110.0, amp=0.1;
-		OffsetOut.ar(out, SinOsc.ar(freq, 0, amp).dup);
-	}).send(server);
-});
-
-
-
-OSCBundle.new.add([ "/s_new", "sine", 2000, 1, 1, 'freq', 1000, 'amp', 0.25 ]).syncedSend(~slaves[0],1);
-OSCBundle.new.add([ "/s_new", "sine", 2000, 1, 1, 'freq', 1000, 'amp', -0.25 ]).syncedSend(~slaves[1],2);
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-Server.local.boot
-{ÊT2K.kr(Impulse.ar(5)).poll }.play(Server.local)
-
-
-SyncCenter.remoteCounts[0]
-SyncCenter.masterCount
-SyncCenter.remoteCounts[0]
-SyncCenter.remoteCounts
-
-~resp = 	OSCresponderNode( nil, '/tr', { |time, resp, msg|
-				("Received: "++[time, resp, msg] ).postln;
-		}).add;
-~resp.remove
-SynthDef("sync_receive", { |id = 100, in = 0 |
-			// waits for an impulse
-			var trig;
-			trig = Trig1.ar( SoundIn.ar( in ) );
-			SendTrig.ar( trig, id, BlockOffset.ar( trig ) );
-			FreeSelf.kr( T2K.kr( trig ).poll );
-		}).send(~slaves[0]);
-		
-Synth(\default,target: ~slaves[0])
-
-x = Synth( "sync_receive", [\id, 100,\in,0], ~slaves[0] )
-x.trace
-SyncCenter.playRecDefs
-Synth.sched( 1, "sync_master", [\out, 0], ~master, \addToHead );
-
-SyncCenter.remoteSync;
-"WFS Synced".postln;
-("Remote Counts: "++SyncCenter.remoteCounts).postln;
-("Master Count:"++SyncCenter.masterCount).postln;
-
-
-	
