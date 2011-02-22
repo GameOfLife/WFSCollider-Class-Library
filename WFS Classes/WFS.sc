@@ -49,18 +49,17 @@ WFS {
 			file = File("/Library/Application Support/WFSCollider/WFSCollider_configuration.txt","r");
 			dict = file.readAllString.interpret;
 			file.close;
-			dict.postln;
 			wfsConf = WFSConfiguration.rect4( dict[\speakConf][0],  dict[\speakConf][1], 0.165,  dict[\speakConf][2],  dict[\speakConf][3] );
-
 			if(dict[\hostname].notNil){
 				"starting server mode".postln;
 				WFSConfiguration.default = wfsConf.partial(dict[\serverNumber],dict[\numberOfServers]);
-				WFS.startupServer(dict[\hostname]);
+				WFS.startupServer( dict[\hostname], dict[\startPort], dict[\serversPerSystem] );
 			};
+			
 			if(dict[\ips].notNil){
 				"starting client mode".postln;
-					WFSConfiguration.default = wfsConf;
-				WFS.startupClient(dict[\ips],dict[\hostnames]);
+				WFSConfiguration.default = wfsConf;
+				WFS.startupClient( dict[\ips], dict[\startPorts], dict[\serversPerSystem], dict[\hostnames] );
 			};
 			
 		}{
@@ -108,7 +107,6 @@ WFS {
 		server.boot;
 		server.makeWindow;
 		server.m.waitForBoot({ 
-			server.loadClientSyncSynthDefs; 
 			server.loadWFSSynthDefs;
 			WFSEQ.new; WFSTransport.new; WFSLevelBus.makeWindow;
 			
@@ -121,16 +119,13 @@ WFS {
 		
 	}
 	
-	*startupClient{ |ips,hostnames|
+	*startupClient{ |ips, startPort, serversPerSystem = 8, hostnames|
 		var server;
 		if( Buffer.respondsTo( \readChannel ).not )
 			{ scVersion = \old };
-		"1".postln;
 		this.setServerOptions;
-		"2".postln;		
 		Server.default.options.device_( "MOTU 828mk2" );
-		ips.postln;
-		server = WFSServers( *ips  ).makeDefault;
+		server = WFSServers( ips, startPort, serversPerSystem ).makeDefault;
 		server.hostNames_( *hostnames );
 		
 		server.wfsConfigurations = 
@@ -145,13 +140,12 @@ WFS {
 		server.makeWindow;	
 		
 		server.m.waitForBoot({ 
-			server.loadClientSyncSynthDefs;
 			"\n\tWelcome to the WFS System".postln; 
 		});	
 		^server	
 	}
 	
-	*startupServer{ |hostName|
+	*startupServer{ |hostName, startPort = 58000, serversPerSystem = 8|
 		var server, serverCounter = 0;
 		
 		if( Buffer.respondsTo( \readChannel ).not )
@@ -160,7 +154,7 @@ WFS {
 		this.setServerOptions;	
 		
 		Server.default.options.device_( "JackRouter" );
-		server = WFSServers.client.makeDefault;
+		server = WFSServers.client(nil, startPort, serversPerSystem).makeDefault;
 		server.hostNames_( hostName );
 		server.wfsConfigurations = [ WFSConfiguration.default ];
 		server.boot;
