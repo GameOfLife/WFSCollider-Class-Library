@@ -98,6 +98,15 @@ SyncCenter {
 		});
 	}
 	
+	*writeDefs{
+		this.recDef.writeDefFile;
+		this.masterDef.writeDefFile;
+	}
+	
+	*loadMasterDef{
+		this.masterDef.load( master )
+	}
+	
 	*sendDefs { |write = false|
 		var recdev;
 		if( mode === 'sample' ) {
