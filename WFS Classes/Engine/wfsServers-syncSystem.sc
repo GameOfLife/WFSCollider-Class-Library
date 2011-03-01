@@ -36,7 +36,6 @@
 	*stop { WFSSynth.clock.clear; 
 			SystemClock.clear;
 			WFSSynth.freeAllSynths;
-			WFSSynth.freeAllBuffers; 
 			WFSSynth.resetLoadedSynths;
 			WFSServers.default.resetActivity;
 			WFSServers.default.resetDictActivity;
@@ -74,11 +73,7 @@
 	release { synth.asCollection.do( _.release ); isRunning = false; }
 	
 	freeBuffers {
-		// for any number of servers
-		 
-		 //loadedSynths.remove( this );
-		 
-		//this.post; ": buffers freed".postln;
+		"entered freeBuffers".postln;
 		if( buffersLoaded.not ) { 
 			"WFSSynth-freeBuffers: buffers are probably not loaded".postln; };
 		
@@ -97,6 +92,7 @@
 
 	
 	loadBuffers { |servers|
+		"entered loadBuffers".postln;
 		if( buffersLoaded.not ) {	
 		  	if(wfsPath.class == WFSPath ) {
 		  		wfsPath.loadBuffers2( servers );
@@ -151,6 +147,7 @@
 					 };
 				});
 			buffersLoaded = true;
+			WFS.debug("buffers loaded");
 			
 		  } { "WFSSynth-loadBuffers: Buffers are probably already loaded".postln; };
 		
@@ -229,20 +226,7 @@
 		WFS.debug( "% - s:%, %", WFS.secsToTimeCode( startTime ),			serverIndex,
 			filePath );
 				
-		nodeID = servers.nextNodeID;
-			
-		this.loadFree( servers );
-		
-		clock.sched( WFSEvent.wait - 0.1, // sync latency = 0.1 
-			{ loadedSynths.asCollection.do({ |synth|
-				synth.synth.asCollection.do({ |subsynth|
-					subsynth.server.sendBundle( 0.1, 
-						subsynth.runMsg( true ) );
-						});
-				});
-			});
-		
-		
+		this.load( servers );		
 	}
 
 	playNowClient { |wfsServers, startTime = 0|
