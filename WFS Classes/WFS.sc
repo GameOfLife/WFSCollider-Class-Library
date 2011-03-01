@@ -138,10 +138,11 @@ WFS {
 		};
 		// end life eq
 		server.makeWindow;
-		SyncCenter.loadMasterDef;
+		
 		SyncCenter.writeDefs;
 		
-		server.m.waitForBoot({ 
+		server.m.waitForBoot({
+			SyncCenter.loadMasterDef;
 			"\n\tWelcome to the WFS System".postln; 
 		});	
 		^server	
