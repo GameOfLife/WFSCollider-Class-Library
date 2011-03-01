@@ -33,3 +33,13 @@ SyncCenter.outBus = 0;
 Server.killAll
 
 SyncCenterGui.new
+
+SyncCenter.serverCounts.pairsDo{ |a,b| [a,b].postln }
+SyncCenter.servers.as(Array)
+
+
+fork{ (SyncCenter.master.options.blockSize*SyncCenter.master.blockCount).postln; };
+fork{ SyncCenter.getSchedulingSampleCountS(0,SyncCenter.master).postln };
+SyncCenter.serverCounts.at(SyncCenter.master).value
+
+SyncCenter.master
