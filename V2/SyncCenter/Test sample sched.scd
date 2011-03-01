@@ -1,15 +1,6 @@
 (
 WFS.startup;
 WFS.debugMode = true;
-~soptions = ServerOptions()
-.memSize_(8192*12)
-.numAudioBusChannels_(150)
-.numOutputBusChannels_(30)
-.numInputBusChannels_(30)
-.numWireBufs_(2048)
-.sampleRate_( 44100 )
-.blockAllocClass_( ContiguousBlockAllocator )
-.device_("JackRouter");
 
 ~slaves = WFSServers.default.multiServers.collect(_.servers).flat;
 ~master = WFSServers.default.masterServer;
@@ -19,7 +10,6 @@ SyncCenter.outBus = 0;
 
 {	2.wait;
 	~slaves.do{ |sv|
-		sv.options_(~soptions);
 		sv.boot;
 		2.wait;
 	};
@@ -39,15 +29,7 @@ SyncCenter.outBus = 0;
 }.fork;
 
 )		
+
 Server.killAll
-issues:
-
-SyncCenter.sendDefs
-
-SyncCenter.writeDefs
 
 SyncCenterGui.new
-
-SyncCenter.master
-
-WFSServers
