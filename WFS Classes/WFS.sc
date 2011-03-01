@@ -53,13 +53,13 @@ WFS {
 			if(dict[\hostname].notNil){
 				"starting server mode".postln;
 				WFSConfiguration.default = wfsConf.partial(dict[\serverNumber],dict[\numberOfServers]);
-				WFS.startupServer( dict[\hostname], dict[\startPort] ? 58000, dict[\serversPerSystem] ? 8 );
+				WFS.startupServer( dict[\hostname], dict[\startPort] ? 58000, dict[\scsynthsPerSystem] ? 8 , dict[\soundCard] ? "JackRouter" );
 			};
 			
 			if(dict[\ips].notNil){
 				"starting client mode".postln;
 				WFSConfiguration.default = wfsConf;
-				WFS.startupClient( dict[\ips], dict[\startPorts] ?? { 58000 ! 2 }, dict[\serversPerSystem] ? 8, dict[\hostnames] );
+				WFS.startupClient( dict[\ips], dict[\startPorts] ?? { 58000 ! 2 }, dict[\scsynthsPerSystem] ? 8, dict[\hostnames], dict[\soundCard] ? "MOTU 828mk2" );
 			};
 			
 		}{
@@ -119,12 +119,12 @@ WFS {
 		
 	}
 	
-	*startupClient{ |ips, startPort, serversPerSystem = 8, hostnames|
+	*startupClient{ |ips, startPort, serversPerSystem = 8, hostnames, soundCard = "MOTU 828mk2"|
 		var server;
 		if( Buffer.respondsTo( \readChannel ).not )
 			{ scVersion = \old };
 		this.setServerOptions;
-		Server.default.options.device_( "MOTU 828mk2" );
+		Server.default.options.device_( soundCard );
 		server = WFSServers( ips, startPort, serversPerSystem ).makeDefault;
 		server.hostNames_( *hostnames );
 		
@@ -147,7 +147,7 @@ WFS {
 		^server	
 	}
 	
-	*startupServer{ |hostName, startPort = 58000, serversPerSystem = 8|
+	*startupServer{ |hostName, startPort = 58000, serversPerSystem = 8, soundCard = "JackRouter"|
 		var server, serverCounter = 0;
 		
 		if( Buffer.respondsTo( \readChannel ).not )
@@ -155,7 +155,7 @@ WFS {
 		
 		this.setServerOptions;	
 		
-		Server.default.options.device_( "JackRouter" );
+		Server.default.options.device_( soundCard );
 		server = WFSServers.client(nil, startPort, serversPerSystem).makeDefault;
 		server.hostNames_( hostName );
 		server.wfsConfigurations = [ WFSConfiguration.default ];
