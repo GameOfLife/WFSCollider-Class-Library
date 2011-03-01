@@ -16,11 +16,8 @@ WFS.debugMode = true;
 
 SyncCenter.inBus = 0;
 SyncCenter.outBus = 0;
-SyncCenter.master_(~master);
 
-{
-	~master.boot;
-	2.wait;
+{	2.wait;
 	~slaves.do{ |sv|
 		sv.options_(~soptions);
 		sv.boot;
@@ -49,3 +46,8 @@ SyncCenter.sendDefs
 
 SyncCenter.writeDefs
 
+SyncCenterGui.new
+
+SyncCenter.master
+
+WFSServers

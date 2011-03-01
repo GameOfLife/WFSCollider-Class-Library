@@ -130,7 +130,7 @@ WFS {
 		
 		server.wfsConfigurations = 
 			[ WFSConfiguration.halfRect2_1, WFSConfiguration.halfRect2_2 ];
-				
+						
 		// live eq (todo: incorporate in software)
 		WFSEQ.action = { |eq, label, val, desc|
 			WFSServers.default.allServers

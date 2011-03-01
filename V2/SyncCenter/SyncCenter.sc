@@ -18,12 +18,11 @@
 */
 
 SyncCenter {	
-	classvar <>mode;
+	classvar <>mode, <>verbose = false;
 	
 	classvar <>servers, <>master;
 	classvar <>recSynths;
 	classvar <>remoteCounts, <>masterCount, <>masterCountTime;
-	classvar <>oldRemoteCounts, <>oldMasterCount, <>oldMasterCountTime;
 	classvar <>responder;
 	classvar <>global;
 	classvar <>ready;
@@ -128,7 +127,7 @@ SyncCenter {
 			recdev = this.recDef;
 			recSynths = recSynths.addAll( 
 				servers.collect({ |server, i|  
-					("playing receve sync synthdef for server "++i).postln; 
+					if(verbose) { ("playing receve sync synthdef for server "++i).postln };
 					Synth( "sync_receive", [\id, 100+i,\in,inBus], server ).register
 				}) 
 			); 
@@ -139,49 +138,52 @@ SyncCenter {
 		var counter=0;
 		ready.value_(false).changed;
 		if( mode === 'sample' ) { 
-			oldRemoteCounts = remoteCounts;
-			oldMasterCount = masterCount;
-			oldMasterCountTime = masterCountTime;
-					
+
 			if( responder.notNil ) {
-				responder.remove; "removing responder".postln 
+				responder.remove; 
+				if( verbose ) { "removing responder".postln }
 			};
 			
 			masterCount.value_(-1).changed;
 			remoteCounts.do{ |c| c.value_(-1).changed };
 				
 			responder = OSCresponderNode( nil, '/tr', { |time, resp, msg|
-				("Received: "++[time, resp, msg] ).postln;
+				if( verbose ) { ("Received: "++[time, resp, msg] ).postln };
 				case{ msg[ 2 ] == 99 }
-					{ masterCount.value_( (msg[4] * master.options.blockSize) + msg[3]) .changed; "setting master counts".postln; }
+					{ 
+						masterCount.value_( (msg[4] * master.options.blockSize) + msg[3]) .changed; 
+						if( verbose ) { "setting master counts".postln }; 
+					}
 					{ msg[2].exclusivelyBetween( 99, 100 + servers.size ) }
 					{ 
-						("serverNumber "++( msg[2] - 100 ) ).postln;
+						if( verbose ) { ("serverNumber "++( msg[2] - 100 ) ).postln };
 						remoteCounts[ msg[2] - 100 ].value_( (msg[4] * servers[ msg[2] - 100 ].options.blockSize) + msg[3] ).changed;
-						("Setting remoteCounts for server "++(msg[2] - 100)++" : "++ remoteCounts[ msg[2] - 100 ].value).postln;	
+						if(verbose) { ("Setting remoteCounts for server "++(msg[2] - 100)++" : "++ remoteCounts[ msg[2] - 100 ].value).postln; };	
 					 }; 
 						
 				if( 
 					remoteCounts.collect{ |v,i| if( servers[i].serverRunning ) { v.value != -1 } { true }  }.reduce('&&') 
 					&& (masterCount.value != -1) 
 				) { 
-					resp.remove; responder = nil; "received all counts".postln; ready.value_(true).changed;
+					resp.remove; responder = nil;
+					ready.value_(true).changed;
+					if(verbose) { "received all counts".postln;  }
 				};
 			}).add;
-			"adding responder".postln;				
 			
-			//this.masterDef.send( master );
 			this.playRecDefs;
 			
 			{
 				masterCountTime = thisThread.seconds + waitTime;
 				Synth.sched( waitTime, "sync_master", [\out, outBus], master, \addToHead );
-				"playing impulse".postln;
+				if( verbose ) { "playing impulse".postln };
 				while({counter < 5}){
 					0.1.wait;
 					counter = counter + 0.1;
 				};
-				if(ready.value){ "Sync successful!".postln}{"No Sync".postln};
+				if(verbose) {
+					if(ready.value){ "Sync successful!".postln}{ "No Sync".postln };
+				};
 				responder.remove;
 				responder = nil;
 				recSynths.do({ |synth| if(synth.isPlaying){synth.free} });

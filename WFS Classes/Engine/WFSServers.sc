@@ -98,6 +98,7 @@ WFSServers {
 		
 		if( this.isMaster ){
 			SyncCenter.addAll(multiServers.collect{ |msv| msv.servers }.flat);
+			SyncCenter.master_(masterServer);
 		}	
 	}
 		
@@ -316,7 +317,7 @@ WFSServers {
 			
 			multiServer.servers.do({ |server, ii| 
 				if( this.isMaster ) {
-					widgets.add(SyncCenterServerWidget(window,100@17,server))
+					widgets.add(SyncCenterServerWidget(window,70@17,server))
 				};
 				server.makeView( window ); 
 				});

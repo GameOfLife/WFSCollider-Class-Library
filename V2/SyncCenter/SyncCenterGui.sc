@@ -1,14 +1,13 @@
 SyncCenterGui {
-	classvar <window, <controllers;
+	classvar <window, <widgets;
 	
 	*new{
-		var font = Font( Font.defaultSansFace, 11 ), masterText, masterUV, readyUV;		
-		
-		controllers = List.new;
+		var font = Font( Font.defaultSansFace, 11 ), masterText, widgets;		
+		widgets = List.new;
 		
 		if( window.notNil ){
 			if( window.isClosed.not) {
-				controllers.do(_.remove);
+				widgets.do(_.remove);
 				window.close
 			};
 			window = nil;
@@ -27,37 +26,15 @@ SyncCenterGui {
 			});
 			
 		StaticText(window,100@20).string_("SyncStatus:");
-		readyUV = UserView(window,20@20).background_(Color.red);
-		controllers.add(Updater(SyncCenter.ready, { |ready|
-			{
-				readyUV.background_( if( ready.value ) {Color.green} {Color.red} )
-			}.defer
-		}));
-		
-		
+		widgets.add(SyncCenterStatusWidget(window,17));
+
 		window.view.decorator.nextLine;
 		
-		masterText = StaticText(window,100@20).string_("Master:");
-		masterUV = UserView(window,20@20).background_(Color.red);
-		
-		controllers.add(Updater(SyncCenter.masterCount, { |mCount|
-			{
-				masterText.string_("Master: "++mCount.value);
-				masterUV.background_(Color.green)
-			}.defer
-		}));
-		window.view.decorator.nextLine;
 		SyncCenter.servers.do{ |server,i|
 			var text, uv;
 			text = StaticText(window,100@20).string_(server.name++":" );
-			uv = UserView(window,20@20).background_(Color.red);
-			controllers.add(Updater(SyncCenter.remoteCounts[i], { |count|
-				{
-					text.string_(server.name++": "+count.value);
-					uv.background_( if( count.value != -1 ) {Color.green} {Color.red} );
-				}.defer
-			}));
-			
+			widgets.add(SyncCenterServerWidget(window,70@17,server));
+						
 			window.view.decorator.nextLine;
 		};
 		
@@ -65,8 +42,8 @@ SyncCenterGui {
 			
 	}
 	
-	remove{
-		controllers.do(_.remove);
+	*remove{
+		widgets.do(_.remove);
 	}
 }
 
@@ -77,11 +54,13 @@ SyncCenterStatusWidget{
 		^super.new.init(parent,size)
 	}
 	
-	init{ |parent,size| 
-		view = UserView(parent,size@size).background_(Color.red);
+	init{ |parent,size|
+		var red = Color.red(0.7);
+		var green = Color.green(0.7);
+		view = UserView(parent,size@size).background_(if( SyncCenter.ready.value ) { green } { red });
 		controller = Updater(SyncCenter.ready, { |ready|
 			{
-				view.background_( if( ready.value ) {Color.green(0.7) } {Color.red(0.7) } )
+				view.background_( if( ready.value ) { green } { red } )
 			}.defer
 		})
 	}
@@ -101,11 +80,18 @@ SyncCenterServerWidget{
 	}
 	
 	init{ |parent,bounds,server| 
-		view = RoundNumberBox(parent,bounds).background_(Color.red);
-		controller = Updater(SyncCenter.remoteCounts[SyncCenter.servers.indexOf(server)], { |count|
+		var red = Color.red(0.7);
+		var green = Color.green(0.7);
+		var remoteCount = SyncCenter.remoteCounts[SyncCenter.servers.indexOf(server)];
+		
+		view = RoundNumberBox(parent,bounds)
+			.background_(if( remoteCount.value != -1 ) { green } { red})
+			.value_(remoteCount.value);
+			
+		controller = Updater(remoteCount, { |count|
 			{
 				view.value_(count.value);
-				view.background_( if( count.value != -1 ) { Color.green(0.7) } { Color.red(0.7) } );
+				view.background_( if( count.value != -1 ) { green } { red} );
 			}.defer
 		})
 	}
