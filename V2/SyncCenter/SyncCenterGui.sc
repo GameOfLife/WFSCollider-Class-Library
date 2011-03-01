@@ -82,7 +82,7 @@ SyncCenterServerWidget{
 	init{ |parent,bounds,server| 
 		var red = Color.red(0.7);
 		var green = Color.green(0.7);
-		var remoteCount = SyncCenter.remoteCounts[SyncCenter.servers.indexOf(server)];
+		var remoteCount = SyncCenter.serverCounts.at(server);
 		
 		view = RoundNumberBox(parent,bounds)
 			.background_(if( remoteCount.value != -1 ) { green } { red})

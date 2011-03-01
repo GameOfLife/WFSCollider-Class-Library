@@ -20,9 +20,9 @@
 SyncCenter {	
 	classvar <>mode, <>verbose = false;
 	
-	classvar <>servers, <>master;
+	classvar <>serverCounts, <master;
 	classvar <>recSynths;
-	classvar <>remoteCounts, <>masterCount, <>masterCountTime;
+	classvar <>masterCountTime;
 	classvar <>responder;
 	classvar <>global;
 	classvar <>ready;
@@ -42,31 +42,29 @@ SyncCenter {
 		} { 
 			mode = 'timestamp'; 
 		};
-		servers = [];
-		remoteCounts = Order();	
+		serverCounts = Dictionary.new;
 		global = this.new;
-		masterCount = Ref(-1);
 		ready = Ref(false);
 		serverControllers !? { serverControllers.do(_.remove) };
 		serverControllers = List.new;
 		
 	}
 	
+	*servers{ ^serverCounts.keys.select({ |sv| sv != master }).as(Array) }
+	
 	*add { |server|
 		var index;
 		if( server.isKindOf( Server ).not ) { 
 				"%.add: added item should be a Server".format( this ).warn; 
 		} {
-			if( servers.includes( server ) ) { 
+			if( this.servers.includes( server ) ) { 
 				"%.add: server '%' was already added".format( this, server ).warn; 
 			} { 
-				servers = servers.add( server );
-				remoteCounts.put(servers.size-1,Ref(-1));
-				index = remoteCounts.size - 1;
+				serverCounts.put(server,Ref(-1));
 				serverControllers.add(
 					Updater(server, { |name,msg|
 						if(msg == \serverRunning) {
-							remoteCounts[index].value_(-1).changed;
+							serverCounts.at(server).value_(-1).changed;
 						}
 					})
 				)
@@ -76,6 +74,11 @@ SyncCenter {
 	}
 		
 	*addAll { |array| array.do( this.add( _ ) ); }
+	
+	*master_ { |server|
+		master = server;
+		this.add(server);
+	}
 	
 	*recDef { 
 		^SynthDef( "sync_receive", { |id = 100, in = 0 |
@@ -112,10 +115,10 @@ SyncCenter {
 			recdev = this.recDef;
 				
 			if( write ) {
-				servers.do({ |server| recdev.load( server ) });
+				this.servers.do({ |server| recdev.load( server ) });
 				this.masterDef.load( master );
 			} { 
-				servers.do({ |server| recdev.send( server ) });
+				this.servers.do({ |server| recdev.send( server ) });
 				this.masterDef.send( master )
 			};
 		}
@@ -126,7 +129,7 @@ SyncCenter {
 		if( mode === 'sample' ) {
 			recdev = this.recDef;
 			recSynths = recSynths.addAll( 
-				servers.collect({ |server, i|  
+				this.servers.collect({ |server, i|  
 					if(verbose) { ("playing receve sync synthdef for server "++i).postln };
 					Synth( "sync_receive", [\id, 100+i,\in,inBus], server ).register
 				}) 
@@ -144,26 +147,41 @@ SyncCenter {
 				if( verbose ) { "removing responder".postln }
 			};
 			
-			masterCount.value_(-1).changed;
-			remoteCounts.do{ |c| c.value_(-1).changed };
+			serverCounts.pairsDo{ |server,count|
+				count.value_(-1).changed
+			};
 				
 			responder = OSCresponderNode( nil, '/tr', { |time, resp, msg|
+				var server, numOfBlocks, offsetInsideBlock, count;
 				if( verbose ) { ("Received: "++[time, resp, msg] ).postln };
 				case{ msg[ 2 ] == 99 }
 					{ 
-						masterCount.value_( (msg[4] * master.options.blockSize) + msg[3]) .changed; 
+						numOfBlocks = msg[4];
+						offsetInsideBlock = msg[3];
+						
+						serverCounts.at(master).value_( (numOfBlocks * master.options.blockSize) + offsetInsideBlock).changed; 
+						
 						if( verbose ) { "setting master counts".postln }; 
 					}
-					{ msg[2].exclusivelyBetween( 99, 100 + servers.size ) }
+					{ msg[2].exclusivelyBetween( 99, 100 + this.servers.size ) }
 					{ 
-						if( verbose ) { ("serverNumber "++( msg[2] - 100 ) ).postln };
-						remoteCounts[ msg[2] - 100 ].value_( (msg[4] * servers[ msg[2] - 100 ].options.blockSize) + msg[3] ).changed;
-						if(verbose) { ("Setting remoteCounts for server "++(msg[2] - 100)++" : "++ remoteCounts[ msg[2] - 100 ].value).postln; };	
+						server = this.servers[msg[2] - 100];
+						numOfBlocks = msg[4];
+						offsetInsideBlock = msg[3];
+						count = (numOfBlocks * server.options.blockSize) + offsetInsideBlock;
+						
+						serverCounts.at(server).value_( count ).changed;
+						
+						if(verbose) { 
+							("serverNumber "++( msg[2] - 100 ) ).postln;
+							("Setting remoteCounts for server "++(msg[2] - 100)++" : "++ count ).postln;
+						};	
 					 }; 
 						
 				if( 
-					remoteCounts.collect{ |v,i| if( servers[i].serverRunning ) { v.value != -1 } { true }  }.reduce('&&') 
-					&& (masterCount.value != -1) 
+					serverCounts.collect{ |count,server| if( server.serverRunning ) { count.value != -1 } { true } }
+					.as(Array).reduce('&&')
+
 				) { 
 					resp.remove; responder = nil;
 					ready.value_(true).changed;
@@ -198,17 +216,12 @@ SyncCenter {
 		
 	}
 	
-	*getSchedulingSampleCount{ |delta = 1, serverIndex = 0|
-		^(remoteCounts[serverIndex].value + (((master.options.blockSize*master.blockCount) + (delta*master.sampleRate)) - masterCount.value))
-	}
-	
 	*getSchedulingSampleCountS{ |delta = 1, server|
-		var serverIndex = servers.indexOf(server).postln;
-		^this.getSchedulingSampleCount(delta,serverIndex);
-	}
-	
-	*sendPosOSCBundleAll{ |delta = 1, bundle|
-		servers.do{ |server| this.sendPosBundle(delta,bundle,server) }
+		if( server == master ) {
+			^(master.options.blockSize*master.blockCount) + (delta*master.sampleRate)
+		} {
+			^serverCounts.at(server).value + (master.options.blockSize*master.blockCount) + (delta*master.sampleRate) - serverCounts.at(master).value
+		}
 	}
 	
 	*makeWindow {
