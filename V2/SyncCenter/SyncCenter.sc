@@ -29,7 +29,9 @@ SyncCenter {
 	classvar <>serverControllers;
 	classvar <>inBus = 0, <>outBus = 14;
 	
-	var <>localCount, <>localTime;
+	classvar <>current;
+	
+	var <>localCount, <>localCountTime;
 	
 	*testSampleSched { // test whether this is a sample-sched enabled version of SC
 		^'BlockCount'.asClass.notNil;
@@ -62,10 +64,8 @@ SyncCenter {
 			} { 
 				serverCounts.put(server,Ref(-1));
 				serverControllers.add(
-					Updater(server, { |name,msg|
-						if(msg == \serverRunning) {
+					SimpleController( server ).put( \serverRunning, { 
 							serverCounts.at(server).value_(-1).changed;
-						}
 					})
 				)
 							
@@ -86,17 +86,15 @@ SyncCenter {
 			var trig;
 			trig = Trig1.ar( SoundIn.ar( in ) );
 			SendTrig.ar( trig, id, BlockOffset.ar( trig ) );
-			//FreeSelf.kr( T2K.kr( trig ) );
 		});
 	}
 			
 	*masterDef { 
 		^SynthDef( "sync_master", { |out = 0, amp = 0.1, id = 99|
 			var trig;
-			trig = OneImpulse.ar;
-			OffsetOut.ar( out, trig );
+			trig = OneImpulse.ar; // also frees itself
+			OffsetOut.ar( out, trig * amp );
 			SendTrig.ar( trig, id, SpawnOffset.ir );
-			//FreeSelf.kr( T2K.kr( trig ) );
 		});
 	}
 	
@@ -158,8 +156,11 @@ SyncCenter {
 					{ 
 						numOfBlocks = msg[4];
 						offsetInsideBlock = msg[3];
+						count = (numOfBlocks * master.options.blockSize) + offsetInsideBlock;
+						serverCounts.at(master).value_( count ).changed; 
 						
-						serverCounts.at(master).value_( (numOfBlocks * master.options.blockSize) + offsetInsideBlock).changed; 
+						current = this.new.localCount_( count ).localCountTime_( masterCountTime ); // also local sync
+						this.class.changed( \localSync, current );
 						
 						if( verbose ) { "setting master counts".postln }; 
 					}
@@ -195,12 +196,13 @@ SyncCenter {
 				masterCountTime = thisThread.seconds + waitTime;
 				Synth.sched( waitTime, "sync_master", [\out, outBus], master, \addToHead );
 				if( verbose ) { "playing impulse".postln };
-				while({counter < 5}){
-					0.1.wait;
-					counter = counter + 0.1;
-				};
-				if(verbose) {
-					if(ready.value){ "Sync successful!".postln}{ "No Sync".postln };
+				0.5.wait; // wait another 0.5s for the messages to come in
+				if( ready.value ) {
+					this.changed( \synced );
+					if( verbose ) { "Sync successful!".postln };
+				} {
+					this.changed( \notSynced );
+					if( verbose ) {  "No Sync".postln };
 				};
 				responder.remove;
 				responder = nil;
@@ -211,17 +213,87 @@ SyncCenter {
 		};
 	}
 		
-	*localSync {
-		
-		
+	*localSync { |action|
+		^this.new.localSync( true, action );
 	}
 	
-	*getSchedulingSampleCountS{ |delta = 1, server|
+	localSync { |makeCurrent = true, action|
+		var synth, latency = 0.2, time, busy;
+		if( mode === 'sample' ) {	
+			time = thisThread.seconds + latency;
+			busy = true;
+			synth = Synth.sched( latency, "sync_master", [\amp, 0, \id, 98 ], master, \addToHead )
+				.onTrig_( { |value, time, responder, msg|
+					var numOfBlocks, offsetInsideBlock;
+					numOfBlocks = msg[4];
+					offsetInsideBlock = msg[3];
+					localCount = (numOfBlocks * master.options.blockSize) + offsetInsideBlock;
+					localCountTime = time;
+					busy = false;
+					if( makeCurrent ) { this.class.current = this };
+					this.class.changed( \localSync, this );
+					action.value( this );
+					if(verbose) {
+						 "Local sync successful!".postln;
+					};
+				}, 98 );
+				
+			if( verbose ) {	
+				{	0.5.wait;
+					if( busy ) {
+						 "Local sync failed (timeout)".postln;
+					};		
+				}.fork;
+			};
+		};
+	}
+	
+	masterSampleCount { |delta = 1|
+		// predicted sample count of now + delta
+		var now;
+		if( localCount.notNil and: localCountTime.notNil ) {
+			now = thisThread.seconds;
+			^localCount + ((now - localCountTime + delta) * master.sampleRate);
+		} {	
+			if(verbose) {
+				 "No localCount/localCountTime available, falling back to blockCount".postln;
+			};
+			^(master.options.blockSize*master.blockCount) + (delta*master.sampleRate) ; // fall back to blockCount
+		};
+	}
+	
+	getSampleCountForServer{ |delta = 1, server|
 		if( server == master ) {
-			^(master.options.blockSize*master.blockCount) + (delta*master.sampleRate)
+			^this.masterSampleCount( delta );
 		} {
-			^serverCounts.at(server).value + (master.options.blockSize*master.blockCount) + (delta*master.sampleRate) - serverCounts.at(master).value
+			^( serverCounts.at(server).value - serverCounts.at(master).value ) + this.masterSampleCount( delta )
 		}
+	}
+	
+	sendSyncedBundle { |server, delta = 1 ... msgs|
+		if( (mode === 'sample')  && { serverCounts.keys.includes( server ) }) {
+			server.sendPosBundle( this.getSampleCountForServer(delta,server), *msgs ) 
+		} {
+			server.sendBundle( delta, *msgs ) // fall back to regular bundling (no warning)
+		};
+	}
+	
+	listSendSyncedBundle{ |server, delta = 1, msgs|
+		if( (mode === 'sample') && { serverCounts.keys.includes( server ) } ) {
+			this.listSendPosBundle( this.getSampleCountForServer(delta,this), msgs ) 
+		} {
+			server.listSendBundle( delta, msgs );
+		};
+	}
+	
+	*sendSyncedBundle{ |server, delta = 1 ... msgs|
+		current = current ?? { this.new }; // create empty if not there
+		^current.sendSyncedBundle(server, delta, *msgs);
+	}
+	
+	*listSendSyncedBundle{ |server, delta = 1, msgs|
+		current = current ?? { this.new }; // create empty if not there
+		^current.listSendSyncedBundle(server, delta, msgs);
 	}
 	
 	*makeWindow {

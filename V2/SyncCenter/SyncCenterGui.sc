@@ -1,8 +1,12 @@
 SyncCenterGui {
-	classvar <window, <widgets;
+	var <window, <widgets;
 	
-	*new{
-		var font = Font( Font.defaultSansFace, 11 ), masterText, widgets;		
+	*new {
+		^super.new.init;
+	}
+	
+	init {
+		var font = Font( Font.defaultSansFace, 11 ), masterText;		
 		widgets = List.new;
 		
 		if( window.notNil ){
@@ -15,25 +19,26 @@ SyncCenterGui {
 		window = Window("Sync Center",Rect(300,300,400,400)).front;
 		window.addFlowLayout;
 		
-		SmoothButton( window, 100@30  )
+		SmoothButton( window, 100@20  )
  			.states_( [[ "Sync", Color.black, Color.clear ]] )
  			.canFocus_(false)
 			.radius_( 0 )
 			.border_(1)
 			.font_( Font( font.name, 10 ).boldVariant )
-			.action_({ 
-				SyncCenter.remoteSync			
+			.action_({ |bt|
+				SyncCenter.remoteSync;
+				bt.enabled = false;
+				{ bt.enabled = true }.defer(1.1);	
 			});
-			
-		StaticText(window,100@20).string_("SyncStatus:");
-		widgets.add(SyncCenterStatusWidget(window,17));
+		
+		widgets.add(SyncCenterStatusWidget(window,20));
 
 		window.view.decorator.nextLine;
 		
-		SyncCenter.servers.do{ |server,i|
+		SyncCenter.serverCounts.keys.do{ |server,i|
 			var text, uv;
 			text = StaticText(window,100@20).string_(server.name++":" );
-			widgets.add(SyncCenterServerWidget(window,70@17,server));
+			widgets.add(SyncCenterServerWidget(window,130@17,server));
 						
 			window.view.decorator.nextLine;
 		};
@@ -42,62 +47,77 @@ SyncCenterGui {
 			
 	}
 	
-	*remove{
-		widgets.do(_.remove);
+	remove {
 	}
 }
 
 SyncCenterStatusWidget{
 	var <controller, <view;
+	var <>red, <>green;
 	
 	*new{ |parent, size = 20|
 		^super.new.init(parent,size)
 	}
 	
 	init{ |parent,size|
-		var red = Color.red(0.7);
-		var green = Color.green(0.7);
-		view = UserView(parent,size@size).background_(if( SyncCenter.ready.value ) { green } { red });
-		controller = Updater(SyncCenter.ready, { |ready|
-			{
-				view.background_( if( ready.value ) { green } { red } )
-			}.defer
-		})
+		red = Color.red(0.7);
+		green = Color.green(0.7);
+		
+		view = UserView(parent,size@size);
+		this.update;
+				
+		SyncCenter.ready.addDependant(this);
+		
+		view.onClose_({ SyncCenter.ready.removeDependant(this); });
+	}
+	
+	update {
+		 {
+			view.background_( if( SyncCenter.ready.value ) { green } { red } )
+		}.defer
 	}
 	
 	remove{
-		controller.remove
+		 SyncCenter.ready.removeDependant(this); 
 	}
 }
 
 SyncCenterServerWidget{
-	var <controller, <view;
+	var <controller, <view, <difView, <remoteCount;
+	var <>red, <>green;
 	
 	*new{ |parent, bounds, server|
-		if(SyncCenter.servers.includes(server) ) {
+		if( true ) {
 			^super.new.init(parent,bounds,server)
 		}
 	}
 	
 	init{ |parent,bounds,server| 
-		var red = Color.red(0.7);
-		var green = Color.green(0.7);
-		var remoteCount = SyncCenter.serverCounts.at(server);
+		red = Color.red(0.7);
+		green = Color.green(0.7);
 		
-		view = RoundNumberBox(parent,bounds)
-			.background_(if( remoteCount.value != -1 ) { green } { red})
-			.value_(remoteCount.value);
+		this.remove;
+		remoteCount = SyncCenter.serverCounts.at(server);
+		
+		view = RoundNumberBox( parent, bounds.asRect.resizeBy( -64, 0 ) );
+		difView = RoundNumberBox( parent, 60 @ (bounds.asRect.height) );
+		this.update;
 			
-		controller = Updater(remoteCount, { |count|
-			{
-				view.value_(count.value);
-				view.background_( if( count.value != -1 ) { green } { red} );
-			}.defer
-		})
+		remoteCount.addDependant(this); // becomes a controller
+		view.onClose_( { remoteCount.removeDependant(this); } );
+	}
+	
+	update { 
+		view.value_(remoteCount.value);
+		view.background_( if( remoteCount.value != -1 ) { green } { red } );
+		if( remoteCount.value != -1 ) { 
+			difView.value = remoteCount.value - 
+				SyncCenter.serverCounts[ SyncCenter.master ].value;
+		};
 	}
 	
 	remove{
-		controller.remove
+		remoteCount.removeDependant(this);
 	}
 }
 

@@ -1,10 +1,10 @@
 + Server {
 	
 	listSendSyncedBundle{ |delta = 1, msgs|
-		this.listSendPosBundle( SyncCenter.getSchedulingSampleCountS(delta,this), msgs ) 
+		SyncCenter.listSendSyncedBundle( this, delta, msgs );
 	}
 	
 	sendSyncedBundle{ |delta = 1 ... msgs|
-		this.sendPosBundle( SyncCenter.getSchedulingSampleCountS(delta,this), *msgs ) 
+		SyncCenter.sendSyncedBundle( this, delta, *msgs );
 	}
 }
