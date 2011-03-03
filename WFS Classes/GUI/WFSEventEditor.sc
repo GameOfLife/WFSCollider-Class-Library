@@ -525,7 +525,7 @@ WFSEventEditor {
 						
 					case { [ \linear, \cubic ].includes( event.wfsSynth.intType ) }
 						{ event.wfsSynth.wfsPath = wfsPathBackup ??
-							 { WFSPath.circle.length_(5); } }
+							 { WFSPath.circle.length_( event.dur ); } }
 						{ [ \static ].includes( event.wfsSynth.intType ) }
 						{  event.wfsSynth.wfsPath = wfsPointBackup ? WFSPoint( 0,0,0 ); }
 						{ [ \plane ].includes( event.wfsSynth.intType ) }

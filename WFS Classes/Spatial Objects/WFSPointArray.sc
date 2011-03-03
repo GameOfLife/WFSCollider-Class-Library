@@ -335,14 +335,22 @@ WFSMixedArray[slot] : WFSArrayBase {
 			Pen.color = Color.white.alpha_(0.8);
 			
 			if( writePaths ) {
+				
 				this.do{ |obj,i|
 					var st;
-					if( obj.isWFSPoint ) {
+					switch(obj.class)
+					{ WFSPoint } {
 						x = obj.x;
 						y = obj.y;
-					} {
+					} 
+					{ WFSPath } {
+						
 						x = obj.center.x;
 						y = obj.center.y;
+					}
+					{ WFSPlane } {
+						x = obj.asWFSPoint.x;
+						y = obj.asWFSPoint.y;	
 					};
 					st = PathName(events[i].filePath).fileName.removeExtension;
 					if( st.notNil ) {
@@ -355,14 +363,21 @@ WFSMixedArray[slot] : WFSArrayBase {
 			};
 			//post x,y positions when moving
 			if(currentIndex.notNil) {
-				
-				if( this[currentIndex].isWFSPoint ) {
+				switch(this[currentIndex].class)
+				{ WFSPoint } {
 					x = this[currentIndex].x;
 					y = this[currentIndex].y;
-				} {
+				} 
+				{ WFSPath } {
+					
 					x = this[currentIndex].center.x;
 					y = this[currentIndex].center.y;
+				}
+				{ WFSPlane } {
+					x = this[currentIndex].asWFSPoint.x;
+					y = this[currentIndex].asWFSPoint.y;
 				};
+				
 				Pen.stringAtPoint("x: "++x.round(0.1)++", y: "++y.round(0.1), Point(20,20))
 			}
 		})
@@ -374,12 +389,17 @@ WFSMixedArray[slot] : WFSArrayBase {
 			bounds = bounds.minItem;
 			
 			this.do{ |path,i|
-				if( path.isWFSPoint ) {
+				switch(path.class)
+				{ WFSPoint } {
 					point = path;
-					
-				} {
+				} 
+				{ WFSPath } {					
 					point = path.center;
+				}
+				{ WFSPlane } {
+					point = path.asWFSPoint
 				};
+				
 				point = point.toScreenCoord(bounds, fromRect);
 				originalPos = mousePos = x@y;	
 				if(Rect.fromPoints(point - 	Point(4,4),point + Point(4,4)).containsPoint(x@y)) {
@@ -401,9 +421,13 @@ WFSMixedArray[slot] : WFSArrayBase {
 
 				point = WFSPoint(x,y).fromScreenCoord(bounds,fromRect);
 				
-				if( this[currentIndex].isWFSPoint ) {
+				
+				switch(this[currentIndex].class)
+				{ WFSPoint } {
 					this[currentIndex] = point;
-				} {
+				} 
+				{ WFSPath } {
+					
 					if(mouseMod.isAlt) {
 						dif = originalPos.y-mousePos.y;
 						this[currentIndex].positions = originalPath.copy.scale((1 + (dif*0.05)).max(0.001)).positions;
@@ -413,19 +437,24 @@ WFSMixedArray[slot] : WFSArrayBase {
 							this[currentIndex].positions = originalPath.copy.rotate(dif).positions;
 							
 						} {
-						this[currentIndex].moveCenterTo(point)
+							this[currentIndex].moveCenterTo(point)
 						}
 					}
-					
+				}
+				{ WFSPlane } {
+					this[currentIndex] = WFSPlane.fromWFSPoint(point * WFSPoint(-1,-1));
 				};
+				
 				mousePos = x@y;
 				v.refresh;
 			}
 			
 		})
 		.mouseUpAction_({ |v,x,y|
+			var current;
 			if(currentIndex.notNil) {
-				if( this[currentIndex].isWFSPoint ) {
+				current = this[currentIndex]; 
+				if( current.isWFSPoint || (current.class == WFSPlane) ) {
 					events[currentIndex].wfsSynth.wfsPath = this[currentIndex]
 				};
 				events[currentIndex].changed;

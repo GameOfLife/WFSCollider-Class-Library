@@ -36,10 +36,10 @@ WFSScoreEditor {
 	*new { |wfsScore, isMainEditor = true, parent |
 		^super.newCopyArgs( wfsScore, isMainEditor, parent)
 			.init
+			.addToAll
 			.newWindow
-			.makeCurrent
-			.addToAll;
-		}
+			.makeCurrent;
+	}
 	
 	*open{
 		Dialog.getPaths( { |paths|	
@@ -158,6 +158,28 @@ WFSScoreEditor {
 		}	
 	}
 	
+	createWindowTitle{
+		^"WFSScoreEditor ( "++
+		if( isMainEditor ) {
+			WFSScoreEditor.all.indexOf(this).asString++" - "++
+			if( score.filePath.isNil ) {
+				"Untitled )"
+			} {
+				PathName(score.filePath).fileName.removeExtension++" )"
+			}
+		} {
+			if( parent.id.notNil ) {
+				("folder of " ++ ( parent !? { parent.id } ))++": " ++ score.name ++ " )"
+			} {
+				"folder: " ++ score.name ++ " )"
+			}
+		};
+	}
+	
+	setWindowTitle{
+		window.window.name = this.createWindowTitle;
+	}
+	
 	save{
 		if(score.filePath.notNil){	
 			score.writeWFSFile( score.filePath ,true, false);
@@ -171,7 +193,8 @@ WFSScoreEditor {
 		Dialog.savePanel( { |path| 
 			score.writeWFSFile( path );
 			dirty = false;
-			score.filePath = path
+			score.filePath = path;
+			this.setWindowTitle;
 		});
 	} 
 	
@@ -186,6 +209,7 @@ WFSScoreEditor {
 					  if( newScore.notNil )
 					  	{ if( score.events.size == 0 )
 					  		{ score = WFSScore.readWFSFile( paths[0] ) ? score;
+						  		this.createWFSEventViews;
 								this.update;  nextFunc.value(index+1); }
 							{ SCAlert( "where do you want to place '%'?"
 								.format( path.basename ),
@@ -196,6 +220,7 @@ WFSScoreEditor {
 								{ score.events = score.events.add(
 									   WFSEvent( 0, newScore ) );
 								score.cleanOverlaps;
+								this.createWFSEventViews;
 							   	this.update; 
 							   	nextFunc.value(index+1);  },
 							   { score.events = 
@@ -209,6 +234,7 @@ WFSScoreEditor {
 									});
 								score.events = score.events ++ newScore.events;
 								score.cleanOverlaps;
+								this.createWFSEventViews;
 								this.update;
 								nextFunc.value(index+1);
 								},
@@ -218,6 +244,7 @@ WFSScoreEditor {
 									});
 								score.events = score.events ++ newScore.events;
 								score.cleanOverlaps;
+								this.createWFSEventViews;
 								this.update;
 								nextFunc.value(index+1);
 								} ]	);
@@ -320,9 +347,9 @@ WFSScoreEditor {
 	}
 	
 	selectSimilar{
-		var selectedTypes = WFSMouseEventsManager.selectedEvents
-			.collect({ |eventView| 
-				(eventView.event.wfsSynth.audioType.asString ++ "_" ++ eventView.event.wfsSynth.intType).asSymbol
+		var selectedTypes = this.selectedEvents
+			.collect({ |event| 
+				(event.wfsSynth.audioType.asString ++ "_" ++ event.wfsSynth.intType).asSymbol
 			});
 		wfsEventViews.do({ |eventView|
 			if(selectedTypes.includes( 
@@ -633,23 +660,8 @@ WFSScoreEditor {
 		views = ();
 		
 		numTracks = ((score.events.collect( _.track ).maxItem ? 14) + 2).max(16);
-	
-		windowTitle = "WFSScoreEditor ( "++
-			if( isMainEditor ) {
-				if( score.filePath.isNil ) {
-					"Untitled )"
-				} {
-					PathName(score.filePath).fileName.removeExtension++" )"
-				}
-			} {
-				if( parent.id.notNil ) {
-					("folder of " ++ ( parent !? { parent.id } ))++": " ++ score.name ++ " )"
-				} {
-					"folder: " ++ score.name ++ " )"
-				}
-			};
 			
-		window = ScaledUserView.window(windowTitle, 
+		window = ScaledUserView.window(this.createWindowTitle, 
 			Rect(230 + 20.rand2, 230 + 20.rand2, 680, 300),
 			fromBounds: Rect( 0, 0, score.duration.ceil.max(1), numTracks ),
 			viewOffset: [4, 27] );
