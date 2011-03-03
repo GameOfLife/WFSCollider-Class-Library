@@ -89,8 +89,8 @@ WFSEvent {
 		stream << this.class.name << "( " << startTime <<  ", " << wfsSynth << " )";
 		}
 	
-	edit { |leftTop, closeOldWindow = true, parent| 
-		WFSEventEditor.new( this, leftTop, closeOldWindow, parent ) }
+	edit { |leftTop, closeOldWindow = true, parent, toFront=false| 
+		WFSEventEditor.new( this, leftTop, closeOldWindow, parent, toFront ) }
 	
 	x { if( [ 'static', 'plane' ].includes( wfsSynth.intType ) )
 			{ ^wfsSynth.wfsPath.x } { ^nil } }
@@ -289,4 +289,48 @@ WFSScore {
 			});
 		}
 	
+	findEmptyTrack { |startTime = 0, endTime = inf|
+		var evts, tracks;
+
+		evts = events.select({ |item|
+			(item.startTime <= endTime) and: (item.endTime >= startTime )
+		});
+
+		tracks = evts.collect(_.track);
+
+		(tracks.maxItem+2).do({ |i|
+			if( tracks.includes( i ).not ) { ^i };
+		});
+	}
+
+	checkIfInEmptyTrack { |evt|
+		var evts, tracks;
+
+		evts = events.detect({ |item|
+			(item.startTime <= evt.endTime) and:
+			(item.endTime >= evt.startTime ) and:
+			(item.track == evt.track)
+		});
+
+		^evts.isNil;
+	}
+
+	addEventToEmptyTrack { |evt|
+		if( this.checkIfInEmptyTrack( evt ).not ) {
+			evt.track = this.findEmptyTrack( evt.startTime, evt.endTime );
+		};
+		events = events.add( evt );
+
+	}
+
+	findCompletelyEmptyTrack {
+		^( (events.collect(_.track).maxItem ? -1) + 1);
+	}
+
+	addEventToCompletelyEmptyTrack { |evt|
+		evt.track = this.findCompletelyEmptyTrack;
+		events = events.add( evt );
+
+	}
+
 }

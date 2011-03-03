@@ -61,10 +61,11 @@
 				out = ((((speakerSpec.cornerPoints[index]
 		 			.collect( _.radianAngleFrom( location ) )
 						- spl[0].radianAngle) * [-1,1])
-					.fold( 0.75pi, 1.75pi ).clip(pi,1.5pi) - pi).sin).product;
-				out.dup( spl.size );
+					.fold( 0.75pi, 1.75pi ).clip(pi,1.5pi) - pi).sinOpt).product;
+				//out.dup( spl.size );
+				out
 				}).flat;
 			}
-			{ ^1  };
+			{ ^speakerSpec.speakerLines.collect({1});  };
 		}
 	}

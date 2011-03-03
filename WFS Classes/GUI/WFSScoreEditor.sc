@@ -245,8 +245,11 @@ WFSScoreEditor {
 							path ), i );
 					newEvent.wfsSynth.useSoundFileDur;
 					newEvent; });
-				score.events = score.events ++ newEvents;
-				score.cleanOverlaps;
+
+				newEvents.do({ |evt|
+					score.addEventToCompletelyEmptyTrack( evt );
+				});
+
 				this.createWFSEventViews;
 				wfsEventViews.keep(newEvents.size.neg).do{ |event|
 					event.selected_(true)
@@ -258,8 +261,9 @@ WFSScoreEditor {
 	addTestEvent{
 		var copiedEvents, newTrack;
 		this.storeUndoState; 
-		score.events = 
-			score.events.add( WFSEvent( WFSTransport.pos ) );		score.cleanOverlaps;
+
+		score.addEventToCompletelyEmptyTrack( WFSEvent( WFSTransport.pos ) );
+
 		this.createWFSEventViews;
 		this.update;
 	}
@@ -277,8 +281,11 @@ WFSScoreEditor {
 				};
 				event.duplicate.track_( newTrack );
 			});
-			score.events = score.events ++ copiedEvents;
-			score.cleanOverlaps;
+
+			copiedEvents.do({ |evt|
+				score.addEventToCompletelyEmptyTrack( evt );
+			});
+
 			this.createWFSEventViews;
 			wfsEventViews.keep(copiedEvents.size.neg).do{ |event|
 					event.selected_(true)
@@ -288,12 +295,12 @@ WFSScoreEditor {
 			};
 	}
 	
-	editSelected {
+	editSelected { |front = false|
 		
 		var selectedEvent;
 		selectedEvent = this.selectedEvents[0];
 		selectedEvent !?	{	
-			selectedEvent.edit( window.window.bounds.rightTop + (5@0), parent: this );
+			selectedEvent.edit( window.window.bounds.rightTop + (5@0), parent: this, toFront: front );
 			if( selectedEvent.isFolder )
 				{ selectedEvent.wfsSynth.edit( this ); }; };
 	}
@@ -396,21 +403,28 @@ WFSScoreEditor {
 	}
 	
 	unpackSelectedFolders{
-		var folderEvents;
+		var folderEvents,newEvents;
 		var selectedEvents = this.selectedEvents;
-		if( selectedEvents.size > 0 and: {	 						folderEvents = selectedEvents.select( _.isFolder );
+		
+		newEvents = [];
+		
+		if( selectedEvents.size > 0 and: { folderEvents = selectedEvents.select( _.isFolder );
 				folderEvents.size > 0  
 				}
 		) {
 			this.storeUndoState;
 			folderEvents.do({ |folderEvent|
-				score.events = score.events
+				newEvents = newEvents
 					++ folderEvent.wfsSynth.events.collect({ |item|
 						item.startTime_( item.startTime + folderEvent.startTime )
 					});
 				score.events.remove( folderEvent );
 			}); 
-			score.cleanOverlaps;
+			
+			newEvents.do({ |evt|
+					score.addEventToCompletelyEmptyTrack( evt );
+			});
+			
 			this.createWFSEventViews;
 			this.update;
 		} { 
@@ -558,8 +572,10 @@ WFSScoreEditor {
 		copyToFolderFunc.value;
 	}
 	
-	plot{ |all = false|
-		var events, paths;
+	plotAtTimeline { |all = false|
+		var events, paths, pos;
+		
+		pos = WFSTransport.pos;
 		
 		events = if( all ) {
 			score.allEvents.select{ |event|
@@ -567,6 +583,39 @@ WFSScoreEditor {
 			}
 		}{
 			score.events.select{ |event|
+				event.isFolder.not and: {event.wfsSynth.wfsPath.notNil }
+			}
+		};
+		
+		events = events.select{ |event|
+			var dur = event.dur;
+			var start = event.startTime;
+			(start < pos) && ((start + dur) > pos)
+		};	
+		
+		paths = events.collect{ |event|
+			event.wfsSynth.wfsPath
+				.currentTime_( event.startTime.neg + WFSTransport.pos )
+		};
+				
+		WFSMixedArray.with(*paths).plotSmooth(events:events); 
+	}		
+
+	plot{ |all = false|
+		var events, paths;
+		
+		events = this.selectedEvents;
+		
+		if(events.size == 0){
+			events = score.events;
+		};
+		
+		events = if( all ) {
+			WFSScore.allEvents(events).select{ |event|
+				event.wfsSynth.wfsPath.notNil
+			}
+		}{
+			events.select{ |event|
 				event.isFolder.not and: {event.wfsSynth.wfsPath.notNil }
 			}
 		};
@@ -580,13 +629,27 @@ WFSScoreEditor {
 					
 	newWindow {		
 		
-		var font = Font( Font.defaultSansFace, 11 ), header;	
+		var font = Font( Font.defaultSansFace, 11 ), header, windowTitle;	
 		views = ();
 		
 		numTracks = ((score.events.collect( _.track ).maxItem ? 14) + 2).max(16);
 	
-		window = ScaledUserView.window( "WFSScoreEditor (" ++ 
-				(id ?? { "folder of " ++ ( parent !? { parent.id } ) } ) ++ ")", 
+		windowTitle = "WFSScoreEditor ( "++
+			if( isMainEditor ) {
+				if( score.filePath.isNil ) {
+					"Untitled )"
+				} {
+					PathName(score.filePath).fileName.removeExtension++" )"
+				}
+			} {
+				if( parent.id.notNil ) {
+					("folder of " ++ ( parent !? { parent.id } ))++": " ++ score.name ++ " )"
+				} {
+					"folder: " ++ score.name ++ " )"
+				}
+			};
+			
+		window = ScaledUserView.window(windowTitle, 
 			Rect(230 + 20.rand2, 230 + 20.rand2, 680, 300),
 			fromBounds: Rect( 0, 0, score.duration.ceil.max(1), numTracks ),
 			viewOffset: [4, 27] );
@@ -637,7 +700,7 @@ WFSScoreEditor {
 			.border_(1)
 			.border_(1)
 			.action_({ |b|
-				this.editSelected
+				this.editSelected(true)
 			});				
 			
 		header.decorator.shift(10);    
@@ -819,7 +882,8 @@ WFSScoreEditor {
 			} )				
 			.mouseMoveAction_( { |v, x, y, mod, x2, y2, isInside| 
 				var snap = if(snapActive){snapH * v.gridSpacingH}{0};
-				wfsMouseEventsManager.mouseMoveEvent(Point(x,y),Point(x2,y2),v,snap);
+				var shiftDown = ModKey( mod ).shift( \only );
+				wfsMouseEventsManager.mouseMoveEvent(Point(x,y),Point(x2,y2),v,snap, shiftDown);
 
 			} )				
 			.mouseUpAction_( { |v, x, y, mod, x2, y2, isInside|

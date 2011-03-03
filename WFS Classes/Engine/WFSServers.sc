@@ -31,12 +31,10 @@ WFSServers {
 	classvar  <>wrapTime = 20.0;
 	classvar <>pulsesOutputBus = 14;
 	
-	var <ips;
+	var <ips, <startPort, <serversPerSystem;
 	var <multiServers;
 	var <masterServer;
-	var <serversPerSystem = 8;
 	var <basicName = "wfs";
-	var startPort = 58000;
 	var <window;
 	var serverLabels;
 	var <>pointer = 0;
@@ -55,27 +53,28 @@ WFSServers {
 	
 	//*initClass { default = WFSServers( "127.0.0.1" ); }
 	
-	*new { | ... ips|
-		^super.newCopyArgs( ips ).init;
+	*new { |ips, startPort = 58000, serversPerSystem = 8|
+		^super.newCopyArgs( ips, startPort, serversPerSystem ).init;
+	}
+	
+	*master { |ips, startPort = 58000, serversPerSystem = 8| 
+		^this.new( ips, startPort, serversPerSystem )
 		}
 	
-	*master { | ... ips| 
-		^this.new( *ips )
-		}
-	
-	*client { | ip |
+	*client { | ip, startPort = 58000, serversPerSystem = 8|
 		ip = ip ? "127.0.0.1";
-		^super.newCopyArgs( [ip] ).init( false );
+		^super.newCopyArgs( [ip], [startPort], serversPerSystem ).init( false );
 		}
 		
 	*single { ^super.newCopyArgs.init; }
 		
 	init { |addMaster = true|
+		[ips,startPort,serversPerSystem].postln;
 		multiServers = ips.collect({ |ip, i|
 			MultiServer.row( 
 				serversPerSystem, 
 				basicName ++ (i+1) ++ "_", 
-				NetAddr( ip, startPort ), 
+				NetAddr( ip, startPort[i] ), 
 				Server.default.options , 
 				synthDefDir: "/Applications/WFSCollider.app/Contents/Resources/synthdefs/");
 			}) ? [];
@@ -88,7 +87,7 @@ WFSServers {
 		if( addMaster ) { 
 			masterServer = Server( 
 				"wfs_master", 
-				NetAddr("127.0.0.1", startPort - 1 ),
+				NetAddr("127.0.0.1", startPort[0] - 1 ),
 				Server.default.options.copy;
 				);
 			};
