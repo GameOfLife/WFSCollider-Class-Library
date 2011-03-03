@@ -1,17 +1,15 @@
 WFSPath2 {
-	var <positions, >times, <c1, <c2;
+	var <positions, >times;
 	var <>name;
-	var <>intType = \cubic; // \cubic, \bspline, \linear (future; add \quad, \step?)
+	var <>type = \cubic; // \cubic, \bspline, \linear (future; add \quad, \step?)
 	var <>curve = 1; // curve = 1: hermite
-	var <>intClipMode = 'clip'; // 'clip', 'wrap', 'fold' // TODO for bspline	
+	var <>clipMode = 'clip'; // 'clip', 'wrap', 'fold' // TODO for bspline	
 	*new { |positions, times, name|
 		^super.newCopyArgs( positions, times ).name_( name ).init;
 	}
 	
 	init {
 		times = times ?? {[1]};
-		c1 = Order(); // user defined (relative, scaled to 0-1) control points are stored here
-		c2 = Order();
 	}
 	
 /// POSITIONS ////////////////////////////////////////
@@ -58,46 +56,22 @@ WFSPath2 {
 /// CONTROLS ////////////////////////////////////////
 
 	controls {
-		var autoControls;
-		if( (c1.size < positions.size) or: { c2.size < positions.size } )
-			{ autoControls = this.generateAutoControls };
-			
-		^positions.collect({ |item, i|
-				[ (c1[i] !? { c1[i].linlin( 0, 1, item, positions.wrapAt(i+1), \none ) }) 
-					?? { autoControls[i][0] },
-				  (c2[i] !? { c2[i].linlin( 0, 1, item, positions.wrapAt(i+1), \none ) }) 
-				  	?? { autoControls[i][1] }
-				];
-			});
-	}
-	
-	putC1 { |index, inC1, absolute = false| // index and inC1 can be arrays
-		this.prPutC( index, inC1, absolute, c1 );
-	}
-	
-	putC2 { |index, inC2, absolute = false|
-		this.prPutC( index, inC2, absolute, c2 );
-	}
-	
-	clearControls { [ c1, c2 ].do(_.makeEmpty) }
-	trimControls { [ c1, c2 ].do({ |order|
-				order = order.select({ |item, i| i < positions.size });
-			});
+		^this.generateAutoControls
 	}
 		
 	generateAutoControls {
 		if( positions.size > 1 )
 		{ 
-		^switch( intType.asString[0].toLower,
-			$c, { positions.allSplineIntControls( curve / 3, intClipMode ).flop },
-			$b, { (	positions.modeAt( (-4..-1), intClipMode ) ++ 
+		^switch( type.asString[0].toLower,
+			$c, { positions.allSplineIntControls( curve / 3, clipMode ).flop },
+			$b, { (	positions.modeAt( (-4..-1), clipMode ) ++ 
 					positions ++ 
-					positions.modeAt( positions.size + (..3), intClipMode ) )
+					positions.modeAt( positions.size + (..3), clipMode ) )
 						.bSplineIntControls.flop[4..positions.size+4]
 				},
 			$l, { positions.size.collect({ |i|
 					var pts;
-					pts = positions.modeAt( [i, i+1], intClipMode );
+					pts = positions.modeAt( [i, i+1], clipMode );
 					[ 	pts[0].blend( pts[1], curve / 3 ),  
 						pts[0].blend( pts[1], 1 - (curve / 3) ) 
 					]
@@ -107,30 +81,36 @@ WFSPath2 {
 		{ ^[  [ positions.first, positions.first ] ] };
 	}
 	
-	prPutC { |index, inC, absolute = false, c|
-		var array;
-		c = c ? c1; 
-		inC = inC.asCollection; 
-		index = index.asCollection;
-		
-		if( absolute )
-			{ array = index.collect({ |item, i| [ item, 
-					inC.wrapAt( i ) !? { inC.wrapAt( i ).asPoint
-						.linlin( positions.at( i ), positions.wrapAt( i + 1 ), 0, 1, \none ); }
-					 ]; }); 
-			}
-			{ array = index.collect({ |item, i| [ item, 
-					inC.wrapAt( i ) !? { inC.wrapAt( i ).asPoint } ]; }); 
-			};
-					
-		array.do({ |item| c[ item[0] ] = item[1]; });
-	}
+/// SELECTION //////////////////////////////////////////
 
 	
+	copySelection { |indices, newName = "selection" | // indices should not be out of range!
+		var pos, tim;
+		indices = indices ?? { (..positions.size-1) };
+		pos = positions[ indices ].collect(_.copy);
+		tim = times[ indices[ 0..indices.size-2 ] ];
+		^this.class.new( pos, tim, newName );
+	}
+	
+	putSelection { |indices, selectionPath| // in place operation !!
+		selectionPath = selectionPath.asWFSPath; 
+		indices = indices ?? { (..selectionPath.positions.size-1) };
+		indices.do({ |item, i|
+			positions.put( item, selectionPath.positions[i].copy );
+			if( i < selectionPath.times.size ) { times.put( item, selectionPath.times[i] ) };
+		});	
+	}	
+
 //// COMPAT WITH OLD WFSPATH VERSION ////////////////////////////////////////
 
 	forceTimes { |timesArray| times = timesArray.asCollection; }
 	length { ^this.duration } 
 	atTime2 { |time = 0, loop = true| ^this.atTime( time ); }
+	
+	// these are still used in WFSPathEditor2
+	intType { ^type }
+	intClipMode { ^clipMode }
+	intType_ { |type| this.type = type }
+	intClipMode_ { |mode| this.clipMode = mode }
 	
 }

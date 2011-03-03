@@ -141,7 +141,39 @@
 }
 	
 + PointSpec {
-	makeView {
+	makeView { |parent, bounds, label, action, resize|
+		var vws, view, labelWidth;
+		vws = ();
+		
+		// TODO
+		bounds.isNil.if{bounds= 160@20};
+		
+		#view, bounds = EZGui().prMakeMarginGap.prMakeView( parent, bounds );
+		 vws[ \view ] = view;
+		 		
+		if( label.notNil ) {
+			labelWidth = (RoundView.skin ? ()).labelWidth ? 60;
+			vws[ \labelView ] = StaticText( vws[ \view ], labelWidth @ bounds.height )
+				.string_( label.asString ++ " " )
+				.align_( \right )
+				.resize_( 4 )
+				.applySkin( RoundView.skin );
+		} {
+			labelWidth = 0;
+		};
+		
+		vws[ \x ] = SmoothNumberBox( vws[ \view ], 
+			Rect( labelWidth + 2, 0, 40, bounds.height ) ).value_(0);
+			
+		vws[ \xy ] = XYView( vws[ \view ],
+			Rect( labelWidth + 2 + 42, 0, bounds.height, bounds.height ) );
+			
+		vws[ \y ] =  SmoothNumberBox( vws[ \view ], 
+			Rect( labelWidth + 2 + 42 + bounds.height + 2, 0, 40, bounds.height ) ).value_(0);
+		
+		^vws;
+	
+		
 	}
 }
 

@@ -29,7 +29,7 @@ w.addFlowLayout;
 RoundView.useWithSkin( ( 
 	labelWidth: 40, 
 	font: Font( Font.defaultSansFace, 10 ), 
-	hiliteColor: Color.gray(0.25)
+	hiliteColor: Color.gray(0.33),
 ), { 
 	SmoothButton( w, 16@16 )
 		.label_( ['power', 'power'] )
