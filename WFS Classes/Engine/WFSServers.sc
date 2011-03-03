@@ -66,7 +66,7 @@ WFSServers {
 		^super.newCopyArgs( [ip], [startPort], serversPerSystem ).init( false );
 		}
 		
-	*single { ^super.newCopyArgs.init; }
+	*single { ^super.newCopyArgs(nil,[58000],8).init; }
 		
 	init { |addMaster = true|
 		[ips,startPort,serversPerSystem].postln;
@@ -96,7 +96,15 @@ WFSServers {
 		activityDict = IdentityDictionary[];
 		multiServers.do({ |ms| ms.servers.do({ |srv| activityDict[ srv ] = 0 }) });
 		
+		if( this.isMaster ){
+			SyncCenter.addAll(multiServers.collect{ |msv| msv.servers }.flat);
+			SyncCenter.master_(masterServer);
+		};
+		
+		if( this.isSingle ) {
+			SyncCenter.master_(masterServer);
 		}
+	}
 		
 	m { ^masterServer; }
 	
@@ -127,12 +135,14 @@ WFSServers {
 	hasMasterServer { ^masterServer.notNil }
 	
 	makeWindow {
-		var comp;
-
-		if( window.notNil && { window.dataptr.notNil }) { window.front; ^this };
+		var comp, widgets = List.new;
 		
-		window = SCWindow("WFSServers", Rect(10, 10, 340, 8 +
+		if( window.notNil && { window.isClosed.not }) { window.front; ^this };
+		
+		window = SCWindow("WFSServers", Rect(10, 10, 440, 8 +
 			( (ips.size * serversPerSystem)  * (22)) + (ips.size * 16 ) ), false).front;
+		
+		window.onClose_({ widgets.do(_.remove) });
 		
 		window.view.decorator = FlowLayout(window.view.bounds);
 
@@ -183,13 +193,13 @@ WFSServers {
 				window.bounds = window.bounds + Rect( 0, 0, 0, 45 + 20 + 20 );
 				
 				SCButton( window, Rect( 0, 0, 110, 16 ) )
-					.states_( [["get sync delays"]] )
+					.states_( [["sync"]] )
 					.font_( Font( "Monaco", 9 ) )
 					.action_( {
-						this.getSync( { |val, i, ii|
-							{ delayViews[i][ii].value = val.round(1); }.defer;
-							}, true; );
-						} );
+						SyncCenter.remoteSync;	
+					} );
+				
+				widgets.add(SyncCenterStatusWidget(window,17));		
 						
 				SCButton( window, Rect( 0, 0, 90, 16 ) )
 					.states_( [["open hosts"]] )
@@ -310,11 +320,9 @@ WFSServers {
 			window.view.decorator.nextLine;
 			
 			multiServer.servers.do({ |server, ii| 
-				if( masterServer.notNil )
-					{ delayViews[i][ii] =
-						SCNumberBox( window, Rect(0,0,25,17) )
-							.value_( syncDelays[ i ][ ii ].round(1) )
-							.enabled_( false ); };
+				if( this.isMaster ) {
+					widgets.add(SyncCenterServerWidget(window,70@17,server))
+				};
 				server.makeView( window ); 
 				});
 			});

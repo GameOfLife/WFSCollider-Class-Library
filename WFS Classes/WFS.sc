@@ -53,13 +53,13 @@ WFS {
 			if(dict[\hostname].notNil){
 				"starting server mode".postln;
 				WFSConfiguration.default = wfsConf.partial(dict[\serverNumber],dict[\numberOfServers]);
-				WFS.startupServer( dict[\hostname], dict[\startPort] ? 58000, dict[\serversPerSystem] ? 8 );
+				WFS.startupServer( dict[\hostname], dict[\startPort] ? 58000, dict[\scsynthsPerSystem] ? 8 , dict[\soundCard] ? "JackRouter" );
 			};
 			
 			if(dict[\ips].notNil){
 				"starting client mode".postln;
 				WFSConfiguration.default = wfsConf;
-				WFS.startupClient( dict[\ips], dict[\startPorts] ?? { 58000 ! 2 }, dict[\serversPerSystem] ? 8, dict[\hostnames] );
+				WFS.startupClient( dict[\ips], dict[\startPorts] ?? { 58000 ! 2 }, dict[\scsynthsPerSystem] ? 8, dict[\hostnames], dict[\soundCard] ? "MOTU 828mk2" );
 			};
 			
 		}{
@@ -119,33 +119,36 @@ WFS {
 		
 	}
 	
-	*startupClient{ |ips, startPort, serversPerSystem = 8, hostnames|
+	*startupClient{ |ips, startPort, serversPerSystem = 8, hostnames, soundCard = "MOTU 828mk2"|
 		var server;
 		if( Buffer.respondsTo( \readChannel ).not )
 			{ scVersion = \old };
 		this.setServerOptions;
-		Server.default.options.device_( "MOTU 828mk2" );
+		Server.default.options.device_( soundCard );
 		server = WFSServers( ips, startPort, serversPerSystem ).makeDefault;
 		server.hostNames_( *hostnames );
 		
 		server.wfsConfigurations = 
 			[ WFSConfiguration.halfRect2_1, WFSConfiguration.halfRect2_2 ];
-				
+						
 		// live eq (todo: incorporate in software)
 		WFSEQ.action = { |eq, label, val, desc|
 			WFSServers.default.allServers
 				.do({ |sv| sv.sendMsg( "/n_set", 1, label, val ); });
 		};
 		// end life eq
-		server.makeWindow;	
+		server.makeWindow;
 		
-		server.m.waitForBoot({ 
+		SyncCenter.writeDefs;
+		
+		server.m.waitForBoot({
+			SyncCenter.loadMasterDef;
 			"\n\tWelcome to the WFS System".postln; 
 		});	
 		^server	
 	}
 	
-	*startupServer{ |hostName, startPort = 58000, serversPerSystem = 8|
+	*startupServer{ |hostName, startPort = 58000, serversPerSystem = 8, soundCard = "JackRouter"|
 		var server, serverCounter = 0;
 		
 		if( Buffer.respondsTo( \readChannel ).not )
@@ -153,7 +156,7 @@ WFS {
 		
 		this.setServerOptions;	
 		
-		Server.default.options.device_( "JackRouter" );
+		Server.default.options.device_( soundCard );
 		server = WFSServers.client(nil, startPort, serversPerSystem).makeDefault;
 		server.hostNames_( hostName );
 		server.wfsConfigurations = [ WFSConfiguration.default ];
@@ -168,6 +171,7 @@ WFS {
 			allTypes = WFSSynthDef.allTypes( server.wfsConfigurations[0] );
 			allTypes.do({ |def| def.def.writeDefFile });
 			server.writeServerSyncSynthDefs;
+			SyncCenter.writeDefs;
 			server.multiServers[0].servers.do({ |server|
 				server.loadDirectory( SynthDef.synthDefDir );
 				});
