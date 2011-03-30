@@ -216,39 +216,44 @@
 	}
 
 	playNowOffline { |wfsServers, startTime = 0|
-		var nodeID, serverIndex, servers;
+		"playoffline".postln;
+		SyncCenter.localSync({
+			var nodeID, serverIndex, servers;
 		
-		#serverIndex, servers =  
-			wfsServers.nextArray( this.typeActivity );
-
-		this.prepareForPlayback;
-					 
-		WFS.debug( "% - s:%, %", WFS.secsToTimeCode( startTime ),			serverIndex,
-			filePath );
-				
-		this.load( servers );		
+			#serverIndex, servers =  
+				wfsServers.nextArray( this.typeActivity );
+	
+			this.prepareForPlayback;
+						 
+			WFS.debug( "% - s:%, %", WFS.secsToTimeCode( startTime ),serverIndex,
+				filePath );
+					
+			this.load( servers )
+		});		
 	}
 
 	playNowClient { |wfsServers, startTime = 0|
-		var nodeID, serverIndex, servers;
-		
-		//if( this.intType == \switch ) { "playing switch".postln; };
-
-		wfsServers = wfsServers ? WFSServers.default; 
-		
-		if( prefServer.notNil )
-			{ servers = [ wfsServers.nextDictServer(  this.typeActivity, prefServer ) ];  }
-			{ servers = wfsServers.nextDictServers( this.typeActivity );  };
+		SyncCenter.localSync({
+			var nodeID, serverIndex, servers;
 			
-		if( this.useSwitch && (this.intType != \switch) )
-			{ this.copyNew
-				.intType_( \switch ).playNowClient( wfsServers, startTime ); };
-		
-		this.prepareForPlayback;
-					 
-		WFS.debug( "% - s:%, %", WFS.secsToTimeCode( startTime ), serverIndex, filePath );
-					
-		this.load( servers );
+			//if( this.intType == \switch ) { "playing switch".postln; };
+	
+			wfsServers = wfsServers ? WFSServers.default; 
+			
+			if( prefServer.notNil )
+				{ servers = [ wfsServers.nextDictServer(  this.typeActivity, prefServer ) ];  }
+				{ servers = wfsServers.nextDictServers( this.typeActivity );  };
+				
+			if( this.useSwitch && (this.intType != \switch) )
+				{ this.copyNew
+					.intType_( \switch ).playNowClient( wfsServers, startTime ); };
+			
+			this.prepareForPlayback;
+						 
+			WFS.debug( "% - s:%, %", WFS.secsToTimeCode( startTime ), serverIndex, filePath );
+						
+			this.load( servers );
+		})
 	}		
 			
 		

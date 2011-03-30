@@ -108,6 +108,7 @@ WFS {
 		server.makeWindow;
 		server.m.waitForBoot({ 
 			server.loadWFSSynthDefs;
+			SyncCenter.loadMasterDefs;
 			WFSEQ.new; WFSTransport.new; WFSLevelBus.makeWindow;
 			
 			"\n\tWelcome to the WFS Offline System".postln	
@@ -142,7 +143,7 @@ WFS {
 		SyncCenter.writeDefs;
 		
 		server.m.waitForBoot({
-			SyncCenter.loadMasterDef;
+			SyncCenter.loadMasterDefs;
 			"\n\tWelcome to the WFS System".postln; 
 		});	
 		^server	

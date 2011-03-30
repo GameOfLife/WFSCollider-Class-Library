@@ -89,22 +89,27 @@ SyncCenter {
 		});
 	}
 			
-	*masterDef { 
-		^SynthDef( "sync_master", { |out = 0, amp = 0.1, id = 99|
+	*masterDefs { 
+		^[SynthDef( "sync_master", { |out = 0, amp = 0.1, id = 99|
 			var trig;
 			trig = OneImpulse.ar; // also frees itself
 			OffsetOut.ar( out, trig * amp );
 			SendTrig.ar( trig, id, SpawnOffset.ir );
-		});
+		}),
+		SynthDef( "sync_local_master", {
+			SendTrig.ar( OneImpulse.ar, 98, SpawnOffset.ir );
+		})
+		]
+		
 	}
 	
 	*writeDefs{
 		this.recDef.writeDefFile;
-		this.masterDef.writeDefFile;
+		this.masterDefs.do(_.writeDefFile);
 	}
 	
-	*loadMasterDef{
-		this.masterDef.load( master )
+	*loadMasterDefs{
+		this.masterDefs.do( _.load( master ) )
 	}
 	
 	*sendDefs { |write = false|
@@ -114,10 +119,10 @@ SyncCenter {
 				
 			if( write ) {
 				this.servers.do({ |server| recdev.load( server ) });
-				this.masterDef.load( master );
+				this.masterDefs.do( _.load( master ) );
 			} { 
 				this.servers.do({ |server| recdev.send( server ) });
-				this.masterDef.send( master )
+				this.masterDefs.do( _.send( master ) )
 			};
 		}
 	}
@@ -222,7 +227,7 @@ SyncCenter {
 		if( mode === 'sample' ) {	
 			time = thisThread.seconds + latency;
 			busy = true;
-			synth = Synth.sched( latency, "sync_master", [\amp, 0, \id, 98 ], master, \addToHead )
+			synth = Synth.sched( latency, "sync_local_master", target:master, addAction: \addToHead )
 				.onTrig_( { |value, time, responder, msg|
 					var numOfBlocks, offsetInsideBlock;
 					numOfBlocks = msg[4];
@@ -232,13 +237,13 @@ SyncCenter {
 					busy = false;
 					if( makeCurrent ) { this.class.current = this };
 					this.class.changed( \localSync, this );
-					action.value( this );
-					if(verbose) {
+					if(SyncCenter.verbose) {
 						 "Local sync successful!".postln;
 					};
+					action.value( this );
 				}, 98 );
 				
-			if( verbose ) {	
+			if( SyncCenter.verbose ) {	
 				{	0.5.wait;
 					if( busy ) {
 						 "Local sync failed (timeout)".postln;
