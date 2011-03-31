@@ -1,5 +1,5 @@
 (
-WFS.startup;
+//WFS.startup;
 WFS.debugMode = true;
 
 ~slaves = WFSServers.default.multiServers.collect(_.servers).flat;
@@ -33,7 +33,7 @@ SyncCenter.outBus = 0;
 Server.killAll
 
 SyncCenterGui.new
-
+SyncCenter.verbose = true
 SyncCenter.serverCounts.pairsDo{ |a,b| [a,b].postln }
 SyncCenter.servers.as(Array)
 
