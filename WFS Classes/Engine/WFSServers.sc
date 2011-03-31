@@ -66,7 +66,7 @@ WFSServers {
 		^super.newCopyArgs( [ip], [startPort], serversPerSystem ).init( false );
 		}
 		
-	*single { ^super.newCopyArgs(nil,[58000],8).init; }
+	*single { ^super.newCopyArgs.init; }
 		
 	init { |addMaster = true|
 		[ips,startPort,serversPerSystem].postln;
