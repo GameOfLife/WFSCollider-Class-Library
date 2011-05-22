@@ -201,7 +201,7 @@ SyncCenter {
 				masterCountTime = thisThread.seconds + waitTime;
 				Synth.sched( waitTime, "sync_master", [\out, outBus], master, \addToHead );
 				if( verbose ) { "playing impulse".postln };
-				0.5.wait; // wait another 0.5s for the messages to come in
+				(waitTime + 0.5).wait; // wait another 0.5s for the messages to come in
 				if( ready.value ) {
 					this.changed( \synced );
 					if( verbose ) { "Sync successful!".postln };

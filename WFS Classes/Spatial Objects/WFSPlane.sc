@@ -34,7 +34,7 @@ WFSPlane {  /// plane wave
 		
 	*fromWFSPoint { |wfsPoint|
 		wfsPoint = wfsPoint.asWFSPoint;
-		^this.new( wfsPoint.angleTo( 0 ), wfsPoint.distance )
+		^this.new( wfsPoint.angleFrom( 0 ), wfsPoint.distance )
 		}
 		
 	angle { ^WFSTools.fromRadians( radianAngle ) }
