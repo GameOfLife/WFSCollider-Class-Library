@@ -61,7 +61,13 @@ WFSUnitDef : GenericDef {
 		
 		synthDef = SynthDef( this.class.prefix ++ name.asString, func );
 		
-		argSpecs = ArgSpec.fromFunc( func, argSpecs ); // leave out the first arg 
+		argSpecs = ArgSpec.fromSynthDef( synthDef, argSpecs );
+		
+		argSpecs.do({ |item|
+			if( item.name.asString[..4].asSymbol == 'wfsu_' ) {
+				item.private = true;
+			};
+		});
 	}
 	
 	addToAll { |name|
@@ -93,6 +99,19 @@ WFSUnitDef : GenericDef {
 		unit.synths.do(_.set(*keyValuePairs));
 	}
 	
+	printOn { arg stream;
+		stream << "a " << this.class.name << "(" <<* [this.name]  <<")"
+	}
+
+	storeOn { arg stream;
+		stream << this.class.name << "(" <<* [
+			this.name.asCompileString, 
+			func.asCompileString,
+			argSpecs.asCompileString,
+			category.asCompileString
+		]  <<")"
+	}
+	
 	*allNames { ^this.class.all.keys.as( Array ).sort }
 	
 }
@@ -109,7 +128,11 @@ WFSUnit : ObjectWithArgs {
 	*defClass { ^WFSUnitDef }
 	
 	init { |inName, inArgs|
-		def = this.class.defClass.fromName( inName.asSymbol );
+		if( inName.isKindOf( this.class.defClass ) ) {
+			def = inName;
+		} {
+			def = this.class.defClass.fromName( inName.asSymbol );
+		};
 		if( def.notNil ) {	
 			args = def.asArgsArray( inArgs );
 		} { 
@@ -164,7 +187,18 @@ WFSUnit : ObjectWithArgs {
 		def.setSynth( this, *args );
 	}
 	
-	defName { ^def.name }
+	defName { ^def !? { def.name } }
+	
+	printOn { arg stream;
+		stream << "a " << this.class.name << "(" <<* [this.defName, args]  <<")"
+	}
+
+	storeOn { arg stream;
+		stream << this.class.name << "(" <<* [
+			( this.defName ? this.def ).asCompileString,
+			args.asCompileString
+		]  <<")"
+	}
 	
 	asWFSUnit { ^this }
 	

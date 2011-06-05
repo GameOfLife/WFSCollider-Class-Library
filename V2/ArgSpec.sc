@@ -1,3 +1,13 @@
+/*
+f = { |a=1, b=2| a+b };
+
+x = ArgSpec.fromFunc( f ); // array of ArgSpecs
+
+x.postln; // -> [ an ArgSpec(a, 1), an ArgSpec(b, 2) ]
+
+*/
+
+
 ArgSpec : Spec {
 	var <>name, <>default, <>spec;
 	var <>private = false;
@@ -61,6 +71,19 @@ ArgSpec : Spec {
 	
 	asArgSpec { ^this }
 	
+	printOn { arg stream;
+		stream << "an " << this.class.name << "(" <<* [name, default]  <<")"
+	}
+
+	storeOn { arg stream;
+		stream << this.class.name << "(" <<* [
+			name.asCompileString, 
+			default.asCompileString, 
+			( spec.findKey ? spec ).asCompileString, 
+			private
+		]  <<")"
+	}
+
 	*fromArgsArray { |args| // creates array of ArgSpecs
 		
 		if( args.notNil && { args[0].class == Symbol } ) { // assume synth-like arg pairs
@@ -90,6 +113,30 @@ ArgSpec : Spec {
 		});
 		
 	}
+	
+	*fromSynthDef { |synthDef, args| // creates array of ArgSpecs
+		var argNames, values, inArgNames;
+		var allControlNames;
+		
+		args = this.fromArgsArray( args ); // these overwrite the ones found in the func
+		inArgNames = args.collect(_.name);
+		
+		allControlNames = synthDef.allControlNames;
+		argNames = (allControlNames.collect(_.name) ? #[]);
+		values = allControlNames.collect(_.defaultValue) ? #[];
+		
+		^argNames.collect({ |key, i|
+			var inArgIndex;
+			inArgIndex = (inArgNames ? []).indexOf( key );
+			if( inArgIndex.isNil ) {
+				ArgSpec( key, values[i] );
+			} {
+				args[ inArgIndex ];
+			};
+		});
+		
+	}
+
 
 }
 

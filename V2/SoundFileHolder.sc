@@ -6,13 +6,17 @@ SoundFileHolder {
 	// aditional parameters for Buffer loading settings
 	
 	var <>path, <>numFrames, <>numChannels = 1, <>sampleRate = 44100;
+	var <>mode = 'buffer'; // or 'disk'
 	var <>startFrame = 0, >endFrame, <>useChannels;  // for buffer loading
-	var <>rate = 1, <>loop = false;
+	var <rate = 1, <>loop = false;
 	
-	var <>synths; // holder for the playback synths
+	var <>diskBufferSize = 32768;
 	
-	*new { |path, numFrames, numChannels, sampleRate|
-		^super.newCopyArgs( path, numFrames, numChannels, sampleRate );
+	var <>synths; // holder for the instant playback synths
+	var <>buffers; // holder for all buffers
+	
+	*new { |path, numFrames, numChannels, sampleRate = 44100, mode = 'buffer'|
+		^super.newCopyArgs( path, numFrames, numChannels, sampleRate, mode );
 	}
 	
 	*fromFile { |path| // path of existing file or SoundFile
@@ -28,17 +32,24 @@ SoundFileHolder {
 	
 	readFromFile { |soundfile|
 		var test = true;
-		if( soundfile.isNil or: { soundfile.isOpen.not } )
-			{	soundfile = soundfile ?? { SoundFile.new }; 
-			  	test = soundfile.openRead( path.standardizePath ) 
-			};
-		if( test )
-			{	numFrames = soundfile.numFrames;
-				numChannels = soundfile.numChannels;
-				sampleRate = soundfile.sampleRate;
-				^true;
-			}
-			{ ^false };
+		if( soundfile.isNil or: { soundfile.isOpen.not } ) {
+			soundfile = soundfile ?? { SoundFile.new }; 
+			test = soundfile.openRead( path.standardizePath );
+			soundfile.close; // close if it wasn't open
+		};
+		if( test ) {	
+			numFrames = soundfile.numFrames;
+			numChannels = soundfile.numChannels;
+			sampleRate = soundfile.sampleRate;
+			^true;
+		} { 
+			^false 
+		};
+	}
+	
+	rate_ { |newRate|
+		rate = newRate ? 1;
+		synths.do( _.set( \rate, rate ) );
 	}
 	
 	endFrame { if( numFrames.notNil ) 
@@ -68,67 +79,123 @@ SoundFileHolder {
 	
 	asSoundFile { ^SoundFile.openRead(path) } // forgets settings
 	
-	// playback / buffer methods
+	// buffer creation methods
 	
-	asBuffer { |server, action, bufnum|
-		if( useChannels.notNil )
-			{ ^Buffer.readChannel( server, path.standardizePath, 
-					startFrame, this.usedFrames, useChannels, action, bufnum ); } 
-			{ ^Buffer.read( server, path.standardizePath, 
-					startFrame, this.usedFrames, action, bufnum );
-			};
+	prReadBuffer { |server, startOffset = 0, action, bufnum|
+		if( useChannels.notNil ) { 
+			^Buffer.readChannel( server, path.standardizePath, 
+					startFrame + startOffset, this.usedFrames, useChannels, action, bufnum ); 
+		} { 
+			^Buffer.read( server, path.standardizePath, 
+					startFrame + startOffset, this.usedFrames, action, bufnum );
+		};
 	}
 	
-	cueSoundFile {  arg server, action, bufnum, bufferSize=32768;
-		// useChannels and endFrame doesn't work
-		^Buffer.alloc(server, bufferSize, numChannels,
-			{ arg buffer;
-				buffer.readMsg(path, startFrame, bufferSize, 0, true,
-					{|buf|["/b_query", buf.bufnum]});
+	prCueSoundFile {  |server, startOffset = 0, action, bufnum| 
+			// useChannels and endFrame not used
+		var test = true;
+		
+		if( numChannels.isNil ) { 
+			test = this.readFromFile; // get numchannels etc.
+		};
+		
+		if( test ) {
+			^Buffer.alloc(server, diskBufferSize, numChannels, { arg buffer;
+				buffer.readMsg(path, startFrame + startOffset, diskBufferSize, 0, true, {|buf|
+					["/b_query", buf.bufnum]
+				});
 			}).doOnInfo_(action).cache;
+		} {
+			"Buffer:prCueSoundfile : file not found".warn;
+		};
 	}
 	
-	play { |server, mul = 1, out = 0, disk = false|
-		if( disk )
-			{ ^this.playDisk( server, mul, out ) }
-			{ ^this.playBuffer( server, mul, out ) }; 
+	makeBuffer { |server, startOffset, action, bufnum|
+		var buf;
+		if( mode == 'disk' ) {
+			buf = this.prCueSoundFile( server, startOffset, action, bufnum );		} {
+			buf = this.prReadBuffer( server, startOffset, action, bufnum );
+		};
+		buffers = buffers.add( buf );
+		^buf;
 	}
 	
-	playBuffer { |server, mul = 1, out = 0| // returns buffer, not synth
+	freeBuffer { |buf, action|
+		if( mode == 'disk' ) {
+			buf.checkCloseFree( action );
+		} {
+			buf.checkFree( action );
+		};
+		buffers.remove( buf );
+	}
+	
+	currentBuffers { |server|
+		if( server.notNil ) {
+			^buffers.select({ |item| item.server == server });
+		};
+		^buffers;
+	}
+	
+	freeAllBuffers { |server|
+		this.currentBuffers( server ).do( this.freeBuffer(_) );
+	}
+	
+	resetBuffers { |server|
+		this.currentBuffers( server ).do({ |buf|
+			buffers.remove( buf );
+		});
+	}
+	
+	// playback methods
+	
+	play { |server, startOffset = 0, mul = 1, out = 0|
+		if( mode == 'disk' )
+			{ ^this.playDisk( server, startOffset, mul, out ) }
+			{ ^this.playBuffer( server, startOffset, mul, out ) }; 
+	}
+	
+	playBuffer { |server, startOffset = 0, mul = 1, out = 0| // returns buffer, not synth
 		var action = { |buf| // copied and modified from Buffer:play
 			synths = synths.add(	
 				{ var player;
 					player = PlayBuf.ar( buf.numChannels, buf,
-						BufRateScale.kr( buf ) * rate,
+						BufRateScale.kr( buf ) * \rate.kr(rate),
 						loop: loop.binaryValue, 
 						doneAction: if( loop ) { 0 } { 2 });
 					Out.ar( out, player * mul );
 				}.play( buf.server ).freeAction_({ |synth| 
 						synths.remove( synth );
-						buf.checkFree; // clean up afterwards
+						this.freeBuffer( buf );
 					}) 
 			); 
 		};
 		
 		// TODO : replace with single synthdef instead of .play
 		
-		^this.asBuffer( server, action );
+		^this.makeBuffer( server, startOffset, action );
 		}
 	
-	playDisk { |server, mul = 1, out = 0| // only one at a time per server
-		
+	playDisk { |server, startOffset = 0, mul = 1, out = 0| // only one at a time per server
 		var action = { |buf|
-			synths = synths.add( { var diskin = VDiskIn.ar( 1, buf, rate ); 
-				Env([1,1],[this.duration]).kr(2);
-				Out.ar( out, diskin * mul );
-			}.play( buf.server ).freeAction_({ |synth|
+			synths = synths.add( 
+				{ var diskin;
+					diskin = VDiskIn.ar( numChannels, buf, \rate.kr( rate ), loop.binaryValue ); 
+					if( loop.booleanValue.not ) {
+						Line.kr(0,1, this.duration - (startOffset / sampleRate), doneAction:2);
+					};
+					Out.ar( out, diskin * mul );
+				}.play( buf.server ).freeAction_({ |synth|
 				 	synths.remove( synth );
-					buf.checkCloseFree; 
+					this.freeBuffer( buf );
 				});
 			);
 		};
 		
-		^this.cueSoundFile( server, action );
+		^this.makeBuffer( server, startOffset, action );
+	}
+	
+	stop {
+		this.freeSynths;
 	}
 	
 	freeSynths { synths.do(_.free) }

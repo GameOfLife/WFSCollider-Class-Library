@@ -32,14 +32,18 @@ WFSUnitGUI {
 		views = ();
 		
 		unit.args.pairsDo({ |key, value, i|
-			var vw;
+			var vw, argSpec;
 			
-			vw = ObjectView( composite, nil, unit, key, 
-					unit.def.specs[i/2], controller );
+			argSpec = unit.def.argSpecs[i/2];
 			
-			vw.action = { action.value( this, key, value ); };
-			
-			views[ key ] = vw;
+			if( argSpec.private.not ) { // show only if not private
+				vw = ObjectView( composite, nil, unit, key, 
+						argSpec.spec, controller );
+				
+				vw.action = { action.value( this, key, value ); };
+				
+				views[ key ] = vw;
+			}
 		
 		});
 	}
