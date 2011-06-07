@@ -26,13 +26,13 @@ WFSUnitOut : WFSUnitIn {
 	*ar { |id = 0, channelsArray|
 		var name = this.getControlName( 'o', 'ar', id );
 		id = (name ++ "_bus").asSymbol.kr( id );
-		^Out.ar( this.firstPrivateBus + id, channelsArray );
+		^ReplaceOut.ar( this.firstPrivateBus + id, channelsArray );
 	}
 	
 	*kr { |id = 0, channelsArray|
 		var name = this.getControlName( 'o', 'kr', id );
 		id = (name ++ "_bus").asSymbol.kr( id );
-		^Out.kr( this.firstPrivateBus + id, channelsArray );
+		^ReplaceOut.kr( this.firstPrivateBus + id, channelsArray );
 	}
 }
 

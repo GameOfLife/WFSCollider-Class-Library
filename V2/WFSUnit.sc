@@ -44,22 +44,18 @@ WFSUnitDef : GenericDef {
 	var <>func, <>category;
 	var <>synthDef;
 	
-	*initClass {
-		this.all = IdentityDictionary();
-	}
-	
 	*new { |name, func, args, category|
-		^super.new( name, args ).init( func, name ).category_( category ? \default );
+		^super.new( name, args ).init( func ).category_( category ? \default );
 	}
 	
 	*prefix { ^"wfsu_" }
 		
-	init { |inFunc, name|
+	init { |inFunc|
 		var argNames, values;
 		
 		func = inFunc;
 		
-		synthDef = SynthDef( this.class.prefix ++ name.asString, func );
+		synthDef = SynthDef( this.class.prefix ++ this.name.asString, func );
 		
 		argSpecs = ArgSpec.fromSynthDef( synthDef, argSpecs );
 		
@@ -70,10 +66,7 @@ WFSUnitDef : GenericDef {
 		});
 	}
 	
-	addToAll { |name|
-		this.class.all[ name ] = this;
-	}
-	
+	// this may change
 	loadSynthDef { |server|
 		synthDef.load(server);
 	}
@@ -111,9 +104,7 @@ WFSUnitDef : GenericDef {
 			category.asCompileString
 		]  <<")"
 	}
-	
-	*allNames { ^this.class.all.keys.as( Array ).sort }
-	
+		
 }
 
 WFSUnit : ObjectWithArgs {

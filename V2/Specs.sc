@@ -362,11 +362,15 @@ BufferSpec : Spec {
 
 SoundFileSpec : BufferSpec {
 	
-	var <>sampleRates = \any; // 'any', value or array
-	var <>diskIn = false;
+	var <>sampleRate = \any; // 'any', value or array
+	var <>numChannels = \any; // 'any' or number
+	var <>mode = \buffer; // or 'disk'
 	
 	*testObject { |obj|
-		^obj.class == SoundFile;
+		^obj.isKindOf( BufSoundFile );
+	}
+	
+	constrain {
 	}
 	
 	*newFromObject { |obj|
