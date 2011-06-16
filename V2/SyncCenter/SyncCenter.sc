@@ -27,6 +27,7 @@ SyncCenter {
 	classvar <>global;
 	classvar <>ready;
 	classvar <>inBus = 0, <>outBus = 14;
+	classvar <>latency = 0.2;
 	
 	classvar <>current;
 	

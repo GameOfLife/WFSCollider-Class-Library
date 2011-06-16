@@ -33,8 +33,10 @@
 	
 + WFSScore {
 
-	*stop { WFSSynth.clock.clear; 
+	*stop {
+			WFSSynth.clock.clear; 
 			SystemClock.clear;
+			WFSSynth.freeAllBuffers;
 			WFSSynth.freeAllSynths;
 			WFSSynth.resetLoadedSynths;
 			WFSServers.default.resetActivity;
@@ -73,7 +75,6 @@
 	release { synth.asCollection.do( _.release ); isRunning = false; }
 	
 	freeBuffers {
-		"entered freeBuffers".postln;
 		if( buffersLoaded.not ) { 
 			"WFSSynth-freeBuffers: buffers are probably not loaded".postln; };
 		
@@ -92,7 +93,6 @@
 
 	
 	loadBuffers { |servers|
-		"entered loadBuffers".postln;
 		if( buffersLoaded.not ) {	
 		  	if(wfsPath.class == WFSPath ) {
 		  		wfsPath.loadBuffers2( servers );
@@ -153,36 +153,38 @@
 		
 	}
 				
-	load { |servers|
+	load { |servers, syncCenter |
 		var defName, time, delta;
 			
 	  	this.loadBuffers( servers );
-	  	delta = WFSEvent.wait;
-	  	// wait with loading synth 
-	  	// so all buffers have been allocated already
-	  		
-  		if( useFocused.not ) {
-  			defName = ("WFS_" ++ this.intType ++ "Out_" ++ this.audioType).asSymbol;
-  		} {
-  			defName = wfsDefName
-  		};
-  	 	
-  	 	synth = WFSSynth.generateSynth( wfsDefName, wfsPath,
-				servers, delayBuffer, sfBuffer, 
-				pbRate, level, loop, dur, input, args, fadeTimes,
-				wfsPathStartIndex, delta );
-		
-		synth.do{ |syn|
-			syn.register(true);
+	  	Routine({
+		  	// wait with loading synth
+		  	// so all buffers have been allocated already
+		  	(WFSEvent.wait-SyncCenter.latency).wait;
+
+	  		if( useFocused.not ) {
+	  			defName = ("WFS_" ++ this.intType ++ "Out_" ++ this.audioType).asSymbol;
+	  		} {
+	  			defName = wfsDefName
+	  		};
+	  	 	
+	  	 	synth = WFSSynth.generateSynth( wfsDefName, wfsPath,
+					servers, delayBuffer, sfBuffer, 
+					pbRate, level, loop, dur, input, args, fadeTimes,
+					wfsPathStartIndex, SyncCenter.latency, syncCenter );
 			
-			syn.freeAction_({ 
-				this.freeBuffers;
-				isRunning = false;
-				loadedSynths.remove( this );
-				WFSServers.default.removeDictActivity( this.typeActivity, servers );
-				WFS.debug("loaded synths: % (removed one)", loadedSynths.size);
-			})
-		};
+			synth.do{ |syn|
+				syn.register(true);
+
+				syn.freeAction_({
+					this.freeBuffers;
+					isRunning = false;
+					loadedSynths.remove( this );
+					WFSServers.default.removeDictActivity( this.typeActivity, servers );
+					WFS.debug("loaded synths: % (removed one)", loadedSynths.size);
+				})
+			}
+		}).play(SystemClock);
 		
 				
 		if(WFS.debugMode){
@@ -207,7 +209,7 @@
 			*/
 	}		
 		
-	playNow{  |wfsServers, startTime = 0|
+	playNow{  |wfsServers, startTime = 0, syncCenter |
 		if(WFSServers.default.isSingle){
 			this.playNowOffline(wfsServers,startTime)
 		}{
@@ -215,9 +217,8 @@
 		}
 	}
 
-	playNowOffline { |wfsServers, startTime = 0|
-		"playoffline".postln;
-		SyncCenter.localSync({
+	playNowOffline { |wfsServers, startTime = 0, syncCenter |
+		SyncCenter.localSync({ |syncCenter|
 			var nodeID, serverIndex, servers;
 		
 			#serverIndex, servers =  
@@ -228,12 +229,12 @@
 			WFS.debug( "% - s:%, %", WFS.secsToTimeCode( startTime ),serverIndex,
 				filePath );
 					
-			this.load( servers )
+			this.load( servers, syncCenter )
 		});		
 	}
 
-	playNowClient { |wfsServers, startTime = 0|
-		SyncCenter.localSync({
+	playNowClient { |wfsServers, startTime = 0, syncCenter |
+		SyncCenter.localSync({ |syncCenter|
 			var nodeID, serverIndex, servers;
 			
 			//if( this.intType == \switch ) { "playing switch".postln; };
@@ -252,13 +253,13 @@
 						 
 			WFS.debug( "% - s:%, %", WFS.secsToTimeCode( startTime ), serverIndex, filePath );
 						
-			this.load( servers );
+			this.load( servers, syncCenter );
 		})
 	}		
 			
 		
 	*generateSynth { |wfsDefName, wfsPath, servers, delayBuffer, sfBuffer, pbRate = 1, level = 1, loop = 1,
-		dur = 5, input = 0, args, fadeTimes, wfsPathStartIndex = 0, delta = 1|
+		dur = 5, input = 0, args, fadeTimes, wfsPathStartIndex = 0, delta = 1, syncCenter|
 		
 		var sfBufNum = 0, wfsDefIntType;
 		var allArgs, localConfSizes, indexIndex, indexUse;
@@ -349,7 +350,7 @@
 	
 + Synth {
 	
-	*newWFS { arg defName, args, servers, addAction=\addToHead, delta = 1;
+	*newWFS { arg defName, args, servers, addAction=\addToHead, delta = 1, syncCenter;
 		var synths, addNum, inTargets, nodeID;
 		
 		//wfsServers = wfsServers ? WFSServers.default;
@@ -372,7 +373,7 @@
 				synth.group = inTargets[i].group; }); };
 		
 		servers.do({ |server, i|
-			server.sendSyncedBundle(delta, 
+			server.sendSyncedBundle(delta, syncCenter,
 				[9, defName, nodeID[i], addNum, inTargets[i].nodeID] ++ 
 				args.atArgValue( i ) ++
 				WFSEQ.currentArgsDict.asArgsArray 
