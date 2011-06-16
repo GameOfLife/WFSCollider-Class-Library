@@ -103,33 +103,33 @@ WFSTransport {
 			
 			WFSScoreEditor.current.score.play2(tw.pos);
 			advancePosRoutine = Routine({
-				var delta = 0.2;
-				loadViews[ \text ].string_( "loading....." )
-                    .stringColor_( Color.red(0.75) );
-                loadViews[ \wait ].start;
+				var delta = 0.05;
+				{loadViews[ \text ].string_( "loading....." )
+                    .stringColor_( Color.red(0.75) ) ;
+                loadViews[ \wait ].start }.defer;
 				WFSEvent.wait.wait;
-				loadViews[ \text ].string_( "playing" )
-                    .stringColor_( Color.green(0.5) );
-                loadViews[ \wait ].stop; 
+				{ loadViews[ \text ].string_( "playing" )
+                    .stringColor_( Color.green(0.5) ) ;
+                loadViews[ \wait ].stop }.defer; 
                 inf.do{
 					delta.wait;
 					tw.pos = tw.pos + delta;
-					tw.update;
+					{ tw.update }.defer;
 					if( WFSTransport.nowPlaying.notNil ){
 						if( window.pos > WFSTransport.nowPlaying.score.duration.ceil ) {
-							window.stop;
+							{ window.stop }.defer;
                             if( autoSwitchToNext ) {
-                               WFSScoreEditor.makeNextCurrent;
+                               { WFSScoreEditor.makeNextCurrent }.defer;
                              };
 						} { 
                             if( WFS.graphicsMode === \fast ) {
-                            	WFSTransport.nowPlaying.update;
+                            	{ WFSTransport.nowPlaying.update }.defer;
                             };
                      	};
 					}
                          
 				}
-			}).play(AppClock);
+			}).play(SystemClock);
 					 
 		};
 		
