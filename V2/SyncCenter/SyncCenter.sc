@@ -26,7 +26,6 @@ SyncCenter {
 	classvar <>responder;
 	classvar <>global;
 	classvar <>ready;
-	classvar <>serverControllers;
 	classvar <>inBus = 0, <>outBus = 14;
 	
 	classvar <>current;
@@ -47,9 +46,6 @@ SyncCenter {
 		serverCounts = Dictionary.new;
 		global = this.new;
 		ready = Ref(false);
-		serverControllers !? { serverControllers.do(_.remove) };
-		serverControllers = List.new;
-		
 	}
 	
 	*servers{ ^serverCounts.keys.select({ |sv| sv != master }).as(Array) }
@@ -63,12 +59,7 @@ SyncCenter {
 				"%.add: server '%' was already added".format( this, server ).warn; 
 			} { 
 				serverCounts.put(server,Ref(-1));
-				serverControllers.add(
-					SimpleController( server ).put( \serverRunning, { 
-							serverCounts.at(server).value_(-1).changed;
-					})
-				)
-							
+				NotificationCenter.register(server, \didQuit, this, { serverCounts.at(server).value_(-1).changed });
 			}
 		};
 	}
