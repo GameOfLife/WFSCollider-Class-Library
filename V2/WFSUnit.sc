@@ -9,13 +9,14 @@ x = WFSUnitDef( \sine, { |freq = 440, amp = 0.1|
 )
 
 y = WFSUnit( \sine, [ \freq, 880 ] );
-
 y.gui;
 
 y.def.loadSynthDef;
 
 y.start;
 y.stop;
+
+y.set( \freq, 700 );
 
 (
 // a styled gui in user-defined window
@@ -81,11 +82,9 @@ WFSUnitDef : GenericDef {
 	send { |server| this.sendSynthDef( server ) }
 	
 	// these may differ in subclasses of WFSUnitDef
-	createSynth { |unit, server|
-		if( server.isNil ) { server = Server.default; };
-		^server.asCollection.collect({ |server|
-			Synth( this.synthDefName, unit.args, server, \addToTail )
-		});
+	createSynth { |unit, server| // create A single synth based on server
+		server = server ? Server.default;
+		^Synth( this.synthDefName, unit.getArgsFor( server ), server, \addToTail );
 	}
 	
 	setSynth { |unit ...keyValuePairs|
@@ -141,6 +140,17 @@ WFSUnit : ObjectWithArgs {
 		^this.getArg( key );
 	}
 	
+	getArgsFor { |server|
+		server = server.asTarget.server;
+		^this.args.collect({ |item, i|
+			if( i.odd ) {
+				item.asControlInputForServer( server );
+			} {
+				item
+			}
+		});
+	}
+	
 	doesNotUnderstand { |selector ...args| 
 		// bypasses errors; warning only if arg not found
 		if( selector.isSetter ) { 
@@ -154,19 +164,38 @@ WFSUnit : ObjectWithArgs {
 	  	this.init( name.asSymbol, if( keepArgs ) { args } { [] }); // keep args
 	}
 	
-	start { |server| // call this from inside Server:makeBundle
-		var synth;
-		^def.createSynth( this, server ).asCollection.do({ |synth|
-			synth.startAction_({ |synth|
-				synths = synths ++ [ synth ];
-				this.changed( \go, synth ); 
+	makeBundle { |servers, synthAction|
+		^servers.asCollection.collect({ |server|
+			server.asTarget.server.makeBundle( false, {
+				var synth;
+				synth = def.createSynth( this, server );
+				synth.startAction_({ |synth|
+					synths = synths ++ [ synth ];
+					this.changed( \go, synth ); 
+				});
+				synth.freeAction_({ |synth| 
+					synths.remove( synth ); 
+					this.changed( \end, synth ); 
+				});
+				this.changed( \start, synth );
+				synthAction.value( synth );
 			});
-			synth.freeAction_({ |synth| 
-				synths.remove( synth ); 
-				this.changed( \end, synth ); 
-			});
-			this.changed( \start, synth );
 		});
+	}
+	
+	start { |server, latency|
+		var servers, bundles, synths = [];
+		server = server ? Server.default;
+		servers = server.asCollection;
+		bundles = this.makeBundle( servers, { |synth| synths = synths.add( synth ) });
+		servers.do({ |server, i|
+			server.asTarget.server.sendBundle( latency, *bundles[i] );
+		});
+		if( server.size == 0 ) {
+			^synths[0]
+		} { 
+			^synths;
+		};
 	}
 	
 	free { synths.do(_.free) } 
@@ -195,6 +224,9 @@ WFSUnit : ObjectWithArgs {
 	
 }
 
++ Object {
+	asControlInputFor { |server| ^this } // may split between servers
+}
 
 + Symbol { 
 	asWFSUnit { |args| ^WFSUnit( this, args ) }

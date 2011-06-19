@@ -1,59 +1,84 @@
+WFSPrePan {
+	
+	// pre panning stage:
+	/*
+	- add large global delay (based on distance from center)
+	- impose global amplitude roll-off
+	- apply to source before WFSArrayPan, if number of arrays > 1
+	*/
+	
+	var <>dbRollOff = -6;
+	var <>limit = 2; // in m
+	
+	*new { |buffer|
+	}
+	
+}
+
+
 WFSArrayPan {
 	
 	// point source on single array
 	
 	classvar <>defaultSpWidth = 0.164;
 	classvar <>speedOfSound = 344;
+	classvar <>sampleRate = 44100;
 	
 	var <n, <dist, <angle, <intType = 'N'; // intType 'N', 'L', 'C'
 	var <>buffer, <spWidth;
+	
+	var <>maxDist = 200;
 	
 	var <speakerArray; // fixed at init
 	var <point;
 	
 	var <distances, <amplitudes;
-	var <>latencyComp = 0; // 1: max, 0: off
+	var <>latencyComp = 1; // 1: max, 0: off 
 	
 	var <>preDelay = 0.06; // in s (= 20m)
 	
 	*new { |n = 48, dist = 5, angle = 0, intType, buffer, spWidth| // angle: 0-2pi CCW
-		^super.newCopyArgs( n, dist, angle, intType ? 'N', buffer, spWidth ).init;
+		^super.newCopyArgs( n, dist, angle, intType ? 'N', buffer, spWidth ? defaultSpWidth ).init;
 	}
+	
+	init { } // subclass responsibility
 	
 	delay { | source, delay, amp |
-		if( UGen.buildSynthDef.notNil ) // if in a SynthDef
-			{ 
-				if( buffer.isNil ) // create LocalBuf if needed
-				{  if( intType.toUpper == 'N' ) {
-					buffer = LocalBuf( ( this.maxDelay * 44100 ).nextPowerOfTwo, 1 ).clear;
-				} {
-					buffer = LocalBuf( this.maxDelay * 44100, 1 ).clear;
-				};
+		if( UGen.buildSynthDef.notNil ) { // if in a SynthDef
+			if( buffer.isNil ) { // create LocalBuf if needed
+				buffer = LocalBuf( this.bufSize, 1 ).clear;
 			};
-				
+					
 			^("BufDelay" ++ intType.toUpper).asSymbol.asClass
 				.ar( buffer, source, delay, amp );
-		} 
-		{ ^[ delay, amp ] };	// return delays and amplitudes (if not in a SynthDef)
+		} { 
+			^[ delay, amp ] // return delays and amplitudes (if not in a SynthDef)
+		};	
 	}
 	
-	maxDelay { ^( ( preDelay * 2 ) + ( 200 * ( 1 - latencyComp ) ) / speedOfSound ) }
+	maxDelay { ^( ( preDelay * 2 ) + ( maxDist * ( 1 - latencyComp ) ) / speedOfSound ) }
+	
+	bufSize { ^2 ** ( (this.maxDelay * sampleRate).log2.roundUp(1) ) } // next power of two
 }
 	
 	
 WFSArrayPanPoint : WFSArrayPan {
 	
-	var <focused = 1;
-	var <>dbRollOff = -9;
+	var <focused;
+	var <>dbRollOff = -9; // per speaker roll-off
 	var <>limit = 1; // in m
+	var <>globalDbRollOff = 0; // by default use WFSPrePan for this
+	var <>globalLimit = 2; // in m
 	
 	init {
-		spWidth = spWidth ? defaultSpWidth;
 		speakerArray = { |i| i.linlin(0, n-1, spWidth / 2, spWidth.neg / 2 ) * n } ! n;
 	}
 	
 	ar { |source, inPoint, inBuffer| // inPoint: Point or Polar
 		var sqrdifx, delayOffset;
+		var globalDist;
+
+		globalDist = point.dist( 0 @ 0 ); // distance to center
 		
 		// rotate point to array
 		point = (inPoint ? (0@0)).rotate( angle.neg ).asPoint;
@@ -63,22 +88,26 @@ WFSArrayPanPoint : WFSArrayPan {
 		
 		distances = speakerArray.collect({ |item, i|
 			( sqrdifx + sqrdif( item, point.y )).sqrt;
-			});
+		});
 		
 		// calculate amplitudes
 		amplitudes = distances.pow(dbRollOff/6).min( limit.pow(dbRollOff/6) );
-		amplitudes = amplitudes / amplitudes.sum; 
+		amplitudes = amplitudes / amplitudes.sum; // normalize amps (sum == 1)
 		
 		// determine focus multiplier (-1 or 1)
-		focused = (point.x - dist).linlin(-0.01,0,-1,1, \minmax);  // in front or behind
+		if( focused.isNil ) { // user may force
+			focused = (point.x - dist).linlin(-0.01,0,-1,1, \minmax);  // in front or behind
+		};
 		
 		// latency compensation (doppler reduction) (does this work correctly for focused?)
-		if( latencyComp != 0 )
-			{ delayOffset = preDelay -
-				( ( point.dist( 0 @ 0 ) / speedOfSound ) * latencyComp ) }
-			{ delayOffset = preDelay };
-				
+		delayOffset = preDelay - ( ( globalDist / speedOfSound ) * latencyComp );
+		
 		buffer = inBuffer;
+		
+		// only calculate if not 0 (non modulatable)
+		if( globalDbRollOff != 0 ) {
+			source = source * globalDist.max( globalLimit ).pow( globalDbRollOff / 6 );
+		};
 	
 		// all together
 		^this.delay( source, 
@@ -120,13 +149,8 @@ WFSArrayPanPlane : WFSArrayPan {
 		// calculate amplitudes
 		amplitudes = 1;
 		
-		// latency compensation (doppler reduction) (does this work correctly for focused?)
-		if( latencyComp != 0 )
-		//if( true )
-			{ delayOffset = preDelay }
-			{ delayOffset = preDelay +
-				( ( point.rho / speedOfSound ) * ( 1 - latencyComp ) ) 
-			};
+		// latency compensation (doppler reduction)
+		delayOffset = preDelay + ( ( point.rho / speedOfSound ) * ( 1 - latencyComp ) );
 			
 		buffer = inBuffer;
 	

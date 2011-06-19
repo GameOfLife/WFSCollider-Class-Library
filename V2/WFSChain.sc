@@ -5,17 +5,20 @@
 // create two WFSUnitDefs
 
 WFSUnitDef( \sine, { |freq = 440, amp = 0.1| 
-	Out.ar( 0, SinOsc.ar( freq, 0, amp ) ) 
+	WFSUnitOut.ar( 0, SinOsc.ar( freq, 0, amp ) ) 
 } ).loadSynthDef;
 
 WFSUnitDef( \vibrato, { |rate = 1, amount = 1.0| 
-	Out.ar( 0, SinOsc.ar( rate ).range(1-amount,1) * In.ar( 0 ) ) 
+	WFSUnitOut.ar( 0, SinOsc.ar( rate ).range(1-amount,1) * WFSUnitIn.ar( 0 ) ) 
 } ).loadSynthDef;
 )
 
 x = WFSChain( \sine, \vibrato );
 
+x.units[0].args
 x.start;
+
+doneAction
 
 x.stop;
 
@@ -29,7 +32,7 @@ w.addFlowLayout;
 RoundView.useWithSkin( ( 
 	labelWidth: 40, 
 	font: Font( Font.defaultSansFace, 10 ), 
-	hiliteColor: Color.gray(0.33),
+	hiliteColor: Color.gray(0.33)
 ), { 
 	SmoothButton( w, 16@16 )
 		.label_( ['power', 'power'] )
