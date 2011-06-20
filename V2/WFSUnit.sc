@@ -165,13 +165,12 @@ WFSUnit : ObjectWithArgs {
 	}
 	
 	makeBundle { |servers, synthAction|
-		^servers.asCollection.collect({ |server|
+		var bundles = servers.asCollection.collect({ |server|
 			server.asTarget.server.makeBundle( false, {
 				var synth;
 				synth = def.createSynth( this, server );
 				synth.startAction_({ |synth|
-					synths = synths ++ [ synth ];
-					this.changed( \go, synth ); 
+					this.changed( \go, synth );
 				});
 				synth.freeAction_({ |synth| 
 					synths.remove( synth ); 
@@ -179,15 +178,17 @@ WFSUnit : ObjectWithArgs {
 				});
 				this.changed( \start, synth );
 				synthAction.value( synth );
+				synths = synths.add(synth);
 			});
 		});
+		^bundles
 	}
 	
 	start { |server, latency|
-		var servers, bundles, synths = [];
+		var servers, bundles;
 		server = server ? Server.default;
 		servers = server.asCollection;
-		bundles = this.makeBundle( servers, { |synth| synths = synths.add( synth ) });
+		bundles = this.makeBundle( servers );
 		servers.do({ |server, i|
 			server.asTarget.server.sendBundle( latency, *bundles[i] );
 		});
