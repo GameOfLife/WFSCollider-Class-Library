@@ -144,7 +144,7 @@ WFSUnit : ObjectWithArgs {
 		server = server.asTarget.server;
 		^this.args.collect({ |item, i|
 			if( i.odd ) {
-				item.asControlInputForServer( server );
+				item.asControlInputFor( server );
 			} {
 				item
 			}

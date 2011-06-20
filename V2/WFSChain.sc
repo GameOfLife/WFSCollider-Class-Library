@@ -11,23 +11,27 @@ WFSUnitDef( \sine, { |freq = 440, amp = 0.1|
 WFSUnitDef( \vibrato, { |rate = 1, amount = 1.0| 
 	WFSUnitOut.ar( 0, SinOsc.ar( rate ).range(1-amount,1) * WFSUnitIn.ar( 0 ) ) 
 } ).loadSynthDef;
+
+WFSUnitDef( \output, { |bus = 0|
+	Out.ar( bus, WFSUnitIn.ar( 0 ) );
+} ).setSpec( \bus, [0,7,\lin,1] ).loadSynthDef;
+
 )
 
-x = WFSChain( \sine, \vibrato );
+x = WFSChain( \sine, \vibrato, \output );
 
 x.units[0].args
 x.start;
-
-doneAction
-
 x.stop;
+
+x.units
 
 (
 
 // a styled gui in user-defined window
 // -- to be replaced by WFSChainGUI later -- 
 
-w = Window( "x", Rect( 300,25,200,200 ) ).front;
+w = Window( "x", Rect( 300,25,200,300 ) ).front;
 w.addFlowLayout;
 RoundView.useWithSkin( ( 
 	labelWidth: 40, 
