@@ -1,37 +1,33 @@
 // wslib 2010
 
-BufSoundFile {
+AbstractSoundFile {
 	
 	// points to a soundfile and holds its specs, similar to SoundFile
 	// aditional parameters for Buffer loading and playback settings
 	// fully MVC aware
 	
 	var <path, <numFrames, <numChannels = 1, <sampleRate = 44100;
-	var <startFrame = 0, endFrame, <useChannels;  // for buffer loading
-	var <rate = 1, <loop = false;
+	var <startFrame = 0, endFrame;  // for buffer loading
+	var <rate = 1;
+	var <fadeInTime = 0.1, <fadeOutTime = 0.1;
+	var <loop = false, <loopedDuration;
 	
 	var <>synths; // holder for the instant playback synths
 	var <>buffers; // holder for all buffers
 	
-	*new { |path, numFrames, numChannels, sampleRate = 44100|
-		^super.newCopyArgs( path, numFrames, numChannels, sampleRate );
+	*newBasic{ |path, numFrames, numChannels, sampleRate = 44100, startFrame = 0, endFrame, rate = 1,
+	    fadeInTime = 0.1, fadeOutTime = 0.1,loop = false, loopedDuration |
+		^super.newCopyArgs( path, numFrames, numChannels, sampleRate, startFrame, endFrame, rate,
+		 fadeInTime, fadeOutTime, loop , loopedDuration );
 	}
-	
-	*fromFile { |path| // path of existing file or SoundFile
-		if( path.class == SoundFile ) { 
-			^this.new( path.path ).fromFile( path );  
-		} { 
-			^this.new( path ).fromFile; 
-		};
-	}
-	
+
 	fromFile { |soundfile|
-		if( this.readFromFile( soundfile ).not ) { 
+		if( this.prReadFromFile( soundfile ).not ) { 
 			"%:initFromFile - could not open file '%'\n".postf( this.class, path.basename ) 
 		}
 	}
 	
-	readFromFile { |soundfile|
+	prReadFromFile { |soundfile|
 		var test = true;
 		if( soundfile.isNil or: { soundfile.isOpen.not } ) {
 			soundfile = soundfile ?? { SoundFile.new }; 
@@ -64,7 +60,7 @@ BufSoundFile {
 	path_ { |new, update = false|
 		path = new ? path;
 		this.changed( \path, path );
-		if( update == true ) { this.readFromFile; };
+		if( update == true ) { this.prReadFromFile; };
 	}
 	
 	numFrames_ { |new|
@@ -83,20 +79,15 @@ BufSoundFile {
 	}
 	
 	startFrame_ { |new|
-		startFrame = new ? 0;
+		startFrame = (new ? 0).min(0);
 		this.changed( \startFrame, startFrame );
 	}
 	
 	endFrame_ { |new|
-		endFrame = new;
+		endFrame = new.max(numFrames);
 		this.changed( \endFrame, endFrame );
 	}
-	
-	useChannels_ { |new|
-		useChannels = new;
-		this.changed( \useChannels, useChannels );
-	}
-	
+
 	rate_ { |new|
 		rate = new ? 1;
 		this.changed( \rate, rate );
@@ -141,18 +132,7 @@ BufSoundFile {
 	
 	// buffer creation methods
 	
-	makeBuffer { |server, startOffset = 0, action, bufnum|
-		var buf;
-		if( useChannels.notNil ) { 
-			buf = Buffer.readChannel( server, path.standardizePath, 
-					startFrame + startOffset, this.usedFrames, useChannels, action, bufnum ); 
-		} { 
-			buf = Buffer.read( server, path.standardizePath, 
-					startFrame + startOffset, this.usedFrames, action, bufnum );
-		};
-		buffers = buffers.add( buf );
-		^buf;
-	}
+	makeBuffer { }
 	
 	addBuffer { |buf|
 		buffers = buffers.add( buf );
@@ -164,10 +144,7 @@ BufSoundFile {
 		this.changed( \buffers, buffers );
 	}
 	
-	freeBuffer { |buf, action|
-		buf.checkFree( action );
-		this.removeBuffer( buf );
-	}
+	freeBuffer { }
 	
 	currentBuffers { |server| // returns all buffers if server == nil
 		if( server.notNil ) {
@@ -175,9 +152,18 @@ BufSoundFile {
 		};
 		^buffers;
 	}
+
+	currentBuffer { |server|
+	    ^this.currentBuffers(server)[0]
+	}
+
 	
 	freeAllBuffers { |server|
-		this.currentBuffers( server ).do( this.freeBuffer(_) );
+	    if( server.notNil ) {
+		    this.currentBuffers( server ).do( this.freeBuffer(_) )
+		}{
+		    this.buffers.do( this.freeBuffer(_) )
+		}
 	}
 	
 	resetBuffers { |server|
@@ -185,30 +171,15 @@ BufSoundFile {
 			this.removeBuffer( buf );
 		});
 	}
-	
-	// playback methods
-	
-	play { |server, startOffset = 0, mul = 1, out = 0| // returns buffer, not synth
-		var action = { |buf| // copied and modified from Buffer:play
-			synths = synths.add(	
-				{ var player;
-					player = PlayBuf.ar( buf.numChannels, buf,
-						BufRateScale.kr( buf ) * \rate.kr(rate),
-						loop: loop.binaryValue, 
-						doneAction: if( loop ) { 0 } { 2 });
-					Out.ar( out, player * mul );
-				}.play( buf.server ).freeAction_({ |synth| 
-						synths.remove( synth );
-						this.freeBuffer( buf );
-					}) 
-			); 
-		};
-		
-		// TODO : replace with single synthdef instead of .play
-		
-		^this.makeBuffer( server, startOffset, action );
+
+	wfsPrepare { |servers|
+	    servers.do( this.makeBuffer(_) )
 	}
-		
+
+	wfsDispose {
+       this.freeAllBuffers
+	}
+
 	stop { this.freeSynths; }
 	
 	freeSynths { synths.do(_.free) }
@@ -220,7 +191,7 @@ BufSoundFile {
 	checkDo { |action|
 		var test = true;
 		if( numFrames.isNil ) { 
-			test = this.readFromFile; // get numFrames etc.
+			test = this.prReadFromFile; // get numFrames etc.
 		};
 		if( test ) { 
 			^action.value 
@@ -259,23 +230,115 @@ BufSoundFile {
 			}
 		});
 	}
+
+	asControlInputFor { |server| ^this.currentBuffer(server) }
+
+	makeWFSUnit {
+        if( loop ){
+	        if( loopedDuration.notNil ) {
+                ^WFSUnit( ( this.wfsUnitNamePrefix++"FilePlayerLoop"++this.numPlayedChannels).asSymbol,
+                    [\bufnum, this, \loopTime, this.duration, \i_eventDuration, loopedDuration, \i_fadeInTime, fadeInTime,  \i_fadeOutTime, fadeOutTime, \rate, rate])
+            }{
+                ^WFSUnit( (this.wfsUnitNamePrefix++"FilePlayerInfLoop"++this.numPlayedChannels).asSymbol,
+                    [\bufnum, this, \loopTime, this.duration, \i_fadeInTime, fadeInTime,  \i_fadeOutTime, fadeOutTime, \rate, rate])
+            }
+        } {
+            ^WFSUnit( (this.wfsUnitNamePrefix++"FilePlayer"++this.numPlayedChannels).asSymbol,
+                [\bufnum, this, \i_duration, this.duration, \i_fadeInTime, fadeInTime,  \i_fadeOutTime, fadeOutTime, \speed, rate]);
+        }
+	}
 	
 }
 
-DiskSoundFile : BufSoundFile {
+BufSoundFile : AbstractSoundFile {
+
+    var <useChannels;
+
+	*new{ |path, startFrame = 0, endFrame, rate = 1, fadeInTime = 0.1, fadeOutTime = 0.1, loop = false, loopedDuration, useChannels | // path of existing file or SoundFile
+		if( path.class == SoundFile ) {
+			^this.newBasic( path.path, nil, nil, nil, startFrame, endFrame, rate, fadeInTime, fadeOutTime, loop, loopedDuration ).useChannels_(useChannels).fromFile( path );
+		} {
+			^this.newBasic( path, nil, nil, nil, startFrame, endFrame, rate, fadeInTime, fadeOutTime, loop, loopedDuration ).useChannels_(useChannels).fromFile;
+		};
+	}
+
+    useChannels_ { |new|
+        useChannels = new;
+        this.changed( \useChannels, useChannels );
+    }
+
+    makeBuffer { |server, startOffset = 0, action, bufnum|
+		var buf;
+		if( useChannels.notNil ) {
+			buf = Buffer.readChannel( server, path.standardizePath,
+					startFrame + startOffset, this.usedFrames, useChannels, action, bufnum );
+		} {
+			buf = Buffer.read( server, path.standardizePath,
+					startFrame + startOffset, this.usedFrames, action, bufnum );
+		};
+		buffers = buffers.add( buf );
+		^buf;
+	}
+
+    freeBuffer { |buf, action|
+		buf.checkFree( action );
+		this.removeBuffer( buf );
+	}
+
+	play { |server, startOffset = 0, mul = 1, out = 0| // returns buffer, not synth
+		var action = { |buf| // copied and modified from Buffer:play
+			synths = synths.add(
+				{ var player;
+					player = PlayBuf.ar( buf.numChannels, buf,
+						BufRateScale.kr( buf ) * \rate.kr(rate),
+						loop: loop.binaryValue,
+						doneAction: if( loop ) { 0 } { 2 });
+					Out.ar( out, player * mul );
+				}.play( buf.server ).freeAction_({ |synth|
+						synths.remove( synth );
+						this.freeBuffer( buf );
+					})
+			);
+		};
+
+		// TODO : replace with single synthdef instead of .play
+
+		^this.makeBuffer( server, startOffset, action );
+	}
+
+    numPlayedChannels{
+        ^if( useChannels.isNil ) {
+	        numChannels
+	    }{
+	        useChannels.size
+	    }
+    }
+
+    wfsUnitNamePrefix{ ^"buffer" }
+}
+
+DiskSoundFile : AbstractSoundFile {
 	
 	var <>diskBufferSize = 32768;
+
+	*new{ |path, startFrame = 0, endFrame, rate = 1, fadeInTime = 0.1, fadeOutTime = 0.1, loop = false , loopedDuration| // path of existing file or SoundFile
+		if( path.class == SoundFile ) {
+			^this.newBasic( path.path, nil, nil, nil, startFrame, endFrame, rate, fadeInTime, fadeOutTime, loop, loopedDuration ).fromFile( path );
+		} {
+			^this.newBasic( path, nil, nil, nil, startFrame, endFrame, rate, fadeInTime, fadeOutTime, loop, loopedDuration ).fromFile;
+		};
+	}
 	
 	asBufSoundFile { ^BufSoundFile.newCopyVars( this ); }
 	asDiskSoundFile { ^this }
 	
 	makeBuffer {  |server, startOffset = 0, action, bufnum| 
-			// useChannels and endFrame not used
+	    //endFrame not used
 		var test = true;
 		var buf;
 		
 		if( numChannels.isNil ) { 
-			test = this.readFromFile; // get numchannels etc.
+			test = this.prReadFromFile; // get numchannels etc.
 		};
 		
 		if( test ) {
@@ -314,6 +377,12 @@ DiskSoundFile : BufSoundFile {
 		
 		^this.makeBuffer( server, startOffset, action );
 	}
+
+    numPlayedChannels {
+        ^numChannels
+    }
+
+    wfsUnitNamePrefix{ ^"disk" }
 	
 }
 
