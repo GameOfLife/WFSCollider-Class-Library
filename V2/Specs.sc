@@ -477,9 +477,9 @@ MultiSpec : Spec {
 		var range;
 		
 		if( obj.isNegative ) {
-			range = obj.abs.round(1).asInt.nextPowerOfTwo * [-1,1];
+			range = obj.abs.ceil.asInt.nextPowerOfTwo * [-1,1];
 		} {
-			range = [ 0, obj.round(1).asInt.nextPowerOfTwo ];
+			range = [ 0, obj.ceil.asInt.nextPowerOfTwo ];
 		};
 		
 		if( obj.isFloat ) {
