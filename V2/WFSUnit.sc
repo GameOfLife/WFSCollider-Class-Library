@@ -139,6 +139,24 @@ WFSUnit : ObjectWithArgs {
 	get { |key|
 		^this.getArg( key );
 	}
+
+	mapSet { |key, value|
+		var spec = def.getSpec(key);
+		if( spec.notNil ) {
+		    this.set(key, spec.map(value) )
+		} {
+		    this.set(key,value)
+		}
+	}
+
+	mapGet { |key|
+		var spec = def.getSpec(key);
+		^if( spec.notNil ) {
+		    spec.unmap( this.get(key) )
+		} {
+		    this.get(key)
+		}
+	}
 	
 	getArgsFor { |server|
 		server = server.asTarget.server;
@@ -173,8 +191,8 @@ WFSUnit : ObjectWithArgs {
 					this.changed( \go, synth );
 				});
 				synth.freeAction_({ |synth| 
-					synths.remove( synth ); 
-					this.changed( \end, synth ); 
+					synths.remove( synth );
+					this.changed( \end, synth );
 				});
 				this.changed( \start, synth );
 				synthAction.value( synth );
@@ -222,11 +240,31 @@ WFSUnit : ObjectWithArgs {
 	}
 	
 	asWFSUnit { ^this }
-	
+
+	prepare { |server| this.values.do( _.wfsPrepare(server.asCollection) ) }
+
+	prepareAndStart{ |server|
+	    fork{
+	        this.prepare(server);
+	        server.asCollection.do{ |s|
+	            s.sync;
+	        };
+	        this.start(server);
+	    }
+	}
+
+	dispose { |server|
+	    this.free;
+	    this.values.do( _.wfsDispose )
+}
+
 }
 
 + Object {
 	asControlInputFor { |server| ^this } // may split between servers
+
+	wfsPrepare { }
+	wfsDispose { }
 }
 
 + Symbol { 

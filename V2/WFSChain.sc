@@ -82,6 +82,20 @@ WFSChain {
 	
 	free { groups.do(_.free) }
 	stop { this.free }
+
+	prepare { |server| units.do(_.prepare(server) ) }
+
+	prepareAndStart{ |server|
+	    fork{
+	        this.prepare(server);
+	        server.asCollection.do{ |s|
+	            s.sync;
+	        };
+	        this.start(server);
+	    }
+	}
+
+	dispose { units.do( _.dispose ) }
 	
 	resetGroups { groups = []; } // after unexpected server quit
 }
