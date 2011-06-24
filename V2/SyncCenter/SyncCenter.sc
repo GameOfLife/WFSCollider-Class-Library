@@ -277,7 +277,7 @@ SyncCenter {
 	
 	listSendSyncedBundle{ |server, delta = 1, msgs|
 		if( (mode === 'sample') && { serverCounts.keys.includes( server ) } ) {
-			this.listSendPosBundle( this.getSampleCountForServer(delta,this), msgs ) 
+			server.listSendPosBundle( this.getSampleCountForServer(delta,server), msgs ) 
 		} {
 			server.listSendBundle( delta, msgs );
 		};
