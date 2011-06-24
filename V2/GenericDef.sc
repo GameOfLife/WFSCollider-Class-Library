@@ -1,18 +1,44 @@
 GenericDef {
 	
-	classvar <>all; // overwrite in subclass to create class specific lib
+	classvar <>all, <>defsFolder; // overwrite in subclass to create class specific lib
 	
 	var <>argSpecs;
-	
+
 	*new { |name, args|
 		^super.new.initArgSpecs( args ).addToAll( name.asSymbol );
 	}
 	
 	*fromName { |name|
+		var def;
 		this.all ?? { this.all = IdentityDictionary() };
-		^this.all[ name ];
+		def = this.all[ name ];
+		if( def.isNil ) {
+            ^this.getFromFile(name);
+		}{
+		    ^def
+		}
 	}
-	
+
+	*getFromFile{ arg name;
+		var path;
+		^if( name.notNil and: {path = this.getDefFilePath(name); File.exists(path)} ) {
+			path.load
+		} {
+			"//" + this.class ++ ": - no WFSUnitDef found for % in %\n"
+			.postf( this.cleanDefName(name), path );
+			nil
+		}
+	}
+
+	*cleanDefName{ |name|
+		^name.asString.collect { |char| if (char.isAlphaNum, char, $_) };
+	}
+
+	*getDefFilePath{ |defName|
+		var cleanDefName = this.cleanDefName(defName);
+		^defsFolder +/+ cleanDefName ++ ".scd";
+	}
+
 	initArgSpecs { |args|
 		argSpecs = ArgSpec.fromArgsArray( args );
 	}

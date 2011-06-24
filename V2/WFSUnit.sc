@@ -2,6 +2,10 @@
 
 // example
 
+//using builtin WFSSynthDefs
+//looks for the file in the WFSUnitDefs folder
+x  = WFSUnit(\sine)
+
 (
 x = WFSUnitDef( \sine, { |freq = 440, amp = 0.1| 
 	Out.ar( 0, SinOsc.ar( freq, 0, amp ) ) 
@@ -44,7 +48,11 @@ WFSUnitDef : GenericDef {
 	
 	var <>func, <>category;
 	var <>synthDef;
-	
+
+	*initClass{
+		defsFolder = this.filenameSymbol.asString.dirname +/+ "WFSUnitDefs";
+	}
+
 	*new { |name, func, args, category|
 		^super.new( name, args ).init( func ).category_( category ? \default );
 	}
