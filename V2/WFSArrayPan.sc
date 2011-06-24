@@ -1,3 +1,233 @@
+WFSArrayConf { // configuration for one single speaker array
+	
+	var <>n = 48, <>dist = 5, <>angle = 0.5pi, <>offset = 0, <>spWidth;
+	var <>corners;
+	var <>cornerAngles; // angle to next array
+	
+	/*
+	
+	explanation of variables:
+	
+	angles are counter-clockwise starting at x axis:
+	
+	 angle 0.5pi: front array      angle 0: righthand side array
+	       
+	          |y(+)                               |y(+)
+	          |                                   |
+	          |                                   |        
+	       ---+---                                |    
+	x(-)      |dist   x(+)              x(-)      |   |   x(+)
+	----------+----------               ----------+---+------            
+	          |                                   |   | 
+	          |                                   |    
+	          |                                   |     
+	          |y(-)                               |y(-)          
+	          
+	and so on:
+	 	angle -0.5pi: back array
+		angle pi (or -pi): lefthand side array
+		
+		
+	
+	corners are the points where two adjecent arrays cross:
+	
+	  array
+	---------  x <- corner
+	        
+	           |a
+	           |r
+	           |r
+	           |a
+	           |y
+	           
+	           
+	 each array has two corner points:
+	  
+	 x  -------------  x
+	 1      array      2
+	 
+	 the cornerAngles are the angles between the adjecent arrays. They are also the area
+	 where the crosfade happens when a point passes from behind one array to behind another.
+	 
+	 
+	           |
+	array      | angle, crossfade area  <- (0.5pi in this case)
+	---------  x ----
+	        
+	           |a
+	           |r
+	           |r
+	           |a
+	           |y
+	*/
+	
+	*new { |n = 48, dist = 5, angle = 0.5pi, offset = 0, spWidth|
+		^super.newCopyArgs( n, dist, angle, offset, spWidth ? WFSBasicPan.defaultSpWidth )
+			.init;
+	}
+	
+	init {
+		corners = [ dist, dist.neg ]; // assumes square setup
+		cornerAngles = [ 0.5pi, 0.5pi ]; // assumes rectangular setup
+	}
+	
+	asWFSArrayConf { ^this }
+	
+	adjustCorner1To { |aWFSArrayConf|
+		aWFSArrayConf = aWFSArrayConf.asWFSArrayConf;
+		corners[0] = aWFSArrayConf.dist; // only for square corner - TODO: other corners
+		cornerAngles[0] = (angle - aWFSArrayConf.angle).wrap(-pi,pi).abs;
+	}
+	
+	adjustCorner2To { |aWFSArrayConf|
+		aWFSArrayConf = aWFSArrayConf.asWFSArrayConf;
+		corners[1] = aWFSArrayConf.dist.neg; // only for square corner
+		cornerAngles[1] = (angle - aWFSArrayConf.angle).wrap(-pi,pi).abs;
+	}
+	
+	
+	asArray { ^[ n, dist, angle, offset, spWidth ] }
+	asCornersArray { ^(corners ++ cornerAngles); }
+	
+	*fromArray { |array| ^this.new( *array ); }
+	
+	fromCornersArray { |array| // adjust corners / angles from array
+		if( array.notNil ) {
+			corners = array[[0,1]];
+			cornerAngles = array[[2,3]];
+		};
+	}
+	
+	asPoints { // for plotting
+		^{ |i| (dist @ (i.linlin(0, n-1, spWidth / 2, spWidth.neg / 2 ) * n) - offset).rotate( angle ) } ! n;
+	}
+	
+	asLine { // for plotting; start point and end point
+		^[ 
+			( dist @ ( ( spWidth * ( n /  2 ) ) - offset ) ).rotate( angle ), 
+			( dist @ ( ( spWidth * ( n / -2 ) ) - offset ) ).rotate( angle ) 
+		];
+	}
+	
+	cornerPoints {
+		^corners.collect({ |c|
+			( dist @ c ).rotate( angle );
+		});
+	}
+}
+
+
+WFSSpeakerConf {
+	
+	// a collection of ArrayConfs, describing a full setup
+	
+	var <>arrayConfs;
+	
+	*new { |...args|
+		^super.newCopyArgs().arrayConfs_( args.collect(_.asWFSArrayConf) ).init;
+	}
+	
+	init {
+		// adjust corners and cornerAngles to each other
+		arrayConfs.do({ |conf, i|
+			conf.adjustCorner1To( arrayConfs.wrapAt( i-1 ) );
+			conf.adjustCorner2To( arrayConfs.wrapAt( i+1 ) );
+		});
+	}
+	
+	*rect { |nx = 48, ny, dx = 5, dy|
+		ny = ny ? nx;
+		dy = dy ? dx;
+		^this.new( [ nx, dx, 0.5pi ], [ ny, dy, 0 ], [ nx, dx, -0.5pi ], [ ny, dy, pi ] );
+	}
+	
+	speakerCount { ^arrayConfs.collect(_.n).sum; }
+	
+	divideArrays { |n = 2| // split the arrayConfs into n equal (or not so equal) groups
+		var division, counter = 0, result = [];
+		division = this.speakerCount / n;
+		n.do({ |i|
+			result = result ++ [ [ ] ];
+			while { (result[i].collect(_.n).sum < division) && { counter < arrayConfs.size } } {
+				result[i] = result[i] ++ arrayConfs[ counter ];
+				counter = counter + 1;
+			};
+		});
+		^result;
+	}
+	
+	getDivision { |i = 0, n = 2| // arrays for single server (server i out of n)
+		^this.divideArrays(n)[i];
+	} 
+	
+	asPoints { ^arrayConfs.collect(_.asPoints).flat }
+	
+	asLines { ^arrayConfs.collect(_.asLine) }
+	
+}
+
+
+
+WFSCrossfader {
+	// handles the crossfading between arrays
+	var <>arrayConfs;
+	var <>maxCornerAngle = pi;
+	
+	*new { |arrays, cornerArrays|
+		
+		// feed me with: 
+		//   arrays: an array of WFSArrayConfs, or an array of arrays that can be 
+		//           converted to WFSArrayConfs
+		//   cornerArrays: arrays formatted as 
+		//                 [ [ corner1, corner2, cornerAngle1, cornerAngle2 ], ...etc]
+		//     - cornerArrays will override the corner settings stored in the WFSArrayConfs.
+		//       Why? Because these may be provided as controls of a SynthDef
+		
+		arrays = arrays.collect(_.asWFSArrayConf).collect(_.copy);
+		cornerArrays.do({ |item, i|
+			arrays[i].fromCornersArray( item );
+		});
+		
+		^super.newCopyArgs( arrays );
+	}
+	
+	kr { |point = (0@0)|
+		
+		// will output two level values for each of the arrays: focused and normal
+		
+		var cornerPoints, cornerFades;
+		
+		cornerPoints = arrayConfs.collect( _.cornerPoints );
+		
+		// crossfading around corner points (normal sources)
+		cornerFades = cornerPoints.collect({ |pts, i|
+			var angle;
+			
+			angle = arrayConfs[i].angle;
+			
+			pts.collect({ |pt, ii|
+				var pos, alpha;
+				alpha = arrayConfs[i].cornerAngles[ii]; // angle towards prev / next array
+				pos = (point - pt).angle - angle;
+				if( ii.even ) { pos = pos.neg };
+				
+				// optimized corner crossfading function:
+				pos = 1 - (2/pi * ((0.5 * alpha) - pos));
+				pos = pos.fold2( 1 ) * (0.5pi/alpha.min(maxCornerAngle));
+				((pos + 0.5).clip(0,1)).sqrt;
+			}).product;
+
+		});
+		
+		^cornerFades
+		
+	}
+	
+	
+}
+
+// the actual panners:
+
 WFSBasicPan {
 	
 	classvar <>defaultSpWidth = 0.164;
@@ -84,37 +314,6 @@ WFSPrePan : WFSBasicPan {
 	
 }
 
-WFSArrayConf { // configuration for one single speaker array
-	
-	var <>n = 48, <>dist = 5, <>angle = 0.5pi, <>offset = 0, <>spWidth;
-	var <>corners;
-	
-	*new { |n = 48, dist = 5, angle = 0.5pi, offset = 0, spWidth|
-		^super.newCopyArgs( n, dist, angle, offset, spWidth ? WFSBasicPan.defaultSpWidth )
-			.init;
-	}
-	
-	asWFSArrayConf { ^this }
-	
-	init {
-		corners = [ dist, dist.neg ]; // assumes square setup
-	}
-	
-	asArray { ^[ n, dist, angle, offset, spWidth, corners[0], corners[1] ] }
-	
-	*fromArray { |array| ^this.new( *array ); }
-}
-
-
-WFSCrossfader {
-	// handles the crossfading between arrays
-	var <>arrayConfs;
-	var <>corners;
-	
-	
-	
-}
-
 
 WFSArrayPan : WFSBasicPan {
 	
@@ -136,31 +335,6 @@ WFSArrayPan : WFSBasicPan {
 	}
 	
 	init { |inN = 48, inDist = 5, inAngle= 0.5pi, inOffset = 0, inSpWidth, inIntType|
-		
-		/*
-		angles are counter-clockwise starting at x axis:
-		
-		
-		 angle 0.5pi: front array      angle 0: righthand side array
-		       
-		          |y(+)                               |y(+)
-		          |                                   |
-		          |                                   |        
-		       ---+---                                |    
-		x(-)      |dist   x(+)              x(-)      |   |   x(+)
-		----------+----------               ----------+---+------            
-		          |                                   |   | 
-		          |                                   |    
-		          |                                   |     
-		          |y(-)                               |y(-)  
-		          
-		          
-		          
-		and so on:
-		 	angle -0.5pi: back array
-			angle pi (or -pi): lefthand side array
-			
-		*/
 		
 		n = inN ? n; // number of speakers
 		dist = inDist ? dist; // distance from center
@@ -281,4 +455,13 @@ WFSArrayPanPlane : WFSArrayPan {
 			add );
 	}
 	
+}
+
+
++ SequenceableCollection {
+	asWFSArrayConf { ^WFSArrayConf( *this ) }
+}
+
++ Object {
+	asWFSArrayConf { ^WFSArrayConf } // default conf
 }
