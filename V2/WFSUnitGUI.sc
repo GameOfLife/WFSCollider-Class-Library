@@ -1,4 +1,4 @@
-WFSUnitGUI {
+UGUI {
 	
 	var <unit;
 	
@@ -64,6 +64,6 @@ WFSUnitGUI {
 	view { ^composite }
 }
 
-+ WFSUnit {
-	gui { |parent, bounds| ^WFSUnitGUI( parent, bounds, this ) }
++ U {
+	gui { |parent, bounds| ^UGUI( parent, bounds, this ) }
 }

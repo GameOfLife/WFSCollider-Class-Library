@@ -24,7 +24,7 @@ GenericDef {
 		^if( name.notNil and: {path = this.getDefFilePath(name); File.exists(path)} ) {
 			path.load
 		} {
-			"//" + this.class ++ ": - no WFSUnitDef found for % in %\n"
+			"//" + this.class ++ ": - no Udef found for % in %\n"
 			.postf( this.cleanDefName(name), path );
 			nil
 		}

@@ -2,17 +2,18 @@
 
 // example
 
-//using builtin WFSSynthDefs
-//looks for the file in the WFSUnitDefs folder
-x  = WFSUnit(\sine)
-
+//using builtin Udefs
+//looks for the file in the Udefs folder
+x  = U(\sine)
+x.def.loadSynthDef
+x.start
 (
-x = WFSUnitDef( \sine, { |freq = 440, amp = 0.1| 
+x = Udef( \sine, { |freq = 440, amp = 0.1|
 	Out.ar( 0, SinOsc.ar( freq, 0, amp ) ) 
 } );
 )
 
-y = WFSUnit( \sine, [ \freq, 880 ] );
+y = U( \sine, [ \freq, 880 ] );
 y.gui;
 
 y.def.loadSynthDef;
@@ -42,7 +43,7 @@ RoundView.useWithSkin( (
 
 */
 
-WFSUnitDef : GenericDef {
+Udef : GenericDef {
 	
 	classvar <>all;
 	
@@ -50,14 +51,14 @@ WFSUnitDef : GenericDef {
 	var <>synthDef;
 
 	*initClass{
-		defsFolder = this.filenameSymbol.asString.dirname +/+ "WFSUnitDefs";
+		defsFolder = this.filenameSymbol.asString.dirname.dirname +/+ "UnitDefs";
 	}
 
 	*new { |name, func, args, category|
 		^super.new( name, args ).init( func ).category_( category ? \default );
 	}
 	
-	*prefix { ^"wfsu_" }
+	*prefix { ^"u_" }
 		
 	init { |inFunc|
 		var argNames, values;
@@ -69,7 +70,7 @@ WFSUnitDef : GenericDef {
 		argSpecs = ArgSpec.fromSynthDef( synthDef, argSpecs );
 		
 		argSpecs.do({ |item|
-			if( item.name.asString[..4].asSymbol == 'wfsu_' ) {
+			if( item.name.asString[..4].asSymbol == 'u_' ) {
 				item.private = true;
 			};
 		});
@@ -89,7 +90,7 @@ WFSUnitDef : GenericDef {
 	load { |server| this.loadSynthDef( server ) }
 	send { |server| this.sendSynthDef( server ) }
 	
-	// these may differ in subclasses of WFSUnitDef
+	// these may differ in subclasses of Udef
 	createSynth { |unit, server| // create A single synth based on server
 		server = server ? Server.default;
 		^Synth( this.synthDefName, unit.getArgsFor( server ), server, \addToTail );
@@ -114,7 +115,7 @@ WFSUnitDef : GenericDef {
 		
 }
 
-WFSUnit : ObjectWithArgs {
+U : ObjectWithArgs {
 	
 	var <def;
 	var <>synths;
@@ -123,7 +124,7 @@ WFSUnit : ObjectWithArgs {
 		^super.new.init( defName, args ? [] );
 	}
 	
-	*defClass { ^WFSUnitDef }
+	*defClass { ^Udef }
 	
 	init { |inName, inArgs|
 		if( inName.isKindOf( this.class.defClass ) ) {
@@ -247,9 +248,14 @@ WFSUnit : ObjectWithArgs {
 		]  <<")"
 	}
 	
-	asWFSUnit { ^this }
+	asUnit { ^this }
 
-	prepare { |server| this.values.do( _.wfsPrepare(server.asCollection) ) }
+	prepare { |server| this.values.do{ |val|
+	        if( val.respondsTo(\prepare) ) {
+                val.prepare(server.asCollection)
+            }
+        }
+    }
 
 	prepareAndStart{ |server|
 	    fork{
@@ -263,18 +269,18 @@ WFSUnit : ObjectWithArgs {
 
 	dispose { |server|
 	    this.free;
-	    this.values.do( _.wfsDispose )
-}
-
+	    this.values.do{ |val|
+	        if(val.respondsTo(\dispose)) {
+	            val.dispose
+	        }
+	    }
+	}
 }
 
 + Object {
 	asControlInputFor { |server| ^this } // may split between servers
-
-	wfsPrepare { }
-	wfsDispose { }
 }
 
 + Symbol { 
-	asWFSUnit { |args| ^WFSUnit( this, args ) }
+	asUnit { |args| ^U( this, args ) }
 }

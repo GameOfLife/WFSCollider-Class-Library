@@ -1,4 +1,4 @@
-WFSUnitIn {
+UIn {
 	
 	*key { ^'wfsu' } // 'wfsu_' controls automatically become private args
 	
@@ -21,7 +21,7 @@ WFSUnitIn {
 	}
 }
 
-WFSUnitOut : WFSUnitIn {
+UOut : UIn {
 	
 	*ar { |id = 0, channelsArray|
 		var name = this.getControlName( 'o', 'ar', id );
@@ -36,7 +36,7 @@ WFSUnitOut : WFSUnitIn {
 	}
 }
 
-WFSUnitMixOut : WFSUnitIn {
+UMixOut : UIn {
 	
 	*ar { |id = 0, channelsArray, inLevel = 0|
 		var in;

@@ -4,21 +4,21 @@
 (
 // create two WFSUnitDefs
 
-WFSUnitDef( \sine, { |freq = 440, amp = 0.1| 
-	WFSUnitOut.ar( 0, SinOsc.ar( freq, 0, amp ) ) 
+Udef( \sine, { |freq = 440, amp = 0.1|
+	UOut.ar( 0, SinOsc.ar( freq, 0, amp ) )
 } ).loadSynthDef;
 
-WFSUnitDef( \vibrato, { |rate = 1, amount = 1.0| 
-	WFSUnitOut.ar( 0, SinOsc.ar( rate ).range(1-amount,1) * WFSUnitIn.ar( 0 ) ) 
+Udef( \vibrato, { |rate = 1, amount = 1.0|
+	UOut.ar( 0, SinOsc.ar( rate ).range(1-amount,1) * UIn.ar( 0 ) )
 } ).loadSynthDef;
 
-WFSUnitDef( \output, { |bus = 0|
-	Out.ar( bus, WFSUnitIn.ar( 0 ) );
+Udef( \output, { |bus = 0|
+	Out.ar( bus, UIn.ar( 0 ) );
 } ).setSpec( \bus, [0,7,\lin,1] ).loadSynthDef;
 
 )
 
-x = WFSChain( \sine, \vibrato, \output );
+x = UChain( \sine, \vibrato, \output );
 
 x.units[0].args
 x.start;
@@ -56,11 +56,11 @@ RoundView.useWithSkin( (
 
 */
 
-WFSChain {
+UChain {
 	var <>units, <>groups;
 	
 	*new { |...units|
-		^super.newCopyArgs( units.collect(_.asWFSUnit) )
+		^super.newCopyArgs( units.collect(_.asUnit) )
 	}
 	
 	start { |server|

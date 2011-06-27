@@ -1,8 +1,8 @@
 // wslib 2010
 
-AbstractSoundFile {
+AbstractSndFile {
 	
-	// points to a soundfile and holds its specs, similar to SoundFile
+	// points to a Sndfile and holds its specs, similar to SoundFile
 	// aditional parameters for Buffer loading and playback settings
 	// fully MVC aware
 	
@@ -172,11 +172,12 @@ AbstractSoundFile {
 		});
 	}
 
-	wfsPrepare { |servers|
+	prepare { |servers|
+	    this.resetBuffers;
 	    servers.do( this.makeBuffer(_) )
 	}
 
-	wfsDispose {
+	dispose {
        this.freeAllBuffers
 	}
 
@@ -233,24 +234,24 @@ AbstractSoundFile {
 
 	asControlInputFor { |server| ^this.currentBuffer(server) }
 
-	makeWFSUnit {
+	makeUnit {
         if( loop ){
 	        if( loopedDuration.notNil ) {
-                ^WFSUnit( ( this.wfsUnitNamePrefix++"FilePlayerLoop"++this.numPlayedChannels).asSymbol,
+                ^U( ( this.unitNamePrefix++"FilePlayerLoop"++this.numPlayedChannels).asSymbol,
                     [\bufnum, this, \loopTime, this.duration, \i_eventDuration, loopedDuration, \i_fadeInTime, fadeInTime,  \i_fadeOutTime, fadeOutTime, \rate, rate])
             }{
-                ^WFSUnit( (this.wfsUnitNamePrefix++"FilePlayerInfLoop"++this.numPlayedChannels).asSymbol,
+                ^U( (this.unitNamePrefix++"FilePlayerInfLoop"++this.numPlayedChannels).asSymbol,
                     [\bufnum, this, \loopTime, this.duration, \i_fadeInTime, fadeInTime,  \i_fadeOutTime, fadeOutTime, \rate, rate])
             }
         } {
-            ^WFSUnit( (this.wfsUnitNamePrefix++"FilePlayer"++this.numPlayedChannels).asSymbol,
+            ^U( (this.unitNamePrefix++"FilePlayer"++this.numPlayedChannels).asSymbol,
                 [\bufnum, this, \i_duration, this.duration, \i_fadeInTime, fadeInTime,  \i_fadeOutTime, fadeOutTime, \speed, rate]);
         }
 	}
 	
 }
 
-BufSoundFile : AbstractSoundFile {
+BufSndFile : AbstractSndFile {
 
     var <useChannels;
 
@@ -314,10 +315,10 @@ BufSoundFile : AbstractSoundFile {
 	    }
     }
 
-    wfsUnitNamePrefix{ ^"buffer" }
+    unitNamePrefix{ ^"buffer" }
 }
 
-DiskSoundFile : AbstractSoundFile {
+DiskSndFile : AbstractSndFile {
 	
 	var <>diskBufferSize = 32768;
 
@@ -382,7 +383,7 @@ DiskSoundFile : AbstractSoundFile {
         ^numChannels
     }
 
-    wfsUnitNamePrefix{ ^"disk" }
+    unitNamePrefix{ ^"disk" }
 	
 }
 
