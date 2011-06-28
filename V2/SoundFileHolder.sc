@@ -21,6 +21,14 @@ AbstractSndFile {
 		 fadeInTime, fadeOutTime, loop , loopedDuration );
 	}
 
+	*buf{ ^BufSndFile }
+	*disk{ ^DiskSndFile }
+	*fromType{ |type|
+	    ^switch(type)
+	    {\buf}{BufSndFile}
+	    {\disk}{DiskSndFile}
+	}
+
 	fromFile { |soundfile|
 		if( this.prReadFromFile( soundfile ).not ) { 
 			"%:initFromFile - could not open file '%'\n".postf( this.class, path.basename ) 
@@ -179,6 +187,10 @@ AbstractSndFile {
 
 	dispose {
        this.freeAllBuffers
+	}
+
+	disposeFor { |server|
+        this.freeAllBuffers(server)
 	}
 
 	stop { this.freeSynths; }
