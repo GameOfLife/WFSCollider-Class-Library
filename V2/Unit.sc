@@ -192,39 +192,45 @@ U : ObjectWithArgs {
 	defName_ { |name, keepArgs = true|
 	  	this.init( name.asSymbol, if( keepArgs ) { args } { [] }); // keep args
 	}
-	
-	makeBundle { |servers, synthAction|
-		var bundles = servers.asCollection.collect({ |server|
-			server.asTarget.server.makeBundle( false, {
-				var synth;
-				synth = def.createSynth( this, server );
-				synth.startAction_({ |synth|
-					this.changed( \go, synth );
-				});
-				synth.freeAction_({ |synth| 
-					synths.remove( synth );
-					this.changed( \end, synth );
-					if(disposeOnFree) {
-					    this.disposeArgsFor(synth.server)
-					}
-				});
-				this.changed( \start, synth );
-				synthAction.value( synth );
-				synths = synths.add(synth);
-			});
-		});
-		^bundles
+
+	makeSynth {|target, synthAction|
+	    var synth;
+	    "makeSynth".postln;
+        synth = def.createSynth( this, target );
+        synth.postln;
+        synth.startAction_({ |synth|
+            this.changed( \go, synth );
+        });
+        synth.freeAction_({ |synth|
+            synths.remove( synth );
+            this.changed( \end, synth );
+            if(disposeOnFree) {
+                this.disposeArgsFor(synth.server)
+            }
+        });
+        this.changed( \start, synth );
+        synthAction.value( synth );
+        synths = synths.add(synth);
 	}
 	
-	start { |server, latency|
-		var servers, bundles;
-		server = server ? Server.default;
-		servers = server.asCollection;
-		bundles = this.makeBundle( servers );
-		servers.do({ |server, i|
-			server.asTarget.server.sendBundle( latency, *bundles[i] );
+	makeBundle { |targets, synthAction|
+	    ("make B "++targets).postln;
+		^targets.asCollection.collect({ |target|
+			target.asTarget.server.makeBundle( false, {
+			    this.makeSynth(target, synthAction)
+			});
+		})
+	}
+	
+	start { |target, latency|
+		var targets, bundles;
+		target = target ? Server.default;
+		targets = target.asCollection;
+		bundles = this.makeBundle( targets );
+		targets.do({ |target, i|
+			target.asTarget.server.sendBundle( latency, *bundles[i] );
 		});
-		if( server.size == 0 ) {
+		if( target.size == 0 ) {
 			^synths[0]
 		} { 
 			^synths;

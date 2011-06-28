@@ -62,22 +62,43 @@ UChain {
 	*new { |...units|
 		^super.newCopyArgs( units.collect(_.asUnit) )
 	}
+
+	makeGroupAndSynth { |target|
+	    var group = Group( target )
+                .startAction_({ |synth|
+                    groups = groups.add( group );
+                        // only add if started (in case this is a bundle)
+                    this.changed( \go, group );
+                })
+                .freeAction_({ |synth|
+                    groups.remove( group );
+                    this.changed( \end, group );
+                });
+        this.changed( \start, group );
+        units.do( _.makeSynth(group) );
+	}
+
+	makeBundle { |targets|
+	    ^targets.asCollection.collect{ |target|
+	        target.asTarget.server.makeBundle( false, {
+                this.makeGroupAndSynth(target)
+            })
+		}
+	}
 	
-	start { |server|
-		var group;
-		group = Group( server )
-				.startAction_({ |synth|
-					groups = groups.add( group ); 
-						// only add if started (in case this is a bundle)
-					this.changed( \go, group ); 
-				})
-				.freeAction_({ |synth| 
-					groups.remove( group ); 
-					this.changed( \end, group ); 
-				});
-		this.changed( \start, group );
-		units.do( _.start(group) );
-		^group;
+	start { |target, latency|
+		var targets, bundles;
+		target = target ? Server.default;
+		targets = target.asCollection;
+		bundles = this.makeBundle( targets );
+		targets.do({ |target, i|
+			target.asTarget.server.sendBundle( latency, *bundles[i] );
+		});
+		if( target.size == 0 ) {
+			^groups[0]
+		} {
+			^groups;
+		};
 	}
 	
 	free { groups.do(_.free) }
