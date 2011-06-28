@@ -154,7 +154,7 @@
 	}
 				
 	load { |servers, syncCenter |
-		var defName, time, delta, chain, bundle;
+		var defName, time, delta, chain, bundles;
 			
 	  	//this.loadBuffers( servers );
 	  	chain = this.getUChain;
@@ -164,12 +164,12 @@
 		  	// so all buffers have been allocated already
 		  	(WFSEvent.wait-SyncCenter.latency).wait;
 		  	//testing while wfs panners are not ready
-		    chain.start(servers)
+		    //chain.start(servers)
 
-            /*bundle = chain.makeBundle(servers);
+            bundles = chain.makeBundle(servers);
             servers.do({ |server, i|
-                server.listSendSyncedBundle(delta, bundle, syncCenter)
-            });*/
+                server.listSendSyncedBundle(SyncCenter.latency, bundles[i], syncCenter)
+            });
 
 	  		/*if( useFocused.not ) {
 	  			defName = ("WFS_" ++ this.intType ++ "Out_" ++ this.audioType).asSymbol;
