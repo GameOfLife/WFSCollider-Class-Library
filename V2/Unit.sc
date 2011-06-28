@@ -119,6 +119,8 @@ U : ObjectWithArgs {
 	
 	var <def;
 	var <>synths;
+	var <>disposeOnFree = false;
+
 	
 	*new { |defName, args|
 		^super.new.init( defName, args ? [] );
@@ -202,6 +204,9 @@ U : ObjectWithArgs {
 				synth.freeAction_({ |synth| 
 					synths.remove( synth );
 					this.changed( \end, synth );
+					if(disposeOnFree) {
+					    this.disposeArgsFor(synth.server)
+					}
 				});
 				this.changed( \start, synth );
 				synthAction.value( synth );
@@ -250,7 +255,8 @@ U : ObjectWithArgs {
 	
 	asUnit { ^this }
 
-	prepare { |server| this.values.do{ |val|
+	prepare { |server|
+	    this.values.do{ |val|
 	        if( val.respondsTo(\prepare) ) {
                 val.prepare(server.asCollection)
             }
@@ -267,11 +273,19 @@ U : ObjectWithArgs {
 	    }
 	}
 
-	dispose { |server|
+	dispose {
 	    this.free;
 	    this.values.do{ |val|
 	        if(val.respondsTo(\dispose)) {
 	            val.dispose
+	        }
+	    }
+	}
+
+	disposeArgsFor { |server|
+	    this.values.do{ |val|
+	        if(val.respondsTo(\disposeFor)) {
+	            val.disposeFor(server)
 	        }
 	    }
 	}
