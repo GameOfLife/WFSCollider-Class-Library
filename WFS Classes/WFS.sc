@@ -66,6 +66,7 @@ WFS {
 			"starting offline".postln;
 			WFS.startupOffline
 		};
+
 		WFSMenubar.add;
 		Document.initAction = { |doc|
 		if( (doc.string(0, 9) ? "").toLower == "<xml:wfs>" )
@@ -107,7 +108,18 @@ WFS {
 		server.boot;
 		server.makeWindow;
 		server.m.waitForBoot({ 
+			var defs;
 			server.loadWFSSynthDefs;
+            defs = Udef.loadAllFromDefaultDirectory.collect(_.synthDef);
+
+            server.multiServers.do({ |ms|
+                ms.servers.do({ |server|
+                    defs.do({|def|
+                        def.add( server )
+                    })
+                })
+            });
+
 			SyncCenter.loadMasterDefs;
 			WFSEQ.new; WFSTransport.new; WFSLevelBus.makeWindow;
 			
@@ -143,7 +155,17 @@ WFS {
 		SyncCenter.writeDefs;
 		
 		server.m.waitForBoot({
+			var defs;
 			SyncCenter.loadMasterDefs;
+			defs = Udef.loadAllFromDefaultDirectory.collect(_.synthDef);
+
+            server.multiServers.do({ |ms|
+                ms.servers.do({ |server|
+                    defs.do({|def|
+                        def.add( server )
+                    })
+                })
+            });
 			"\n\tWelcome to the WFS System".postln; 
 		});	
 		^server	

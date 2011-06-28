@@ -154,15 +154,24 @@
 	}
 				
 	load { |servers, syncCenter |
-		var defName, time, delta;
+		var defName, time, delta, chain, bundle;
 			
-	  	this.loadBuffers( servers );
+	  	//this.loadBuffers( servers );
+	  	chain = this.getUChain;
+        chain.prepare(servers);
 	  	Routine({
 		  	// wait with loading synth
 		  	// so all buffers have been allocated already
 		  	(WFSEvent.wait-SyncCenter.latency).wait;
+		  	//testing while wfs panners are not ready
+		    chain.start(servers)
 
-	  		if( useFocused.not ) {
+            /*bundle = chain.makeBundle(servers);
+            servers.do({ |server, i|
+                server.listSendSyncedBundle(delta, bundle, syncCenter)
+            });*/
+
+	  		/*if( useFocused.not ) {
 	  			defName = ("WFS_" ++ this.intType ++ "Out_" ++ this.audioType).asSymbol;
 	  		} {
 	  			defName = wfsDefName
@@ -172,7 +181,8 @@
 					servers, delayBuffer, sfBuffer, 
 					pbRate, level, loop, dur, input, args, fadeTimes,
 					wfsPathStartIndex, SyncCenter.latency, syncCenter );
-			
+
+			//automatically done by UChain - NOT NEEDED
 			synth.do{ |syn|
 				syn.register(true);
 
@@ -184,6 +194,8 @@
 					WFS.debug("loaded synths: % (removed one)", loadedSynths.size);
 				})
 			}
+			*/
+
 		}).play(SystemClock);
 		
 				
