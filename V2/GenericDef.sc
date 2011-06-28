@@ -30,6 +30,10 @@ GenericDef {
 		}
 	}
 
+	*loadAllFromDefaultDirectory {
+	    ^(defsFolder++"/*.scd").pathMatch.collect({ |path| path.load })
+	}
+
 	*cleanDefName{ |name|
 		^name.asString.collect { |char| if (char.isAlphaNum, char, $_) };
 	}
