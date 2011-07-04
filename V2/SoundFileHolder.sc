@@ -134,6 +134,7 @@ AbstractSndFile {
 	endSecond 	{ ^this.framesToSeconds(this.endFrame); }
 	duration 		{ ^this.framesToSeconds(this.usedFrames); } // negative if unknown
 	fileDuration 	{ ^this.framesToSeconds(this.numFrames); }
+	eventDuration { ^if(loop){loopedDuration}{this.duration} }
 	
 	startSecond_ { |startSecond = 0| this.startFrame = this.secondsToFrames( startSecond ); }
 	endSecond_ { |endSecond = 0| this.endFrame = this.secondsToFrames( endFrame ); }
@@ -260,18 +261,18 @@ AbstractSndFile {
 	asControlInputFor { |server| ^this.currentBuffer(server) }
 
 	makeUnit {
-        if( loop ){
-	        if( loopedDuration.notNil ) {
-                ^U( ( this.unitNamePrefix++"FilePlayerLoop"++this.numPlayedChannels).asSymbol,
-                    [\bufnum, this, \loopTime, this.duration, \i_eventDuration, loopedDuration, \i_fadeInTime, fadeInTime,  \i_fadeOutTime, fadeOutTime, \rate, rate])
-            }{
-                ^U( (this.unitNamePrefix++"FilePlayerInfLoop"++this.numPlayedChannels).asSymbol,
-                    [\bufnum, this, \loopTime, this.duration, \i_fadeInTime, fadeInTime,  \i_fadeOutTime, fadeOutTime, \rate, rate])
-            }
-        } {
-            ^U( (this.unitNamePrefix++"FilePlayer"++this.numPlayedChannels).asSymbol,
-                [\bufnum, this, \i_duration, this.duration, \i_fadeInTime, fadeInTime,  \i_fadeOutTime, fadeOutTime, \speed, rate]);
-        }
+	    ^if( loop.not || loopedDuration.notNil ) {
+	        ^MetaU(this.unitNamePrefix++"FilePlayer",[\numChannels,1,\loop,loop],
+	         [\bufnum, this, \i_duration, this.eventDuration, \loopTime, this.duration,
+	          \i_fadeInTime, fadeInTime,  \i_fadeOutTime, fadeOutTime, \rate, rate,])
+	    } {
+	        ^MetaU(this.unitNamePrefix++"FilePlayerLoopInf",[\numChannels,1,\loop,loop],
+	        [\bufnum, this, \loopTime, this.duration,\i_fadeInTime, fadeInTime,
+	        \i_fadeOutTime, fadeOutTime, \rate, rate,])
+
+	    }
+	}
+
     printOn { arg stream;
 		stream << "a " << this.class.name << "(" <<* [
 		    path, numFrames, numChannels, sampleRate,
@@ -357,6 +358,7 @@ BufSndFile : AbstractSndFile {
     }
 
     unitNamePrefix{ ^"buffer" }
+
 }
 
 DiskSndFile : AbstractSndFile {
