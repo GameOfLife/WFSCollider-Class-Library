@@ -1,5 +1,21 @@
 /*
 
+
+Udef -> *new { |name, func, args, category|
+    name: name of the Udef and corresponding unit
+    func: ugen graph function
+    args:  array with argName/default pairs
+    category: ?
+
+     -> defines a synthdef, and specs for the argumetns of the synthdef
+     -> Associates the unitDef with a name in a dictionary.
+
+U -> *new { |defName, args|
+	Makes new Unit based on the defName.
+	Retrieves the corresponding Udef from a dictionary
+	sets the current args
+
+
 // example
 
 //using builtin Udefs
@@ -245,6 +261,8 @@ U : ObjectWithArgs {
 		this.values = this.def.values.deepCopy; 
 		def.setSynth( this, *args );
 	}
+
+	isPlaying { ^(synths.size != 0) }
 	
 	defName { ^def !? { def.name } }
 	
@@ -261,7 +279,8 @@ U : ObjectWithArgs {
 	
 	asUnit { ^this }
 
-	prepare { |server|
+	prepare { |server, loadDef = true|
+	    this.def.loadSynthDef;
 	    this.values.do{ |val|
 	        if( val.respondsTo(\prepare) ) {
                 val.prepare(server.asCollection)
