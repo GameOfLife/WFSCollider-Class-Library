@@ -66,14 +66,14 @@ UChain {
 	makeGroupAndSynth { |target|
 	    var group = Group( target )
                 .startAction_({ |synth|
-                    groups = groups.add( group );
-                        // only add if started (in case this is a bundle)
+                    // only add if started (in case this is a bundle)
                     this.changed( \go, group );
                 })
                 .freeAction_({ |synth|
                     groups.remove( group );
                     this.changed( \end, group );
                 });
+        groups = groups.add( group );
         this.changed( \start, group );
         units.do( _.makeSynth(group) );
 	}
