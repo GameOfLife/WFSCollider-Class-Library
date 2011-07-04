@@ -14,6 +14,8 @@ AbstractSndFile {
 	
 	var <>synths; // holder for the instant playback synths
 	var <>buffers; // holder for all buffers
+
+	var <unit;
 	
 	*newBasic{ |path, numFrames, numChannels, sampleRate = 44100, startFrame = 0, endFrame, rate = 1,
 	    fadeInTime = 0.1, fadeOutTime = 0.1,loop = false, loopedDuration |
@@ -196,6 +198,17 @@ AbstractSndFile {
 	stop { this.freeSynths; }
 	
 	freeSynths { synths.do(_.free) }
+
+	unit_ { |aUnit|
+	    if(unit.isNil) {
+	        unit = aUnit
+	    } {
+	        "Warning: ".postln;
+	        this.cs.postln;
+	        "is already being used by".postln;
+	        unit.postln;
+	    }
+	}
 	
 	// utilities
 	

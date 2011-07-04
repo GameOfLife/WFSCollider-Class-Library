@@ -152,6 +152,11 @@ U : ObjectWithArgs {
 		};
 		if( def.notNil ) {	
 			args = def.asArgsArray( inArgs );
+			this.values.do{ |value|
+			    if(value.respondsTo(\unit_)) {
+			        value.unit_(this)
+			    }
+			}
 		} { 
 			"defName '%' not found".format(inName).warn; 
 		};
