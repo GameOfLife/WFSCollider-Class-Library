@@ -272,6 +272,22 @@ AbstractSndFile {
             ^U( (this.unitNamePrefix++"FilePlayer"++this.numPlayedChannels).asSymbol,
                 [\bufnum, this, \i_duration, this.duration, \i_fadeInTime, fadeInTime,  \i_fadeOutTime, fadeOutTime, \speed, rate]);
         }
+    printOn { arg stream;
+		stream << "a " << this.class.name << "(" <<* [
+		    path, numFrames, numChannels, sampleRate,
+            startFrame, endFrame,
+	        rate, fadeInTime, fadeOutTime,
+            loop, loopedDuration
+		]  <<")"
+	}
+
+    storeOn { arg stream;
+		stream << this.class.name << "(" <<* [
+		    path, numFrames, numChannels, sampleRate,
+            startFrame, endFrame,
+	        rate, fadeInTime, fadeOutTime,
+            loop, loopedDuration
+		]  <<")"
 	}
 	
 }
