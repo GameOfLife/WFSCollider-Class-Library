@@ -61,7 +61,7 @@ RoundView.useWithSkin( (
 
 Udef : GenericDef {
 	
-	classvar <>all;
+	classvar <>all, <>defsFolder;
 	
 	var <>func, <>category;
 	var <>synthDef;

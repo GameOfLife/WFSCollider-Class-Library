@@ -1,6 +1,6 @@
 GenericDef {
 	
-	classvar <>all, <>defsFolder; // overwrite in subclass to create class specific lib
+	classvar <>all; // overwrite in subclass to create class specific lib
 	
 	var <>argSpecs;
 
@@ -31,7 +31,7 @@ GenericDef {
 	}
 
 	*loadAllFromDefaultDirectory {
-	    ^(defsFolder++"/*.scd").pathMatch.collect({ |path| path.load })
+	    ^(this.defsFolder++"/*.scd").pathMatch.collect({ |path| path.load })
 	}
 
 	*cleanDefName{ |name|
@@ -40,7 +40,7 @@ GenericDef {
 
 	*getDefFilePath{ |defName|
 		var cleanDefName = this.cleanDefName(defName);
-		^defsFolder +/+ cleanDefName ++ ".scd";
+		^this.defsFolder +/+ cleanDefName ++ ".scd";
 	}
 
 	initArgSpecs { |args|
@@ -112,7 +112,13 @@ GenericDef {
 		asp = this.getArgSpec(name);
 		if( asp.notNil ) { asp.spec = spec.asSpec };
 	}
-	
+
+	/**
+	* argPairs -> an array with key/value pairs
+	* returns -> an array with key/value pairs for all arguments of the synthdef.
+	* if the argPairs arrays doesn't have a certain argument, the default value
+	* is used.
+	*/
 	asArgsArray { |argPairs|
 		argPairs = argPairs ? #[];
 		^argSpecs.collect({ |item| 

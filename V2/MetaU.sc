@@ -36,7 +36,7 @@ a = MetaUdef(\copy,{ |numChannels|
 
 MetaUdef : GenericDef {
 
-	classvar <>all;
+	classvar <>all,<>defsFolder;
 
 	var <>func, <>category;
 	var <>udefArgsFunc;
