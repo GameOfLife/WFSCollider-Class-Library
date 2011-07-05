@@ -31,6 +31,7 @@ z = UChain(y,\output);
 z.prepareAndStart(s)
 
 )
+
 //free synths and buffers
 z.dispose;
 
@@ -40,12 +41,12 @@ y = x.makeUnit;
 y.disposeOnFree = true;
 z = UChain(y,\output);
 z.prepareAndStart(s)
-
 )
 
 //this should be empty
-y.getArg(\bufnum).buffers
+y.get(\bufnum).buffers
 
+y.set(\gate,0)
 
 
 
