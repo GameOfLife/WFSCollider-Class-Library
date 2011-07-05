@@ -10,6 +10,10 @@ AbstractRichBuffer {
         ^super.newCopyArgs(numFrames, numChannels, sampleRate)
     }
 
+    shallowCopy{
+        ^this.class.new(numFrames, numChannels, sampleRate)
+	}
+
     numFrames_ { |new|
 		numFrames = new;
 		this.changed( \numFrames, numFrames );
@@ -140,6 +144,11 @@ AbstractSndFile : AbstractRichBuffer {
 		^super.new(numFrames, numChannels, sampleRate)
 		    .initAbstractSndFile( path, startFrame, endFrame, rate,
 		 fadeInTime, fadeOutTime, loop , loopedDuration );
+	}
+
+	shallowCopy{
+        ^this.class.newBasic(path, numFrames, numChannels, sampleRate, startFrame, endFrame, rate,
+	    fadeInTime, fadeOutTime,loop, loopedDuration)
 	}
 
 	initAbstractSndFile { |inPath, inStartFrame, inEndFrame, inRate,
