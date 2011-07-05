@@ -216,9 +216,7 @@ U : ObjectWithArgs {
 
 	makeSynth {|target, synthAction|
 	    var synth;
-	    "makeSynth".postln;
         synth = def.createSynth( this, target );
-        synth.postln;
         synth.startAction_({ |synth|
             this.changed( \go, synth );
         });
@@ -235,7 +233,6 @@ U : ObjectWithArgs {
 	}
 	
 	makeBundle { |targets, synthAction|
-	    ("make B "++targets).postln;
 		^targets.asCollection.collect({ |target|
 			target.asTarget.server.makeBundle( false, {
 			    this.makeSynth(target, synthAction)
