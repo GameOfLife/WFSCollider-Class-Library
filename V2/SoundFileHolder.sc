@@ -324,6 +324,12 @@ AbstractSndFile : AbstractRichBuffer {
 	    }
 	}
 
+	play{ |target|
+	    var chain = UChain( this.copy.makeUnit.disposeOnFree_(true),\output);
+	    chain.prepareAndStart(target);
+	    ^chain
+	}
+
     printOn { arg stream;
 		stream << "a " << this.class.name << "(" <<* [
 		    path, numFrames, numChannels, sampleRate,
