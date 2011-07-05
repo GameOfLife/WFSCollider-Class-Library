@@ -104,15 +104,17 @@ UChain {
 	free { groups.do(_.free) }
 	stop { this.free }
 
-	prepare { |server| units.do(_.prepare(server) ) }
+	prepare { |target, loadDef = true|
+	    units.do(_.prepare(target,loadDef) )
+	}
 
-	prepareAndStart{ |server|
+	prepareAndStart{ |target, loadDef = true|
 	    fork{
-	        this.prepare(server);
-	        server.asCollection.do{ |s|
-	            s.sync;
+	        this.prepare(target, loadDef);
+	        target.asCollection.do{ |t|
+	            t.asTarget.server.sync;
 	        };
-	        this.start(server);
+	        this.start(target);
 	    }
 	}
 

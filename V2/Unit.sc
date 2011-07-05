@@ -94,11 +94,15 @@ Udef : GenericDef {
 	
 	// this may change
 	loadSynthDef { |server|
-		synthDef.load(server);
+		server.asCollection.do{ |s|
+		    synthDef.load(s)
+		}
 	}
 	
 	sendSynthDef { |server|
-		synthDef.send(server);
+	    server.asCollection.do{ |s|
+	        synthDef.send(s)
+	    }
 	}
 	
 	synthDefName { ^synthDef.name }
@@ -281,22 +285,37 @@ U : ObjectWithArgs {
 	
 	asUnit { ^this }
 
-	prepare { |server, loadDef = true|
-	    this.def.loadSynthDef;
+    prSyncCollection { |targets|
+        targets.asCollection.do{ |t|
+	        t.asTarget.server.sync;
+	    };
+    }
+
+	prepare { |target, loadDef = true|
+	    target = target.asCollection;
+	    if( loadDef) {
+	        this.def.loadSynthDef(target.collect{ |t| t.asTarget.server});
+	    };
 	    this.values.do{ |val|
 	        if( val.respondsTo(\prepare) ) {
-                val.prepare(server.asCollection)
+                val.prepare(target.asCollection)
             }
         }
     }
 
-	prepareAndStart{ |server|
+	prepareAndStart { |target, loadDef = true|
 	    fork{
-	        this.prepare(server);
-	        server.asCollection.do{ |s|
-	            s.sync;
-	        };
-	        this.start(server);
+	        this.prepare(target, loadDef);
+	        this.prSyncCollection(target);
+	        this.start(target);
+	    }
+	}
+
+	loadDefAndStart { |target|
+	    fork{
+	        this.def.loadSynthDef(target.collect{ |t| t.asTarget.server });
+	        this.prSyncCollection(target);
+	        this.start(target);
 	    }
 	}
 
