@@ -55,10 +55,53 @@ MetaUdef : GenericDef {
 		udefArgsFunc = inUdefArgsFunc
 	}
 
+    // metaArgs -> [\arg1,val1,\arg2,val2]
+    createName { |metaArgs|
+	    ^this.name++"_"++metaArgs.reduce{ |a,b| a.asString++"_"++b.asString }
+    }
+
+    // metaArgs -> [\arg1,val1,\arg2,val2]
+    createUdef { |metaArgs|
+        var values = metaArgs[1,3..];
+        ^Udef(this.createName(metaArgs), func.value(*values), udefArgsFunc.value(*values) );
+    }
+
+    /*
+    *   metaUnit -> an instance of MetaU
+    *   unitArgs -> [\arg1,value1,\arg2,value2,...] array with arguments and values
+    *               for the Unit instance to be created
+    */
 	createUnit { |metaUnit,unitArgs|
-	    var name = this.name++"_"++metaUnit.args.reduce{ |a,b| a.asString++"_"++b.asString };
-	    Udef(name, func.value(*metaUnit.values), udefArgsFunc.value(*metaUnit.values) );
-	    ^U(name, metaUnit.unitArgs)
+	    //Udef(this.createName(metaUnit.args), func.value(*metaUnit.values), udefArgsFunc.value(*metaUnit.values) );
+	    this.createUdef(metaUnit.args);
+	    ^U(this.createName(metaUnit.args), metaUnit.unitArgs)
+	}
+
+	//metaUnitArgsArray -> an array of arrays with key/value pairs
+	// i.e. [[\numChannels,0],[\numChannels,1]]
+	synthDefs { |metaUnitArgsArray|
+	    ^metaUnitArgsArray.collect{ |args|
+	        var fullArgs = this.asArgsArray( args );
+	        this.createUdef(fullArgs).synthDef
+	    }
+	}
+
+	//unitArgsArray -> an array of arrays with key/value pairs
+	// i.e. [[\numChannels,0],[\numChannels,1]]
+	loadSynthDefs { |metaUnitArgsArray, server|
+	    var synthDefs = this.synthDefs(metaUnitArgsArray);
+        server.asCollection.collect{ |s|
+            synthDefs.do(_.load(s))
+        }
+	}
+
+    //unitArgsArray -> an array of arrays with key/value pairs
+	// i.e. [[\numChannels,0],[\numChannels,1]]
+	sendSynthDefs { |metaUnitArgsArray, server|
+	    var synthDefs = this.synthDefs(metaUnitArgsArray);
+        server.asCollection.collect{ |s|
+            synthDefs.do(_.send(s))
+        }
 	}
 
 	storeOn { arg stream;
@@ -119,7 +162,7 @@ MetaU : ObjectWithArgs {
 		unit.free;
 		this.makeUnit;
 		if(isPlaying) {
-		    unit.start(targets)
+            unit.loadDefAndStart(targets)
 		}
 	}
 
@@ -143,13 +186,11 @@ MetaU : ObjectWithArgs {
 	asUnit { ^this }
 	disposeOnFree_{ |bool| unit.disposeOnFree_(bool) }
 
-    prepare { |server|
-        unit.def.loadSynthDef;
-        unit.prepare(server);
+    prepare { |server,loadDef = true|
+        unit.prepare(server, loadDef);
     }
-    prepareAndStart{ |server|
-        unit.def.loadSynthDef;
-        unit.prepareAndStart(server);
+    prepareAndStart{ |server, loadDef = true|
+        unit.prepareAndStart(server, loadDef);
     }
     dispose {
         unit.dispose()
