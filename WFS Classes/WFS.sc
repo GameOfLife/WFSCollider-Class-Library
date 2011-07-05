@@ -121,7 +121,7 @@ WFS {
             }.flat;
 
             defs.do({|def|
-                def.postln.load( server.m )
+                def.load( server.m )
             });
 
 			SyncCenter.loadMasterDefs;
@@ -129,11 +129,8 @@ WFS {
 			
 			"\n\tWelcome to the WFS Offline System".postln	
 		});
-		
-		"\n\tWelcome to the WFS Offline System".postln
-		
+
 		^server
-		
 	}
 	
 	*startupClient{ |ips, startPort, serversPerSystem = 8, hostnames, soundCard = "MOTU 828mk2"|
