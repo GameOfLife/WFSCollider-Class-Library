@@ -135,7 +135,6 @@ AbstractSndFile : AbstractRichBuffer {
 	var <rate = 1;
 	var <fadeInTime = 0.1, <fadeOutTime = 0.1;
 	var <loop = false, <loopedDuration;
-	var <>synths; // holder for the instant playback synths
 
 	var <unit;
 	
@@ -226,7 +225,6 @@ AbstractSndFile : AbstractRichBuffer {
 	rate_ { |new|
 		rate = new ? 1;
 		this.changed( \rate, rate );
-		synths.do( _.set( \rate, rate ) );
 	}
 	
 	loop_ { |new|
@@ -381,27 +379,6 @@ BufSndFile : AbstractSndFile {
 		this.removeBuffer( buf );
 	}
 
-	play { |server, startOffset = 0, mul = 1, out = 0| // returns buffer, not synth
-		var action = { |buf| // copied and modified from Buffer:play
-			synths = synths.add(
-				{ var player;
-					player = PlayBuf.ar( buf.numChannels, buf,
-						BufRateScale.kr( buf ) * \rate.kr(rate),
-						loop: loop.binaryValue,
-						doneAction: if( loop ) { 0 } { 2 });
-					Out.ar( out, player * mul );
-				}.play( buf.server ).freeAction_({ |synth|
-						synths.remove( synth );
-						this.freeBuffer( buf );
-					})
-			);
-		};
-
-		// TODO : replace with single synthdef instead of .play
-
-		^this.makeBuffer( server, startOffset, action );
-	}
-
     unitNamePrefix{ ^"buffer" }
 
 }
@@ -442,31 +419,6 @@ DiskSndFile : AbstractSndFile {
 			"DiskSoundFile:prReadBuffer : file not found".warn;
 		};
 	}
-	
-	freeBuffer { |buf, action|
-		buf.checkCloseFree( action );
-		buffers.remove( buf );
-	}
-	
-	play { |server, startOffset = 0, mul = 1, out = 0| // only one at a time per server
-		var action = { |buf|
-			synths = synths.add( 
-				{ var diskin;
-					diskin = VDiskIn.ar( numChannels, buf, \rate.kr( rate ), loop.binaryValue ); 
-					if( loop.booleanValue.not ) {
-						Line.kr(0,1, this.duration - (startOffset / sampleRate), doneAction:2);
-					};
-					Out.ar( out, diskin * mul );
-				}.play( buf.server ).freeAction_({ |synth|
-				 	synths.remove( synth );
-					this.freeBuffer( buf );
-				});
-			);
-		};
-		
-		^this.makeBuffer( server, startOffset, action );
-	}
-
 
     unitNamePrefix{ ^"disk" }
 	
