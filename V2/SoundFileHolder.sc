@@ -1,26 +1,157 @@
 // wslib 2010
 
-AbstractSndFile {
+AbstractRichBuffer {
+    var <numFrames, <numChannels, <sampleRate;
+
+	var <>buffers; // holder for all buffers
+    var <unit;
+
+    *new{ |numFrames, numChannels = 1, sampleRate = 44100|
+        ^super.newCopyArgs(numFrames, numChannels, sampleRate)
+    }
+
+    numFrames_ { |new|
+		numFrames = new;
+		this.changed( \numFrames, numFrames );
+	}
+
+	numChannels_ { |new|
+		numChannels = new;
+		this.changed( \numChannels, numChannels );
+	}
+
+	sampleRate_ { |new|
+		sampleRate = new ? 44100;
+		this.changed( \sampleRate, sampleRate );
+	}
+
+    //BUFFER MANAGEMENT
+	addBuffer { |buf|
+		buffers = buffers.add( buf );
+		this.changed( \buffers, buffers );
+	}
+
+	removeBuffer { |buf|
+		buffers.remove( buf );
+		this.changed( \buffers, buffers );
+	}
+
+	currentBuffers { |server| // returns all buffers if server == nil
+		if( server.notNil ) {
+			^buffers.select({ |item| item.server == server });
+		};
+		^buffers;
+	}
+
+	currentBuffer { |server|
+	    ^this.currentBuffers(server)[0]
+	}
+
+
+	freeAllBuffers { |server|
+	    if( server.notNil ) {
+		    this.currentBuffers( server ).do( this.freeBuffer(_) )
+		}{
+		    this.buffers.do( this.freeBuffer(_) )
+		}
+	}
+
+	resetBuffers { |server|
+		this.currentBuffers( server ).do({ |buf|
+			this.removeBuffer( buf );
+		});
+	}
+
+	prepare { |servers|
+	    this.resetBuffers;
+	    servers.do( this.makeBuffer(_) )
+	}
+
+	dispose {
+       this.freeAllBuffers
+	}
+
+	disposeFor { |server|
+        this.freeAllBuffers(server)
+	}
+
+	asControlInputFor { |server| ^this.currentBuffer(server) }
+
+	unit_ { |aUnit|
+	    if(unit.isNil) {
+	        unit = aUnit
+	    } {
+	        "Warning: ".postln;
+	        this.cs.postln;
+	        "is already being used by".postln;
+	        unit.postln;
+	    }
+	}
+}
+
+RichBuffer : AbstractRichBuffer {
+
+    *new{ |numFrames, numChannels = 1, sampleRate = 44100|
+        ^super.new(numFrames, numChannels, sampleRate)
+    }
+
+	makeBuffer { |server, action, bufnum|
+	    var buf;
+		buf = Buffer.alloc(server, numFrames, numChannels, action, bufnum );
+		buffers = buffers.add( buf );
+		^buf;
+	}
+
+	freeBuffer { |buf, action|
+		buf.checkFree( action );
+		buffers.remove( buf );
+	}
+
+	printOn { arg stream;
+		stream << "a " << this.class.name << "(" <<* [
+		    numFrames, numChannels, sampleRate]
+		<<")"
+	}
+
+    storeOn { arg stream;
+		stream << this.class.name << "(" <<* [
+		    numFrames, numChannels, sampleRate]
+		<<")"
+	}
+}
+
+AbstractSndFile : AbstractRichBuffer {
 	
 	// points to a Sndfile and holds its specs, similar to SoundFile
 	// aditional parameters for Buffer loading and playback settings
 	// fully MVC aware
 	
-	var <path, <numFrames, <numChannels = 1, <sampleRate = 44100;
+	var <path;
 	var <startFrame = 0, endFrame;  // for buffer loading
 	var <rate = 1;
 	var <fadeInTime = 0.1, <fadeOutTime = 0.1;
 	var <loop = false, <loopedDuration;
-	
 	var <>synths; // holder for the instant playback synths
-	var <>buffers; // holder for all buffers
 
 	var <unit;
 	
 	*newBasic{ |path, numFrames, numChannels, sampleRate = 44100, startFrame = 0, endFrame, rate = 1,
 	    fadeInTime = 0.1, fadeOutTime = 0.1,loop = false, loopedDuration |
-		^super.newCopyArgs( path, numFrames, numChannels, sampleRate, startFrame, endFrame, rate,
+		^super.new(numFrames, numChannels, sampleRate)
+		    .initAbstractSndFile( path, startFrame, endFrame, rate,
 		 fadeInTime, fadeOutTime, loop , loopedDuration );
+	}
+
+	initAbstractSndFile { |inPath, inStartFrame, inEndFrame, inRate,
+		 inFadeInTime, inFadeOutTime, inLoop , inLoopedDuration|
+		 path = inPath;
+		 startFrame = inStartFrame;
+		 endFrame = inEndFrame;
+		 rate = inRate;
+		 fadeInTime = inFadeInTime;
+		 fadeOutTime = inFadeOutTime;
+		 loop = inLoop;
+		 loopedDuration = inLoopedDuration;
 	}
 
 	*buf{ ^BufSndFile }
@@ -72,22 +203,7 @@ AbstractSndFile {
 		this.changed( \path, path );
 		if( update == true ) { this.prReadFromFile; };
 	}
-	
-	numFrames_ { |new|
-		numFrames = new;
-		this.changed( \numFrames, numFrames );
-	}
-	
-	numChannels_ { |new|
-		numChannels = new;
-		this.changed( \numChannels, numChannels );
-	}
-	
-	sampleRate_ { |new|
-		sampleRate = new ? 44100;
-		this.changed( \sampleRate, sampleRate );
-	}
-	
+
 	startFrame_ { |new|
 		startFrame = (new ? 0).min(0);
 		this.changed( \startFrame, startFrame );
@@ -126,10 +242,10 @@ AbstractSndFile {
 			this.endFrame = frames + startFrame 
 		};
 	}
-	
+
 	framesToSeconds { |frames = 0|  ^frames !? { (frames / sampleRate) / rate } }
 	secondsToFrames { |seconds = 0| ^seconds !? { seconds * rate * sampleRate } }
-	
+
 	startSecond 	{ ^this.framesToSeconds( this.startFrame ); }
 	endSecond 	{ ^this.framesToSeconds(this.endFrame); }
 	duration 		{ ^this.framesToSeconds(this.usedFrames); } // negative if unknown
@@ -140,76 +256,6 @@ AbstractSndFile {
 	endSecond_ { |endSecond = 0| this.endFrame = this.secondsToFrames( endFrame ); }
 	duration_ { |duration| this.usedFrames = this.secondsToFrames( duration ) }
 	fileDuration_ { |duration| this.numFrames = this.secondsToFrames( duration ); }
-	
-	// buffer creation methods
-	
-	makeBuffer { }
-	
-	addBuffer { |buf|
-		buffers = buffers.add( buf );
-		this.changed( \buffers, buffers );
-	}
-	
-	removeBuffer { |buf|
-		buffers.remove( buf );
-		this.changed( \buffers, buffers );
-	}
-	
-	freeBuffer { }
-	
-	currentBuffers { |server| // returns all buffers if server == nil
-		if( server.notNil ) {
-			^buffers.select({ |item| item.server == server });
-		};
-		^buffers;
-	}
-
-	currentBuffer { |server|
-	    ^this.currentBuffers(server)[0]
-	}
-
-	
-	freeAllBuffers { |server|
-	    if( server.notNil ) {
-		    this.currentBuffers( server ).do( this.freeBuffer(_) )
-		}{
-		    this.buffers.do( this.freeBuffer(_) )
-		}
-	}
-	
-	resetBuffers { |server|
-		this.currentBuffers( server ).do({ |buf|
-			this.removeBuffer( buf );
-		});
-	}
-
-	prepare { |servers|
-	    this.resetBuffers;
-	    servers.do( this.makeBuffer(_) )
-	}
-
-	dispose {
-       this.freeAllBuffers
-	}
-
-	disposeFor { |server|
-        this.freeAllBuffers(server)
-	}
-
-	stop { this.freeSynths; }
-	
-	freeSynths { synths.do(_.free) }
-
-	unit_ { |aUnit|
-	    if(unit.isNil) {
-	        unit = aUnit
-	    } {
-	        "Warning: ".postln;
-	        this.cs.postln;
-	        "is already being used by".postln;
-	        unit.postln;
-	    }
-	}
 	
 	// utilities
 	
@@ -257,8 +303,6 @@ AbstractSndFile {
 			}
 		});
 	}
-
-	asControlInputFor { |server| ^this.currentBuffer(server) }
 
 	makeUnit {
 	    ^if( loop.not || loopedDuration.notNil ) {
@@ -349,14 +393,6 @@ BufSndFile : AbstractSndFile {
 		^this.makeBuffer( server, startOffset, action );
 	}
 
-    numPlayedChannels{
-        ^if( useChannels.isNil ) {
-	        numChannels
-	    }{
-	        useChannels.size
-	    }
-    }
-
     unitNamePrefix{ ^"buffer" }
 
 }
@@ -422,9 +458,6 @@ DiskSndFile : AbstractSndFile {
 		^this.makeBuffer( server, startOffset, action );
 	}
 
-    numPlayedChannels {
-        ^numChannels
-    }
 
     unitNamePrefix{ ^"disk" }
 	
