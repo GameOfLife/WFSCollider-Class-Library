@@ -70,7 +70,7 @@
 	
 	*resetLoadedSynths { loadedSynths = []; }
 	
-	free { synth.asCollection.do( _.free ); isRunning = false; }
+	free { synth.asCollection.do( _.dispose ); isRunning = false; }
 	
 	release { synth.asCollection.do( _.release ); isRunning = false; }
 	
@@ -158,7 +158,7 @@
 			
 	  	//this.loadBuffers( servers );
 	  	chain = this.getUChain;
-        chain.prepare(servers);
+        synth = chain.prepare(servers,false);
 	  	Routine({
 		  	// wait with loading synth
 		  	// so all buffers have been allocated already

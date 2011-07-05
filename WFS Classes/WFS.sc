@@ -110,14 +110,18 @@ WFS {
 		server.m.waitForBoot({ 
 			var defs;
 			server.loadWFSSynthDefs;
-            defs = Udef.loadAllFromDefaultDirectory.collect(_.synthDef);
+            defs = Udef.loadAllFromDefaultDirectory.collect(_.synthDef) ++
+            [ 'bufferFilePlayer','diskFilePlayer', ].collect{ |name|
+                MetaUdef.fromName(name).synthDefs(
+                    [true,false].collect{ |b| [\numChannels,1, \loop, b] }
+                )
+            }.flat
+            ++ ['bufferFilePlayerLoopInf','diskFilePlayerLoopInf'].collect{ |name|
+                MetaUdef.fromName(name).synthDefs([[\numChannels,1]])
+            }.flat;
 
-            server.multiServers.do({ |ms|
-                ms.servers.do({ |server|
-                    defs.do({|def|
-                        def.add( server )
-                    })
-                })
+            defs.do({|def|
+                def.postln.load( server.m )
             });
 
 			SyncCenter.loadMasterDefs;
