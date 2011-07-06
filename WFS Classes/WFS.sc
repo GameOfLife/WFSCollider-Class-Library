@@ -180,7 +180,45 @@ WFS {
 		^server // returns an instance of WFSServers for assignment
 		// best to be assigned to var 'm' in the intepreter
 	}
-			
+
+	*startupSingleMachine{ |ips, startPort, serversPerSystem = 8, hostnames, soundCard = "MOTU 828mk2", config|
+		var server;
+		if( Buffer.respondsTo( \readChannel ).not )
+			{ scVersion = \old };
+		this.setServerOptions;
+		Server.default.options.device_( soundCard );
+		server = WFSServers( ips, startPort, serversPerSystem ).makeDefault;
+		server.hostNames_( *hostnames );
+
+		server.wfsConfigurations = [ config ];
+		server.boot;
+		// live eq (todo: incorporate in software)
+		WFSEQ.action = { |eq, label, val, desc|
+			WFSServers.default.allServers
+				.do({ |sv| sv.sendMsg( "/n_set", 1, label, val ); });
+		};
+		// end life eq
+		server.makeWindow;
+		server.m.waitForBoot({
+			"\n\tWelcome to the WFS System".postln;
+			server.loadClientSyncSynthDefs;
+		});
+		Routine({
+			var allTypes;
+			while({ server.multiServers[0].servers
+					.collect( _.serverRunning ).every( _ == true ).not; },
+				{ 0.2.wait; });
+			allTypes = WFSSynthDef.allTypes( server.wfsConfigurations[0] );
+			allTypes.do({ |def| def.def.writeDefFile });
+			WFSLive.writeSynthDefs;
+			server.writeServerSyncSynthDefs;
+			server.multiServers[0].servers.do({ |server|
+				server.loadDirectory( SynthDef.synthDefDir );
+				});
+		}).play( AppClock );
+		^server
+	}
+
 	*makeArchive { |version = "0.5b"| 
 		WFS.filenameSymbol.asString.dirname.dirname
 			.targz( "~/Desktop/WFS_Classes_v" ++ version );
