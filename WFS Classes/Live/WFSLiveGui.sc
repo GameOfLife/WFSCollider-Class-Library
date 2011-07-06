@@ -15,7 +15,6 @@ WFSLiveGui {
 			
 			font = Font( Font.defaultSansFace, 12 );
 
-			routerGui = WFSLive.inputRouter.gui( nil, Rect(361, 253, 220, 244) );
 
 			//View
 			window = Window( "wfs live", Rect( 600,100, 388, 670 ) ).front;

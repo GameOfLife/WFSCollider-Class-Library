@@ -71,3 +71,26 @@ WFSLiveConfOnline : WFSLiveConf{
 	getWFSConf{ ^WFSServers.default.wfsConfigurations[0] }
 
 }
+
+WFSLiveConfSingleMachine : WFSLiveConf{
+	var servers;
+
+	*new{
+		^super.new.init
+	}
+
+	init{
+		servers = WFSServers.default.multiServers.collect(_.servers).flop;
+	}
+
+	routerOffset{ ^0 } //send via first adat out of macbook which is output 14.
+
+	inOffset{ ^NumOutputBuses.ir } //receive in the first input of mac.
+
+	getServers{ |i| ^servers[i.div(3)] }
+
+	sync{ servers.flat.do( _.sync ) }
+
+	getWFSConf{ ^WFSServers.default.wfsConfigurations[0] }
+
+}

@@ -1,20 +1,15 @@
 WFSLive {
 
-	classvar <inputRouter, wfsLiveOsc, <isStarted = false, <trackNum = 8, <wfsLiveConf;
+	classvar wfsLiveOsc, <isStarted = false, <trackNum = 12, <wfsLiveConf;
 	classvar <tracks;
 
 	*startup {
 
 		var router, routerOffset;
 
-		wfsLiveConf = WFSLiveConf.getCurrent;
+		wfsLiveConf = WFSLiveConfSingleMachine.new;
 
 		WFS.mode = \live;
-
-		inputRouter = InputRouter.unique( WFSServers.default.masterServer, nil, trackNum )
-				.private_(false) // route to hardware outs
-				.outOffset_( wfsLiveConf.routerOffset )
-				.start;
 
 		// initialize
 		tracks = trackNum.collect{ |i| WFSLiveTrack( i, wfsLiveConf.getServers(i), /* servers[i] */
@@ -29,8 +24,6 @@ WFSLive {
 		tracks.do( _.endAndFreeBuffers );
 
 		WFSLiveOSCResp.free;
-		inputRouter.stop;
-		inputRouter.remove;
 		WFS.mode = \score;
 		isStarted = false;
 	}
