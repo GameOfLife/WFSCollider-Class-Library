@@ -201,17 +201,14 @@ WFS {
 		server.makeWindow;
 		server.m.waitForBoot({
 			"\n\tWelcome to the WFS System".postln;
-			server.loadClientSyncSynthDefs;
 		});
 		Routine({
 			var allTypes;
 			while({ server.multiServers[0].servers
 					.collect( _.serverRunning ).every( _ == true ).not; },
 				{ 0.2.wait; });
-			allTypes = WFSSynthDef.allTypes( server.wfsConfigurations[0] );
-			allTypes.do({ |def| def.def.writeDefFile });
+			
 			WFSLive.writeSynthDefs;
-			server.writeServerSyncSynthDefs;
 			server.multiServers[0].servers.do({ |server|
 				server.loadDirectory( SynthDef.synthDefDir );
 				});
