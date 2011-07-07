@@ -213,12 +213,12 @@ AbstractSndFile : AbstractRichBuffer {
 	}
 
 	startFrame_ { |new|
-		startFrame = (new ? 0).min(0);
+		startFrame = (new ? 0).max(0);
 		this.changed( \startFrame, startFrame );
 	}
 	
 	endFrame_ { |new|
-		endFrame = new.max(numFrames);
+		endFrame = new.min(numFrames);
 		this.changed( \endFrame, endFrame );
 	}
 
