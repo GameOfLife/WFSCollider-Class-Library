@@ -86,7 +86,7 @@ Udef : GenericDef {
 		argSpecs = ArgSpec.fromSynthDef( synthDef, argSpecs );
 		
 		argSpecs.do({ |item|
-			if( item.name.asString[..4].asSymbol == 'u_' ) {
+			if( item.name.asString[..1].asSymbol == 'u_' ) {
 				item.private = true;
 			};
 		});

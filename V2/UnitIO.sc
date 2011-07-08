@@ -1,6 +1,6 @@
 UIn {
 	
-	*key { ^'wfsu' } // 'wfsu_' controls automatically become private args
+	*key { ^'u' } // 'wfsu_' controls automatically become private args
 	
 	*firstPrivateBus { ^NumOutputBuses.ir + NumInputBuses.ir }
 	
