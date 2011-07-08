@@ -141,6 +141,7 @@
 }
 	
 + PointSpec {
+
 	makeView { |parent, bounds, label, action, resize|
 		var vws, view, labelWidth;
 		vws = ();
@@ -175,6 +176,11 @@
 	
 		
 	}
+
+	setView{ |view, value, active = false|
+	    view[\xy].value_(value)
+
+	}
 }
 
 + RangeSpec {
@@ -201,6 +207,39 @@
 		};
 	}
 
+}
+
++ IntegerSpec {
+
+	makeView { |parent, bounds, label, action, resize|
+		var box, composite, labelWidth = 55;
+		bounds = bounds.insetBy(1,1);
+		composite = CompositeView(parent, bounds);
+		StaticText(composite, Rect(0,0,labelWidth,bounds.height)).string_(label).align_(\right);
+		box = IntegerNumberBox( composite, Rect(60,0,bounds.width-60,bounds.height))
+		    .action_({ |vw|
+		        action.value( vw, vw.value );
+		    } );
+		if( resize.notNil ) { composite.resize = resize };
+		^box;
+	}
+
+	setView { |view, value, active = false|
+		view.value = value;
+		if( active ) { view.doAction };
+	}
+
+}
+
++ EQSpec {
+
+    makeView { |parent, bounds, label, action, resize|
+        ^EQGui(parent, bounds, label, action, resize)
+    }
+
+    setView{ |view, value, active = false|
+        view.setValue(value)
+    }
 }
 
 + EZPopUpMenu {
