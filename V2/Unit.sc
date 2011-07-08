@@ -94,12 +94,14 @@ Udef : GenericDef {
 	
 	// this may change
 	loadSynthDef { |server|
+		server = server ? Server.default;
 		server.asCollection.do{ |s|
 		    synthDef.load(s)
 		}
 	}
 	
 	sendSynthDef { |server|
+		server = server ? Server.default;
 	    server.asCollection.do{ |s|
 	        synthDef.send(s)
 	    }
@@ -117,7 +119,10 @@ Udef : GenericDef {
 	}
 	
 	setSynth { |unit ...keyValuePairs|
-		unit.synths.do(_.set(*keyValuePairs));
+		unit.synths.do{ |s|
+		    var server = s.server;
+		    s.set(*keyValuePairs.clump(2).collect{ |arr| [arr[0],arr[1].asControlInputFor(server)] }.flatten)
+		};
 	}
 	
 	printOn { arg stream;
