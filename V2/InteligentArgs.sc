@@ -23,3 +23,43 @@ EQArg {
 		<<")"
 	}
 }
+
+/*
+
+Udef(\noiseEnv,{ Out.ar(0,WhiteNoise.ar*0.2*EventEnv.ar)  })
+U(\noiseEnv,[\eventEnv,EventEnv(1,1,1)]).prepareAndStart(s)
+
+*/
+EventEnv {
+    var duration, fadeIn, fadeOut;
+
+    *new{ |duration, fadeIn, fadeOut|
+        ^super.newCopyArgs(duration, fadeIn, fadeOut)
+    }
+
+    *kr{
+        var duration, fadeInTime, fadeOutTime;
+        #duration, fadeInTime, fadeOutTime = \eventEnv.ir([1,10,1]);
+        ^EnvGen.kr( Env.new([0,1,1,0],[ fadeInTime,(duration - (fadeInTime + fadeOutTime)).max(0),fadeOutTime]), doneAction:14);
+    }
+
+    *ar{
+        var duration, fadeInTime, fadeOutTime;
+        #duration, fadeInTime, fadeOutTime = \eventEnv.ir([1,10,1]);
+        ^EnvGen.ar( Env.new([0,1,1,0],[ fadeInTime,(duration - (fadeInTime + fadeOutTime)).max(0),fadeOutTime]), doneAction:14);
+    }
+
+    asControlInputFor { ^[duration, fadeIn, fadeOut] }
+
+    printOn { arg stream;
+		stream << "a " << this.class.name << "(" <<*[
+		    duration, fadeIn, fadeOut]
+		<<")"
+	}
+
+    storeOn { arg stream;
+		stream << this.class.name << "(" <<*[
+		    duration, fadeIn, fadeOut]
+		<<")"
+	}
+}
