@@ -170,6 +170,9 @@ MetaU : ObjectWithArgs {
 		^this.getArg( key );
 	}
 
+	loadSynthDef{ |server| this.def.loadSynthDefs([args],server) }
+	sendSynthDef{ |server| this.def.sendSynthDefs([args],server) }
+
     // foward to unit
     set { |key, value| unit.set(key,value) }
     get { |key| ^unit.get(key) }
