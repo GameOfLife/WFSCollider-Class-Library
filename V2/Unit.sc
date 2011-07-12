@@ -144,8 +144,8 @@ U : ObjectWithArgs {
 	
 	var <def;
 	var <>synths;
+	var <paused = false;
 	var <>disposeOnFree = false;
-
 	
 	*new { |defName, args|
 		^super.new.init( defName, args ? [] );
@@ -340,6 +340,37 @@ U : ObjectWithArgs {
 	        }
 	    }
 	}
+
+	paused_ { |bool = true, xfadeDur = 0.3|
+	    if(bool != paused) {
+	        paused = bool;
+	        synths.do{ |synth|
+                if(bool) {
+                    if(this.keys.includes(\u_gate)) {
+                        synth.server.makeBundle(synth.server.latency,{
+                            synth.set(\u_timeScale,xfadeDur);
+                            synth.set(\u_gate,0);
+                        })
+                    } {
+                        synth.run(false)
+                    }
+	            } {
+                    if(this.keys.includes(\u_gate)) {
+                        synth.server.makeBundle(synth.server.latency,{
+                            synth.set(\u_timeScale,xfadeDur);
+                            synth.set(\u_gate,1);
+                            synth.run(true);
+                        })
+                    } {
+                        synth.run(true)
+                    }
+                   }
+            }
+        }
+
+	}
+
+	gui{ ^UChainGUI(this) }
 }
 
 + Object {
