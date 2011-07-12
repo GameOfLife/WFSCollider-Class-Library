@@ -121,4 +121,6 @@ UChain {
 	dispose { units.do( _.dispose ) }
 	
 	resetGroups { groups = []; } // after unexpected server quit
+
+	gui{ ^UChainGUI(this) }
 }
