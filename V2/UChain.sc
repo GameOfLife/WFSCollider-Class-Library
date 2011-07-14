@@ -24,6 +24,10 @@ x.units[0].args
 x.start;
 x.stop;
 
+x.gui // you can pause units from the gui
+//or directly. second argument sets the fadein/fadeout time.
+x.units[1].bypassed_(true)
+x.units[1].bypassed_(false,0.1)
 x.units
 
 (
@@ -121,6 +125,28 @@ UChain {
 	dispose { units.do( _.dispose ) }
 	
 	resetGroups { groups = []; } // after unexpected server quit
+
+    /*
+    *   uchain: UChain
+    */
+	<< { |uchain|
+	    ^UChain(*(units++uchain.units))
+	}
+
+    /*
+    *   units: U or Array[U]
+    */
+    <| { |unit|
+	    ^UChain(*(units++unit.asCollection))
+	}
+
+	asUEvent{ |startTime=0, dur=10, fadeIn=2, fadeOut=2, track =0|
+	    ^UEvent(this, track, startTime, dur, fadeIn, fadeOut)
+	}
+
+	printOn { arg stream;
+		stream << "a " << this.class.name << "(" <<* units.collect(_.defName)  <<")"
+	}
 
 	gui{ ^UChainGUI(this) }
 }
