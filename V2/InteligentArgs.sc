@@ -27,7 +27,7 @@ EQArg {
 /*
 
 Udef(\noiseEnv,{ Out.ar(0,WhiteNoise.ar*0.2*EventEnv.ar)  })
-U(\noiseEnv,[\eventEnv,EventEnv(1,1,1)]).prepareAndStart(s)
+U(\noiseEnv,[\eventEnv,EventEnv(14,1,1)]).prepareAndStart(s)
 
 */
 EventEnv {
@@ -39,13 +39,13 @@ EventEnv {
 
     *kr{
         var duration, fadeInTime, fadeOutTime;
-        #duration, fadeInTime, fadeOutTime = \eventEnv.ir([1,10,1]);
+        #duration, fadeInTime, fadeOutTime = \eventEnv.ir([10,1,1]);
         ^EnvGen.kr( Env.new([0,1,1,0],[ fadeInTime,(duration - (fadeInTime + fadeOutTime)).max(0),fadeOutTime]), doneAction:14);
     }
 
     *ar{
         var duration, fadeInTime, fadeOutTime;
-        #duration, fadeInTime, fadeOutTime = \eventEnv.ir([1,10,1]);
+        #duration, fadeInTime, fadeOutTime = \eventEnv.ir([10,1,1]);
         ^EnvGen.ar( Env.new([0,1,1,0],[ fadeInTime,(duration - (fadeInTime + fadeOutTime)).max(0),fadeOutTime]), doneAction:14);
     }
 
