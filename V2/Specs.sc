@@ -280,7 +280,7 @@ RangeSpec : ControlSpec {
 	constrain { arg value;
 		var array;
 		array = value.asArray.copy.sort;
-		if( array.size != 2 ) { array.extend( 2, array.last ); };
+		if( array.size != 2 ) { array = array.extend( 2, array.last ); };
 		array = array.collect({ |item| item.asFloat.clip( clipLo, clipHi ); });
 		case { (array[1] - array[0]) < minRange } { 
 			//"clipped minRange".postln;
