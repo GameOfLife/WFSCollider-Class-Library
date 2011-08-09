@@ -114,12 +114,28 @@ WFSArrayConf { // configuration for one single speaker array
 			( dist @ c ).rotate( angle );
 		});
 	}
+	
+	draw { |mode = \lines| // 1m = 1px
+		Pen.use({
+			Pen.scale(1,-1);
+			switch( mode,
+				\lines, { 
+					Pen.line( *this.asLine ).stroke 
+				},
+				\points, {
+					this.asPoints.do({ |pt| 
+						Pen.addWedge( pt, spWidth / 2, angle - 0.5pi, pi ).fill;
+					}) 
+			 	}
+			);
+		});
+	}
 }
 
 
 WFSSpeakerConf {
 	
-	// a collection of ArrayConfs, describing a full setup
+	// a collection of WFSArrayConfs, describing a full setup
 	
 	var <>arrayConfs;
 	
@@ -163,6 +179,8 @@ WFSSpeakerConf {
 	asPoints { ^arrayConfs.collect(_.asPoints).flat }
 	
 	asLines { ^arrayConfs.collect(_.asLine) }
+	
+	draw { |mode = \lines| arrayConfs.do(_.draw(mode)); }
 	
 }
 
