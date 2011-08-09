@@ -1,11 +1,16 @@
 + Spec {
+	
 	adaptFromObject { ^this }
 	
 	viewNumLines { ^1 }
 }
 
++ Nil {
+	viewNumLines { ^1 }
+}
 
 + ControlSpec {
+	
 	makeView { |parent, bounds, label, action, resize|
 		var vw = EZSmoothSlider( parent, bounds, label !? { label.asString ++ " " }, 
 			this, { |vw| action.value( vw, vw.value ) } );
@@ -141,11 +146,16 @@
 }
 	
 + PointSpec {
+	
 	makeView { |parent, bounds, label, action, resize|
-		var vws, view, labelWidth;
+		var vws, view, labelWidth, val = 0@0;
+		var localStep;
 		vws = ();
 		
-		// TODO
+		localStep = step.copy;
+		if( step.x == 0 ) { localStep.x = 1 };
+		if( step.y == 0 ) { localStep.y = 1 };
+		
 		bounds.isNil.if{bounds= 160@20};
 		
 		#view, bounds = EZGui().prMakeMarginGap.prMakeView( parent, bounds );
@@ -162,27 +172,70 @@
 			labelWidth = 0;
 		};
 		
-		vws[ \x ] = SmoothNumberBox( vws[ \view ], 
-			Rect( labelWidth + 2, 0, 40, bounds.height ) ).value_(0);
+		vws[ \x ] = SmoothNumberBox( vws[ \view ], Rect( labelWidth + 2, 0, 40, bounds.height ) )
+			.action_({ |nb|
+				val = nb.value @ vws[ \y ].value;
+				action.value( vws, val);
+			})
+			//.step_( localStep.x )
+			.scroll_step_( localStep.x )
+			.clipLo_( rect.left )
+			.clipHi_( rect.right )
+			.value_(0);
 			
-		vws[ \xy ] = XYView( vws[ \view ],
-			Rect( labelWidth + 2 + 42, 0, bounds.height, bounds.height ) );
+		vws[ \xy ] = XYView( vws[ \view ], 
+			Rect( labelWidth + 2 + 42, 0, bounds.height, bounds.height ) )
+			.action_({ |xy|
+				vws[ \x ].value = (val.x + (xy.x * localStep.x))
+					.clip( rect.left, rect.right );
+				vws[ \y ].value = (val.y + (xy.y * localStep.y.neg))
+					.clip( rect.top, rect.bottom );
+				action.value( vws, val + (xy.value * localStep * (1 @ -1) ) );
+			})
+			.mouseUpAction_({
+				val = vws[ \x ].value @ vws[ \y ].value;
+			});
 			
-		vws[ \y ] =  SmoothNumberBox( vws[ \view ], 
-			Rect( labelWidth + 2 + 42 + bounds.height + 2, 0, 40, bounds.height ) ).value_(0);
-		
+		vws[ \y ] = SmoothNumberBox( vws[ \view ], 
+				Rect( labelWidth + 2 + 42 + bounds.height + 2, 0, 40, bounds.height ) )
+			.action_({ |nb|
+				val = vws[ \x ].value @ nb.value;
+				action.value( vws, vws[ \x ].value @ nb.value );
+			})
+			//.step_( localStep.y )
+			.scroll_step_( localStep.y )
+			.clipLo_( rect.top )
+			.clipHi_( rect.bottom )
+			.value_(0);
+				
 		^vws;
-	
-		
 	}
+	
+	setView { |view, value, active = false|
+		var constrained;
+		constrained = this.constrain( value );
+		view[ \x ].value = constrained.x;
+		view[ \y ].value = constrained.y;
+		if( active ) { view[ \x ].doAction };
+	}
+	
+	mapSetView { |view, value, active = false|
+		var mapped;
+		mapped = this.map( value );
+		view[ \x ].value = mapped.x;
+		view[ \y ].value = mapped.y;
+		if( active ) { view[ \x ].doAction };
+	}
+	
 }
 
 + RangeSpec {
+	
 	makeView { |parent, bounds, label, action, resize|
 		var vw = EZSmoothRanger( parent, bounds, label !? { label.asString ++ " " }, 
 			this.asControlSpec, 
 			{ |sl| sl.value = this.constrain( sl.value ); action.value(sl, sl.value) }
-			).value_( this.default ); 
+			).value_( this.default );
 		// later incorporate rangeSpec into EZSmoothRanger
 		if( resize.notNil ) { vw.view.resize = resize };
 		^vw;		
