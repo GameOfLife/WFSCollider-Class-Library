@@ -66,9 +66,10 @@ AbstractRichBuffer {
 		});
 	}
 
-	prepare { |servers|
+	prepare { |servers, action|
 	    this.resetBuffers;
-	    servers.do( this.makeBuffer(_) )
+	    action = MultiActionFunc( action );
+	    servers.do( this.makeBuffer(_, action.getAction) )
 	}
 
 	dispose {
@@ -101,7 +102,13 @@ RichBuffer : AbstractRichBuffer {
 
 	makeBuffer { |server, action, bufnum|
 	    var buf;
-		buf = Buffer.alloc(server, numFrames, numChannels, action, bufnum );
+		buf = Buffer.alloc(server, numFrames, numChannels, nil, bufnum );
+		OSCresponderNode( server.addr, '/done', { |time, resp, msg, addr|
+			if( msg == [ '/done', '/b_alloc', buf.bufnum ] ) {
+				resp.remove;
+				action.value( buf );
+			};
+		}).add;
 		buffers = buffers.add( buf );
 		^buf;
 	}
@@ -201,8 +208,8 @@ AbstractSndFile : AbstractRichBuffer {
 			.sampleRate_( sampleRate ? 44100 );
 	} 
 	
-	asBufSoundFile { ^this }
-	asDiskSoundFile { ^DiskSoundFile.newCopyVars( this ); }
+	asBufSndFile { ^this }
+	asDiskSndFile { ^DiskSndFile.newCopyVars( this ); }
 	
 	// mvc aware setters
 	
@@ -250,8 +257,8 @@ AbstractSndFile : AbstractRichBuffer {
 		};
 	}
 
-	framesToSeconds { |frames = 0|  ^frames !? { (frames / sampleRate) / rate } }
-	secondsToFrames { |seconds = 0| ^seconds !? { seconds * rate * sampleRate } }
+	framesToSeconds { |frames = 0|  ^frames !? { (frames / (sampleRate ? 44100)) / rate } }
+	secondsToFrames { |seconds = 0| ^seconds !? { seconds * rate * (sampleRate ? 44100) } }
 
 	startSecond 	{ ^this.framesToSeconds( this.startFrame ); }
 	endSecond 	{ ^this.framesToSeconds(this.endFrame); }
@@ -401,8 +408,8 @@ DiskSndFile : AbstractSndFile {
 		};
 	}
 	
-	asBufSoundFile { ^BufSoundFile.newCopyVars( this ); }
-	asDiskSoundFile { ^this }
+	asBufSndFile { ^BufSndFile.newCopyVars( this ); }
+	asDiskSndFile { ^this }
 	
 	makeBuffer {  |server, startOffset = 0, action, bufnum| 
 	    //endFrame not used
@@ -422,7 +429,7 @@ DiskSndFile : AbstractSndFile {
 			buffers = buffers.add( buf );
 			^buf;
 		} {
-			"DiskSoundFile:prReadBuffer : file not found".warn;
+			"DiskSndFile:prReadBuffer : file not found".warn;
 		};
 	}
 
