@@ -1,6 +1,6 @@
 ObjectView {
 	
-	classvar <viewHeight = 16;
+	classvar <viewHeight = 14;
 	
 	var <object, <key, <spec, <parent, <composite, <views; 
 	var <>action;
