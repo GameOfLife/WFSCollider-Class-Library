@@ -1,60 +1,7 @@
-/*
-// example
-
-(
-// create two WFSUnitDefs
-
-Udef( \sine, { |freq = 440, amp = 0.1|
-	UOut.ar( 0, SinOsc.ar( freq, 0, amp ) )
-} ).loadSynthDef;
-
-Udef( \vibrato, { |rate = 1, amount = 1.0|
-	UOut.ar( 0, SinOsc.ar( rate ).range(1-amount,1) * UIn.ar( 0 ) )
-} ).loadSynthDef;
-
-Udef( \output, { |bus = 0|
-	Out.ar( bus, UIn.ar( 0 ) );
-} ).setSpec( \bus, [0,7,\lin,1] ).loadSynthDef;
-
-)
-
-x = UChain( \sine, \vibrato, \output );
-
-x.units[0].args
-x.start;
-x.stop;
-
-x.units
-
-(
-
-// a styled gui in user-defined window
-// -- to be replaced by WFSChainGUI later -- 
-
-w = Window( "x", Rect( 300,25,200,300 ) ).front;
-w.addFlowLayout;
-RoundView.useWithSkin( ( 
-	labelWidth: 40, 
-	font: Font( Font.defaultSansFace, 10 ), 
-	hiliteColor: Color.gray(0.33)
-), { 
-	SmoothButton( w, 16@16 )
-		.label_( ['power', 'power'] )
-		.hiliteColor_( Color.green.alpha_(0.5) )
-		.action_( [ { x.start }, { x.stop } ] )
-		.value_( (x.groups.size > 0).binaryValue );
-	y = x.units.collect({ |item|
-		StaticText( w, (w.view.bounds.width - 8)@16 )
-			.string_( " " ++ item.defName.asString )
-			.font_( RoundView.skin.font.boldVariant )
-			.background_( Color.gray(0.8) );
-		item.gui( w );
-	}); 
-});
-
-)
-
-*/
+// a UChain is a serial chain of U's (also called "units").
+// they are played together in a Group. There should be only one chain playing
+// per Server at a time, although it is not impossible to play multiple instances
+// of at once.
 
 UChain {
 	var <>units, <>groups;
@@ -62,8 +9,73 @@ UChain {
 	*new { |...units|
 		^super.newCopyArgs( units.collect(_.asUnit) )
 	}
+	
+	prGetCanFreeSynths {
+		^units.select({ |unit| unit.def.canFreeSynth });
+	}
+	
+	prSetCanFreeSynths { |...args|
+		units.do({ |unit|
+			if( unit.def.canFreeSynth ) {
+				unit.set( *args );
+			};
+		});
+	}
+	
+	setDur { |dur = inf| // sets same duration for all units
+		this.prSetCanFreeSynths( \u_doneAction, 14, \u_dur, dur );
+		this.changed( \dur );
+	}
+	
+	setFadeIn { |fadeIn = 0|
+		this.prSetCanFreeSynths( \u_fadeIn, fadeIn );
+		this.changed( \fadeIn );	
+	}
+	
+	setFadeOut { |fadeOut = 0|
+		this.prSetCanFreeSynths( \u_fadeOut, fadeOut );
+		this.changed( \fadeOut );	
+	}
+	
+	getMaxDurUnit { // get unit with longest non-inf duration
+		var dur, out;
+		units.do({ |unit|
+			var u_dur;
+			if( unit.def.canFreeSynth ) {
+				u_dur = unit.get( \u_dur );
+				if( (u_dur > (dur ? 0)) && { u_dur != inf } ) {
+					dur = u_dur;
+					out = unit;
+				};
+			};
+		});
+		^out;	
+	}
+	
+	getDur { // get longest duration
+		var unit;
+		unit = this.getMaxDurUnit;
+		if( unit.isNil ) { 
+			^inf 
+		} {
+			^unit.get( \u_dur );
+		};
+	}
+	
+	setDoneAction { // set doneAction 14 for unit with longest non-inf duration
+		var maxDurUnit;
+		maxDurUnit = this.getMaxDurUnit;
+        	this.prGetCanFreeSynths.do({ |item|
+	        	if( item == maxDurUnit ) {
+		        	item.set( \u_doneAction, 14 );
+	        	} {
+		        	item.set( \u_doneAction, 0 );
+	        	};
+        	});
+	}
 
 	makeGroupAndSynth { |target|
+		var maxDurUnit;
 	    var group = Group( target )
                 .startAction_({ |synth|
                     // only add if started (in case this is a bundle)
@@ -75,6 +87,7 @@ UChain {
                 });
         groups = groups.add( group );
         this.changed( \start, group );
+        this.setDoneAction;
         units.do( _.makeSynth(group) );
 	}
 
@@ -103,9 +116,31 @@ UChain {
 	
 	free { groups.do(_.free) }
 	stop { this.free }
+	
+	release { |time|
+		var releaseUnits;
+		releaseUnits = units.select({ |unit| unit.def.canFreeSynth });
+		if( releaseUnits.size > 0 ) {
+			if( time.isNil ) {
+				releaseUnits = releaseUnits.sort({ |a,b| // reversed sort
+					a.get( \u_fadeOut ) >= b.get( \u_fadeOut )
+				});
+			};
+			releaseUnits[0].release( time, 14 ); // longest fadeOut releases group
+			releaseUnits[1..].do( _.release( time,0 ) );
+		} {
+			this.stop; // stop if no releaseable synths
+		};
+	}
+	
+	at { |index| ^units[ index ] }
+		
+	last { ^units.last }
+	first { ^units.first }
 
-	prepare { |target, loadDef = true|
-	    units.do(_.prepare(target,loadDef) )
+	prepare { |target, loadDef = true, action|
+		action = MultiActionFunc( action );
+	    units.do(_.prepare(target,loadDef, action.getAction ) )
 	}
 
 	prepareAndStart{ |target, loadDef = true|

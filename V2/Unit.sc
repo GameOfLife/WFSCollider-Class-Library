@@ -65,6 +65,7 @@ Udef : GenericDef {
 	
 	var <>func, <>category;
 	var <>synthDef;
+	var <>waitTime = 5;
 
 	*initClass{
 		defsFolder = this.filenameSymbol.asString.dirname.dirname +/+ "UnitDefs";
@@ -112,6 +113,41 @@ Udef : GenericDef {
 	load { |server| this.loadSynthDef( server ) }
 	send { |server| this.sendSynthDef( server ) }
 	
+	// I/O
+	
+	prGetIOKey { |mode = \in, rate = \audio ... extra|
+		^([ 
+			"u", 
+			switch( mode, \in, "i", \out, "o" ),  
+			switch( rate, \audio, "ar", \control, "kr" )
+		] ++ extra).join( "_" );
+	}
+	
+	prIOspecs { |mode = \in, rate = \audio, key|
+		key = key ?? { this.prGetIOKey( mode, rate ); };
+		^argSpecs.select({ |item|
+			var name;
+			name = item.name.asString;
+			name[..key.size-1] == key &&
+			 	{ name[ name.size - 3 .. ] == "bus" };
+		});
+	}
+	
+	prIOids { |mode = \in, rate = \audio|
+		var key;
+		key = this.prGetIOKey( mode, rate );
+		^this.prIOspecs( mode, rate, key ).collect({ |item|
+			item.name.asString[key.size..].split( $_ )[0].interpret;
+		});
+	}
+	
+	audioIns { ^this.prIOids( \in, \audio ); }
+	controlIns { ^this.prIOids( \in, \control ); }
+	audioOuts { ^this.prIOids( \out, \audio ); }
+	controlOuts { ^this.prIOids( \out, \control ); }
+	
+	canFreeSynth { ^this.keys.includes( \u_doneAction ) } // assumes the Udef contains a UEnv
+	
 	// these may differ in subclasses of Udef
 	createSynth { |unit, server| // create A single synth based on server
 		server = server ? Server.default;
@@ -121,7 +157,8 @@ Udef : GenericDef {
 	setSynth { |unit ...keyValuePairs|
 		unit.synths.do{ |s|
 		    var server = s.server;
-		    s.set(*keyValuePairs.clump(2).collect{ |arr| [arr[0],arr[1].asControlInputFor(server)] }.flatten)
+		    s.set(*keyValuePairs.clump(2).collect{ |arr| 
+			    [arr[0],arr[1].asControlInputFor(server)] }.flatten)
 		};
 	}
 	
@@ -172,9 +209,17 @@ U : ObjectWithArgs {
 		synths = [];
 	}	
 	
-	set { |key, value|
-		this.setArg( key, value );
-		def.setSynth( this, key, value );
+	set { |...args|
+		args.pairsDo({ |key, value|
+			this.setArg( key, value );
+			def.setSynth( this, key, value );
+		});
+	}
+	
+	prSet { |...args| // without changing the arg
+		args.pairsDo({ |key, value|
+			def.setSynth( this, key, value );
+		});
 	}
 	
 	get { |key|
@@ -199,6 +244,18 @@ U : ObjectWithArgs {
 		}
 	}
 	
+	release { |releaseTime, doneAction| // only works if def.canFreeSynth == true
+		if(releaseTime.isNil, {
+			releaseTime = 0.0;
+		},{
+			releaseTime = -1.0 - releaseTime;
+		});
+		this.prSet( 
+			\u_doneAction, doneAction ?? { this.get( \u_doneAction ) }, 
+			\u_gate, releaseTime 
+		);
+	}
+	
 	getArgsFor { |server|
 		server = server.asTarget.server;
 		^this.args.collect({ |item, i|
@@ -207,6 +264,41 @@ U : ObjectWithArgs {
 			} {
 				item
 			}
+		});
+	}
+	
+	setAudioIn { |id = 0, bus = 0|
+		this.set( def.prGetIOKey( \in, \audio, id, "bus" ).asSymbol, bus );
+	}
+	setControlIn { |id = 0, bus = 0|
+		this.set( def.prGetIOKey( \in, \control, id, "bus" ).asSymbol, bus );
+	}
+	setAudioOut { |id = 0, bus = 0|
+		this.set( def.prGetIOKey( \out, \audio, id, "bus" ).asSymbol, bus );
+	}
+	setControlOut { |id = 0, bus = 0|
+		this.set( def.prGetIOKey( \out, \control, id, "bus" ).asSymbol, bus );
+	}
+	
+	getAudioIn { |id = 0, bus = 0|
+		^this.get( def.prGetIOKey( \in, \audio, id, "bus" ).asSymbol );
+	}
+	getControlIn { |id = 0, bus = 0|
+		^this.get( def.prGetIOKey( \in, \control, id, "bus" ).asSymbol );
+	}
+	getAudioOut { |id = 0, bus = 0|
+		^this.get( def.prGetIOKey( \out, \audio, id, "bus" ).asSymbol );
+	}
+	getControlOut { |id = 0, bus = 0|
+		^this.get( def.prGetIOKey( \out, \control, id, "bus" ).asSymbol );
+	}
+	
+	isTailUnit { ^def.class == TailUdef }
+	
+	shouldPlayOn { |target| // this may prevent a unit or chain to play on a specific server 
+		target = target.asTarget.server;
+		^this.values.every({ |v|
+			v.uArgShouldPlayOn( target );
 		});
 	}
 	
@@ -296,24 +388,30 @@ U : ObjectWithArgs {
 	    };
     }
 
-	prepare { |target, loadDef = true|
+	prepare { |target, loadDef = true, action|
+		action = MultiActionFunc( action );
 	    target = target.asCollection;
 	    if( loadDef) {
 	        this.def.loadSynthDef(target.collect{ |t| t.asTarget.server});
 	    };
 	    this.values.do{ |val|
 	        if( val.respondsTo(\prepare) ) {
-                val.prepare(target.asCollection)
+                val.prepare(target.asCollection, action.getAction)
             }
-        }
+        };
+        if( action.n == 0 ) { action.value };
     }
-
-	prepareAndStart { |target, loadDef = true|
+    
+    prepareAnd { |target, loadDef = true, action|
 	    fork{
 	        this.prepare(target, loadDef);
 	        this.prSyncCollection(target);
-	        this.start(target);
+	        action.value( this );
 	    }
+    }
+
+	prepareAndStart { |target, loadDef = true|
+	   this.prepareAnd( target, loadDef, _.start(target) );
 	}
 
 	loadDefAndStart { |target|
@@ -343,9 +441,14 @@ U : ObjectWithArgs {
 }
 
 + Object {
-	asControlInputFor { |server| ^this } // may split between servers
+	asControlInputFor { |server| ^this.asControlInput } // may split between servers
+	uArgShouldPlayOn { |server| ^true }
 }
 
 + Symbol { 
 	asUnit { |args| ^U( this, args ) }
+}
+
++ Array {
+	asUnit { ^U( this[0], *this[1..] ) }
 }

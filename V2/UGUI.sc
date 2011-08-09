@@ -3,7 +3,7 @@ UGUI {
 	var <unit;
 	
 	var <parent, <composite, <views, <controller;
-	var <viewHeight = 16, <labelWidth = 50;
+	var <viewHeight = 14, <labelWidth = 50;
 	var <>action;
 	
 	*new { |parent, bounds, unit|
@@ -16,13 +16,26 @@ UGUI {
 		this.makeViews( bounds );
 	}
 	
+	*getHeight { |unit, viewHeight, margin, gap|
+		viewHeight = viewHeight ? 14;
+		margin = margin ?? {0@0};
+		gap = gap ??  {4@4};
+		^(margin.y * 2) + ( 
+			unit.def.argSpecs
+				.select({|x|
+					x.private.not
+				})
+				.collect({|x|
+					x.spec.viewNumLines
+				}).sum * (viewHeight + gap.y) 
+		) - gap.y;
+	}
+	
 	makeViews { |bounds|
 		var margin = 0@0, gap = 4@4;
 		
 		bounds = bounds ?? { parent.asView.bounds.insetBy(4,4) };
-		bounds.height = (margin.y * 2) + 
-			( unit.argNames.size * (viewHeight + gap.y) ) - gap.y;
-		
+		bounds.height = this.class.getHeight( unit, viewHeight, margin, gap );
 		controller = SimpleController( unit );
 		
 		composite = CompositeView( parent, bounds ).resize_(2);
