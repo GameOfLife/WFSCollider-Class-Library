@@ -23,7 +23,7 @@ ArgSpec : Spec {
 			spec = Spec.forObject( default );
 		};
 		if( spec.notNil ) { default = default ? spec.default };
-		default = this.constrain( default );
+		//default = this.constrain( default );
 	}
 	
 	doWithSpec { |selector, value ...more| 
