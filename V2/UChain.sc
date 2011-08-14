@@ -1,3 +1,4 @@
+
 // a UChain is a serial chain of U's (also called "units").
 // they are played together in a Group. There should be only one chain playing
 // per Server at a time, although it is not impossible to play multiple instances
@@ -172,4 +173,27 @@ UChain {
 	dispose { units.do( _.dispose ) }
 	
 	resetGroups { groups = []; } // after unexpected server quit
+	
+	/*
+	*   uchain: UChain
+	*/
+	<< { |uchain|
+	    ^UChain(*(units++uchain.units))
+	}
+
+ÊÊÊÊ/*
+ÊÊÊÊ*   units: U or Array[U]
+ÊÊÊÊ*/
+ÊÊÊÊ<| { |unit|
+	    ^UChain(*(units++unit.asCollection))
+	}
+
+    asUEvent{ |startTime=0, dur=10, fadeIn=2, fadeOut=2, track =0|
+	    ^UEvent(this, track, startTime, dur, fadeIn, fadeOut)
+	}
+
+	printOn { arg stream;
+		stream << "a " << this.class.name << "(" <<* units.collect(_.defName)  <<")"
+	}
+
 }
