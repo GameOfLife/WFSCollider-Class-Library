@@ -222,9 +222,6 @@ AbstractSndFile : AbstractRichBuffer {
 			.sampleRate_( sampleRate ? 44100 );
 	} 
 	
-	asBufSndFile { ^this }
-	asDiskSndFile { ^DiskSndFile.newCopyVars( this ); }
-	
 	// mvc aware setters
 	
 	path_ { |new, update = false|
@@ -385,6 +382,9 @@ BufSndFile : AbstractSndFile {
 				.useChannels_(useChannels).fromFile;
 		};
 	}
+	
+	asBufSndFile { ^this }
+	asDiskSndFile { ^DiskSndFile.newCopyVars( this ); }
 
     useChannels_ { |new|
         useChannels = new;

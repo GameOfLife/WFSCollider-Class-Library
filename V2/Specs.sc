@@ -319,17 +319,16 @@ RangeSpec : ControlSpec {
 
 BufferSpec : Spec {
 	
-	var <>numChannels;
+	var <>numChannels = 1; // fixed number of channels
 	var <numFrames;
-	var <>isWavetable = false;
 
 	
-	*new { |numChannels = 1, numFrames, isWavetable = false|
-		^super.newCopyArgs( numChannels, numFrames, isWavetable ).init;
+	*new { |numChannels = 1, numFrames|
+		^super.newCopyArgs( numChannels, numFrames ).init;
 	}
 	
 	*testObject { |obj|
-		^obj.class == Buffer; // change to bufferholder later
+		^obj.class == RichBuffer; // change to bufferholder later
 	}
 	
 	*newFromObject { |obj|
@@ -338,43 +337,74 @@ BufferSpec : Spec {
 	
 	init {
 		if( numFrames.isNumber ) { numFrames = [numFrames,numFrames].asSpec }; // single value
-		if( numFrames.isNil ) { numFrames = [0,inf].asSpec }; // endless
+		if( numFrames.isNil ) { numFrames = [0,inf,\lin,1,44100].asSpec }; // endless
 		numFrames = numFrames.asSpec;
 	}
 	
-	numFrames_ { |inNumFrames| numFrames = inNumFrames; this.init; }
-	
-	newBuffer { |server, inNumFrames, bufnum|
-		if( inNumFrames.isNil ) { inNumFrames = numFrames.default };
-		^Buffer.new( server, numFrames.constrain( inNumFrames ), numChannels, bufnum );
-	}
-	
-	allocBuffer { |server, inNumFrames, completionMessage, bufnum|		if( inNumFrames.isNil ) { inNumFrames = numFrames.default };
-		^Buffer.alloc( server, numFrames.constrain( inNumFrames ), numChannels, 
-			completionMessage, bufnum );
-	}
-	
-	makeBuffer { |server, inNumFrames, completionMessage, bufnum|
-		^this.allocBuffer( server, inNumFrames, completionMessage, bufnum );
+	constrain { |value|
+		if( value.class == RichBuffer ) {
+			value.numFrames = numFrames.constrain( value.numFrames );
+			value.numChannels = numChannels;
+			^value;
+		} {
+			^RichBuffer( numChannels, numFrames.default );
+		};
 	}
 	
 }
 
-SoundFileSpec : BufferSpec {
-	
-	var <>sampleRate = \any; // 'any', value or array
-	var <>numChannels = \any; // 'any' or number
-	var <>mode = \buffer; // or 'disk'
+BufSndFileSpec : BufferSpec {
+
+	var <>defaultPath = "sounds/a11wlk01-44_1.aiff";
 	
 	*testObject { |obj|
-		^obj.isKindOf( BufSoundFile );
+		^obj.isKindOf( BufSndFile );
 	}
 	
-	constrain {
+	constrain { |value|
+		case { value.class == DiskSndFile } {
+			value = value.asBufSndFile;
+		} { value.class != BufSndFile } {
+			value = BufSndFile( defaultPath );
+		};
+		
+		if( value.numChannels != numChannels ) {
+			if( value.useChannels.size != numChannels ) {
+				value.useChannels = (..numChannels-1).wrap( 0, value.numChannels );
+			};
+		};
+		^value;
 	}
 	
 	*newFromObject { |obj|
-		^this.new;
+		^this.new( obj.numChannels );
+	}
+	
+}
+
+DiskSndFileSpec : BufferSpec {
+
+	var <>defaultPath = "sounds/a11wlk01-44_1.aiff";
+	
+	*testObject { |obj|
+		^obj.isKindOf( DiskSndFile );
+	}
+	
+	constrain { |value|
+		case { value.class == BufSndFile } {
+			value = value.asDiskSndFile;
+		} { value.class != DiskSndFile } {
+			value = DiskSndFile( defaultPath );
+		};
+		if( value.numChannels != numChannels ) {
+			"DiskSndFileSpec - soundfile '%' should have % channels but has %.\nIt might not playback"
+				.format( value.path.basename, numChannels, value.numChannels );
+		};
+		^value;
+	}
+	
+	*newFromObject { |obj|
+		^this.new( obj.numChannels );
 	}
 	
 }
