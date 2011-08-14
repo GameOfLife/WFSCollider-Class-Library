@@ -1,3 +1,10 @@
+MetaUdef(\bufferFilePlayer, { |numChannels = 1|
+	{ |amp = 1|
+		UOut.ar( 0, BufSndFilePlayer.ar( numChannels ) );
+	}
+},[\numChannels,1])
+
+/* 
 MetaUdef(\bufferFilePlayer,{ |numChannels = 1, loop = false|
 	if(loop){
 			{ | bufnum, rate = 1.0, level = 1.0, i_fadeInTime = 0.1,
@@ -20,4 +27,4 @@ MetaUdef(\bufferFilePlayer,{ |numChannels = 1, loop = false|
 		}
 	}
 },[\numChannels,1])
-
+*/
