@@ -181,10 +181,10 @@ UChain {
 	    ^UChain(*(units++uchain.units))
 	}
 
-    /*
-    *   units: U or Array[U]
-    */
-    <| { |unit|
+	/*
+	*   units: U or Array[U]
+	*/
+	<| { |unit|
 	    ^UChain(*(units++unit.asCollection))
 	}
 
