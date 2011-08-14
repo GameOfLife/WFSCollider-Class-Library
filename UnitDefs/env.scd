@@ -1,0 +1,1 @@
+Udef(\env,{ UOut.ar(0, UIn.ar(0,1) * UEnv.kr) })

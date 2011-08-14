@@ -449,6 +449,88 @@ MultiSpec : Spec {
 	}
 }
 
+EQSpec : Spec {
+    var <specs;// array of size 5, each element an array with 3 specs for freq, level, rq
+
+    *new{
+        ^super.new.init
+    }
+
+    init{
+        var defaultFreqs = [100,250,1000,3500,6000];
+        specs = defaultFreqs.collect{ |f|
+            [ControlSpec(20, 20000, \exp, 0, f, units: " Hz"), \unipolar.asSpec, [0.01,10,\exp,0.0,1.0].asSpec]
+        }
+
+    }
+
+    constrain{ |eqArg|
+        ^EQArg([eqArg.values,specs].flop.collect{ |array|
+            array.flop.collect{ |array|
+                array[1].constrain(array[0])
+            }.flop
+        }.flop)
+    }
+
+    defaultArray {
+        ^specs.collect{ |specs|
+            specs.collect(_.default)
+        }
+    }
+
+    default{
+        ^EQArg(this.defaultArray)
+    }
+
+}
+
+IntegerSpec : Spec {
+
+	var <default = 0;
+	var <step = 1;
+
+    *new{ |default = 0|
+        ^super.new.default_(default)
+    }
+
+    *testObject { |obj|
+    		^obj.class == Integer;
+    }
+
+	constrain { |value|
+		^value.asInteger;
+	}
+
+	default_ { |value|
+		default = this.constrain( value );
+	}
+}
+
+PositiveIntegerSpec : IntegerSpec {
+
+	constrain { |value|
+		^value.asInteger.max(0);
+	}
+
+}
+
+PositiveRealSpec : Spec {
+
+	var <default = 0;
+
+    *new{ |default = 0|
+        ^super.new.default_(default)
+    }
+
+	constrain { |value|
+		^value.max(0);
+	}
+
+	default_ { |value|
+		default = this.constrain( value );
+	}
+}
+
 + Spec {
 	*testObject { ^false }
 	
