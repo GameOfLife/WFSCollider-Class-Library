@@ -1,0 +1,1 @@
+Udef(\eventEnv,{ UOut.ar(0,UIn.ar(0,1)*EventEnv.kr) })
