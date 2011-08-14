@@ -1,5 +1,5 @@
 //run this first
-Udef.loadAllFromDefaultDirectory.do(_.loadSynthDef(s))
+Udef.loadAllFromDefaultDirectory.do(_.loadSynthDef(s));
 
 // example
 ~path = "sounds/a11wlk01-44_1.aiff";
@@ -8,7 +8,7 @@ Udef.loadAllFromDefaultDirectory.do(_.loadSynthDef(s))
 //not looped
 x = BufSndFile(~path, useChannels:[0]);
 //looped 
-x = BufSndFile(~path, startFrame: 44100*0.2, rate:2.0, loop: true);
+x = BufSndFile(~path, startFrame: 44100*0.2, rate:1.5, loop: true);
 
 x.postcs; "";
 //disk
@@ -39,7 +39,7 @@ z[0].disposeOnFree = false;
 z.prepare(s);
 )
 
-z.start;  // as many times as you want
+z.start(s);  // as many times as you want
 
 z.release; // stop all
 

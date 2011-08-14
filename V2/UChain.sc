@@ -6,9 +6,14 @@
 
 UChain {
 	var <>units, <>groups;
+	var <prepareTasks;
 	
 	*new { |...units|
-		^super.newCopyArgs( units.collect(_.asUnit) )
+		^super.newCopyArgs( units.collect(_.asUnit) ).init;
+	}
+	
+	init {
+		prepareTasks = [];
 	}
 	
 	prGetCanFreeSynths {
@@ -36,6 +41,14 @@ UChain {
 	setFadeOut { |fadeOut = 0|
 		this.prSetCanFreeSynths( \u_fadeOut, fadeOut );
 		this.changed( \fadeOut );	
+	}
+	
+	getFadeOut { 
+		^this.prGetCanFreeSynths.collect({ |item| item.get( \u_fadeOut ) }).maxItem ? 0;
+	}
+	
+	getFadeIn { 
+		^this.prGetCanFreeSynths.collect({ |item| item.get( \u_fadeIn ) }).maxItem ? 0;
 	}
 	
 	useSndFileDur { // look for SndFiles in all units, use the longest duration found
@@ -78,6 +91,9 @@ UChain {
 			^unit.get( \u_dur );
 		};
 	}
+	
+	dur { ^this.getDur }
+	duration { ^this.getDur }
 	
 	setDoneAction { // set doneAction 14 for unit with longest non-inf duration
 		var maxDurUnit;
@@ -131,8 +147,15 @@ UChain {
 		};
 	}
 	
+	stopPrepareTasks {
+		if( prepareTasks.size > 0 ) { 
+			prepareTasks.do(_.stop);
+			prepareTasks = [];
+		};
+	}
+	
 	free { groups.do(_.free) }
-	stop { this.free }
+	stop { this.stopPrepareTasks; this.free; }
 	
 	release { |time|
 		var releaseUnits;
@@ -157,17 +180,33 @@ UChain {
 
 	prepare { |target, loadDef = true, action|
 		action = MultiActionFunc( action );
-	    units.do(_.prepare(target,loadDef, action.getAction ) )
+	     units.do( _.prepare(target, loadDef, action.getAction ) )
 	}
 
 	prepareAndStart{ |target, loadDef = true|
-	    fork{
-	        this.prepare(target, loadDef);
-	        target.asCollection.do{ |t|
-	            t.asTarget.server.sync;
-	        };
-	        this.start(target);
-	    }
+		var task;
+		task = fork { 
+			this.prepare( target, loadDef );
+			target.asCollection.do{ |t|
+				t.asTarget.server.sync;
+			};
+	       	this.start(target);
+	       	prepareTasks.remove(task);
+		};
+	    prepareTasks = prepareTasks.add( task );
+	}
+	
+	waitTime { ^this.units.collect(_.waitTime).sum }
+	
+	prepareWaitAndStart { |target, loadDef = true|
+		var task;
+		task = fork { 
+			this.prepare( target, loadDef );
+			this.waitTime.wait; // doesn't care if prepare is done
+	       	this.start(target);
+	       	prepareTasks.remove(task);
+		};
+	    prepareTasks = prepareTasks.add( task );
 	}
 
 	dispose { units.do( _.dispose ) }

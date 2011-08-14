@@ -174,6 +174,7 @@ MetaU : ObjectWithArgs {
 	allValues { ^this.values ++ unit.values }
 	
     // foward to unit
+    /*
     set { |key, value| unit.set(key,value) }
     get { |key| ^unit.get(key) }
     mapSet { |key, value| unit.mapSet(key,value) }
@@ -186,11 +187,21 @@ MetaU : ObjectWithArgs {
 	stop { unit.stop }
 	resetSynths { unit.resetSynths }
 	resetArgs { unit.resetArgs }
+	*/
 	asUnit { ^this }
+	/*
 	disposeOnFree_{ |bool| unit.disposeOnFree_(bool) }
+	waitTime { ^unit.waitTime }
+	*/
+	
+	doesNotUnderstand { |selector ...args|
+		var res;
+		res = unit.perform( selector, *args );
+		if( res == unit ) { ^this } { ^res };
+	}
 
-    prepare { |server,loadDef = true|
-        unit.prepare(server, loadDef);
+    prepare { |server,loadDef = true, action|
+        unit.prepare(server, loadDef, action);
     }
     prepareAndStart{ |server, loadDef = true|
         unit.prepareAndStart(server, loadDef);

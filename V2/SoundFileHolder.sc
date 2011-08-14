@@ -413,7 +413,9 @@ BufSndFile : AbstractSndFile {
 
     unitNamePrefix{ ^"buffer" }
     
-      storeOn { arg stream;
+    u_waitTime { ^5 }
+    
+    storeOn { arg stream;
 		stream << this.class.name << ".newBasic(" <<* [ // use newBasic to prevent file reading
 		    path.quote, numFrames, numChannels, sampleRate,
              startFrame, endFrame, rate, loop
@@ -469,6 +471,8 @@ DiskSndFile : AbstractSndFile {
 	}
 
     unitNamePrefix{ ^"disk" }
+    
+    u_waitTime { ^1 }
 	
 }
 

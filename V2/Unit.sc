@@ -65,7 +65,6 @@ Udef : GenericDef {
 	
 	var <>func, <>category;
 	var <>synthDef;
-	var <>waitTime = 5;
 
 	*initClass{
 		defsFolder = this.filenameSymbol.asString.dirname.dirname +/+ "UnitDefs";
@@ -182,10 +181,12 @@ U : ObjectWithArgs {
 	var <def;
 	var <>synths;
 	var <>disposeOnFree = true;
+	var <>preparedServers;
+	var >waitTime; // use only to override waittime from args
 
 	
 	*new { |defName, args|
-		^super.new.init( defName, args ? [] );
+		^super.new.init( defName, args ? [] )
 	}
 	
 	*defClass { ^Udef }
@@ -203,6 +204,7 @@ U : ObjectWithArgs {
 			"defName '%' not found".format(inName).warn; 
 		};
 		synths = [];
+		preparedServers = [];
 	}
 	
 	allKeys { ^this.keys }
@@ -298,7 +300,7 @@ U : ObjectWithArgs {
 	shouldPlayOn { |target| // this may prevent a unit or chain to play on a specific server 
 		target = target.asTarget.server;
 		^this.values.every({ |v|
-			v.uArgShouldPlayOn( target );
+			v.u_argShouldPlayOn( target );
 		});
 	}
 	
@@ -317,6 +319,11 @@ U : ObjectWithArgs {
 
 	makeSynth {|target, synthAction|
 	    var synth;
+	    if( preparedServers.includes( target.asTarget.server ).not ) {
+			"U:makeSynth - server % may not (yet) be prepared for unit %"
+				.format( target.asTarget.server, this.defName )
+				.warn;
+		};
         synth = def.createSynth( this, target );
         synth.startAction_({ |synth|
             this.changed( \go, synth );
@@ -342,7 +349,7 @@ U : ObjectWithArgs {
 	}
 	
 	start { |target, latency|
-		var targets, bundles;
+		var targets, bundles, unprepared;
 		target = target ? Server.default;
 		targets = target.asCollection;
 		bundles = this.makeBundle( targets );
@@ -387,19 +394,25 @@ U : ObjectWithArgs {
 	        t.asTarget.server.sync;
 	    };
     }
+    
+    waitTime { ^waitTime ?? { this.values.collect( _.u_waitTime ).sum } }
 
 	prepare { |target, loadDef = true, action|
-		action = MultiActionFunc( action );
-	    target = target.asCollection;
+		var valuesToPrepare, act;
+		target = target.asCollection.collect{ |t| t.asTarget.server};
+	    act = { preparedServers = preparedServers.addAll( target ); action.value };
 	    if( loadDef) {
-	        this.def.loadSynthDef(target.collect{ |t| t.asTarget.server});
+	        this.def.loadSynthDef( target );
 	    };
-	    this.values.do{ |val|
-	        if( val.respondsTo(\prepare) ) {
-                val.prepare(target.asCollection, action.getAction)
-            }
-        };
-        if( action.n == 0 ) { action.value };
+	    valuesToPrepare = this.values.select( _.respondsTo(\prepare) );
+	    if( valuesToPrepare.size > 0 ) {
+		    act = MultiActionFunc( act );
+		    valuesToPrepare.do({ |val|
+			     val.prepare(target.asCollection, action: act.getAction)
+		    });
+	    } {
+		    act.value; // if no prepare args done immediately
+	    };
     }
     
     prepareAnd { |target, loadDef = true, action|
@@ -428,7 +441,8 @@ U : ObjectWithArgs {
 	        if(val.respondsTo(\dispose)) {
 	            val.dispose
 	        }
-	    }
+	    };
+	    preparedServers = [];
 	}
 
 	disposeArgsFor { |server|
@@ -436,13 +450,15 @@ U : ObjectWithArgs {
 	        if(val.respondsTo(\disposeFor)) {
 	            val.disposeFor(server)
 	        }
-	    }
+	    };
+	    preparedServers.remove( server );
 	}
 }
 
 + Object {
 	asControlInputFor { |server| ^this.asControlInput } // may split between servers
-	uArgShouldPlayOn { |server| ^true }
+	u_argShouldPlayOn { |server| ^true }
+	u_waitTime { ^0 }
 	asUnitArg { |unit| ^this }
 }
 
