@@ -37,6 +37,22 @@ UChain {
 		this.changed( \fadeOut );	
 	}
 	
+	useSndFileDur { // look for SndFiles in all units, use the longest duration found
+		var durs;
+		units.do({ |unit|
+			unit.allValues.do({ |val|
+				if( val.isKindOf( AbstractSndFile ) ) {
+					if( val.loop.not ) {
+						durs = durs.add( val.eventDuration );
+					};
+				}
+			});
+		});
+		if( durs.size > 0 ) { // only act if a sndFile is found
+			this.setDur( durs.maxItem );
+		};
+	}
+	
 	getMaxDurUnit { // get unit with longest non-inf duration
 		var dur, out;
 		units.do({ |unit|

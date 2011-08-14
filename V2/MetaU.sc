@@ -170,6 +170,9 @@ MetaU : ObjectWithArgs {
 		^this.getArg( key );
 	}
 
+	allKeys { ^this.keys ++ unit.keys }
+	allValues { ^this.values ++ unit.values }
+	
     // foward to unit
     set { |key, value| unit.set(key,value) }
     get { |key| ^unit.get(key) }

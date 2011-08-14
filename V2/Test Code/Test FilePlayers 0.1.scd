@@ -2,53 +2,55 @@
 Udef.loadAllFromDefaultDirectory.do(_.loadSynthDef(s))
 
 // example
-~path = SynthDef.synthDefDir.dirname+/+"/sounds/a11wlk01-44_1.aiff";
+~path = "sounds/a11wlk01-44_1.aiff";
 
 //buffer
 //not looped
-x = BufSndFile(~path, endFrame:44100*2.1, useChannels:[0]);
+x = BufSndFile(~path, useChannels:[0]);
 //looped 
-x = BufSndFile(~path, startFrame: 44100*0.2, endFrame:44100*2.3, rate:2.0,
- loop: true, loopedDuration:7, fadeInTime:4, fadeOutTime:2);
-// infinite loop. stop it with y.set(\gate,0)
-x = BufSndFile(~path, startFrame: 44100*1.0, endFrame:44100*1.5, rate:1.0,
-	loop: true, fadeInTime:4, fadeOutTime:2);
+x = BufSndFile(~path, startFrame: 44100*0.2, rate:2.0, loop: true);
 
+x.postcs; "";
 //disk
-x = DiskSndFile(~path, startFrame: 44100*0.1, endFrame:44100*2, fadeInTime:0.2, fadeOutTime:0.2);
-//looped
-//note DiskSndFile when looping will ignore endFrame and startFrame on the second loop. 
-x = DiskSndFile(~path, startFrame: 44100*2, rate:1.0,
- loop: true, loopedDuration:7, fadeInTime:0.1, fadeOutTime:2);
-// infinite loop. stop it with y.set(\gate,0)
-x = DiskSndFile(~path, startFrame: 44100*1.0, rate:1.0,
-	loop: true, fadeInTime:4, fadeOutTime:2);
+x = DiskSndFile(~path, startFrame: 44100*0.1, endFrame:44100*2);
+//looped (infinite duration)
+x = DiskSndFile(~path, loop: true);
 
 //play
 (
 y = x.makeUnit;
 z = UChain(y,\output);
+z.useSndFileDur; // use duration
 z.prepareAndStart(s);
 )
 
-//free synths and buffers
-z.dispose;
-
-//play and automatically dispose buffers on free
+// or shorter:
 (
-y = x.makeUnit;
-y.disposeOnFree = true;
-z = UChain(y,\output);
-z.prepareAndStart(s)
+z = x.makeUChain;
+z.prepareAndStart(s);
 )
 
-//this should be empty
-y.get(\bufnum).buffers
+z.release(0.5); // release of 0.5s (for looping variants)
 
-y.set(\gate,0)
+// play while keeping buffers 
+(
+z = x.makeUChain;
+z[0].disposeOnFree = false;
+z.prepare(s);
+)
 
-// this will create Chain, allocate buffer, play, and when finishe, free the buffer.
-y = x.play(s)
+z.start;  // as many times as you want
+
+z.release; // stop all
+
+z.dispose(s); // frees all active buffers
+
+//this should be empty when nothing is playing or after dispose
+z[0].get(\soundFile).buffers;
+
+
+// this will create Chain, allocate buffer, play, and when finished, free the buffer.
+z = x.play(s);
 
 //RichBuffer
 (
@@ -56,5 +58,9 @@ Udef(\testBuffer,{ |buf|
 	Out.ar(0,BufAllpassN.ar(buf, Decay.ar(Dust.ar(1,0.5), 0.2, WhiteNoise.ar), 0.2, 3) )
 });
 x = U(\testBuffer,[\buf,RichBuffer(44100*1)]);
-x.prepareAndStart(s)
+x.prepareAndStart(s);
 )
+
+x.get( \buf ).buffers; // try again after stop
+
+x.stop;

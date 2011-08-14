@@ -181,7 +181,7 @@ U : ObjectWithArgs {
 	
 	var <def;
 	var <>synths;
-	var <>disposeOnFree = false;
+	var <>disposeOnFree = true;
 
 	
 	*new { |defName, args|
@@ -198,19 +198,19 @@ U : ObjectWithArgs {
 		};
 		if( def.notNil ) {	
 			args = def.asArgsArray( inArgs );
-			this.values.do{ |value|
-			    if(value.respondsTo(\unit_)) {
-			        value.unit_(this)
-			    }
-			}
+			this.values = this.values.collect(_.asUnitArg(this));
 		} { 
 			"defName '%' not found".format(inName).warn; 
 		};
 		synths = [];
-	}	
+	}
+	
+	allKeys { ^this.keys }
+	allValues { ^this.values }	
 	
 	set { |...args|
 		args.pairsDo({ |key, value|
+			value = value.asUnitArg( this );
 			this.setArg( key, value );
 			def.setSynth( this, key, value );
 		});
@@ -443,6 +443,7 @@ U : ObjectWithArgs {
 + Object {
 	asControlInputFor { |server| ^this.asControlInput } // may split between servers
 	uArgShouldPlayOn { |server| ^true }
+	asUnitArg { |unit| ^this }
 }
 
 + Symbol { 

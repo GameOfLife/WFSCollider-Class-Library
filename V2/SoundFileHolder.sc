@@ -4,7 +4,7 @@ AbstractRichBuffer {
     var <numFrames, <numChannels, <sampleRate;
 
 	var <>buffers; // holder for all buffers
-    var <unit;
+    var <unit, <unitArgName;
 
     *new{ |numFrames, numChannels = 1, sampleRate = 44100|
         ^super.newCopyArgs(numFrames, numChannels, sampleRate)
@@ -69,7 +69,7 @@ AbstractRichBuffer {
 	prepare { |servers, action|
 	    this.resetBuffers;
 	    action = MultiActionFunc( action );
-	    servers.do( this.makeBuffer(_, action.getAction) )
+	    servers.do({ |server| this.makeBuffer(server, action: action.getAction) })
 	}
 
 	dispose {
@@ -81,17 +81,39 @@ AbstractRichBuffer {
 	}
 
 	asControlInputFor { |server| ^this.currentBuffer(server) }
+	
+	asUnitArg { |unit|
+		this.unit = unit; ^this;
+	}
 
 	unit_ { |aUnit|
-	    if(unit.isNil) {
-	        unit = aUnit
+	    case { unit == aUnit } { 
+		    // do nothing
+		} {
+		    unit.isNil 
+		} {
+	        unit = aUnit;
+	        unitArgName = nil;
 	    } {
-	        "Warning: ".postln;
-	        this.cs.postln;
-	        "is already being used by".postln;
+	        "Warning:".postln;
+	        this.postcs;
+	        "\nis already being used by".postln;
 	        unit.postln;
-	    }
+	    };
 	}
+	
+	unitSet { // sets this object in the unit to enforce setting of the synths
+		if( unit.notNil ) {	
+			if( unitArgName.isNil ) {
+				unitArgName = unit.findKeyForValue( this );
+			};
+			if( unitArgName.notNil ) {
+				unit.set( unitArgName, this );
+			};
+		};
+	}
+	
+
 }
 
 RichBuffer : AbstractRichBuffer {
@@ -140,33 +162,25 @@ AbstractSndFile : AbstractRichBuffer {
 	var <path;
 	var <startFrame = 0, endFrame;  // for buffer loading
 	var <rate = 1;
-	var <fadeInTime = 0.1, <fadeOutTime = 0.1;
-	var <loop = false, <loopedDuration;
-
-	var <unit;
-	
-	*newBasic{ |path, numFrames, numChannels, sampleRate = 44100, startFrame = 0, endFrame, rate = 1,
-	    fadeInTime = 0.1, fadeOutTime = 0.1,loop = false, loopedDuration |
+	var <loop = false;
+		
+	*newBasic{ |path, numFrames, numChannels, sampleRate = 44100, startFrame = 0, endFrame, 
+		rate = 1, loop = false |
 		^super.new(numFrames, numChannels, sampleRate)
-		    .initAbstractSndFile( path, startFrame, endFrame, rate,
-		 fadeInTime, fadeOutTime, loop , loopedDuration );
+		    .initAbstractSndFile( path, startFrame, endFrame, rate, loop );
 	}
 
 	shallowCopy{
-        ^this.class.newBasic(path, numFrames, numChannels, sampleRate, startFrame, endFrame, rate,
-	    fadeInTime, fadeOutTime,loop, loopedDuration)
+        ^this.class.newBasic(path, numFrames, numChannels, sampleRate, startFrame, endFrame, rate, 
+        		loop);
 	}
 
-	initAbstractSndFile { |inPath, inStartFrame, inEndFrame, inRate,
-		 inFadeInTime, inFadeOutTime, inLoop , inLoopedDuration|
+	initAbstractSndFile { |inPath, inStartFrame, inEndFrame, inRate, inLoop|
 		 path = inPath;
 		 startFrame = inStartFrame;
 		 endFrame = inEndFrame;
 		 rate = inRate;
-		 fadeInTime = inFadeInTime;
-		 fadeOutTime = inFadeOutTime;
 		 loop = inLoop;
-		 loopedDuration = inLoopedDuration;
 	}
 
 	*buf{ ^BufSndFile }
@@ -232,11 +246,13 @@ AbstractSndFile : AbstractRichBuffer {
 	rate_ { |new|
 		rate = new ? 1;
 		this.changed( \rate, rate );
+		this.unitSet;
 	}
 	
 	loop_ { |new|
 		loop = new ? false;
 		this.changed( \loop, loop );
+		this.unitSet;
 	}
 	
 	endFrame { if( numFrames.notNil ) { 
@@ -264,7 +280,7 @@ AbstractSndFile : AbstractRichBuffer {
 	endSecond 	{ ^this.framesToSeconds(this.endFrame); }
 	duration 		{ ^this.framesToSeconds(this.usedFrames); } // negative if unknown
 	fileDuration 	{ ^this.framesToSeconds(this.numFrames); }
-	eventDuration { ^if(loop){loopedDuration}{this.duration} }
+	eventDuration { ^if(loop){ inf }{ this.duration } }
 	
 	startSecond_ { |startSecond = 0| this.startFrame = this.secondsToFrames( startSecond ); }
 	endSecond_ { |endSecond = 0| this.endFrame = this.secondsToFrames( endFrame ); }
@@ -317,41 +333,39 @@ AbstractSndFile : AbstractRichBuffer {
 			}
 		});
 	}
+	
+	makeUnit { // to do: remove fadeInTime / fadeOutTime : they are now covered elsewhere
+		^MetaU( this.unitNamePrefix++"Player", 
+			[\numChannels, numChannels], 
+			[\soundFile, this ] 
+		);
+	}
 
-	makeUnit {
-	    ^if( loop.not || loopedDuration.notNil ) {
-	        ^MetaU(this.unitNamePrefix++"FilePlayer",[\numChannels,1,\loop,loop],
-	         [\bufnum, this, \i_duration, this.eventDuration, \loopTime, this.duration,
-	          \i_fadeInTime, fadeInTime,  \i_fadeOutTime, fadeOutTime, \rate, rate,])
-	    } {
-	        ^MetaU(this.unitNamePrefix++"FilePlayerLoopInf",[\numChannels,1,\loop,loop],
-	        [\bufnum, this, \loopTime, this.duration,\i_fadeInTime, fadeInTime,
-	        \i_fadeOutTime, fadeOutTime, \rate, rate,])
-
-	    }
+	makeUChain {
+		var chain;
+		this.unit = nil; // forget old unit
+		chain = UChain( this.makeUnit, \output);
+		if( loop.not ) { chain.setDur( this.eventDuration ) };
+		^chain;
 	}
 
 	play{ |target|
-	    var chain = UChain( this.copy.makeUnit.disposeOnFree_(true),\output);
-	    chain.prepareAndStart(target);
+	    var chain = this.makeUChain;
+	    chain.prepareAndStart(target ? Server.default);
 	    ^chain
 	}
 
     printOn { arg stream;
-		stream << "a " << this.class.name << "(" <<* [
-		    path, numFrames, numChannels, sampleRate,
-            startFrame, endFrame,
-	        rate, fadeInTime, fadeOutTime,
-            loop, loopedDuration
+		stream << this.class.name << "(" <<* [
+		    	path, numFrames, numChannels, sampleRate,
+            	startFrame, endFrame, rate, loop
 		]  <<")"
 	}
 
     storeOn { arg stream;
-		stream << this.class.name << "(" <<* [
-		    path, numFrames, numChannels, sampleRate,
-            startFrame, endFrame,
-	        rate, fadeInTime, fadeOutTime,
-            loop, loopedDuration
+		stream << this.class.name << ".newBasic(" <<* [ // use newBasic to prevent file reading
+		    path.quote, numFrames, numChannels, sampleRate,
+             startFrame, endFrame, rate, loop
 		]  <<")"
 	}
 	
@@ -361,11 +375,14 @@ BufSndFile : AbstractSndFile {
 
     var <useChannels;
 
-	*new{ |path, startFrame = 0, endFrame, rate = 1, fadeInTime = 0.1, fadeOutTime = 0.1, loop = false, loopedDuration, useChannels | // path of existing file or SoundFile
+	*new{ |path, startFrame = 0, endFrame, rate = 1, loop = false, useChannels | 
+		// path of existing file or SoundFile
 		if( path.class == SoundFile ) {
-			^this.newBasic( path.path, nil, nil, nil, startFrame, endFrame, rate, fadeInTime, fadeOutTime, loop, loopedDuration ).useChannels_(useChannels).fromFile( path );
+			^this.newBasic( path.path, nil, nil, nil, startFrame, endFrame, rate, loop )
+				.useChannels_(useChannels).fromFile( path );
 		} {
-			^this.newBasic( path, nil, nil, nil, startFrame, endFrame, rate, fadeInTime, fadeOutTime, loop, loopedDuration ).useChannels_(useChannels).fromFile;
+			^this.newBasic( path, nil, nil, nil, startFrame, endFrame, rate, loop )
+				.useChannels_(useChannels).fromFile;
 		};
 	}
 
@@ -373,6 +390,8 @@ BufSndFile : AbstractSndFile {
         useChannels = new;
         this.changed( \useChannels, useChannels );
     }
+    
+    asControlInputFor { |server| ^[ this.currentBuffer(server), rate, loop.binaryValue ] }
 
     makeBuffer { |server, startOffset = 0, action, bufnum|
 		var buf;
@@ -393,6 +412,13 @@ BufSndFile : AbstractSndFile {
 	}
 
     unitNamePrefix{ ^"buffer" }
+    
+      storeOn { arg stream;
+		stream << this.class.name << ".newBasic(" <<* [ // use newBasic to prevent file reading
+		    path.quote, numFrames, numChannels, sampleRate,
+             startFrame, endFrame, rate, loop
+		]  << ")" << if( useChannels.notNil ) { ".useChannels(%)".format( useChannels ) } { "" };
+	}
 
 }
 
@@ -400,16 +426,20 @@ DiskSndFile : AbstractSndFile {
 	
 	var <>diskBufferSize = 32768;
 
-	*new{ |path, startFrame = 0, endFrame, rate = 1, fadeInTime = 0.1, fadeOutTime = 0.1, loop = false , loopedDuration| // path of existing file or SoundFile
+	*new{ |path, startFrame = 0, endFrame, rate = 1, loop = false| 
+		// path of existing file or SoundFile
 		if( path.class == SoundFile ) {
-			^this.newBasic( path.path, nil, nil, nil, startFrame, endFrame, rate, fadeInTime, fadeOutTime, loop, loopedDuration ).fromFile( path );
+			^this.newBasic( path.path, nil, nil, nil, startFrame, endFrame, rate, loop )
+				.fromFile( path );
 		} {
-			^this.newBasic( path, nil, nil, nil, startFrame, endFrame, rate, fadeInTime, fadeOutTime, loop, loopedDuration ).fromFile;
+			^this.newBasic( path, nil, nil, nil, startFrame, endFrame, rate, loop).fromFile;
 		};
 	}
 	
 	asBufSndFile { ^BufSndFile.newCopyVars( this ); }
 	asDiskSndFile { ^this }
+	
+	asControlInputFor { |server| ^[ this.currentBuffer(server), rate, loop.binaryValue ] }
 	
 	makeBuffer {  |server, startOffset = 0, action, bufnum| 
 	    //endFrame not used
@@ -432,6 +462,11 @@ DiskSndFile : AbstractSndFile {
 			"DiskSndFile:prReadBuffer : file not found".warn;
 		};
 	}
+	
+	 freeBuffer { |buf, action|
+		buf.checkCloseFree( action );
+		this.removeBuffer( buf );
+	}
 
     unitNamePrefix{ ^"disk" }
 	
@@ -450,5 +485,11 @@ DiskSndFile : AbstractSndFile {
 			new.instVarPut( item, obj.instVarAt( item ).copy );
 		});
 		^new;		
+	}
+}
+
++ String {
+	asUnitArg { |unit|
+		^BufSndFile( this ).asUnitArg( unit );
 	}
 }

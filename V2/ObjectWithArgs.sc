@@ -37,6 +37,12 @@ ObjectWithArgs {
 		};
 	}
 	
+	findKeyForValue { |val|
+		var index;
+		index = this.values.indexOf( val );
+		^index !? { this.keys[ index ] }
+	}
+	
 	at { |key| ^this.getArg( key ) }
 	put { |key| ^this.setArg( key ) }
 
