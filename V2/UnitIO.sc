@@ -42,13 +42,21 @@ UIn {
 	*key { ^'u' } // 'wfsu_' controls automatically become private args
 	
 	*firstPrivateBus { ^NumOutputBuses.ir + NumInputBuses.ir }
+	*firstControlBus { ^1000 } // don't use any buses below this value
+	
+	*firstBusFor { |mode = \ar| 
+		switch( mode,
+			\ar, { ^this.firstPrivateBus },
+			\kr, { ^this.firstControlBus }
+		);
+	}
 	
 	*getControlName { |...args|
 		^([this.key] ++ args).join("_").asSymbol;
 	}
 	
-	*getControl { |mode = \kr, name, what, value|
-		^(name ++ "_" ++ what).asSymbol.perform( mode, value );
+	*getControl { |mode = \kr, name, what, value, lag|
+		^(name ++ "_" ++ what).asSymbol.perform( mode, value, lag );
 	}
 	
 	*ar { |id = 0, numChannels = 1|
@@ -61,43 +69,61 @@ UIn {
 	
 	*new1 { |selector = \ar, id = 0|
 		id = this.getControl( \kr, this.getControlName( 'i',  selector, id ), "bus", id); 
-		^In.perform( selector, this.firstPrivateBus + id, 1 );
+		^In.perform( selector, this.firstBusFor( selector ) + id, 1 );
 	}
 }
 
-UOut : UIn {
+UOut : UIn { // overwrites bus (ReplaceOut)
 	
-	*ar { |id = 0, channelsArray|
-		^channelsArray.asCollection.collect({ |item, i| this.new1( \ar, id + i, item ) });
+	*ar { |id = 0, channelsArray, offset = false| // use offset = true for generators (sample-sync)
+		^channelsArray.asCollection.collect({ |item, i| 
+			this.new1( \ar, id + i, item, offset ) 
+		});
 	}
 	
 	*kr { |id = 0, channelsArray|
-		^channelsArray.asCollection.collect({ |item, i| this.new1( \kr, id + i, item ) });
+		^channelsArray.asCollection.collect({ |item, i| 
+			this.new1( \kr, id + i, item ) 
+		});
 	}
 	
-	*new1 { |selector = \ar, id = 0, input|
+	*new1 { |selector = \ar, id = 0, input, offset = false|
 		id = this.getControl( \kr, this.getControlName( 'o', selector, id ), "bus", id); 
-		^ReplaceOut.perform( selector, this.firstPrivateBus + id, input );
+		if( offset ) {
+			ReplaceOut.perform( selector, this.firstBusFor( selector ) + id, Silent.ar );
+			^OffsetOut.perform( selector, this.firstBusFor( selector ) + id, input );
+		} {
+			^ReplaceOut.perform( selector, this.firstBusFor( selector ) + id, input );
+		};
 	}
 }
 
 UMixOut : UIn {
 	
-	*ar { |id = 0, channelsArray, inLevel = 0|
-		^channelsArray.asCollection.collect({ |item, i| this.new1( \ar, id + i, item, inLevel ) });
+	*ar { |id = 0, channelsArray, inLevel = 0, offset = false |
+		^channelsArray.asCollection.collect({ |item, i| 
+			this.new1( \ar, id + i, item, inLevel, offset ) 
+		});
 	}
 	
 	*kr { |id = 0, channelsArray, inLevel = 0|
-		^channelsArray.asCollection.collect({ |item, i| this.new1( \kr, id + i, item, inLevel ) });
+		^channelsArray.asCollection.collect({ |item, i| 
+			this.new1( \kr, id + i, item, inLevel ) 
+		});
 	}
 	
-	*new1 { |selector = \ar, id = 0, input, inLevel=0|
-		var in;
+	*new1 { |selector = \ar, id = 0, input, inLevel=0, offset = false|
+		var in, out;
 		var name = this.getControlName( 'o', selector, id );
 		id = this.getControl( \kr, name, "bus", id);
 		inLevel = this.getControl( \kr, name, "lvl", inLevel);
-		in = In.perform( selector, this.firstPrivateBus + id, 1) * inLevel;
-		^ReplaceOut.perform( selector, this.firstPrivateBus + id, input );
+		in = In.perform( selector, this.firstBusFor( selector ) + id, 1) * inLevel;
+		if( offset ) {
+			ReplaceOut.perform( selector, this.firstBusFor( selector ) + id, in );
+			^OffsetOut.perform( selector, this.firstBusFor( selector ) + id, input );
+		} {
+			^ReplaceOut.perform( selector, this.firstBusFor( selector ) + id, input + in );
+		};
 	}
 
 }

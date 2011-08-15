@@ -154,6 +154,7 @@ Udef : GenericDef {
 	}
 	
 	setSynth { |unit ...keyValuePairs|
+		"set % for synths: %".format( keyValuePairs, unit.synths.collect(_.nodeID) ).postln;
 		unit.synths.do{ |s|
 		    var server = s.server;
 		    s.set(*keyValuePairs.clump(2).collect{ |arr| 
@@ -211,17 +212,17 @@ U : ObjectWithArgs {
 	allValues { ^this.values }	
 	
 	set { |...args|
+		var synthArgs;
 		args.pairsDo({ |key, value|
 			value = value.asUnitArg( this );
 			this.setArg( key, value );
-			def.setSynth( this, key, value );
+			synthArgs = synthArgs.addAll( [ key, value ] ); 
 		});
+		def.setSynth( this, *synthArgs );
 	}
 	
 	prSet { |...args| // without changing the arg
-		args.pairsDo({ |key, value|
-			def.setSynth( this, key, value );
-		});
+		def.setSynth( this, *args );
 	}
 	
 	get { |key|
@@ -294,8 +295,6 @@ U : ObjectWithArgs {
 	getControlOut { |id = 0, bus = 0|
 		^this.get( def.prGetIOKey( \out, \control, id, "bus" ).asSymbol );
 	}
-	
-	isTailUnit { ^def.class == TailUdef }
 	
 	shouldPlayOn { |target| // this may prevent a unit or chain to play on a specific server 
 		target = target.asTarget.server;

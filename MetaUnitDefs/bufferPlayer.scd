@@ -1,6 +1,6 @@
 MetaUdef(\bufferPlayer, { |numChannels = 1|
 	{ |amp = 1|
-		UOut.ar( 0, BufSndFilePlayer.ar( numChannels ) * amp );
+		UOut.ar( 0, BufSndFilePlayer.ar( numChannels ) * amp, true );
 	}
 },[\numChannels,1], [ [ \soundFile, nil, BufSndFileSpec() ] ])
 

@@ -34,11 +34,23 @@ UChain {
 	}
 	
 	setFadeIn { |fadeIn = 0|
+		var dur, fadeOut;
+		dur = this.getDur;
+		if( dur != inf ) {
+			fadeOut = this.getFadeOut;
+			fadeIn = fadeIn.min( dur - fadeOut );
+		};
 		this.prSetCanFreeSynths( \u_fadeIn, fadeIn );
 		this.changed( \fadeIn );	
 	}
 	
 	setFadeOut { |fadeOut = 0|
+		var dur, fadeIn;
+		dur = this.getDur;
+		if( dur != inf ) {
+			fadeIn = this.getFadeIn;
+			fadeOut = fadeOut.min( dur - fadeIn );
+		};
 		this.prSetCanFreeSynths( \u_fadeOut, fadeOut );
 		this.changed( \fadeOut );	
 	}
@@ -56,9 +68,7 @@ UChain {
 		units.do({ |unit|
 			unit.allValues.do({ |val|
 				if( val.isKindOf( AbstractSndFile ) ) {
-					if( val.loop.not ) {
-						durs = durs.add( val.eventDuration );
-					};
+					durs = durs.add( val.duration );
 				}
 			});
 		});
@@ -95,16 +105,37 @@ UChain {
 	dur { ^this.getDur }
 	duration { ^this.getDur }
 	
+	setGain { |gain = 0| // set the average gain of all units that have a u_gain arg
+		var mean, add;
+		mean = this.getGain;
+		add = gain - mean;
+		this.prGetCanFreeSynths.do({ |unit|
+			 unit.set( \u_gain, unit.get( \u_gain ) + add );
+		});
+		this.changed( \gain );		
+	}
+	
+	getGain {
+		var gains;
+		gains = this.prGetCanFreeSynths.collect({ |item| item.get( \u_gain ) });
+		if( gains.size > 0 ) { ^gains.mean } { ^0 };
+	}
+	
 	setDoneAction { // set doneAction 14 for unit with longest non-inf duration
 		var maxDurUnit;
 		maxDurUnit = this.getMaxDurUnit;
-        	this.prGetCanFreeSynths.do({ |item|
-	        	if( item == maxDurUnit ) {
-		        	item.set( \u_doneAction, 14 );
-	        	} {
-		        	item.set( \u_doneAction, 0 );
-	        	};
-        	});
+		if( maxDurUnit.isNil ) { // only inf synths
+			this.prGetCanFreeSynths.do({ |item, i|
+		        	item.set( \u_doneAction, 14 );        			});
+		} {	 
+			this.prGetCanFreeSynths.do({ |item, i|
+		        	if( item == maxDurUnit or: { item.get( \u_dur ) == inf } ) {
+			        	item.set( \u_doneAction, 14 );
+		        	} {
+			        	item.set( \u_doneAction, 0 );
+		        	};
+	        	});
+		};
 	}
 
 	makeGroupAndSynth { |target|
@@ -167,7 +198,7 @@ UChain {
 				});
 			};
 			releaseUnits[0].release( time, 14 ); // longest fadeOut releases group
-			releaseUnits[1..].do( _.release( time,0 ) );
+			releaseUnits[1..].do( _.release( time, 0 ) );
 		} {
 			this.stop; // stop if no releaseable synths
 		};

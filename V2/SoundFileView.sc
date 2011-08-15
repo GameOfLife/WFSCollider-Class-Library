@@ -267,6 +267,7 @@ BufSndFileView {
 		
 		views[ \loop ] = SmoothButton( view, 40 @ viewHeight )
 			.radius_( 3 )
+			.border_( 1 )
 			.resize_( 3 )
 			.label_( [ "loop", "loop" ] )
 			.hiliteColor_( Color.green )
