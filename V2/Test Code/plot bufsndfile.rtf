@@ -1,0 +1,55 @@
+{\rtf1\ansi\ansicpg1252\cocoartf1038\cocoasubrtf350
+{\fonttbl\f0\fnil\fcharset0 Monaco;}
+{\colortbl;\red255\green255\blue255;\red0\green0\blue0;\red102\green102\blue102;\red0\green0\blue191;
+\red0\green115\blue0;\red191\green0\blue0;\red149\green0\blue149;}
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\ql\qnatural\pardirnatural
+
+\f0\fs18 \cf2 \
+(\
+~path = \cf3 "sounds/a11wlk01-44_1.aiff"\cf2 ;\
+x = \cf4 BufSndFile\cf2 (~path, loop: \cf4 true\cf2 );\
+z = \cf4 UChain\cf2 ( x.makeUnit, \cf5 \\stereo_output\cf2  );\
+g = z.gui;\
+)\
+\
+\
+( \cf6 // gui with styling\cf2 \
+w = \cf4 Window\cf2 ( \cf3 "x"\cf2 , \cf4 Rect\cf2 ( \cf7 300\cf2 ,\cf7 25\cf2 ,\cf7 250\cf2 ,\cf7 300 \cf2 ) ).front;\
+\cf4 RoundView\cf2 .useWithSkin( ( \
+	labelWidth: \cf7 50\cf2 , \
+	font: \cf4 Font\cf2 ( \cf4 Font\cf2 .defaultSansFace, \cf7 10 \cf2 ), \
+	hiliteColor: \cf4 Color\cf2 .gray(\cf7 0.33\cf2 )\
+), \{ z.gui(w); \};\
+);\
+)\
+\
+\
+\cf6 // design for a BufSndFile plot window\cf2 \
+\
+\pard\pardeftab560\li1140\fi-1140\ql\qnatural
+\cf2 (\
+		w = \cf4 Window\cf2 (\cf3 "soundfile test"\cf2 , \cf4 Rect\cf2 (\cf7 200\cf2 , \cf7 200\cf2 , \cf7 850\cf2 , \cf7 400\cf2 ), scroll: \cf4 false\cf2 );\
+		a = \cf4 SCSoundFileView\cf2 .new(w, w.view.bounds);\
+		a.resize_(\cf7 5\cf2 );\
+		f = x.asSoundFile;\
+		a.soundfile = f;\
+		a.read(\cf7 0\cf2 , f.numFrames);\
+		a.elasticMode_(\cf7 1\cf2 );\
+		a.gridOn = \cf4 false\cf2 ;\
+		a.waveColors = \cf4 Color\cf2 .gray(\cf7 0.2\cf2 )!\cf7 16\cf2 ;\
+		w.front;\
+		a.background = \cf4 Color\cf2 .clear;\
+		b = \cf4 SmoothRangeSlider\cf2 ( w, a.bounds.insetAll(\cf7 1\cf2 ,\cf7 1\cf2 ,\cf7 1\cf2 ,\cf7 1\cf2 ) )\
+			.knobSize_(\cf7 0\cf2 )\
+			.resize_(\cf7 5\cf2 )\
+			.background_( \cf4 nil\cf2  )\
+			.hiliteColor_( \cf4 Color\cf2 .gray(\cf7 0.2\cf2 ).alpha_(\cf7 0.25\cf2 ) );\
+		b.action = \{ \cf4 |sl|\cf2 \
+			x.startFrame = (sl.lo * x.numFrames).round(\cf7 1\cf2 );\
+			x.endFrame = (sl.hi * x.numFrames).round(\cf7 1\cf2 );\
+		\};\
+		b.lo = x.startFrame / x.numFrames;\
+		b.hi = x.endFrame / x.numFrames;\
+)\
+\
+}
