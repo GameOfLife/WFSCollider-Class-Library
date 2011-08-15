@@ -256,23 +256,82 @@
 
 }
 
++ BufSndFileSpec {
+	
+	viewNumLines { ^BufSndFileView.viewNumLines }
+	
+	makeView { |parent, bounds, label, action, resize|
+		var vws, view, labelWidth;
+		
+		vws = ();
+		
+		bounds.isNil.if{bounds= 350 @ (this.viewNumLines * 18) };
+		
+		#view, bounds = EZGui().prMakeMarginGap.prMakeView( parent, bounds );
+		 vws[ \view ] = view;
+		 view.addFlowLayout(0@0, 4@4);
+		if( label.notNil ) {
+			labelWidth = (RoundView.skin ? ()).labelWidth ? 60;
+			vws[ \labelView ] = StaticText( vws[ \view ], labelWidth @ 14 )
+				.string_( label.asString ++ " " )
+				.align_( \right )
+				.resize_( 4 )
+				.applySkin( RoundView.skin );
+		} {
+			labelWidth = -4;
+		};
+		
+		if( resize.notNil ) { vws[ \view ].resize = resize };
+		
+		vws[ \sndFileView ] = BufSndFileView( vws[ \view ], 
+			( bounds.width - (labelWidth+4) ) @ bounds.height, { |vw|
+				action.value( vw, vw.value )
+			} )
+		
+		^vws;
+	}
+	
+	setView { |view, value, active = false|
+		view[ \sndFileView ].value = value;
+		if( active ) { view.doAction };
+	}
+}
+
 + IntegerSpec {
 
 	makeView { |parent, bounds, label, action, resize|
-		var box, composite, labelWidth = 55;
-		bounds = bounds.insetBy(1,1);
-		composite = CompositeView(parent, bounds);
-		StaticText(composite, Rect(0,0,labelWidth,bounds.height)).string_(label).align_(\right);
-		box = IntegerNumberBox( composite, Rect(60,0,bounds.width-60,bounds.height))
+		var vws, view, labelWidth;
+		
+		bounds.isNil.if{bounds= 160 @ 18 };
+		
+		vws = ();
+		#view, bounds = EZGui().prMakeMarginGap.prMakeView( parent, bounds );
+		vws[ \view ] = view;
+		
+		if( label.notNil ) {
+			labelWidth = (RoundView.skin ? ()).labelWidth ? 60;
+			vws[ \labelView ] = StaticText( vws[ \view ], labelWidth @ 14 )
+				.string_( label.asString ++ " " )
+				.align_( \right )
+				.resize_( 4 )
+				.applySkin( RoundView.skin );
+		} {
+			labelWidth = -4;
+		};
+		
+		vws[ \box ] = IntegerNumberBox( vws[ \view ], 
+				Rect(labelWidth + 4,0,bounds.width-(labelWidth + 4),bounds.height)
+			)
 		    .action_({ |vw|
 		        action.value( vw, vw.value );
-		    } );
-		if( resize.notNil ) { composite.resize = resize };
-		^box;
+		    } ).resize_(5);
+		    
+		if( resize.notNil ) { vws[ \view ].resize = resize };
+		^vws;
 	}
 
 	setView { |view, value, active = false|
-		view.value = value;
+		view[ \box ].value = value;
 		if( active ) { view.doAction };
 	}
 

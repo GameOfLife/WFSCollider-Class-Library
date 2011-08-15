@@ -17,12 +17,15 @@ UChainGUI {
 	
 	makeViews { |bounds|
 		var margin = 0@0, gap = 4@4;
-		var heights;
+		var heights, units;
 		
 		bounds = bounds ?? { parent.asView.bounds.insetBy(4,4) };
-		bounds.height = chain.units.collect({ |unit|
-			UGUI.getHeight( unit, 16, margin, gap ) + 16 + gap.y + gap.y;
-		}).sum;
+		units = chain.units.collect({ |u| 
+			if( u.class == MetaU ) { u.unit; } { u; }
+		});
+		bounds.height = units.collect({ |unit|
+			UGUI.getHeight( unit, 14, margin, gap ) + 14 + gap.y + gap.y;
+		}).sum + 14 + gap.y;
 		
 		controller = SimpleController( chain );
 		
@@ -30,19 +33,17 @@ UChainGUI {
 		composite.addFlowLayout( margin, gap );
 		composite.onClose = { controller.remove };
 		
-		startButton = SmoothButton( composite, 16@16 )
+		startButton = SmoothButton( composite, 14@14 )
 			.label_( ['power', 'power'] )
 			.hiliteColor_( Color.green.alpha_(0.5) )
-			.action_( [ { chain.start }, { chain.release } ] );
-			
-		
+			.action_( [ { chain.prepareAndStart }, { chain.release } ] );
 			
 		controller
 			.put( \start, { startButton.value = 1 } )
 			.put( \end, { startButton.value = 0 } );
 		
-		uguis = chain.units.collect({ |unit, i|
-			StaticText( composite, (composite.bounds.width - (margin.x * 2))@16 )
+		uguis = units.collect({ |unit, i|
+			StaticText( composite, (composite.bounds.width - (margin.x * 2))@14 )
 				.applySkin( RoundView.skin )
 				.string_( " " ++ i ++ ": " ++ unit.defName )
 				.background_( Color.white.alpha_(0.5) )

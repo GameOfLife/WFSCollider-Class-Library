@@ -229,6 +229,24 @@ AbstractSndFile : AbstractRichBuffer {
 		this.changed( \path, path );
 		if( update == true ) { this.prReadFromFile; };
 	}
+	
+	basename { ^path !? { path.basename } }
+	basename_ { |basename| 
+		if( path.isNil ) {
+			this.path = basename;
+		} {
+			this.path = path.dirname +/+ basename;
+		};
+	}
+	
+	dirname {  ^path !? { path.dirname } }
+	dirname_ { |dirname| 
+		if( path.isNil ) {
+			this.path = dirname;
+		} {
+			this.path = dirname +/+ path.basename;
+		};
+	}
 
 	startFrame_ { |new|
 		startFrame = (new ? 0).max(0);
@@ -280,7 +298,7 @@ AbstractSndFile : AbstractRichBuffer {
 	eventDuration { ^if(loop){ inf }{ this.duration } }
 	
 	startSecond_ { |startSecond = 0| this.startFrame = this.secondsToFrames( startSecond ); }
-	endSecond_ { |endSecond = 0| this.endFrame = this.secondsToFrames( endFrame ); }
+	endSecond_ { |endSecond = 0| this.endFrame = this.secondsToFrames( endSecond ); }
 	duration_ { |duration| this.usedFrames = this.secondsToFrames( duration ) }
 	fileDuration_ { |duration| this.numFrames = this.secondsToFrames( duration ); }
 	

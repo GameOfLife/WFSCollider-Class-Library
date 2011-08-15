@@ -185,6 +185,7 @@ UChain {
 
 	prepareAndStart{ |target, loadDef = true|
 		var task;
+		if( target.isNil ) { target = Server.default };
 		task = fork { 
 			this.prepare( target, loadDef );
 			target.asCollection.do{ |t|

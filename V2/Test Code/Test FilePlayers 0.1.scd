@@ -6,7 +6,7 @@ Udef.loadAllFromDefaultDirectory.do(_.loadSynthDef(s));
 
 //buffer
 //not looped
-x = BufSndFile(~path, useChannels:[0]);
+x = BufSndFile(~path);
 //looped 
 x = BufSndFile(~path, startFrame: 44100*0.2, rate:1.5, loop: true);
 
@@ -51,6 +51,8 @@ z[0].get(\soundFile).buffers;
 
 // this will create Chain, allocate buffer, play, and when finished, free the buffer.
 z = x.play(s);
+
+z.gui;
 
 //RichBuffer
 (

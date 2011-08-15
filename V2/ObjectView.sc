@@ -26,7 +26,9 @@ ObjectView {
 		
 		// spec = spec.adaptFromObject( object.perform( key ) );
 		
-		if( bounds.isNumber ) { bounds = (bounds@(spec.viewNumLines * viewHeight)) };
+		if( bounds.isNumber ) { bounds = 
+			(bounds @ ((spec.viewNumLines * viewHeight) + ((spec.viewNumLines-1) * 4))) 
+		};
 		this.makeView( bounds, controller );
 	}
 	

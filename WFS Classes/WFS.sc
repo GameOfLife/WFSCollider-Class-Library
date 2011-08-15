@@ -111,13 +111,10 @@ WFS {
 			var defs;
 			server.loadWFSSynthDefs;
             defs = Udef.loadAllFromDefaultDirectory.collect(_.synthDef) ++
-            [ 'bufferFilePlayer','diskFilePlayer', ].collect{ |name|
+            [ 'bufferPlayer','diskPlayer', ].collect{ |name|
                 MetaUdef.fromName(name).synthDefs(
                     [true,false].collect{ |b| [\numChannels,1, \loop, b] }
                 )
-            }.flat
-            ++ ['bufferFilePlayerLoopInf','diskFilePlayerLoopInf'].collect{ |name|
-                MetaUdef.fromName(name).synthDefs([[\numChannels,1]])
             }.flat;
 
             defs.do({|def|

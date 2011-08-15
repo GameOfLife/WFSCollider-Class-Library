@@ -1,4 +1,4 @@
-IntegerNumberBox : RoundNumberBox {
+IntegerNumberBox : SmoothNumberBox {
 	
 	*new { arg ...args;
 		^super.new( *args ).initIntegerNumberBox
