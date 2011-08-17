@@ -199,7 +199,7 @@ WFSSpeakerConf {
 }
 
 WFSCrossfader {
-	// handles the crossfading between arrays
+	// handles the crossfading between arrays, for point sources
 	var <>arrayConfs;
 	var <>point;
 	var <cornerPoints, <crossfadeData;
@@ -297,6 +297,28 @@ WFSCrossfader {
 		^crossfadeData.flop[2];
 	}
 	
+	normalArraysShouldRun {
+		^crossfadeData.collect({ |item|
+			(item[0] > 0).binaryValue * (1-item[1]);
+		});
+	}
+	
+	focusedArraysShouldRun {
+		^crossfadeData.collect({ |item|
+			item[1] * item[2];
+		});
+	}
+	
+	arraysShouldRun { |focus|
+		case { focus.isNil } {
+			^max( this.normalArraysShouldRun, this.focusedArraysShouldRun );
+		} { focus == true } {
+			^this.focusedArraysShouldRun;
+		} { focus == false } {
+			^this.normalArraysShouldRun;
+		};
+	}
+	
 }
 
 WFSBasicPan {
@@ -308,6 +330,7 @@ WFSBasicPan {
 	var <>buffer, <pos;
 		
 	var <>maxDist = 200;
+	var <>addDelay = 0;
 	
 	*initClass {
 		this.setSpeedOfSound;
@@ -319,7 +342,7 @@ WFSBasicPan {
 	
 	latencyComp { ^1 }
 	
-	maxDelay { ^( this.preDelay * 2 ) + ( ( maxDist * ( 1 - this.latencyComp ) ) / speedOfSound ) }
+	maxDelay { ^( this.preDelay * 2 ) + this.addDelay + ( ( maxDist * ( 1 - this.latencyComp ) ) / speedOfSound ) }
 	bufSize { ^2 ** ( (this.maxDelay * this.sampleRate).log2.roundUp(1) ) } // next power of two
 	
 	// set in subclasses (can be vars too)
@@ -387,7 +410,7 @@ WFSPrePan : WFSBasicPan {
 		
 		// all together
 		^this.delay( source * mul, 
-			( ( dist / speedOfSound ) * (1 - latencyComp) ), 
+			( ( dist / speedOfSound ) * (1 - latencyComp) ) + addDelay, 
 			amp,
 			add  
 		);
@@ -531,7 +554,7 @@ WFSArrayPan : WFSBasicArrayPan {
 		delayTimes = delayTimes / speedOfSound;
 		
 		// subtract large delay
-		delayOffset = preDelay - ( globalDist / speedOfSound );
+		delayOffset = addDelay + preDelay - ( globalDist / speedOfSound );
 		
 		
 		// ------- calculate amplitudes --------

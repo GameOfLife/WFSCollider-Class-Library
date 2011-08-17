@@ -8,7 +8,7 @@ w = ScaledUserView.window( "WFSSpeakerConf",
 );
 w.keepRatio = true;
 w.drawFunc = { 
-	var fades, lines;
+	var fader, crossfades, lines;
 	c.draw(m); 
 	Pen.addArc( p * (1 @ -1), 0.3/2, 0, 2pi ).fill; 
 	
@@ -20,14 +20,15 @@ w.drawFunc = {
 	});
 	
 	// draw normal as blue lines behind arrays
-	fades = WFSCrossfader( p, c.arrayConfs ).kr;
+	fader = WFSCrossfader( p, c.arrayConfs );
+	crossfades = fader.cornerfades;
 	lines = c.asLines;
 	Pen.use({
 		Pen.scale(1.1, -1.1);
 		Pen.width = 0.2;
-		fades.do({ |fade, i|
-			if( (fade[0] > 0) && { fade[1] != 1 }) {
-				Pen.color = Color.blue.alpha_( fade[0] );
+		fader.arraysShouldRun( false ).do({ |fade, i|
+			if( fade == 1 ) {
+				Pen.color = Color.blue.alpha_( crossfades[i] );
 				Pen.line( *lines[i] ).stroke;
 			};
 		});
@@ -37,8 +38,8 @@ w.drawFunc = {
 		Pen.scale(0.9, -0.9);
 		Pen.color = Color.blue;
 		Pen.width = 0.2;
-		fades.do({ |fade, i|
-			if( fade[1] > 0 && { fade[2] > 0 }) {
+		fader.arraysShouldRun( true ).do({ |fade, i|
+			if( fade == 1 ) {
 				Pen.line( *lines[i] ).stroke;
 			};
 		});
