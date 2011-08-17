@@ -101,17 +101,23 @@ WFSArrayConf { // configuration for one single speaker array
 		};
 	}
 	
-	asPoints { // for plotting
-		^{ |i| (dist @ ((i.linlin(0, n-1, spWidth / 2, spWidth.neg / 2 ) * n) - offset))
-				.rotate( angle ) 
-		} ! n;
+	pointAt { |index = 0|
+		^( dist @ ( ( (index - ((n-1)/2)) * spWidth) - offset ) ).rotate( angle )
 	}
 	
+	firstPoint {
+		^this.pointAt(0);
+	}
+	
+	lastPoint {
+		^this.pointAt(n-1);
+	}
+		
+	asPoints { // for plotting
+		^n.collect({ |i| this.pointAt(i)});
+	}
 	asLine { // for plotting; start point and end point
-		^[ 
-			( dist @ ( ( spWidth * ( n /  2 ) ) - offset ) ).rotate( angle ), 
-			( dist @ ( ( spWidth * ( n / -2 ) ) - offset ) ).rotate( angle ) 
-		];
+		^[ this.firstPoint, this.lastPoint ];
 	}
 	
 	cornerPoints {
@@ -196,7 +202,7 @@ WFSCrossfader {
 	// handles the crossfading between arrays
 	var <>arrayConfs;
 	var <>point;
-	var <>maxCornerAngle = pi;
+	var <cornerPoints, <crossfadeData;
 	
 	
 	*new { |point = (0@0), arrays, cornerArrays|
@@ -214,23 +220,21 @@ WFSCrossfader {
 			arrays[i].fromCornersArray( item );
 		});
 		
-		^super.newCopyArgs( arrays, point.asPoint );
+		^super.newCopyArgs( arrays, point.asPoint ).init;
 	}
 	
-	kr {
-				
-		// outputs array of crossfades per speakerArray
-		// first value: corner crossfade level (for normal (unfocused) point sources)
-		// second value: focused (1 if focused, 0 if not)
-		//  format:
-		// [ [ cornerfade, focused ], [ cornerfade, focused ] etc.. ]
+	init {
 		
-		var cornerPoints;
+		var globalAngle, fadeArea;
+		
+		// for the focusFades
+		globalAngle = point.angle;
+		fadeArea = point.rho.linlin(0.5,1,pi,0.25pi,\none).clip(0.25pi,pi); 
 		
 		cornerPoints = arrayConfs.collect( _.cornerPoints );
 		
-		^cornerPoints.collect({ |pts, i|
-			var angle, arr;
+		crossfadeData = cornerPoints.collect({ |pts, i|
+			var angle, arr, focusedActive;
 			
 			angle = arrayConfs[i].angle;
 			
@@ -257,9 +261,40 @@ WFSCrossfader {
 				
 			}).flop;
 			
-			[ arr[0].product, arr[1].product ];
+			// focused active
+			focusedActive = [ arrayConfs[i].firstPoint.angle, arrayConfs[i].lastPoint.angle ]
+				.collect({ |item|
+					((item - globalAngle).wrap(-pi,pi).abs < (fadeArea + 0.03pi)).binaryValue; 
+			});
+			
+			[ arr[0].product, arr[1].product, max( focusedActive[0], focusedActive[1] ) ];
 
 		});		
+
+	}
+	
+	kr {
+				
+		// outputs array of crossfades per speakerArray
+		// first value: corner crossfade level (for normal (unfocused) point sources)
+		// second value: focused (1 if focused, 0 if not)
+		// third value: focusedActive (1 if focused source is actually sounding on this array, 0 if not)
+		//  format:
+		// [ [ cornerfade, focused, focusedActive ], [ cornerfade, focused, focusedActive ] etc.. ]
+		
+		^crossfadeData;	
+	}
+	
+	cornerfades {
+		^crossfadeData.flop[0];
+	}
+	
+	focused {
+		^crossfadeData.flop[1];
+	}
+	
+	focusedActive {
+		^crossfadeData.flop[2];
 	}
 	
 }
@@ -361,12 +396,12 @@ WFSPrePan : WFSBasicPan {
 }
 
 
-WFSArrayPan : WFSBasicPan {
+WFSBasicArrayPan : WFSBasicPan {
 	
 	// point source on single array, without large delay
 	
 	var <n, <dist, <angle, <offset, <spWidth;
-	var <intType = 'N'; // intType 'N', 'L', 'C'
+	var <>intType = 'N'; // intType 'N', 'L', 'C'
 	
 	
 	var <speakerArray; // fixed at init
@@ -374,18 +409,17 @@ WFSArrayPan : WFSBasicPan {
 	
 	var <>preDelay = 0.06; // in s (= 20m)
 	
-	*new { |n = 48, dist = 5, angle = 0.5pi, offset = 0, spWidth, intType| // angle: 0-2pi (CCW)
-		^super.newCopyArgs().init(  n, dist, angle, offset, spWidth, intType );
+	*new { |n = 48, dist = 5, angle = 0.5pi, offset = 0, spWidth| // angle: 0-2pi (CCW)
+		^super.newCopyArgs().init(  n, dist, angle, offset, spWidth );
 	}
 	
-	init { |inN = 48, inDist = 5, inAngle= 0.5pi, inOffset = 0, inSpWidth, inIntType|
+	init { |inN = 48, inDist = 5, inAngle= 0.5pi, inOffset = 0, inSpWidth|
 		
 		n = inN ? n; // number of speakers
 		dist = inDist ? dist; // distance from center
 		angle = inAngle ? angle; // angle from center
 		offset = inOffset ? offset; // offset in m (to the right if angle == 0.5pi)
 		spWidth = inSpWidth ? spWidth ? defaultSpWidth; // width of individual speakers
-		intType = inIntType ? intType ? 'N'; // better to specify in the .ar method
 		
 		speakerArray = { |i| (i.linlin(0, n-1, spWidth / 2, spWidth.neg / 2 ) * n) - offset } ! n;
 	}
@@ -393,62 +427,144 @@ WFSArrayPan : WFSBasicPan {
 }
 	
 	
-WFSArrayPanPoint : WFSArrayPan {
+WFSArrayPan : WFSBasicArrayPan {
 	
 	/*
+	// panning a point on a single array
+	// global distance and amplitude are cancelled out, only the differences between 
+	// the individual speakers are applied
+	
 	// use like this:
 	
-	p = WFSArrayPanPoint( 48, 5, 0, \L ); // init with array specs and int type
-	p.ar( source, pos ); // generate output
+	p = WFSArrayPan( 48, 5, 0.5pi ); // init with array specs and int type
+	p.ar( source, pos, \L ); // generate output, linear interpolation (default \N = no interp)
 	
 	// or:
 	
-	WFSArrayPanPoint( 48, 5, 0, \L ).ar( source, pos );
+	WFSArrayPan( 48, 5, -0.5pi ).ar( source, pos, \L );
+	
+	// when used outside a SynthDef the values are returned in the format:
+	// [ [ delayTimes ... ], [ amplitudes * source .. ] ];
+	
+	// example of normal source straight behind a 48-speaker front array
+	WFSArrayPan( 48, 5, 0.5pi ).ar( 1, 0@7 ).plot2; // delays on top, amps on bottom
+	
+	// when approaching the array the limit (default: 1m) kicks in
+	WFSArrayPan( 48, 5, 0.5pi ).ar( 1, -2@5.5 ).plot2; // shifted left and closer to array
+	
+	// when inside the array the source becomes focused (i.e. delays inversed)
+	WFSArrayPan( 48, 5, 0.5pi ).ar( 1, 0@3 ).plot2; // focused source
+	
+	// focused sources use a window for determining where they play
+	// the window has a 90 degree radius. 
+	WFSArrayPan( 48, 5, 0.5pi ).ar( 1, -1@1 ).plot2; // focused source
+	
+	// If a source is turned more than 
+	// 90 degrees off the speaker array it will not sound at all:
+	WFSArrayPan( 48, 5, 0.5pi ).ar( 1, -1@ -1 ).plot2; // focused source
+	
+	// But if it is within 1m from the center of the room
+	// it will play on all speakers
+	WFSArrayPan( 48, 5, 0.5pi ).ar( 1, 0@0 ).plot2; // focused source
+	
+	
+	// WFSArrayPan can be forced to do only focused or unfocused sources via the focus var
+	// 	focus = nil : switch automatically
+	//	focus = false: always unfocused (also bypasses focus crossfades)
+	//   focus = true: always focused
+	//  
+	// if focus is 0 but the location is in front WFSArrayPan will create
+	// a variation of the unfocused (normal) wavefield. This is on itself a non-existent
+	// and "faulty" wavefield, but it allows an overlap area between focused
+	// and normal sources.
+	// 
+	// Typically the forced focus setting is used for dynamic wavefields to create a 
+	// smooth transition between focused and unfocused. 
+	
+	WFSArrayPan( 48, 5, 0.5pi ).focus_(false).ar( 1, 0@3 ).plot2; // forced unfocused source
+	
+	( //  a transition from behind to in front with forced unfocus
+	p = WFSArrayPan(48, 5, 0.5pi ).focus_(false);
+	{ |i| p.ar(1, 0@i.linlin(0,9,7,3) )[0] }.dup(10).plot2
+	)
+	
+	( //  a normal transition from behind to in front (notice the inversion in the middle)
+	p = WFSArrayPan(48, 5, 0.5pi );
+	{ |i| p.ar(1, 0@i.linlin(0,9,7,3) )[0] }.dup(10).plot2
+	)
 	
 	*/
 	
-	var <>focus;
+	var <>focus; // nil, true or false
 	var <>dbRollOff = -9; // per speaker roll-off
-	var <>limit = 1; // in m
+	var <>limit = 1; // in m, clipping amplitude from here to prevent inf
+	var <>useFocusFades = true;
 	
 	ar { |source, inPos, int, mul = 1, add = 0| // inPos: Point or Polar
 		var difx, dify, sqrdifx, inFront, crossing, delayOffset;
-		var globalDist;
+		var globalDist, globalAngle, speakerAngleRange, focusFades, fadeArea;
 
 		// rotate point to array
 		pos = (inPos ? pos ? (0@0)).rotate( angle.neg ).asPoint;
 		
 		globalDist = pos.dist( 0 @ 0 ); // distance to center
 		
-		// calculate distances		
+		// ------- calculate distances --------
 		difx = pos.x - dist; // only once
 		dify = pos.y - speakerArray;
 		
 		distances = ( difx.squared + dify.squared ).sqrt;
 		
-		// calculate amplitudes
-		amplitudes = distances.pow(dbRollOff/6).min( limit.pow(dbRollOff/6) );
-		amplitudes = amplitudes / amplitudes.sum; // normalize amps (sum == 1)
-		
 		// determine focus multiplier (-1 for focused or 1 for normal) 
-		inFront = ((difx >= 0).binaryValue * 2) - 1;
+		inFront = ( ( difx >= 0 ).binaryValue * 2 ) - 1;
 		
+		
+		// ------- calculate delay times --------
 		if( focus.isNil ) { 
 			// auto switch (for static sources)
 			delayTimes = distances * inFront;
 		} {	
 			// create overlapping area (for dynamic sources)
-			delayTimes = ((focus-inFront) * dify.abs) + (distances * inFront);
+			delayTimes = ( ( ( ( focus.binaryValue * -2 ) + 1 ) - inFront ) * dify.abs) + (distances * inFront);
 		};
 		
 		delayTimes = delayTimes / speedOfSound;
 		
 		// subtract large delay
 		delayOffset = preDelay - ( globalDist / speedOfSound );
-
-		intType = int ? intType ? 'N';
+		
+		
+		// ------- calculate amplitudes --------
+		amplitudes = distances.pow(dbRollOff/6).min( limit.pow(dbRollOff/6) );
+		amplitudes = amplitudes / amplitudes.sum; // normalize amps (sum == 1)
+		
+		// focus crossfades (per speaker, dependent on angle)
+		//
+		// these are not ideal yet
+		//
+		// go to all speakers when source is 0.5m to 1m from the center
+		// approximation of angles, saves n * atan2 calc. Now we only calculate the corner angles and
+		// draw a straight line for the rest. This might cause inconsistencies with tunnel-shaped setups.
+		if( useFocusFades && { focus != false } ) { // disabled when forced unfocused
+			globalAngle = pos.angle;
+			speakerAngleRange = [ (dist@speakerArray[0]).angle, (dist@speakerArray.last).angle ];
+			fadeArea = globalDist.linlin(0.5,1,pi,0.25pi,\none).clip(0.25pi,pi); 
+			focusFades = speakerArray.collect({ |item, i|
+				(i.linlin(0,n-1,*speakerAngleRange) - globalAngle).wrap(-pi,pi)
+					.abs.linlin(fadeArea, fadeArea + 0.03pi,1,0,\none).clip(0,1); 
+			});
+			
+			if( focus.isNil ) {
+				amplitudes = amplitudes * focusFades.max( inFront );
+			} {
+				amplitudes = amplitudes * focusFades; //always apply for focused
+			};
+		};
 	
 		// all together
+		
+		intType = int ? intType ? 'N';
+		
 		^this.delay( source * mul, 
 			delayTimes + delayOffset, 
 			amplitudes,
@@ -458,7 +574,7 @@ WFSArrayPanPoint : WFSArrayPan {
 }
 
 
-WFSArrayPanPlane : WFSArrayPan {	
+WFSArrayPanPlane : WFSBasicArrayPan {	
 	
 	var width = pi; // pi = max width
 	var polarSpeakerArray;
