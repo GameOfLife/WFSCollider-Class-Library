@@ -1,10 +1,6 @@
 (
 // create some Udefs
 
-Udef( \sine, { |freq = 440, amp = 0.1|
-	UOut.ar( 0, SinOsc.ar( freq, 0, amp ) )
-} ).loadSynthDef;
-
 Udef( \mix2, { |balance = 0.5|
 	var l1, l2;
 	l1 = UIn.ar( 0 ) * (1-balance);
@@ -16,15 +12,13 @@ Udef( \vibrato, { |rate = 1, amount = #[0.0,1.0]|
 	UOut.ar( 0, SinOsc.kr( rate ).range(*amount) * UIn.ar( 0 ) )
 } ).loadSynthDef;
 
-Udef( \output, { |bus = 0|
-	Out.ar( bus, UIn.ar( 0 ) * UEnv.kr ); // UEnv has the power to release the chain 
-} ).setSpec( \bus, [0,7,\lin,1] ).loadSynthDef;
-
 )
+
+// \sine and \output are already in the Udef bank
 
 x = UChain( \sine, [ \sine, [ \freq, 550, \u_o_ar_0_bus, 1 ]], \mix2, \vibrato, \output );
 
-x.start;
+x.prepareAndStart;
 x.release;
 
 x.setFadeOut( 0.5 );

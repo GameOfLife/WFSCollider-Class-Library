@@ -112,6 +112,29 @@ Udef : GenericDef {
 	load { |server| this.loadSynthDef( server ) }
 	send { |server| this.sendSynthDef( server ) }
 	
+	makeSynth {|unit, target, synthAction|
+	    var synth;
+	    if( unit.preparedServers.includes( target.asTarget.server ).not ) {
+			"U:makeSynth - server % may not (yet) be prepared for unit %"
+				.format( target.asTarget.server, this.name )
+				.warn;
+		};
+        synth = this.createSynth( unit, target );
+        synth.startAction_({ |synth|
+            unit.changed( \go, synth );
+        });
+        synth.freeAction_({ |synth|
+            unit.synths.remove( synth );
+            unit.changed( \end, synth );
+            if(unit.disposeOnFree) {
+                unit.disposeArgsFor(synth.server)
+            }
+        });
+        unit.changed( \start, synth );
+        synthAction.value( synth );
+        unit.synths = unit.synths.add(synth);
+	}
+	
 	// I/O
 	
 	prGetIOKey { |mode = \in, rate = \audio ... extra|
@@ -154,7 +177,7 @@ Udef : GenericDef {
 	}
 	
 	setSynth { |unit ...keyValuePairs|
-		"set % for synths: %".format( keyValuePairs, unit.synths.collect(_.nodeID) ).postln;
+		// "set % for synths: %".format( keyValuePairs, unit.synths.collect(_.nodeID) ).postln;
 		unit.synths.do{ |s|
 		    var server = s.server;
 		    s.set(*keyValuePairs.clump(2).collect{ |arr| 
@@ -316,7 +339,9 @@ U : ObjectWithArgs {
 	  	this.init( name.asSymbol, if( keepArgs ) { args } { [] }); // keep args
 	}
 
-	makeSynth {|target, synthAction|
+	makeSynth { |target, synthAction|
+		def.makeSynth( this, target, synthAction );
+		/*
 	    var synth;
 	    if( preparedServers.includes( target.asTarget.server ).not ) {
 			"U:makeSynth - server % may not (yet) be prepared for unit %"
@@ -337,6 +362,7 @@ U : ObjectWithArgs {
         this.changed( \start, synth );
         synthAction.value( synth );
         synths = synths.add(synth);
+        */
 	}
 	
 	makeBundle { |targets, synthAction|
