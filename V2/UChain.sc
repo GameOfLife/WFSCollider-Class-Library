@@ -14,9 +14,13 @@ UChain {
 	
 	init {
 		prepareTasks = [];
+		groups = [];
 	}
 	
-	prGetCanFreeSynths {
+	
+	// global setters (acces specific units inside the chain)
+	
+	prGetCanFreeSynths { // returns the units that can free synths (they will free the whole group)
 		^units.select({ |unit| unit.def.canFreeSynth });
 	}
 	
@@ -137,25 +141,30 @@ UChain {
 	        	});
 		};
 	}
+	
+	/// creation
 
 	makeGroupAndSynth { |target|
 		var maxDurUnit;
-	    var group = Group( target )
-                .startAction_({ |synth|
-                    // only add if started (in case this is a bundle)
-                    this.changed( \go, group );
-                })
-                .freeAction_({ |synth|
-                    groups.remove( group );
-                    this.changed( \end, group );
-                });
-        groups = groups.add( group );
-        this.changed( \start, group );
-        this.setDoneAction;
-        units.do( _.makeSynth(group) );
+	    var group;
+	    if( this.shouldPlayOn( target ) != false ) {
+	    		group = Group( target )
+	                .startAction_({ |synth|
+	                    // only add if started (in case this is a bundle)
+	                    this.changed( \go, group );
+	                })
+	                .freeAction_({ |synth|
+	                    groups.remove( group );
+	                    this.changed( \end, group );
+	                });
+	        groups = groups.add( group );
+	        this.changed( \start, group );
+	        units.do( _.makeSynth(group) );
+	    };
 	}
 
 	makeBundle { |targets|
+		this.setDoneAction;
 	    ^targets.asCollection.collect{ |target|
 	        target.asTarget.server.makeBundle( false, {
                 this.makeGroupAndSynth(target)
@@ -169,7 +178,9 @@ UChain {
 		targets = target.asCollection;
 		bundles = this.makeBundle( targets );
 		targets.do({ |target, i|
-			target.asTarget.server.sendBundle( latency, *bundles[i] );
+			if( bundles[i].size > 0 ) {
+				target.asTarget.server.sendBundle( latency, *bundles[i] );
+			};
 		});
 		if( target.size == 0 ) {
 			^groups[0]
@@ -204,21 +215,35 @@ UChain {
 		};
 	}
 	
-	at { |index| ^units[ index ] }
-		
-	last { ^units.last }
-	first { ^units.first }
+	shouldPlayOn { |target|
+		var res;
+		res = units.collect({ |unit|
+			unit.shouldPlayOn( target );
+		}).select(_.notNil);
+		case { res.size == 0 } {
+			^nil;
+		} { res.any(_ == true) } { // if any of the units specifically shouldPlayOn, all play
+			^true;
+		} {
+			^false;
+		};
+	}
 
 	prepare { |target, loadDef = true, action|
 		action = MultiActionFunc( action );
-	     units.do( _.prepare(target, loadDef, action.getAction ) )
+		target = target.asCollection.select({ |tg|
+			this.shouldPlayOn( tg ) != false;
+		});
+	     units.do( _.prepare(target, loadDef, action.getAction ) );
+	     action.getAction.value; // fire action at least once
+	     ^target; // return array of actually prepared servers
 	}
 
 	prepareAndStart{ |target, loadDef = true|
 		var task;
 		if( target.isNil ) { target = Server.default };
 		task = fork { 
-			this.prepare( target, loadDef );
+			target = this.prepare( target, loadDef );
 			target.asCollection.do{ |t|
 				t.asTarget.server.sync;
 			};
@@ -245,6 +270,13 @@ UChain {
 	
 	resetGroups { groups = []; } // after unexpected server quit
 	
+	// indexing
+		
+	at { |index| ^units[ index ] }
+		
+	last { ^units.last }
+	first { ^units.first }
+	
 	/*
 	*   uchain: UChain
 	*/
@@ -259,8 +291,8 @@ UChain {
 	    ^UChain(*(units++unit.asCollection))
 	}
 
-    asUEvent{ |startTime=0, dur=10, fadeIn=2, fadeOut=2, track =0|
-	    ^UEvent(this, track, startTime, dur, fadeIn, fadeOut)
+    asUEvent{ |startTime=0, track =0, dur|
+	    ^UEvent(this, startTime, track, dur ? inf)
 	}
 
 	printOn { arg stream;

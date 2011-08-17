@@ -65,6 +65,8 @@ Udef : GenericDef {
 	
 	var <>func, <>category;
 	var <>synthDef;
+	var <>shouldPlayOnFunc;
+	var <>apxCPU = 1; // indicator for the amount of cpu this unit uses (for load balancing)
 
 	*initClass{
 		defsFolder = this.filenameSymbol.asString.dirname.dirname +/+ "UnitDefs";
@@ -102,9 +104,9 @@ Udef : GenericDef {
 	
 	sendSynthDef { |server|
 		server = server ? Server.default;
-	    server.asCollection.do{ |s|
-	        synthDef.send(s)
-	    }
+		server.asCollection.do{ |s|
+			synthDef.send(s)
+		}
 	}
 	
 	synthDefName { ^synthDef.name }
@@ -112,27 +114,35 @@ Udef : GenericDef {
 	load { |server| this.loadSynthDef( server ) }
 	send { |server| this.sendSynthDef( server ) }
 	
-	makeSynth {|unit, target, synthAction|
+	makeSynth { |unit, target, synthAction|
 	    var synth;
-	    if( unit.preparedServers.includes( target.asTarget.server ).not ) {
-			"U:makeSynth - server % may not (yet) be prepared for unit %"
-				.format( target.asTarget.server, this.name )
-				.warn;
+	    if( unit.shouldPlayOn( target ) != false ) {
+		    /* // maybe we don't need this, or only at verbose level
+		    if( unit.preparedServers.includes( target.asTarget.server ).not ) {
+				"U:makeSynth - server % may not (yet) be prepared for unit %"
+					.format( target.asTarget.server, this.name )
+					.warn;
+			};
+			*/
+			synth = this.createSynth( unit, target );
+			synth.startAction_({ |synth|
+				unit.changed( \go, synth );
+			});
+			synth.freeAction_({ |synth|
+				unit.synths.remove( synth );
+				unit.changed( \end, synth );
+				if(unit.disposeOnFree) {
+					unit.disposeArgsFor(synth.server)
+				}
+			});
+			unit.changed( \start, synth );
+			synthAction.value( synth );
+			unit.synths = unit.synths.add(synth);
 		};
-        synth = this.createSynth( unit, target );
-        synth.startAction_({ |synth|
-            unit.changed( \go, synth );
-        });
-        synth.freeAction_({ |synth|
-            unit.synths.remove( synth );
-            unit.changed( \end, synth );
-            if(unit.disposeOnFree) {
-                unit.disposeArgsFor(synth.server)
-            }
-        });
-        unit.changed( \start, synth );
-        synthAction.value( synth );
-        unit.synths = unit.synths.add(synth);
+	}
+	
+	shouldPlayOn { |unit, server| // returns nil if no func
+		^shouldPlayOnFunc !? { shouldPlayOnFunc.value( unit, server ); }
 	}
 	
 	// I/O
@@ -320,10 +330,7 @@ U : ObjectWithArgs {
 	}
 	
 	shouldPlayOn { |target| // this may prevent a unit or chain to play on a specific server 
-		target = target.asTarget.server;
-		^this.values.every({ |v|
-			v.u_argShouldPlayOn( target );
-		});
+		^def.shouldPlayOn( this, target );
 	}
 	
 	doesNotUnderstand { |selector ...args| 
@@ -357,7 +364,9 @@ U : ObjectWithArgs {
 		targets = target.asCollection;
 		bundles = this.makeBundle( targets );
 		targets.do({ |target, i|
-			target.asTarget.server.sendBundle( latency, *bundles[i] );
+			if( bundles[i].size > 0 ) {
+				target.asTarget.server.sendBundle( latency, *bundles[i] );
+			};
 		});
 		if( target.size == 0 ) {
 			^synths[0]
@@ -392,17 +401,20 @@ U : ObjectWithArgs {
 	
 	asUnit { ^this }
 
-    prSyncCollection { |targets|
+	prSyncCollection { |targets|
         targets.asCollection.do{ |t|
 	        t.asTarget.server.sync;
 	    };
-    }
-    
-    waitTime { ^waitTime ?? { this.values.collect( _.u_waitTime ).sum } }
-
+	}
+	
+	waitTime { ^waitTime ?? { this.values.collect( _.u_waitTime ).sum } }
+	
 	prepare { |target, loadDef = true, action|
 		var valuesToPrepare, act;
-		target = target.asCollection.collect{ |t| t.asTarget.server};
+		target = target.asCollection.collect{ |t| t.asTarget.server };
+		target = target.select({ |tg|
+			this.shouldPlayOn( tg ) != false;
+		});
 	    act = { preparedServers = preparedServers.addAll( target ); action.value };
 	    if( loadDef) {
 	        this.def.loadSynthDef( target );
@@ -416,11 +428,12 @@ U : ObjectWithArgs {
 	    } {
 		    act.value; // if no prepare args done immediately
 	    };
+	    ^target; // returns targets actually prepared for
     }
     
     prepareAnd { |target, loadDef = true, action|
 	    fork{
-	        this.prepare(target, loadDef);
+	        target = this.prepare(target, loadDef);
 	        this.prSyncCollection(target);
 	        action.value( this );
 	    }
@@ -460,7 +473,6 @@ U : ObjectWithArgs {
 
 + Object {
 	asControlInputFor { |server| ^this.asControlInput } // may split between servers
-	u_argShouldPlayOn { |server| ^true }
 	u_waitTime { ^0 }
 	asUnitArg { |unit| ^this }
 }
