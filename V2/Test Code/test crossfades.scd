@@ -54,6 +54,21 @@ w.mouseMoveAction = { |v, x,y| p = (x @ y.neg); };
 
 c = WFSSpeakerConf.rect( 40, 56, 6, 4 ); w.refresh; // rectangular setup
 c = WFSSpeakerConf.rect( 48, 48, 5, 5 ); w.refresh;
+c = WFSSpeakerConf.polygon(6, 6, 192); w.refresh; // 192 speaker polygon (32 sp per side)
+c = WFSSpeakerConf.polygon(5, 5, 160); w.refresh; // pentagon
+c = WFSSpeakerConf.polygon(3, 3.5, 192); w.refresh; // triangle
+c = WFSSpeakerConf.polygon(4, 3, 192); w.refresh; // overlapping (still works)
+
+( // also works with incomplete conf (like on a single server)
+c = WFSSpeakerConf.polygon(4, 5, 192);
+c.arrayConfs.removeAt(2);
+w.refresh; 
+)
+
+// problematic:
+c = WFSSpeakerConf.polygon(24, 6, 192); w.refresh;
+c = WFSSpeakerConf.polygon(2, 4.5, 192); w.refresh;
+
 m = \points; w.refresh; // change plot mode
 m = \lines; w.refresh;
 

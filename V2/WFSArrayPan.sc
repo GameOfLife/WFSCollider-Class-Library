@@ -149,6 +149,8 @@ WFSSpeakerConf {
 	
 	// a collection of WFSArrayConfs, describing a full setup
 	
+	classvar <numSystems, <>serverGroups;
+	
 	var <>arrayConfs;
 	
 	*new { |...args|
@@ -163,18 +165,26 @@ WFSSpeakerConf {
 		});
 	}
 	
-	*rect { |nx = 48, ny, dx = 5, dy|
+	// fast creation
+	*rect { |nx = 48, ny, dx = 5, dy| // dx/dy: radius (i.e. from center to array)
 		ny = ny ? nx;
 		dy = dy ? dx;
 		^this.new( [ nx, dx, 0.5pi ], [ ny, dy, 0 ], [ nx, dx, -0.5pi ], [ ny, dy, pi ] );
+	}
+	
+	*polygon { |n = 6, r = 5, nsp = 192|
+		^this.new( *n.collect({ |i|
+			[ (nsp / n).asInt, r, i.linlin(0, n, 0.5pi, -1.5pi) ]
+		}) );
 	}
 	
 	at { |index| ^arrayConfs[ index ] }
 	
 	speakerCount { ^arrayConfs.collect(_.n).sum; }
 	
-	divideArrays { |n = 2| // split the arrayConfs into n equal (or not so equal) groups
+	divideArrays { |n| // split the arrayConfs into n equal (or not so equal) groups
 		var division, counter = 0, result = [];
+		n = n ? numSystems;
 		division = this.speakerCount / n;
 		n.do({ |i|
 			result = result ++ [ [ ] ];
@@ -186,10 +196,55 @@ WFSSpeakerConf {
 		^result;
 	}
 	
-	getDivision { |i = 0, n = 2| // arrays for single server (server i out of n)
+	getArrays { |i = 0, n| // arrays for single server (server i out of n)
 		^this.divideArrays(n)[i];
 	} 
 	
+	getArraysFor { |server|
+		var i;
+		i = this.class.systemOfServer( server );
+		if( i.notNil ) {
+			^this.divideArrays[i]
+		} {
+			^arrayConfs; // return all if not found
+		};
+	}
+	
+	// Server management
+	
+	*numSystems_ { |n = 2| // number of systems to divide the speakerarrays over
+		numSystems = n;
+		serverGroups = serverGroups.asCollection.extend( numSystems, Set() );
+	}
+	
+	*addServer { |server, system = 0|
+		server = server.asCollection.collect(_.asTarget).collect(_.server);
+		server.do({ |server|
+			serverGroups[ system ].add( server );
+		});
+	}
+	
+	*removeServer { |server|
+		server = server.asCollection.collect(_.asTarget).collect(_.server);
+		server.do({ |server|
+			serverGroups.do(_.remove(server));
+		});
+	}
+	
+	*systemOfServer { |server|
+		serverGroups.do({ |item, i|
+			if( item.includes(server) ) { ^i };
+		});
+		^nil;
+	}
+	
+	*initClass { 
+		this.numSystems = 2; // create server library
+	}
+	
+	
+	
+	// drawing
 	asPoints { ^arrayConfs.collect(_.asPoints).flat }
 	
 	asLines { ^arrayConfs.collect(_.asLine) }
@@ -239,7 +294,7 @@ WFSCrossfader {
 			angle = arrayConfs[i].angle;
 			
 			arr = pts.collect({ |pt, ii|
-				var pos, alpha, halfAlpha, foldHalfAlpha;
+				var pos, alpha, halfAlpha, invHalfAlpha;
 				var cornerFade, focused;
 				alpha = arrayConfs[i].cornerAngles[ii]; // angle towards prev/next array
 				pos = (point - pt).angle - angle;
@@ -247,10 +302,10 @@ WFSCrossfader {
 				
 				// corner fade
 				halfAlpha = alpha / 2;
-				foldHalfAlpha = halfAlpha.fold( 0, 0.25pi );
+				invHalfAlpha = (0.5pi - halfAlpha);
 				cornerFade = (pos - halfAlpha)
 					.fold( -0.5pi, 0.5pi )
-					.linlin( foldHalfAlpha.neg, foldHalfAlpha, 1, 0, \minmax );
+					.linlin( invHalfAlpha.neg, invHalfAlpha, 1, 0, \minmax );
 					
 				// focused (0/1)
 				focused = pos.wrap( -0.5pi, 1.5pi )
