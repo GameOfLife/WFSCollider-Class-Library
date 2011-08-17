@@ -75,14 +75,17 @@ WFSArrayConf { // configuration for one single speaker array
 	
 	adjustCorner1To { |aWFSArrayConf|
 		aWFSArrayConf = aWFSArrayConf.asWFSArrayConf;
-		corners[0] = aWFSArrayConf.dist; // only for square corner - TODO: other corners
 		cornerAngles[0] = (angle - aWFSArrayConf.angle).wrap(-pi,pi).abs;
+		corners[0] = ( dist - ( aWFSArrayConf.dist/ cos(cornerAngles[0]) ) )
+			/ tan(cornerAngles[0]).neg;
+		
 	}
 	
 	adjustCorner2To { |aWFSArrayConf|
 		aWFSArrayConf = aWFSArrayConf.asWFSArrayConf;
-		corners[1] = aWFSArrayConf.dist.neg; // only for square corner
 		cornerAngles[1] = (angle - aWFSArrayConf.angle).wrap(-pi,pi).abs;
+		corners[1] =  ( dist - ( aWFSArrayConf.dist/ cos(cornerAngles[1]) ) )
+			/ tan(cornerAngles[1]);
 	}
 	
 	
@@ -99,7 +102,9 @@ WFSArrayConf { // configuration for one single speaker array
 	}
 	
 	asPoints { // for plotting
-		^{ |i| (dist @ (i.linlin(0, n-1, spWidth / 2, spWidth.neg / 2 ) * n) - offset).rotate( angle ) } ! n;
+		^{ |i| (dist @ ((i.linlin(0, n-1, spWidth / 2, spWidth.neg / 2 ) * n) - offset))
+				.rotate( angle ) 
+		} ! n;
 	}
 	
 	asLine { // for plotting; start point and end point
@@ -130,6 +135,7 @@ WFSArrayConf { // configuration for one single speaker array
 			);
 		});
 	}
+
 }
 
 
@@ -156,6 +162,8 @@ WFSSpeakerConf {
 		dy = dy ? dx;
 		^this.new( [ nx, dx, 0.5pi ], [ ny, dy, 0 ], [ nx, dx, -0.5pi ], [ ny, dy, pi ] );
 	}
+	
+	at { |index| ^arrayConfs[ index ] }
 	
 	speakerCount { ^arrayConfs.collect(_.n).sum; }
 	
@@ -184,14 +192,14 @@ WFSSpeakerConf {
 	
 }
 
-
-
 WFSCrossfader {
 	// handles the crossfading between arrays
 	var <>arrayConfs;
+	var <>point;
 	var <>maxCornerAngle = pi;
 	
-	*new { |arrays, cornerArrays|
+	
+	*new { |point = (0@0), arrays, cornerArrays|
 		
 		// feed me with: 
 		//   arrays: an array of WFSArrayConfs, or an array of arrays that can be 
@@ -206,55 +214,75 @@ WFSCrossfader {
 			arrays[i].fromCornersArray( item );
 		});
 		
-		^super.newCopyArgs( arrays );
+		^super.newCopyArgs( arrays, point.asPoint );
 	}
 	
-	kr { |point = (0@0)|
+	kr {
+				
+		// outputs array of crossfades per speakerArray
+		// first value: corner crossfade level (for normal (unfocused) point sources)
+		// second value: focused (1 if focused, 0 if not)
+		//  format:
+		// [ [ cornerfade, focused ], [ cornerfade, focused ] etc.. ]
 		
-		// will output two level values for each of the arrays: focused and normal
-		
-		var cornerPoints, cornerFades;
+		var cornerPoints;
 		
 		cornerPoints = arrayConfs.collect( _.cornerPoints );
 		
-		// crossfading around corner points (normal sources)
-		cornerFades = cornerPoints.collect({ |pts, i|
-			var angle;
+		^cornerPoints.collect({ |pts, i|
+			var angle, arr;
 			
 			angle = arrayConfs[i].angle;
 			
-			pts.collect({ |pt, ii|
-				var pos, alpha;
-				alpha = arrayConfs[i].cornerAngles[ii]; // angle towards prev / next array
+			arr = pts.collect({ |pt, ii|
+				var pos, alpha, halfAlpha, foldHalfAlpha;
+				var cornerFade, focused;
+				alpha = arrayConfs[i].cornerAngles[ii]; // angle towards prev/next array
 				pos = (point - pt).angle - angle;
-				if( ii.even ) { pos = pos.neg };
+				if( ii.odd ) { pos = pos.neg };
 				
-				// optimized corner crossfading function:
-				pos = 1 - (2/pi * ((0.5 * alpha) - pos));
-				pos = pos.fold2( 1 ) * (0.5pi/alpha.min(maxCornerAngle));
-				((pos + 0.5).clip(0,1)).sqrt;
-			}).product;
+				// corner fade
+				halfAlpha = alpha / 2;
+				foldHalfAlpha = halfAlpha.fold( 0, 0.25pi );
+				cornerFade = (pos - halfAlpha)
+					.fold( -0.5pi, 0.5pi )
+					.linlin( foldHalfAlpha.neg, foldHalfAlpha, 1, 0, \minmax );
+					
+				// focused (0/1)
+				focused = pos.wrap( -0.5pi, 1.5pi )
+					.inRange( 0.5pi + alpha, 1.5pi )
+					.binaryValue;
+				
+				[ cornerFade, focused ];
+				
+			}).flop;
+			
+			[ arr[0].product, arr[1].product ];
 
-		});
-		
-		^cornerFades
-		
+		});		
 	}
 	
-	
 }
-
-// the actual panners:
 
 WFSBasicPan {
 	
 	classvar <>defaultSpWidth = 0.164;
-	classvar <>speedOfSound = 344;
+	classvar <>speedOfSound = 344; // replaced in initClass by more accurate value
 	classvar >sampleRate = 44100;
 	
 	var <>buffer, <pos;
 		
 	var <>maxDist = 200;
+	
+	*initClass {
+		this.setSpeedOfSound;
+	}
+	
+	*setSpeedOfSound { |temp = 20| // 20 = normal room temperature
+		^speedOfSound = Number.speedOfSound(temp);
+	}
+	
+	latencyComp { ^1 }
 	
 	maxDelay { ^( this.preDelay * 2 ) + ( ( maxDist * ( 1 - this.latencyComp ) ) / speedOfSound ) }
 	bufSize { ^2 ** ( (this.maxDelay * this.sampleRate).log2.roundUp(1) ) } // next power of two
@@ -262,7 +290,6 @@ WFSBasicPan {
 	// set in subclasses (can be vars too)
 	preDelay { ^0 } 
 	intType { ^'C' } 
-	latencyComp { ^1 } 
 	
 	sampleRate {
 		if( UGen.buildSynthDef.notNil ) { // if in a SynthDef
@@ -287,6 +314,7 @@ WFSBasicPan {
 	
 }
 
+// the actual panners:
 
 WFSPrePan : WFSBasicPan {
 	
@@ -346,8 +374,6 @@ WFSArrayPan : WFSBasicPan {
 	
 	var <>preDelay = 0.06; // in s (= 20m)
 	
-	latencyComp { ^1 }
-	
 	*new { |n = 48, dist = 5, angle = 0.5pi, offset = 0, spWidth, intType| // angle: 0-2pi (CCW)
 		^super.newCopyArgs().init(  n, dist, angle, offset, spWidth, intType );
 	}
@@ -358,7 +384,8 @@ WFSArrayPan : WFSBasicPan {
 		dist = inDist ? dist; // distance from center
 		angle = inAngle ? angle; // angle from center
 		offset = inOffset ? offset; // offset in m (to the right if angle == 0.5pi)
-		spWidth = inSpWidth ? spWidth ? defaultSpWidth; // width of individual speakers		intType = inIntType ? intType ? 'N'; // better to specify in the .ar method
+		spWidth = inSpWidth ? spWidth ? defaultSpWidth; // width of individual speakers
+		intType = inIntType ? intType ? 'N'; // better to specify in the .ar method
 		
 		speakerArray = { |i| (i.linlin(0, n-1, spWidth / 2, spWidth.neg / 2 ) * n) - offset } ! n;
 	}
@@ -451,8 +478,8 @@ WFSArrayPanPlane : WFSArrayPan {
 		// calculate distances
 		
 		distances = polarSpeakerArray.collect({ |item, i|  
-				( ( pos.theta - item.theta ).cos * item.rho ).neg; 
-				});
+			( ( pos.theta - item.theta ).cos * item.rho ).neg; 
+		});
 		
 		
 		//tanA = pos.theta.tan; // scientiffically correct, but tends to infinity at +0.5/-0.5pi
@@ -467,10 +494,12 @@ WFSArrayPanPlane : WFSArrayPan {
 		intType = int ? intType ? 'N';
 	
 		// all together
-		^this.delay( source * mul, 
+		^this.delay( 
+			source * mul, 
 			( distances / speedOfSound ) + delayOffset, 
 			amplitudes,
-			add );
+			add 
+		);
 	}
 	
 }
