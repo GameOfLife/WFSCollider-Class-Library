@@ -341,28 +341,6 @@ U : ObjectWithArgs {
 
 	makeSynth { |target, synthAction|
 		def.makeSynth( this, target, synthAction );
-		/*
-	    var synth;
-	    if( preparedServers.includes( target.asTarget.server ).not ) {
-			"U:makeSynth - server % may not (yet) be prepared for unit %"
-				.format( target.asTarget.server, this.defName )
-				.warn;
-		};
-        synth = def.createSynth( this, target );
-        synth.startAction_({ |synth|
-            this.changed( \go, synth );
-        });
-        synth.freeAction_({ |synth|
-            synths.remove( synth );
-            this.changed( \end, synth );
-            if(disposeOnFree) {
-                this.disposeArgsFor(synth.server)
-            }
-        });
-        this.changed( \start, synth );
-        synthAction.value( synth );
-        synths = synths.add(synth);
-        */
 	}
 	
 	makeBundle { |targets, synthAction|
