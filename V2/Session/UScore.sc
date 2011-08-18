@@ -124,7 +124,8 @@ UScore {
 			prepareEvents.do({ |item|
 				(item.prepareTime - pos).wait;
 				pos = item.prepareTime;
-				//"prepare % at %, %".format( events.indexOf(item), pos, thisThread.seconds ).postln;
+				//"prepare % at %, %".format( events.indexOf(item), 
+				//	pos, thisThread.seconds ).postln;
 				item.prepare( targets );
 			});
 		}).start;
@@ -134,7 +135,8 @@ UScore {
 			startEvents.do({ |item|
 				(item.startTime - pos).wait;
 				pos = item.startTime;
-				//"start % at %, %".format(  events.indexOf(item), pos, thisThread.seconds ).postln;
+				//"start % at %, %".format(  events.indexOf(item), 
+				//	pos, thisThread.seconds ).postln;
 				item.start;
 			});
 		}).start;

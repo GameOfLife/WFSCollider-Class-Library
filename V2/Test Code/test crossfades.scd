@@ -12,8 +12,9 @@ w.drawFunc = {
 	c.draw(m); 
 	Pen.addArc( p * (1 @ -1), 0.3/2, 0, 2pi ).fill; 
 	
+	// draw corns as blue points
 	Pen.color = Color.blue;
-	c.arrayConfs.collect(_.cornerPoints).do({ |pts| // draw corner points
+	c.arrayConfs.collect(_.cornerPoints).do({ |pts|
 		pts.do({ |p|
 			Pen.addArc( p * (1 @ -1), 0.164/2, 0, 2pi ).fill; 
 		});
@@ -34,6 +35,7 @@ w.drawFunc = {
 		});
 	});
 	
+	// draw focused as blue lines inside arrays
 	Pen.use({
 		Pen.scale(0.9, -0.9);
 		Pen.color = Color.blue;
@@ -61,12 +63,23 @@ c = WFSSpeakerConf.polygon(4, 3, 192); w.refresh; // overlapping (still works)
 
 ( // also works with incomplete conf (like on a single server)
 c = WFSSpeakerConf.polygon(4, 5, 192);
+c.arrayConfs.removeAt(3);
 c.arrayConfs.removeAt(2);
 w.refresh; 
 )
 
-// problematic:
+// problems with determining focus:
 c = WFSSpeakerConf.polygon(24, 6, 192); w.refresh;
+c = WFSSpeakerConf.polygon(8, 5, 192 ); w.refresh;
+(
+c = WFSSpeakerConf.polygon(8, 5, 192 );
+c[[0,2,4,6]].do(_.n_(40)).do(_.dist_(5));
+c[[1,3,5,7]].do(_.n_(8)).do(_.dist_(6)); 
+c.init;
+w.refresh;
+)
+
+// other problems:
 c = WFSSpeakerConf.polygon(2, 4.5, 192); w.refresh;
 
 m = \points; w.refresh; // change plot mode
