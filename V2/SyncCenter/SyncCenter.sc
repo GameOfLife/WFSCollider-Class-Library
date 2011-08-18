@@ -60,7 +60,9 @@ SyncCenter {
 				"%.add: server '%' was already added".format( this, server ).warn; 
 			} { 
 				serverCounts.put(server,Ref(-1));
-				NotificationCenter.register(server, \didQuit, this, { serverCounts.at(server).value_(-1).changed });
+				NotificationCenter.register(server, \didQuit, this, { 
+					serverCounts.at(server).value_(-1).changed 
+				});
 			}
 		};
 	}
@@ -156,7 +158,8 @@ SyncCenter {
 						count = (numOfBlocks * master.options.blockSize) + offsetInsideBlock;
 						serverCounts.at(master).value_( count ).changed; 
 						
-						current = this.new.localCount_( count ).localCountTime_( masterCountTime ); // also local sync
+						current = this.new.localCount_( count )
+							.localCountTime_( masterCountTime ); // also local sync
 						this.class.changed( \localSync, current );
 						
 						if( verbose ) { "setting master counts".postln }; 
@@ -171,14 +174,20 @@ SyncCenter {
 						serverCounts.at(server).value_( count ).changed;
 						
 						if(verbose) { 
-							("serverNumber "++( msg[2] - 100 ) ).postln;
-							("Setting remoteCounts for server "++(msg[2] - 100)++" : "++ count ).postln;
+							("Setting remoteCounts for server "++
+								(msg[2] - 100)++" : "++ count 
+							).postln;
 						};	
 					 }; 
 						
 				if( 
-					serverCounts.collect{ |count,server| if( server.serverRunning ) { count.value != -1 } { true } }
-					.as(Array).reduce('&&')
+					serverCounts.collect{ |count,server| 
+						if( server.serverRunning ) {
+							count.value != -1 
+						} { 
+							true 
+						} 
+					}.as(Array).reduce('&&')
 
 				) { 
 					resp.remove; responder = nil;
@@ -219,7 +228,8 @@ SyncCenter {
 		if( mode === 'sample' ) {	
 			time = thisThread.seconds + latency;
 			busy = true;
-			synth = Synth.sched( latency, "sync_local_master", target:master, addAction: \addToHead )
+			synth = Synth.sched( latency, "sync_local_master", target:master, 
+					addAction: \addToHead )
 				.onTrig_( { |value, time, responder, msg|
 					var numOfBlocks, offsetInsideBlock;
 					numOfBlocks = msg[4];
@@ -245,7 +255,7 @@ SyncCenter {
 		};
 	}
 	
-	masterSampleCount { |delta = 1|
+	masterSampleCount { |delta = 0.2|
 		// predicted sample count of now + delta
 		var now;
 		if( localCount.notNil and: localCountTime.notNil ) {
@@ -255,40 +265,42 @@ SyncCenter {
 			if(verbose) {
 				 "No localCount/localCountTime available, falling back to blockCount".postln;
 			};
-			^(master.options.blockSize*master.blockCount) + (delta*master.sampleRate) ; // fall back to blockCount
+			^(master.options.blockSize*master.blockCount) + 
+				(delta*master.sampleRate); // fall back to blockCount
 		};
 	}
 	
-	getSampleCountForServer{ |delta = 1, server|
+	getSampleCountForServer{ |delta = 0.2, server|
 		if( server == master ) {
 			^this.masterSampleCount( delta );
 		} {
-			^( serverCounts.at(server).value - serverCounts.at(master).value ) + this.masterSampleCount( delta )
+			^( serverCounts.at(server).value - serverCounts.at(master).value ) 
+				+ this.masterSampleCount( delta )
 		}
 	}
 	
-	sendSyncedBundle { |server, delta = 1 ... msgs|
+	sendSyncedBundle { |server, delta = 0.2 ... msgs|
 		if( (mode === 'sample')  && { serverCounts.keys.includes( server ) }) {
-			server.sendPosBundle( this.getSampleCountForServer(delta,server), *msgs ) 
+			server.sendPosBundle( delta!?{this.getSampleCountForServer(delta,server)}, *msgs ) 
 		} {
 			server.sendBundle( delta, *msgs ) // fall back to regular bundling (no warning)
 		};
 	}
 	
-	listSendSyncedBundle{ |server, delta = 1, msgs|
+	listSendSyncedBundle{ |server, delta = 0.2, msgs|
 		if( (mode === 'sample') && { serverCounts.keys.includes( server ) } ) {
-			server.listSendPosBundle( this.getSampleCountForServer(delta,server), msgs ) 
+			server.listSendPosBundle( delta!?{this.getSampleCountForServer(delta,server)}, msgs ) 
 		} {
 			server.listSendBundle( delta, msgs );
 		};
 	}
 	
-	*sendSyncedBundle{ |server, delta = 1 ... msgs|
+	*sendSyncedBundle{ |server, delta = 0.2 ... msgs|
 		current = current ?? { this.new }; // create empty if not there
 		^current.sendSyncedBundle(server, delta, *msgs);
 	}
 	
-	*listSendSyncedBundle{ |server, delta = 1, msgs|
+	*listSendSyncedBundle{ |server, delta = 0.2, msgs|
 		current = current ?? { this.new }; // create empty if not there
 		^current.listSendSyncedBundle(server, delta, msgs);
 	}
@@ -296,6 +308,19 @@ SyncCenter {
 	*makeWindow {
 		SyncCenterGui.new
 	}
+	
+	sched { |server, delta = 0.2, func|
+		var bundle;
+		server = server ? Server.default;
+		bundle = server.makeBundle( false, func );
+		this.listSendSyncedBundle( server, delta, bundle );
+	}
+
+	*sched { |server, delta = 0.2, func, sc| // can provide a sc
+		sc = sc ?? { current = current ?? { this.new } }; // create empty if not there
+		^sc.sched(server, delta, func);
+	}
+
 
 }
 	
