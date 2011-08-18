@@ -6,6 +6,14 @@ WFSArrayConf { // configuration for one single speaker array
 	
 	/*
 	
+	A WFSArrayConf describes a single straight line of n equally spaced loudspeakers.
+	
+		n: number of speakers
+		dist (m): distance from center
+		angle (radians): angle from center (facing the speakers)
+		offset (m): amount of shift to right when facing the speakers
+		spWidth (m): spacing between individual speakers
+	
 	explanation of variables:
 	
 	angles are counter-clockwise starting at x axis:
@@ -92,6 +100,8 @@ WFSArrayConf { // configuration for one single speaker array
 	asArray { ^[ n, dist, angle, offset, spWidth ] }
 	asCornersArray { ^(corners ++ cornerAngles); }
 	
+	asControlInput { ^this.asArray[1..] } // size is not modulatable, so not used for control
+	
 	*fromArray { |array| ^this.new( *array ); }
 	
 	fromCornersArray { |array| // adjust corners / angles from array
@@ -148,6 +158,7 @@ WFSArrayConf { // configuration for one single speaker array
 WFSSpeakerConf {
 	
 	// a collection of WFSArrayConfs, describing a full setup
+	// WFSSpeakerConfs are designed to be fully surrounding setups
 	
 	classvar <numSystems, <>serverGroups;
 	
@@ -603,7 +614,8 @@ WFSArrayPan : WFSBasicArrayPan {
 			delayTimes = distances * inFront;
 		} {	
 			// create overlapping area (for dynamic sources)
-			delayTimes = ( ( ( ( focus.binaryValue * -2 ) + 1 ) - inFront ) * dify.abs) + (distances * inFront);
+			delayTimes = ( ( ( ( focus.binaryValue * -2 ) + 1 ) - inFront ) * dify.abs) 
+				+ (distances * inFront);
 		};
 		
 		delayTimes = delayTimes / speedOfSound;
@@ -614,7 +626,7 @@ WFSArrayPan : WFSBasicArrayPan {
 		
 		// ------- calculate amplitudes --------
 		amplitudes = distances.pow(dbRollOff/6).min( limit.pow(dbRollOff/6) );
-		amplitudes = amplitudes / amplitudes.sum; // normalize amps (sum == 1)
+		amplitudes = amplitudes * ( mul / amplitudes.sum ); // normalize amps (sum == mul)
 		
 		// focus crossfades (per speaker, dependent on angle)
 		//
@@ -643,7 +655,7 @@ WFSArrayPan : WFSBasicArrayPan {
 		
 		intType = int ? intType ? 'N';
 		
-		^this.delay( source * mul, 
+		^this.delay( source, 
 			delayTimes + delayOffset, 
 			amplitudes,
 			add  );
@@ -659,7 +671,7 @@ WFSArrayPanPlane : WFSBasicArrayPan {
 	
 	init {
 		super.init;
-		polarSpeakerArray = speakerArray.collect(_.asPolar);
+		polarSpeakerArray = speakerArray.collect({ |sp| (dist@sp).asPolar});
 	}
 	
 	ar { |source, inPos, int, mul = 1, add = 0|
