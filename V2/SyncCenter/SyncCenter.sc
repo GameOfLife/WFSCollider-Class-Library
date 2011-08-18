@@ -31,6 +31,8 @@ SyncCenter {
 	
 	classvar <>current;
 	
+	classvar <>checkForServerQuit = false;
+	
 	var <>localCount, <>localCountTime;
 	
 	*testSampleSched { // test whether this is a sample-sched enabled version of SC
@@ -61,7 +63,9 @@ SyncCenter {
 			} { 
 				serverCounts.put(server,Ref(-1));
 				NotificationCenter.register(server, \didQuit, this, { 
-					serverCounts.at(server).value_(-1).changed 
+					if( checkForServerQuit ) {
+						serverCounts.at(server).value_(-1).changed 
+					}
 				});
 			}
 		};
