@@ -313,6 +313,8 @@ SyncCenter {
 		SyncCenterGui.new
 	}
 	
+	*gui { ^SyncCenterGui.new }
+	
 	sched { |server, delta = 0.2, func|
 		var bundle;
 		server = server ? Server.default;

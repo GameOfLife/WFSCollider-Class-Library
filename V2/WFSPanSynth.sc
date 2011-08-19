@@ -187,9 +187,9 @@ WFSPrePanSynth {
 		^SynthDef( this.getDefName( numArrays, crossfadeMode ), {
 			
 			// synth args:
-			var in_bus = 0;
-			var point = 0@0, point_out = [1000,1001], dbRollOff = -6, limit = 2, latencyComp = 0;
-			var arrayConfs, cornerPoints, crossfadeLag = 0.2;
+			var in_bus = 0, point = 0@0, point_bus = [1000,1001], scale_in_point = 0@0;
+			var dbRollOff = -6, limit = 2, latencyComp = 0, point_lag = 0;
+			var arrayConfs, cornerPoints, crossfadeLag = 0.2, pauseLag = 0.2;
 			
 			// local variables
 			var input, panner, crossfader;
@@ -197,13 +197,19 @@ WFSPrePanSynth {
 			
 			// always dynamic:
 			in_bus = \in_bus.kr( in_bus ); // is also out bus
-			point = \point.kr( point.asArray ) + In.kr( \point_in.kr([-1,-1]) );
-			\point_out.kr( point_out ).collect({ |item, i|
+			
+			point_bus = \point_bus.kr( point_bus );
+			scale_in_point = \scale_in_point.kr( scale_in_point.asArray );
+			point = \point.kr( point.asArray ) + ( In.kr( point_bus ) * scale_in_point );
+			point_lag = \point_lag.kr( point_lag );
+			point = LPFLag.kr( point, point_lag );
+			point = point.asPoint;
+			point_bus.collect({ |item, i|
 				ReplaceOut.kr( item, point.asArray[i] );
 			});
+			
 			dbRollOff = \dbRollOff.kr( dbRollOff );
 			limit = \limit.kr( limit );
-			crossfadeLag = \crossfadeLag.kr( crossfadeLag );
 			
 			// always static
 			latencyComp = \latencyComp.ir( latencyComp );			
@@ -212,7 +218,9 @@ WFSPrePanSynth {
 			
 			input = PrivateIn.ar( in_bus );
 			
-			PrivateReplaceOut.ar( in_bus, panner.ar( input, point, WFSLevelBus.kr ) * UEnv.kr );
+			PrivateReplaceOut.ar( in_bus, 
+				panner.ar( input, point, WFSLevelBus.kr ) * UEnv.kr( extraSilence: 0.2 )
+			);
 			
 			// crossfading: manage the array panners
 			if( [ \d, \u ].includes(crossfadeMode) ) {
@@ -222,12 +230,16 @@ WFSPrePanSynth {
 					("cornerPoints" ++ i).asSymbol.ir( [ 5, -5, 0.5pi, 0.5pi ] )
 				] }).flop;
 				
+				
+				crossfadeLag = \crossfadeLag.kr( crossfadeLag );
+				pauseLag = \pauseLag.kr( pauseLag ); // extra time to wait before pause (not unpause)
+				
 				crossfader = WFSCrossfader( point, arrayConfs, cornerPoints );
 							
 				normalShouldRun = Slew.kr( crossfader.arraysShouldRun( false ), 
-					1/crossfadeLag, 1/crossfadeLag ).sqrt;
+					1/crossfadeLag, 1/crossfadeLag );
 				focusShouldRun = Slew.kr( crossfader.arraysShouldRun( true ), 
-					1/crossfadeLag, 1/crossfadeLag ).sqrt;
+					1/crossfadeLag, 1/crossfadeLag );
 				normalLevels = crossfader.cornerfades * normalShouldRun;
 				 
 				switch( crossfadeMode,
@@ -235,11 +247,13 @@ WFSPrePanSynth {
 						
 						{	// embed function to prevent inlining warning
 							var normalIDs, focusIDs;
-							var normalLevelBuses, focusLevelBuses;
+							var normalLevelBuses, focusLevelBuses, dontPause = 0;
 							
-							// id's of synths to pause (-1 for none)
-							normalIDs = \normalIDs.ir( -1.dup(numArrays) ).asCollection;
-							focusIDs = \focusIDs.ir( -1.dup(numArrays) ).asCollection;
+							dontPause = \dontPause.kr(dontPause); // if 1 never pause
+							
+							// id's of synths to pause (998 for none) 
+							normalIDs = \normalIDs.ir( 998.dup(numArrays) ).asCollection;
+							focusIDs = \focusIDs.ir( 998.dup(numArrays) ).asCollection;
 							
 							// level buses (-1 for none)
 							normalLevelBuses = \normalLevelBuses.kr( -1.dup(numArrays) ).asCollection;
@@ -256,11 +270,17 @@ WFSPrePanSynth {
 							
 							// pause non-sounding panners
 							normalIDs.collect({ |id, i|
-								Pause.kr( normalLevels[i] > 0, id );
+								var pause;
+								pause = (normalLevels[i] > 0);
+								pause = Slew.kr( pause, inf, 1/pauseLag ) > 0;
+								Pause.kr( pause.max(dontPause), id );
 							});
 							
 							focusIDs.collect({ |id, i|
-								Pause.kr( focusShouldRun[i] > 0, id );
+								var pause;
+								pause = (focusShouldRun[i] > 0);
+								pause = Slew.kr( pause, inf, 1/pauseLag ) > 0;
+								Pause.kr( pause.max(dontPause), id );
 							});
 							
 						}.value
@@ -271,6 +291,9 @@ WFSPrePanSynth {
 							var uniIDs;
 							var uniLevelBuses;
 							var uniLevels;
+							var dontPause = 0;
+							
+							dontPause = \dontPause.kr(dontPause);
 							
 							// id's of synths to pause (-1 for none)
 							uniIDs = \uniIDs.ir( -1.dup(numArrays) ).asCollection;
@@ -287,7 +310,10 @@ WFSPrePanSynth {
 							
 							// pause non-sounding panners
 							uniIDs.collect({ |id, i|
-								Pause.kr( uniLevels[i] > 0, id );
+								var pause;
+								pause = (uniLevels[i] > 0);
+								pause = Slew.kr( pause, inf, 1/pauseLag ) > 0;
+								Pause.kr( pause.max(dontPause), id );
 							});
 						}.value;					
 					}

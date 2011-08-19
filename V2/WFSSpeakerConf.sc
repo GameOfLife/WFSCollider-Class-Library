@@ -101,6 +101,7 @@ WFSArrayConf { // configuration for one single speaker array
 	asCornersArray { ^(corners ++ cornerAngles); }
 	
 	asControlInput { ^this.asArray }
+	asOSCArgEmbeddedArray { | array| ^this.asArray.asOSCArgEmbeddedArray(array) }
 	
 	*fromArray { |array| ^this.new( *array ); }
 	

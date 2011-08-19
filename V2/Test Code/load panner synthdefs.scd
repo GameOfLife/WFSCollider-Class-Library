@@ -8,7 +8,7 @@ d; // these are all the array defs
 // result: 104 files with a total size of 2.7MB
 SynthDef.synthDefDir.openInFinder;
 
-( // loading goes quite fast
+(	// loading goes quite fast
 {
 s.loadDirectory( SynthDef.synthDefDir );
 s.sync;
@@ -74,8 +74,9 @@ b = s.makeBundle( false, {
 	group = Group(s);
 	
 	// make the panner synths, but don't send yet
-	normalSynths = arrayConfs.collect({ |item| Synth.basicNew( "wfsa_ndc_" ++ item.n, s ); });
-	focusSynths = arrayConfs.collect({ |item| Synth.basicNew( "wfsa_fdc_" ++ item.n, s ); });
+	// these are normal and focused versions of dynamic c point
+	normalSynths = arrayConfs.collect({ |item| Synth.basicNew( "wfsa_ndl_" ++ item.n, s ); }); 
+	focusSynths = arrayConfs.collect({ |item| Synth.basicNew( "wfsa_fdl_" ++ item.n, s ); });
 	
 	// make the pre-panner synth (has to know the nodeID's of the panner synths)
 	prePanSynth = Synth( "wfsp_d_" ++ arrayConfs.size, arrayConfs.collect({ |item,i|
@@ -87,10 +88,10 @@ b = s.makeBundle( false, {
 			\focusIDs, focusSynths.collect(_.nodeID),
 			//\normalIDs, normalSynths.collect(998), // override: non-existing id
 			//\focusIDs, focusSynths.collect(998),
-			\point_out, [1000,1001],
-			\crossfadeLag, 0.1
-			
-			
+			\point_bus, [1000,1001], // = default
+			\crossfadeLag, 0.2,
+			\latencyComp, 0
+			 // can only set at creation
 		],
 		group, addAction: \addToTail
 	);
@@ -99,7 +100,7 @@ b = s.makeBundle( false, {
 	n = 0;
 	normalSynths.do({ |sn, i|
 		s.sendMsg( *sn.newMsg( group, [ 
-				\arrayConf, arrayConfs[i].asArray, 
+				\arrayConf, arrayConfs[i], 
 				\amp_bus, normalLevelBuses[i],
 				\point_bus, [1000,1001],
 				\outOffset, n
@@ -111,7 +112,7 @@ b = s.makeBundle( false, {
 	n = 0;
 	focusSynths.do({ |sn, i|
 		s.sendMsg( *sn.newMsg( group, [ 
-				\arrayConf, arrayConfs[i].asArray, 
+				\arrayConf, arrayConfs[i], 
 				\amp_bus, focusLevelBuses[i],
 				\point_bus, [1000,1001],
 				\outOffset, n
@@ -135,16 +136,30 @@ x = { PrivateOut.ar( 0, SinOsc.ar(440) ) }.play( addAction: \addToHead ); // mak
 
 p.set( \u_gain, 40 );  // make audible on computer speakers (don't do this on wfs!!)
 
-p.set( \point, [0,1] ); 
-p.set( \point, [0,5.2] ); 
+p.set( \point, [0,7] );  // get behind front array
+p.set( \point, [0,0] );  // return to center
 
-p.set( \point_in, [1000,1001] ); // listen to bus
+p.set( \point_lag, 0); // default
+p.set( \point_lag, 0.5); // try changing the point again
 
-p.set( \point_in, [-1,-1] ); // crashes the server!!
+p.set( \point, [0,5.01] ); // just behind array
+p.set( \point, [0,4.99] ); // cross the array border
+p.set( \crossfadeLag, 0.1 ); // longer crossfade time when crossing border
+p.set( \pauseLag, 0.5 );
+
+p.set( \dbRollOff, 0 ); // equal level for all points
+p.set( \dbRollOff, -6 );
+
+p.set( \scale_in_point, [1,1], \point, [0,0] ); // listen to bus (which is also set to point)
+
+p.set( \scale_in_point, [0,0] ); // don't listen to bus
+
+p.set( \dontPause, 1 ); // don't pause any panners (all run(1) )
+p.set( \dontPause, 0 ); // pause silent panners (default)
 
 ( // make a circle outside arrays
 a.free;
-a = { ReplaceOut.kr( 1000, SinOsc.kr( 0.1, [0, 0.5pi] ).range( -15, 15); ) }.play( addAction: \addToHead );
+a = { ReplaceOut.kr( 1000, SinOsc.kr( 0.2, [0, 0.5pi] ).range( -15, 15); ) }.play( addAction: \addToHead );
 )
 
 ( // make a circle inside arrays
@@ -158,10 +173,12 @@ a.free;
 o.free;
 o = { ReplaceOut.ar( 0, [ In.ar( 0, 40 ).sum/40, In.ar( 48, 40 ).sum/40 ] ) }.play( addAction: \addToTail );
 )
-
+Bus( \control, 1000, 2 ).set(0,0)
 Bus( \control, 1000, 2 ).get; // see the point
 Bus( \control, 2000, 4 ).get; // see the prepan fades
 
 RootNode(s).dumpTree(true);
 
 s.meter;
+
+p.set( \u_doneAction, 14, \u_gate, 0, \u_fadeOut, 0.5 ); // release the whole group
