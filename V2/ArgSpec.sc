@@ -14,7 +14,7 @@ ArgSpec : Spec {
 	var >label;
 	
 	*new { |name, default, spec, private|
-		^super.newCopyArgs( name, default, spec, private ? false ).init;
+		^super.newCopyArgs( name.asSymbol, default, spec, private ? false ).init;
 	}
 	
 	init { 

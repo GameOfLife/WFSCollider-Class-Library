@@ -62,6 +62,33 @@ GenericDef {
 	
 	*allNames { ^this.class.all.keys.as( Array ).sort }
 	
+	addArgSpec { |argSpec, replaceIfExists = false|
+		var index;
+		if( argSpec.notNil ) {
+			argSpec = argSpec.asArgSpec;
+		};
+		index = argSpecs.detectIndex({ |item| item.name == argSpec.name });
+		if( index.isNil ) {
+			argSpecs = argSpecs.add( argSpec );
+		} {
+			if( replaceIfExists ) {	 // otherwise leave in tact (use setArgSpec to change spec)
+				argSpecs[index] = argSpec;
+			};
+		};
+	}
+	
+	removeArgSpec { |name|
+		var index;
+		if( name.isKindOf( ArgSpec ) ) { name = name.name };
+		index = this.getArgIndex( name );
+		if( index.notNil ) {
+			^argSpecs.removeAt( index );
+		} {
+			^nil
+		};
+	}
+	
+	
 	// getters 
 	
 	getArgIndex { |name|

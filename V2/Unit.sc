@@ -72,6 +72,10 @@ Udef : GenericDef {
 		defsFolder = this.filenameSymbol.asString.dirname.dirname +/+ "UnitDefs";
 	}
 
+	*basicNew { |name, args, category|
+		^super.new( name, args ).category_( category ? \default );
+	}
+	
 	*new { |name, func, args, category|
 		^super.new( name, args ).init( func ).category_( category ? \default );
 	}
@@ -169,7 +173,7 @@ Udef : GenericDef {
 		var key;
 		key = this.prGetIOKey( mode, rate );
 		^this.prIOspecs( mode, rate, key ).collect({ |item|
-			item.name.asString[key.size..].split( $_ )[0].interpret;
+			item.name.asString[key.size+1..].split( $_ )[0].interpret;
 		});
 	}
 	
@@ -181,9 +185,9 @@ Udef : GenericDef {
 	canFreeSynth { ^this.keys.includes( \u_doneAction ) } // assumes the Udef contains a UEnv
 	
 	// these may differ in subclasses of Udef
-	createSynth { |unit, server| // create A single synth based on server
-		server = server ? Server.default;
-		^Synth( this.synthDefName, unit.getArgsFor( server ), server, \addToTail );
+	createSynth { |unit, target| // create A single synth based on server
+		target = target ? Server.default;
+		^Synth( this.synthDefName, unit.getArgsFor( target ), target, \addToTail );
 	}
 	
 	setSynth { |unit ...keyValuePairs|
@@ -217,6 +221,7 @@ U : ObjectWithArgs {
 	var <>disposeOnFree = true;
 	var <>preparedServers;
 	var >waitTime; // use only to override waittime from args
+	var <>env;
 
 	
 	*new { |defName, args|
@@ -239,6 +244,7 @@ U : ObjectWithArgs {
 		};
 		synths = [];
 		preparedServers = [];
+		env = (); // a place to store things in (for FreeUdef)
 	}
 	
 	allKeys { ^this.keys }
