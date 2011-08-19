@@ -7,7 +7,8 @@ WFSArrayPanSynth {
 	*/
 	
 	classvar <>synthDefs;
-	classvar <>minSize = 8, <>maxSize = 64, <>division = 8; // if we get > 64 we might want to combine multiple
+	classvar <>minSize = 8, <>maxSize = 64, <>division = 8; 
+		// if we get > 64 we might want to combine multiple
 	classvar <>types, <>modes, <>intTypes;
 	
 	*initClass {
@@ -49,38 +50,46 @@ WFSArrayPanSynth {
 			
 			// synth args:
 			var in_bus = 0, arrayConf, outOffset = 0, addDelay = 0;
-			var point = 0@0, amp = 1, dbRollOff = -9;
+			var point = 0@0, amp = 1, dbRollOff = -9, limit = 1;
 			
 			// local variables
-			var gain = -40.dbamp; // hard-wired for now
+			var gain = -20.dbamp; // hard-wired for now
 			var panner, input;
 			
 			// always dynamic:
 			in_bus = \in_bus.kr( in_bus ); 
 			
 			// always static
-			arrayConf = \arrayConf.ir( [ 5, -0.5pi, 0, 0.164 ] );
+			arrayConf = \arrayConf.ir( [ size, 5, 0.5pi, 0, 0.164 ] ); // size is fixed in def
 			outOffset = \outOffset.ir( outOffset );
 			addDelay = \addDelay.ir( addDelay );
 			
+			// depending on mode
 			if( mode === \d ) {
-				point = In.kr( \point_bus.kr([0,1]) ).asPoint;
+				point = In.kr( \point_bus.kr([1000,1001]) ).asPoint;
 				amp = In.kr( \amp_bus.kr(2) );
-				dbRollOff = \dbRollOff.kr( -9 );
+				if( type != \p ) { // only for points, not planes
+					dbRollOff = \dbRollOff.kr( dbRollOff );
+					limit = \limit.kr( limit );
+				};			
 			} {
 				point = \point.ir([0,0]).asPoint;
 				amp = \amp.kr(amp);
-				dbRollOff = \dbRollOff.ir( dbRollOff );
+				if( type != \p ) {
+					dbRollOff = \dbRollOff.ir( dbRollOff );
+					limit = \limit.ir( limit );
+				};
 			};
 			
 			input = PrivateIn.ar( in_bus ) * gain;
 			
 			if( type === \p ) {
-				panner = WFSArrayPanPlane( size, *arrayConf ).addDelay_( addDelay ); // dbRollOff not used
+				panner = WFSArrayPanPlane( size, *arrayConf[1..] ).addDelay_( addDelay );
 			} {
-				panner = WFSArrayPan( size, *arrayConf )
+				panner = WFSArrayPan( size, *arrayConf[1..] )
 					.addDelay_( addDelay )
 					.dbRollOff_( dbRollOff )
+					.limit_( limit )
 					.focus_( switch( type, \f, { true }, \n, { false }, { nil } ) );
 			};
 			
@@ -95,7 +104,7 @@ WFSArrayPanSynth {
 		// this takes about 30 seconds in normal settings
 		// can be stopped via cmd-.
 		
-		var all, waitTime, defs;
+		var all, waitTime;
 		dir = dir ? SynthDef.synthDefDir;
 		all = #[ // these are the all types we'll probably need
 			[ uni, static, n ],    // use this for any static
@@ -120,18 +129,189 @@ WFSArrayPanSynth {
 			started = Main.elapsedTime;
 			"started generating WFSArrayPanSynth synthdefs".postln;
 			" this may take % seconds or more\n".postf( estimatedTime );
-			defs = all.collect({ |item|
+			synthDefs = all.collect({ |item|
 				var out = WFSArrayPanSynth.allSizes.collect({ |size|
-					WFSArrayPanSynth.generateDef(size, *item ).writeDefFile( SynthDef.synthDefDir );
+					WFSArrayPanSynth.generateDef(size, *item )
+						.writeDefFile( dir );
 				});
 				waitTime.wait;
 				"  WFSArrayPanSynth synthdefs for % ready\n".postf( item.join("_") );
 				out;
 			});
-			"done generating WFSArrayPanSynth synthdefs in %s\n".postf( (Main.elapsedTime - started).round(0.001) );
-			action.value( defs );
+			"done generating WFSArrayPanSynth synthdefs in %s\n"
+				.postf( (Main.elapsedTime - started).round(0.001) );
+			action.value( synthDefs );
 		}.fork();
 	}
+}
+
+WFSPrePanSynth {
 	
+	/*
+	generates and maintains the SynthDefs needed for pre panners.
+	Normally a pre panner comes before one or more array panners.
+	it provides them with a delayed input (large global delay) with 
+	global amplitude rolloff applied on the source. Crossfade levels 
+	are also provided for dynamic sources (static sources take them
+	from the lang), and array panners can be paused/unpaused from here.
+	*/
+	
+	// we have an UEnv and a WFSLevelBus in here as well
+	// should we throw in global eqhere too?
+	
+	classvar <>synthDefs;
+	classvar <>maxArrays = 4; // should do for now
+	
+	classvar <>crossfadeModes, <>modesThatNeedArrays;
+	
+	
+	*initClass {
+		crossfadeModes = [ \d, \u, \p, \n ];  // dual, uni, plane, none (none: static sources)
+		modesThatNeedArrays = [ \d, \u, \p ];
+	}
+	
+	*getDefName { |numArrays = 1, crossfadeMode = \d|
+		
+		crossfadeMode = crossfadeMode.asString[0].toLower;
+		
+		// wfsp_d_2 : pre-panner for 2 arrays in dual mode (focused and normal separate panners )
+		// wfsp_p_3 : pre-panner for 3 arrays plane wave
+		
+		^["wfsp", crossfadeMode, numArrays ].join("_");
+	}
+	
+	*generateDef { |numArrays = 1, crossfadeMode = \dual|
+		
+		crossfadeMode = crossfadeMode.asString[0].toLower.asSymbol;
+		
+		^SynthDef( this.getDefName( numArrays, crossfadeMode ), {
+			
+			// synth args:
+			var in_bus = 0;
+			var point = 0@0, point_out = [1000,1001], dbRollOff = -6, limit = 2, latencyComp = 0;
+			var arrayConfs, cornerPoints, crossfadeLag = 0.2;
+			
+			// local variables
+			var input, panner, crossfader;
+			var normalLevels, normalShouldRun, focusShouldRun;
+			
+			// always dynamic:
+			in_bus = \in_bus.kr( in_bus ); // is also out bus
+			point = \point.kr( point.asArray ) + In.kr( \point_in.kr([-1,-1]) );
+			\point_out.kr( point_out ).collect({ |item, i|
+				ReplaceOut.kr( item, point.asArray[i] );
+			});
+			dbRollOff = \dbRollOff.kr( dbRollOff );
+			limit = \limit.kr( limit );
+			crossfadeLag = \crossfadeLag.kr( crossfadeLag );
+			
+			// always static
+			latencyComp = \latencyComp.ir( latencyComp );			
+			// the pre-panner and delayed/attenuated output 			input = PrivateIn.ar( in_bus );
+			panner = WFSPrePan( dbRollOff, limit, latencyComp );
+			
+			input = PrivateIn.ar( in_bus );
+			
+			PrivateReplaceOut.ar( in_bus, panner.ar( input, point, WFSLevelBus.kr ) * UEnv.kr );
+			
+			// crossfading: manage the array panners
+			if( [ \d, \u ].includes(crossfadeMode) ) {
+				#arrayConfs, cornerPoints = numArrays.collect({ |i| [ 
+					("arrayConf" ++ i).asSymbol
+						.ir( [ 48, 5, i.linlin(0,numArrays, 0.5pi, -0.5pi), 0, 0.164 ] ),
+					("cornerPoints" ++ i).asSymbol.ir( [ 5, -5, 0.5pi, 0.5pi ] )
+				] }).flop;
+				
+				crossfader = WFSCrossfader( point, arrayConfs, cornerPoints );
+							
+				normalShouldRun = Slew.kr( crossfader.arraysShouldRun( false ), 
+					1/crossfadeLag, 1/crossfadeLag ).sqrt;
+				focusShouldRun = Slew.kr( crossfader.arraysShouldRun( true ), 
+					1/crossfadeLag, 1/crossfadeLag ).sqrt;
+				normalLevels = crossfader.cornerfades * normalShouldRun;
+				 
+				switch( crossfadeMode,
+					\d, {  // dual mode
+						
+						{	// embed function to prevent inlining warning
+							var normalIDs, focusIDs;
+							var normalLevelBuses, focusLevelBuses;
+							
+							// id's of synths to pause (-1 for none)
+							normalIDs = \normalIDs.ir( -1.dup(numArrays) ).asCollection;
+							focusIDs = \focusIDs.ir( -1.dup(numArrays) ).asCollection;
+							
+							// level buses (-1 for none)
+							normalLevelBuses = \normalLevelBuses.kr( -1.dup(numArrays) ).asCollection;
+							focusLevelBuses = \focusLevelBuses.kr( -1.dup(numArrays) ).asCollection;
+							
+							// output levels to appropriate buses (replace existing)
+							normalLevelBuses.collect({ |bus, i|
+								ReplaceOut.kr( bus, normalLevels[i] );
+							});
+							
+							focusLevelBuses.collect({ |bus, i|
+								ReplaceOut.kr( bus, focusShouldRun[i] );
+							});
+							
+							// pause non-sounding panners
+							normalIDs.collect({ |id, i|
+								Pause.kr( normalLevels[i] > 0, id );
+							});
+							
+							focusIDs.collect({ |id, i|
+								Pause.kr( focusShouldRun[i] > 0, id );
+							});
+							
+						}.value
+					},
+					\u, { // unified mode (focused and normal in one array panner)
+						
+						{
+							var uniIDs;
+							var uniLevelBuses;
+							var uniLevels;
+							
+							// id's of synths to pause (-1 for none)
+							uniIDs = \uniIDs.ir( -1.dup(numArrays) ).asCollection;
+							
+							// level buses (-1 for none)
+							uniLevelBuses = \uniLevelBuses.kr( -1.dup(numArrays) ).asCollection;
+							
+							uniLevels = normalLevels.max( focusShouldRun );
+							
+							// output levels to appropriate buses (replace existing)
+							uniLevelBuses.collect({ |bus, i|
+								ReplaceOut.kr( bus, uniLevels[i] );
+							});
+							
+							// pause non-sounding panners
+							uniIDs.collect({ |id, i|
+								Pause.kr( uniLevels[i] > 0, id );
+							});
+						}.value;					
+					}
+				);
+			};
+				
+			// \p crossfading not yet implemented (might only need pausing)
+		});
+		
+	}
+	
+	*generateAllDefs { |dir|
+		dir = dir ? SynthDef.synthDefDir;
+		synthDefs = crossfadeModes.collect({ |item|
+			if( modesThatNeedArrays.includes( item ) ) {
+				maxArrays.collect({ |i|
+					this.generateDef( i+1, item ).writeDefFile( dir );
+				});
+			} {
+				[ this.generateDef( 0, item ) ]
+			};
+		});
+		^synthDefs;		
+	}
 	
 }
+
