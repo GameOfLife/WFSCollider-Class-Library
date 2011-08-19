@@ -162,6 +162,7 @@ WFSSpeakerConf {
 	// WFSSpeakerConfs are designed to be fully surrounding setups
 	
 	classvar <numSystems, <>serverGroups;
+	classvar <>default;
 	
 	var <>arrayConfs;
 	
@@ -189,6 +190,8 @@ WFSSpeakerConf {
 			[ (nsp / n).asInt, r, i.linlin(0, n, 0.5pi, -1.5pi) ]
 		}) );
 	}
+	
+	makeDefault { default = this; }
 	
 	at { |index| ^arrayConfs[ index ] }
 	
@@ -218,7 +221,7 @@ WFSSpeakerConf {
 		if( i.notNil ) {
 			^this.divideArrays[i]
 		} {
-			^arrayConfs; // return all if not found
+			^[]; // empty array if not found
 		};
 	}
 	

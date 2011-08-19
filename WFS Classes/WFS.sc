@@ -110,15 +110,15 @@ WFS {
 		server.m.waitForBoot({ 
 			var defs;
 			server.loadWFSSynthDefs;
-            defs = Udef.loadAllFromDefaultDirectory.collect(_.synthDef) ++
+            defs = (Udef.loadAllFromDefaultDirectory.collect(_.synthDef) ++
             [ 'bufferPlayer','diskPlayer', ].collect{ |name|
                 MetaUdef.fromName(name).synthDefs(
                     [true,false].collect{ |b| [\numChannels,1, \loop, b] }
                 )
-            }.flat;
+            }).flat;
 
             defs.do({|def|
-                def.load( server.m )
+	            if( def.notNil ) { def.load( server.m ) }
             });
 
 			SyncCenter.loadMasterDefs;

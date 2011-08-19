@@ -55,10 +55,15 @@ FreeUdef : Udef {
 	
 	addUEnv { this.addUIO( UEnv, \kr ); }
 	removeUEnv {  this.removeUIO( UEnv, \kr ); }
+		
+	envPut { |key, value|
+		env.put( key, value );
+	}
 	
 	canFreeSynth_ { |bool| 
 		if( bool ) { this.addUEnv } { this.removeEnv };
 	}
+
 	
 	createSynthDef { synthDef = createSynthDefFunc.value( this ) ? synthDef; }
 		

@@ -88,7 +88,6 @@ b = s.makeBundle( false, {
 			\focusIDs, focusSynths.collect(_.nodeID),
 			//\normalIDs, normalSynths.collect(998), // override: non-existing id
 			//\focusIDs, focusSynths.collect(998),
-			\point_bus, [1000,1001], // = default
 			\crossfadeLag, 0.2,
 			\latencyComp, 0
 			 // can only set at creation
@@ -101,8 +100,7 @@ b = s.makeBundle( false, {
 	normalSynths.do({ |sn, i|
 		s.sendMsg( *sn.newMsg( group, [ 
 				\arrayConf, arrayConfs[i], 
-				\amp_bus, normalLevelBuses[i],
-				\point_bus, [1000,1001],
+				\levelBus, normalLevelBuses[i],
 				\outOffset, n
 			], \addToTail ) 
 		);
@@ -113,8 +111,7 @@ b = s.makeBundle( false, {
 	focusSynths.do({ |sn, i|
 		s.sendMsg( *sn.newMsg( group, [ 
 				\arrayConf, arrayConfs[i], 
-				\amp_bus, focusLevelBuses[i],
-				\point_bus, [1000,1001],
+				\levelBus, focusLevelBuses[i],
 				\outOffset, n
 			], \addToTail ) 
 		);
@@ -139,8 +136,8 @@ p.set( \u_gain, 40 );  // make audible on computer speakers (don't do this on wf
 p.set( \point, [0,7] );  // get behind front array
 p.set( \point, [0,0] );  // return to center
 
-p.set( \point_lag, 0); // default
-p.set( \point_lag, 0.5); // try changing the point again
+p.set( \pointLag, 0); // default
+p.set( \pointLag, 0.5); // try changing the point again
 
 p.set( \point, [0,5.01] ); // just behind array
 p.set( \point, [0,4.99] ); // cross the array border
@@ -150,9 +147,8 @@ p.set( \pauseLag, 0.5 );
 p.set( \dbRollOff, 0 ); // equal level for all points
 p.set( \dbRollOff, -6 );
 
-p.set( \scale_in_point, [1,1], \point, [0,0] ); // listen to bus (which is also set to point)
-
-p.set( \scale_in_point, [0,0] ); // don't listen to bus
+p.set( \pointFromBus, 1); // listen to bus (which is also set to point)
+p.set( \pointFromBus, 0); // don't listen to bus
 
 p.set( \dontPause, 1 ); // don't pause any panners (all run(1) )
 p.set( \dontPause, 0 ); // pause silent panners (default)

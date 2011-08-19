@@ -49,15 +49,12 @@ WFSArrayPanSynth {
 		^SynthDef( this.getDefName(size, type, mode, int), {
 			
 			// synth args:
-			var in_bus = 0, arrayConf, outOffset = 0, addDelay = 0;
-			var point = 0@0, amp = 1, dbRollOff = -9, limit = 1;
+			var arrayConf, outOffset = 0, addDelay = 0;
+			var point = 0@0, amp = 1, arrayRollOff = -9, arrayLimit = 1;
 			
 			// local variables
 			var gain = -20.dbamp; // hard-wired for now
 			var panner, input;
-			
-			// always dynamic:
-			in_bus = \in_bus.kr( in_bus ); 
 			
 			// always static
 			arrayConf = \arrayConf.ir( [ size, 5, 0.5pi, 0, 0.164 ] ); // size is fixed in def
@@ -66,30 +63,30 @@ WFSArrayPanSynth {
 			
 			// depending on mode
 			if( mode === \d ) {
-				point = In.kr( \point_bus.kr([1000,1001]) ).asPoint;
-				amp = In.kr( \amp_bus.kr(2) );
+				point = UIn.kr(0,2).asPoint;
+				amp = In.kr( \levelBus.kr(2000) );
 				if( type != \p ) { // only for points, not planes
-					dbRollOff = \dbRollOff.kr( dbRollOff );
-					limit = \limit.kr( limit );
+					arrayRollOff = \arrayDbRollOff.kr( arrayRollOff );
+					arrayLimit = \arrayLimit.kr( arrayLimit );
 				};			
 			} {
 				point = \point.ir([0,0]).asPoint;
 				amp = \amp.kr(amp);
 				if( type != \p ) {
-					dbRollOff = \dbRollOff.ir( dbRollOff );
-					limit = \limit.ir( limit );
+					arrayRollOff = \arrayRollOff.ir( arrayRollOff );
+					arrayLimit = \arrayLimit.ir( arrayLimit );
 				};
 			};
 			
-			input = PrivateIn.ar( in_bus ) * gain;
+			input = UIn.ar(0, 1) * gain;
 			
 			if( type === \p ) {
 				panner = WFSArrayPanPlane( size, *arrayConf[1..] ).addDelay_( addDelay );
 			} {
 				panner = WFSArrayPan( size, *arrayConf[1..] )
 					.addDelay_( addDelay )
-					.dbRollOff_( dbRollOff )
-					.limit_( limit )
+					.dbRollOff_( arrayRollOff )
+					.limit_( arrayLimit )
 					.focus_( switch( type, \f, { true }, \n, { false }, { nil } ) );
 			};
 			
@@ -187,26 +184,20 @@ WFSPrePanSynth {
 		^SynthDef( this.getDefName( numArrays, crossfadeMode ), {
 			
 			// synth args:
-			var in_bus = 0, point = 0@0, point_bus = [1000,1001], scale_in_point = 0@0;
-			var dbRollOff = -6, limit = 2, latencyComp = 0, point_lag = 0;
+			var point = 0@0, pointFromBus = 0;
+			var dbRollOff = -6, limit = 2, latencyComp = 0, pointLag = 0;
 			var arrayConfs, cornerPoints, crossfadeLag = 0.2, pauseLag = 0.2;
 			
 			// local variables
 			var input, panner, crossfader;
 			var normalLevels, normalShouldRun, focusShouldRun;
 			
-			// always dynamic:
-			in_bus = \in_bus.kr( in_bus ); // is also out bus
-			
-			point_bus = \point_bus.kr( point_bus );
-			scale_in_point = \scale_in_point.kr( scale_in_point.asArray );
-			point = \point.kr( point.asArray ) + ( In.kr( point_bus ) * scale_in_point );
-			point_lag = \point_lag.kr( point_lag );
-			point = LPFLag.kr( point, point_lag );
+			pointFromBus = \pointFromBus.kr( pointFromBus );
+			point = (\point.kr( point.asArray ) * (1-pointFromBus)) + ( UIn.kr(0,2) * pointFromBus );
+			pointLag = \pointLag.kr( pointLag );
+			point = LPFLag.kr( point, pointLag );
+			UOut.kr( 0, point );
 			point = point.asPoint;
-			point_bus.collect({ |item, i|
-				ReplaceOut.kr( item, point.asArray[i] );
-			});
 			
 			dbRollOff = \dbRollOff.kr( dbRollOff );
 			limit = \limit.kr( limit );
@@ -216,11 +207,9 @@ WFSPrePanSynth {
 			// the pre-panner and delayed/attenuated output 			input = PrivateIn.ar( in_bus );
 			panner = WFSPrePan( dbRollOff, limit, latencyComp );
 			
-			input = PrivateIn.ar( in_bus );
+			input = UIn.ar( 0, 1 );
 			
-			PrivateReplaceOut.ar( in_bus, 
-				panner.ar( input, point, WFSLevelBus.kr ) * UEnv.kr( extraSilence: 0.2 )
-			);
+			UOut.ar( 0, panner.ar( input, point, WFSLevelBus.kr ) * UEnv.kr( extraSilence: 0.2 ) );
 			
 			// crossfading: manage the array panners
 			if( [ \d, \u ].includes(crossfadeMode) ) {
