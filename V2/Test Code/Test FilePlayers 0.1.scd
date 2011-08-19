@@ -54,6 +54,8 @@ z = x.play(s);
 
 z.gui;
 
+x.plot
+
 //RichBuffer
 (
 Udef(\testBuffer,{ |buf|

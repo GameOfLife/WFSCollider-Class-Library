@@ -48,7 +48,7 @@ AbstractRichBuffer {
 	}
 
 	currentBuffer { |server|
-	    ^this.currentBuffers(server)[0]
+	    ^this.currentBuffers(server)[0] ? 0; // return 0 if not found
 	}
 
 
@@ -201,7 +201,7 @@ AbstractSndFile : AbstractRichBuffer {
 		var test = true;
 		if( soundfile.isNil or: { soundfile.isOpen.not } ) {
 			soundfile = soundfile ?? { SoundFile.new }; 
-			test = soundfile.openRead( path.standardizePath );
+			test = soundfile.openRead( path.asPathFromServer.standardizePath );
 			soundfile.close; // close if it wasn't open
 		};
 		if( test ) {	
@@ -215,7 +215,7 @@ AbstractSndFile : AbstractRichBuffer {
 	}
 	
 	asSoundFile { // convert to normal soundfile
-		^SoundFile( path )
+		^SoundFile( path.asPathFromServer )
 			//.numFrames_( numFrames ? 0 )
 			.instVarPut( \numFrames,  numFrames ? 0 )
 			.numChannels_( numChannels ? 1 )
@@ -388,7 +388,7 @@ AbstractSndFile : AbstractRichBuffer {
 
 BufSndFile : AbstractSndFile {
 
-    var <useChannels;
+    var <useChannels, <>useStartPosForBuf = false;
 
 	*new{ |path, startFrame = 0, endFrame, rate = 1, loop = false, useChannels | 
 		// path of existing file or SoundFile
@@ -409,16 +409,35 @@ BufSndFile : AbstractSndFile {
         this.changed( \useChannels, useChannels );
     }
     
-    asControlInputFor { |server| ^[ this.currentBuffer(server), rate, loop.binaryValue ] }
+    asControlInputFor { |server, startPos = 0| 
+	    ^[ this.currentBuffer(server, startPos), rate, loop.binaryValue ] 
+	   }
+	   
+	// not used by Unit:
+	asControlInput { 
+		^this.asControlInputFor( Server.default ); // assume default server
+	}
+	
+	asOSCArgEmbeddedArray { | array| ^this.asControlInput.asOSCArgEmbeddedArray(array) }
 
-    makeBuffer { |server, startOffset = 0, action, bufnum|
-		var buf;
+    makeBuffer { |server, startPos = 0, action, bufnum|
+		var buf, addStartFrame = 0, localUsedFrames;
+		
+		localUsedFrames = this.usedFrames;
+		
+		if( useStartPosForBuf && { startPos != 0 } ) { 
+			addStartFrame = this.secondsToFrames( startPos );
+			if( localUsedFrames != -1 ) { 
+				localUsedFrames - addStartFrame;
+			};
+		};
+		
 		if( useChannels.notNil ) {
 			buf = Buffer.readChannel( server, path.standardizePath,
-					startFrame + startOffset, this.usedFrames, useChannels, action, bufnum );
+					startFrame + addStartFrame, localUsedFrames, useChannels, action, bufnum );
 		} {
 			buf = Buffer.read( server, path.standardizePath,
-					startFrame + startOffset, this.usedFrames, action, bufnum );
+					startFrame + addStartFrame, localUsedFrames, action, bufnum );
 		};
 		buffers = buffers.add( buf );
 		^buf;
@@ -459,22 +478,27 @@ DiskSndFile : AbstractSndFile {
 	asBufSndFile { ^BufSndFile.newCopyVars( this ); }
 	asDiskSndFile { ^this }
 	
-	asControlInputFor { |server| ^[ this.currentBuffer(server), rate, loop.binaryValue ] }
+	asControlInputFor { |server, startPos = 0| 
+		^[ this.currentBuffer(server, startPos), rate, loop.binaryValue ] 
+	}
 	
-	makeBuffer {  |server, startOffset = 0, action, bufnum| 
+	makeBuffer {  |server, startPos = 0, action, bufnum|  // startOffset in seconds
 	    //endFrame not used
 		var test = true;
-		var buf;
+		var buf, addStartFrame = 0;
 		
 		if( numChannels.isNil ) { 
 			test = this.prReadFromFile; // get numchannels etc.
 		};
 		
 		if( test ) {
+			if( startPos != 0 ) { addStartFrame = this.secondsToFrames( startPos ) };
 			buf = Buffer.alloc(server, diskBufferSize, numChannels, { arg buffer;
-				buffer.readMsg(path, startFrame + startOffset, diskBufferSize, 0, true, {|buf|
-					["/b_query", buf.bufnum]
-				});
+				buffer.readMsg(path, startFrame + addStartFrame, 
+					diskBufferSize, 0, true, {|buf|
+						["/b_query", buf.bufnum]
+					}
+				);
 			}).doOnInfo_(action).cache;
 			buffers = buffers.add( buf );
 			^buf;
@@ -513,5 +537,23 @@ DiskSndFile : AbstractSndFile {
 + String {
 	asUnitArg { |unit|
 		^BufSndFile( this ).asUnitArg( unit );
+	}
+	
+	asPathFromServer { 
+		
+		// a relative path on the server is not the same as on the lang for standalone apps.
+		// this method always returns a path that points to same file on both server and lang
+
+		var scdir;
+		if( [ $/, $~ ].includes( this[0] ).not ) {
+			scdir = String.scDir;
+			if( scdir != File.getcwd ) { // <- means this is a standalone app
+				^scdir +/+ this;	
+			} {
+				^this
+			};
+		} {
+			^this;
+		}	
 	}
 }

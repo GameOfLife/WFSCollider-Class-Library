@@ -4,24 +4,25 @@
 
 BufSndFilePlayer {
 	
-	*ar { |numChannels = 1, key, startPos = 0, trigger = 1|
-		var bufnum, rate, loop, startOffset;
+	// *getArgs may also be used to feed other buffer playing UGens
+	//	the list is formed according to PlayBuf arguments
+	
+	*getArgs { |numChannels = 1, key, trigger = 1, startPos, ugenRate = \audio| // user may override startPos
+		var bufnum, rate, loop, startFrame;
 		key = key ? 'soundFile';
 		#bufnum, rate, loop = key.asSymbol.kr( [ 0, 1, 0 ] );
-		startOffset = 'u_startOffset'.kr(0); // for use inside a U or UChain
-		startPos = ((startOffset * BufSampleRate.kr( bufnum )) / rate) + startPos;
-		^PlayBuf.ar( numChannels, bufnum, BufRateScale.kr( bufnum ) * rate, 
-			trigger, startPos, loop );
+		if( startPos.isNil ) { startPos = 'u_startPos'.kr(0); }; // for use inside a U or UChain
+		startFrame = ((startPos * BufSampleRate.kr( bufnum )) / rate);
+		if( ugenRate == \control ) { startFrame = startFrame / (SampleRate.ir / ControlRate.ir); };
+		^[ numChannels, bufnum, BufRateScale.kr( bufnum ) * rate, trigger, startPos, loop ];
 	}
 	
-	*kr { |numChannels = 1, key, startPos = 0, trigger = 1| // u_startOffset not correct yet
-		var bufnum, rate, loop, startOffset;
-		key = key ? 'soundFile';
-		#bufnum, rate, loop = key.asSymbol.kr( [ 0, 1, 0 ] );
-		startOffset = 'u_startOffset'.kr(0); // for use inside a U or UChain
-		startPos = ((startOffset * BufSampleRate.kr( bufnum )) / rate) + startPos;
-		^PlayBuf.kr( numChannels, bufnum, BufRateScale.kr( bufnum ) * rate, 
-			trigger, startPos, loop );
+	*ar { |numChannels = 1, key, trigger = 1, startPos, doneAction = 0|
+		^PlayBuf.ar( *this.getArgs( numChannels, key, trigger, startPos ) ++ [ doneAction ] );
+	}
+	
+	*kr { |numChannels = 1, key, trigger = 1, startPos, doneAction = 0|
+		^PlayBuf.kr( *this.getArgs( numChannels, key, trigger, startPos, \control ) ++ [ doneAction ]  );
 	}
 	
 }

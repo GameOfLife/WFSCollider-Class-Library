@@ -28,15 +28,16 @@ RoundView.useWithSkin( (
 		a.soundfile = f;
 		a.read(0, f.numFrames);
 		a.elasticMode_(1);
-		a.gridOn = false;
+		a.gridOn = true;
+		a.gridColor_( Color.gray(0.5).alpha_(0.5) );
 		a.waveColors = Color.gray(0.2)!16;
 		w.front;
-		a.background = Color.clear;
+		a.background = Gradient( Color.white, Color.gray(0.7), \v );
 		b = SmoothRangeSlider( w, a.bounds.insetAll(1,1,1,1) )
 			.knobSize_(0)
 			.resize_(5)
 			.background_( nil )
-			.hiliteColor_( Color.gray(0.2).alpha_(0.25) );
+			.hiliteColor_( Color.blue(0.2).alpha_(0.2) );
 		b.action = { |sl|
 			x.startFrame = (sl.lo * x.numFrames).round(1);
 			x.endFrame = (sl.hi * x.numFrames).round(1);
