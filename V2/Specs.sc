@@ -88,11 +88,17 @@ BoolSpec : Spec {
 }
 
 PointSpec : Spec {
-	var <rect, <>step, >default, <>units; // constrains inside rect
+	
+	classvar <>defaultMode = \point;
+	
+	var <rect, <>step, >default, <>units, <>mode; // constrains inside rect
 	var clipRect;
 	
-	*new { |rect, step, default, units|
-		^super.newCopyArgs( rect, (step ? 0).asPoint, default, units ? "" ).init;
+	// mode can be \point, \polar, \deg_cw, \deg_ccw
+	// only for gui; output will always be Point
+
+	*new { |rect, step, default, units, mode|
+		^super.newCopyArgs( rect, (step ? 0).asPoint, default, units ? "", mode ).init;
 	}
 	
 	*testObject { |obj|
