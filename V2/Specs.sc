@@ -390,7 +390,7 @@ BufSndFileSpec : BufferSpec {
 	
 }
 
-DiskSndFileSpec : BufferSpec {
+DiskSndFileSpec : BufSndFileSpec {
 	
 	*testObject { |obj|
 		^obj.isKindOf( DiskSndFile );

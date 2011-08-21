@@ -260,6 +260,8 @@
 	
 	viewNumLines { ^BufSndFileView.viewNumLines }
 	
+	viewClass { ^BufSndFileView }
+	
 	makeView { |parent, bounds, label, action, resize|
 		var vws, view, labelWidth;
 		
@@ -283,7 +285,7 @@
 		
 		if( resize.notNil ) { vws[ \view ].resize = resize };
 		
-		vws[ \sndFileView ] = BufSndFileView( vws[ \view ], 
+		vws[ \sndFileView ] = this.viewClass.new( vws[ \view ], 
 			( bounds.width - (labelWidth+4) ) @ bounds.height, { |vw|
 				action.value( vw, vw.value )
 			} )
@@ -295,6 +297,10 @@
 		view[ \sndFileView ].value = value;
 		if( active ) { view.doAction };
 	}
+}
+
++ DiskSndFileSpec {
+	viewClass { ^DiskSndFileView }
 }
 
 + IntegerSpec {
