@@ -48,16 +48,21 @@ AbstractRichBuffer {
 	}
 
 	currentBuffer { |server|
-	    ^this.currentBuffers(server)[0] ? 0; // return 0 if not found
+	    ^this.currentBuffers(server).last;
 	}
-
-
+	
 	freeAllBuffers { |server|
 	    if( server.notNil ) {
 		    this.currentBuffers( server ).do( this.freeBuffer(_) )
 		}{
 		    this.buffers.do( this.freeBuffer(_) )
 		}
+	}
+	
+	freeBufferFor { |server|
+		if( server.notNil ) {
+			this.freeBuffer( this.currentBuffers(server).first );
+		};
 	}
 
 	resetBuffers { |server|
@@ -67,7 +72,7 @@ AbstractRichBuffer {
 	}
 
 	prepare { |servers, action|
-	    this.resetBuffers;
+	    //this.resetBuffers;
 	    action = MultiActionFunc( action );
 	    servers.do({ |server| this.makeBuffer(server, action: action.getAction) })
 	}
@@ -77,7 +82,7 @@ AbstractRichBuffer {
 	}
 
 	disposeFor { |server|
-        this.freeAllBuffers(server)
+        this.freeBufferFor(server)
 	}
 
 	asControlInputFor { |server| ^this.currentBuffer(server) }

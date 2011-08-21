@@ -131,7 +131,11 @@ UChainGUI {
 			
 		controller
 			.put( \start, { views[ \startButton ].value = 1 } )
-			.put( \end, { views[ \startButton ].value = 0 } )
+			.put( \end, { 
+				if( units.every({ |unit| unit.synths.size == 0 }) ) {
+					views[ \startButton ].value = 0;
+				};
+			} )
 			.put( \gain, { views[ \gain ].value = chain.getGain } )
 			.put( \dur, { var dur;
 				dur = chain.getDur;
