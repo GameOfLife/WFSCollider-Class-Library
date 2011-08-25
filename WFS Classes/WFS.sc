@@ -112,9 +112,7 @@ WFS {
 			server.loadWFSSynthDefs;
             defs = (Udef.loadAllFromDefaultDirectory.collect(_.synthDef) ++
             [ 'bufferPlayer','diskPlayer', ].collect{ |name|
-                MetaUdef.fromName(name).synthDefs(
-                    [true,false].collect{ |b| [\numChannels,1, \loop, b] }
-                )
+                MetaUdef.fromName(name).synthDefs( [ [\numChannels,1] ] )
             }).flat;
 
             defs.do({|def|
@@ -122,7 +120,7 @@ WFS {
             });
 
 			SyncCenter.loadMasterDefs;
-			WFSEQ.new; WFSTransport.new; WFSLevelBus.makeWindow;
+			WFSLevelBus.makeWindow;
 			
 			"\n\tWelcome to the WFS Offline System".postln	
 		});
@@ -155,15 +153,20 @@ WFS {
 		server.m.waitForBoot({
 			var defs;
 			SyncCenter.loadMasterDefs;
-			defs = Udef.loadAllFromDefaultDirectory.collect(_.synthDef);
-
+			 defs = (Udef.loadAllFromDefaultDirectory.collect(_.synthDef) ++
+            [ 'bufferPlayer','diskPlayer', ].collect{ |name|
+                MetaUdef.fromName(name).synthDefs( [ [\numChannels,1] ] )
+            }).flat;
+            
             server.multiServers.do({ |ms|
                 ms.servers.do({ |server|
                     defs.do({|def|
-                        def.add( server )
+                        def.send( server )
                     })
                 })
             });
+            
+            WFSLevelBus.makeWindow;
 			"\n\tWelcome to the WFS System".postln; 
 		});	
 		^server	
@@ -189,9 +192,9 @@ WFS {
 			while({ server.multiServers[0].servers
 					.collect( _.serverRunning ).every( _ == true ).not; },
 				{ 0.2.wait; });
-			allTypes = WFSSynthDef.allTypes( server.wfsConfigurations[0] );
-			allTypes.do({ |def| def.def.writeDefFile });
-			server.writeServerSyncSynthDefs;
+			//allTypes = WFSSynthDef.allTypes( server.wfsConfigurations[0] );
+			//allTypes.do({ |def| def.def.writeDefFile });
+			// server.writeServerSyncSynthDefs;
 			SyncCenter.writeDefs;
 			server.multiServers[0].servers.do({ |server|
 				server.loadDirectory( SynthDef.synthDefDir );

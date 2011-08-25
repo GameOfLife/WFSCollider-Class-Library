@@ -45,6 +45,7 @@ UEvent {
 	
 	start { |targets ...args|
 		object.start( targets ? this.targets, *args );
+		this.targets = nil; // forget targets
 	}
 	
 	release { |time|

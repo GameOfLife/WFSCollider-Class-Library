@@ -360,6 +360,10 @@ AbstractSndFile : AbstractRichBuffer {
 			[\soundFile, this ] 
 		);
 	}
+	
+	asUnit {
+		^this.makeUnit;
+	}
 
 	makeUChain {
 		var chain;
