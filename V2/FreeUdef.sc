@@ -72,7 +72,7 @@ FreeUdef : Udef {
 		if( synthDef.notNil ) {
 			server = server ? Server.default;
 			server.asCollection.do{ |s|
-		   		synthDef.asCollection.do(_.load(s))
+		   		synthDef.asCollection.do(_.send(s))
 			}
 		}
 	}

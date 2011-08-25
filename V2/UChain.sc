@@ -177,9 +177,10 @@ UChain {
 		target = target ? Server.default;
 		targets = target.asCollection;
 		bundles = this.makeBundle( targets );
+		latency = latency ? 0.2;
 		targets.do({ |target, i|
 			if( bundles[i].size > 0 ) {
-				target.asTarget.server.sendBundle( latency, *bundles[i] );
+				target.asTarget.server.sendSyncedBundle( latency, nil, *bundles[i] );
 			};
 		});
 		if( target.size == 0 ) {
@@ -270,12 +271,42 @@ UChain {
 	
 	resetGroups { groups = []; } // after unexpected server quit
 	
-	// indexing
+	// indexing / access
 		
 	at { |index| ^units[ index ] }
 		
 	last { ^units.last }
 	first { ^units.first }
+	
+	add { |unit|
+		units = units.add( unit.asUnit );
+		this.changed( \units );
+	}
+	
+	addAll { |inUnits| // a UChain or Array with units
+		if( inUnits.class == this.class ) { inUnits = inUnits.units; };
+		units = units.addAll( inUnits.collect(_.asUnit) );
+		this.changed( \units );
+	}
+	
+	put { |index, unit|
+		units.put( index, unit.asUnit );
+		this.changed( \units );
+	}
+	
+	insert { |index, unit|
+		units = units.insert( index, unit.asUnit );
+		this.changed( \units );
+
+	}
+	
+	removeAt { |index|
+		var out;
+		out = units.removeAt( index );
+		this.changed( \units );
+		^out;
+	}
+	
 	
 	/*
 	*   uchain: UChain

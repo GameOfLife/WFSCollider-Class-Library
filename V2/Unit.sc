@@ -98,11 +98,12 @@ Udef : GenericDef {
 		});
 	}
 	
-	// this may change
+	// this may change 
+	// temp override to send instead of load (remote servers can't load!!)
 	loadSynthDef { |server|
 		server = server ? Server.default;
 		server.asCollection.do{ |s|
-		    synthDef.load(s)
+		    synthDef.send(s)
 		}
 	}
 	
@@ -369,9 +370,10 @@ U : ObjectWithArgs {
 		target = target ? Server.default;
 		targets = target.asCollection;
 		bundles = this.makeBundle( targets );
+		latency = latency ? 0.2;
 		targets.do({ |target, i|
 			if( bundles[i].size > 0 ) {
-				target.asTarget.server.sendBundle( latency, *bundles[i] );
+				target.asTarget.server.sendSyncedBundle( latency, nil, *bundles[i] );
 			};
 		});
 		if( target.size == 0 ) {
@@ -415,6 +417,15 @@ U : ObjectWithArgs {
 	
 	waitTime { ^waitTime ?? { this.values.collect( _.u_waitTime ).sum } }
 	
+	
+	valuesToPrepare {
+		^this.values.select( _.respondsTo(\prepare) );
+	}
+	
+	needsPrepare {
+		^this.valuesToPrepare.size > 0;
+	}
+	
 	prepare { |target, loadDef = true, action|
 		var valuesToPrepare, act;
 		target = target.asCollection.collect{ |t| t.asTarget.server };
@@ -425,7 +436,7 @@ U : ObjectWithArgs {
 	    if( loadDef) {
 	        this.def.loadSynthDef( target );
 	    };
-	    valuesToPrepare = this.values.select( _.respondsTo(\prepare) );
+	    valuesToPrepare = this.valuesToPrepare;
 	    if( valuesToPrepare.size > 0 ) {
 		    act = MultiActionFunc( act );
 		    valuesToPrepare.do({ |val|

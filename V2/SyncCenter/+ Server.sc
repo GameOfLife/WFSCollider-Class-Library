@@ -1,13 +1,24 @@
 + Server {
 	
-	listSendSyncedBundle{ |delta = 1, msgs, syncCenter|
+	listSendSyncedBundle{ |delta = 0.2, msgs, syncCenter|
 		syncCenter = syncCenter ? SyncCenter.current;
-		syncCenter.listSendSyncedBundle( this, delta, msgs );
+		if( syncCenter.notNil ) {
+			syncCenter.listSendSyncedBundle( this, delta, msgs );
+		} {
+			"falling back to normal bundle".postln;
+			this.listSendBundle( delta, msgs );
+		};
+		
 	}
 	
-	sendSyncedBundle{ |delta = 1, syncCenter ... msgs|
+	sendSyncedBundle{ |delta = 0.2, syncCenter ... msgs|
 		syncCenter = syncCenter ? SyncCenter.current;
-		syncCenter.sendSyncedBundle( this, delta, *msgs );
+		if( syncCenter.notNil ) {
+			syncCenter.sendSyncedBundle( this, delta, *msgs );
+		} {
+			"falling back to normal bundle".postln;
+			this.sendBundle( delta, *msgs );
+		};
 	}
 
 }
