@@ -1,4 +1,4 @@
-WFSArrayPanSynth {
+WFSArrayPanSynthDefs {
 	
 	/*
 	generates and maintains the SynthDefs needed for array panners.
@@ -96,7 +96,7 @@ WFSArrayPanSynth {
 		});
 	}
 	
-	*generateAllDefs { |action, estimatedTime = 27, dir| // and write to disk
+	*generateAll { |action, estimatedTime = 27, dir| // and write to disk
 		
 		// this takes about 30 seconds in normal settings
 		// can be stopped via cmd-.
@@ -127,8 +127,8 @@ WFSArrayPanSynth {
 			"started generating WFSArrayPanSynth synthdefs".postln;
 			" this may take % seconds or more\n".postf( estimatedTime );
 			synthDefs = all.collect({ |item|
-				var out = WFSArrayPanSynth.allSizes.collect({ |size|
-					WFSArrayPanSynth.generateDef(size, *item )
+				var out = this.allSizes.collect({ |size|
+					this.generateDef(size, *item )
 						.writeDefFile( dir );
 				});
 				waitTime.wait;
@@ -142,7 +142,7 @@ WFSArrayPanSynth {
 	}
 }
 
-WFSPrePanSynth {
+WFSPrePanSynthDefs {
 	
 	/*
 	generates and maintains the SynthDefs needed for pre panners.
@@ -204,7 +204,7 @@ WFSPrePanSynth {
 			
 			// always static
 			latencyComp = \latencyComp.ir( latencyComp );			
-			// the pre-panner and delayed/attenuated output 			input = PrivateIn.ar( in_bus );
+			// the pre-panner and delayed/attenuated output 
 			panner = WFSPrePan( dbRollOff, limit, latencyComp );
 			
 			input = UIn.ar( 0, 1 );
@@ -314,7 +314,7 @@ WFSPrePanSynth {
 		
 	}
 	
-	*generateAllDefs { |dir|
+	*generateAll { |dir|
 		dir = dir ? SynthDef.synthDefDir;
 		synthDefs = crossfadeModes.collect({ |item|
 			if( modesThatNeedArrays.includes( item ) ) {
@@ -322,7 +322,7 @@ WFSPrePanSynth {
 					this.generateDef( i+1, item ).writeDefFile( dir );
 				});
 			} {
-				[ this.generateDef( 0, item ) ]
+				[ this.generateDef( 0, item ).writeDefFile( dir ) ]
 			};
 		});
 		^synthDefs;		

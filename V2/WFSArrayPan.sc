@@ -67,7 +67,7 @@ WFSCrossfader {
 					((item - globalAngle).wrap(-pi,pi).abs < (fadeArea + 0.03pi)).binaryValue; 
 			});
 			
-			[ arr[0].product, arr[1].product, max( focusedActive[0], focusedActive[1] ) ];
+			[ arr[0].product.sqrt, arr[1].product, max( focusedActive[0], focusedActive[1] ) ];
 
 		});		
 

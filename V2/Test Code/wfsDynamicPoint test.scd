@@ -1,9 +1,9 @@
 WFSSpeakerConf.rect(48,48,5,5).makeDefault;
-WFSSpeakerConf.addServer( s, 0 );
+WFSSpeakerConf.addServer( s, 0 ); // for local testing
 
 ( // do this only if the defs aren't ever created yet. They will be stored in the synthdefs folder
-WFSPrePanSynth.generateAllDefs;
-WFSArrayPanSynth.generateAllDefs( { |defs| d = defs } ); // takes apx 30s, watch post window
+WFSPrePanSynthDefs.generateAll;
+WFSArrayPanSynthDefs.generateAll( { |defs| d = defs } ); // takes apx 30s, watch post window
 )
 
 ( // loading goes quite fast
@@ -16,8 +16,9 @@ s.sync;
 
 x = UChain( \sine, \wfsDynamicPoint );
 
-x.gui;
+x = UChain( \sine, \wfsStaticPoint );
 
+x.gui;
 
 // or: 
 (
