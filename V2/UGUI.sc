@@ -3,7 +3,7 @@ UGUI {
 	var <unit;
 	
 	var <parent, <composite, <views, <controller;
-	var <viewHeight = 14, <labelWidth = 50;
+	var <viewHeight = 14, <labelWidth = 80;
 	var <>action;
 	
 	*new { |parent, bounds, unit|

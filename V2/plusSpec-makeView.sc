@@ -13,7 +13,8 @@
 	
 	makeView { |parent, bounds, label, action, resize|
 		var vw = EZSmoothSlider( parent, bounds, label !? { label.asString ++ " " }, 
-			this, { |vw| action.value( vw, vw.value ) } );
+			this, { |vw| action.value( vw, vw.value ) },
+			labelWidth: (RoundView.skin ? ()).labelWidth ? 80 );
 		if( resize.notNil ) { vw.view.resize = resize };
 		^vw;	
 	}
@@ -59,7 +60,7 @@
 		if( multipleActions.not ) {
 			vw.globalAction = { |vw| action.value( vw, list[vw.value] ) };
 		};
-		vw.labelWidth = 60; // same as EZSlider
+		vw.labelWidth = 80; // same as EZSlider
 		vw.applySkin( RoundView.skin ); // compat with smooth views
 		if( resize.notNil ) { vw.view.resize = resize };
 		^vw
@@ -104,7 +105,7 @@
 		 vws[ \view ] = view;
 		 		
 		if( label.notNil ) {
-			labelWidth = (RoundView.skin ? ()).labelWidth ? 60;
+			labelWidth = (RoundView.skin ? ()).labelWidth ? 80;
 			vws[ \labelView ] = StaticText( vws[ \view ], labelWidth @ bounds.height )
 				.string_( label.asString ++ " " )
 				.align_( \right )
@@ -128,7 +129,7 @@
 				.radius_( bounds.height / 8 )
 				.value_( this.unmap( this.constrain( default ) ) )
 				.action_({ |bt| action.value( vws, this.map( bt.value ) ) })
-				.resize_( 5 );
+				.resize_( 1 );
 
 		if( resize.notNil ) { vws[ \view ].resize = resize };
 		^vws;
@@ -162,7 +163,7 @@
 		 vws[ \view ] = view;
 		 		
 		if( label.notNil ) {
-			labelWidth = (RoundView.skin ? ()).labelWidth ? 60;
+			labelWidth = (RoundView.skin ? ()).labelWidth ? 80;
 			vws[ \labelView ] = StaticText( vws[ \view ], labelWidth @ bounds.height )
 				.string_( label.asString ++ " " )
 				.align_( \right )
@@ -273,7 +274,7 @@
 		 vws[ \view ] = view;
 		 view.addFlowLayout(0@0, 4@4);
 		if( label.notNil ) {
-			labelWidth = (RoundView.skin ? ()).labelWidth ? 60;
+			labelWidth = (RoundView.skin ? ()).labelWidth ? 80;
 			vws[ \labelView ] = StaticText( vws[ \view ], labelWidth @ 14 )
 				.string_( label.asString ++ " " )
 				.align_( \right )
@@ -315,7 +316,7 @@
 		vws[ \view ] = view;
 		
 		if( label.notNil ) {
-			labelWidth = (RoundView.skin ? ()).labelWidth ? 60;
+			labelWidth = (RoundView.skin ? ()).labelWidth ? 80;
 			vws[ \labelView ] = StaticText( vws[ \view ], labelWidth @ 14 )
 				.string_( label.asString ++ " " )
 				.align_( \right )
@@ -359,7 +360,7 @@
 	
 	labelWidth { ^labelView !? { labelView.bounds.width } ? 0 }
 	
-	labelWidth_ { |width = 60|
+	labelWidth_ { |width = 80|
 		var delta;
 		if( layout === \horz && { labelView.notNil } ) { // only for horizontal sliders
 			delta = labelView.bounds.width - width;
