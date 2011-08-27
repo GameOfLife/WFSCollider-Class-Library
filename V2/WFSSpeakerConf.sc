@@ -229,7 +229,9 @@ WFSSpeakerConf {
 	
 	*numSystems_ { |n = 2| // number of systems to divide the speakerarrays over
 		numSystems = n;
-		serverGroups = serverGroups.asCollection.extend( numSystems, Set() );
+		serverGroups = numSystems.collect({ |i|
+			(serverGroups ? [])[i] ?? { Set() };
+		});
 	}
 	
 	*addServer { |server, system = 0|
