@@ -195,8 +195,11 @@ Udef : GenericDef {
 		// "set % for synths: %".format( keyValuePairs, unit.synths.collect(_.nodeID) ).postln;
 		unit.synths.do{ |s|
 		    var server = s.server;
-		    s.set(*keyValuePairs.clump(2).collect{ |arr| 
-			    [arr[0],arr[1].asControlInputFor(server)] }.flatten)
+		    server.sendSyncedBundle( 0.1, nil, *server.makeBundle( false, {
+			    		s.set(*keyValuePairs.clump(2).collect{ |arr| 
+			    			[arr[0],arr[1].asControlInputFor(server)] }.flatten)
+		    		})
+		    	);
 		};
 	}
 	

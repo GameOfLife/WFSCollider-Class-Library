@@ -33,6 +33,8 @@ SyncCenter {
 	
 	classvar <>checkForServerQuit = false;
 	
+	classvar <>round = 128;
+	
 	var <>localCount, <>localCountTime;
 	
 	*testSampleSched { // test whether this is a sample-sched enabled version of SC
@@ -276,10 +278,10 @@ SyncCenter {
 	
 	getSampleCountForServer{ |delta = 0.2, server|
 		if( server == master ) {
-			^this.masterSampleCount( delta );
+			^this.masterSampleCount( delta ).roundUp( round );
 		} {
 			^( serverCounts.at(server).value - serverCounts.at(master).value ) 
-				+ this.masterSampleCount( delta )
+				+ this.masterSampleCount( delta ).roundUp( round );
 		}
 	}
 	
