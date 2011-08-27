@@ -113,10 +113,10 @@ WFS {
             defs = (Udef.loadAllFromDefaultDirectory.collect(_.synthDef) ++
             [ 'bufferPlayer','diskPlayer', ].collect{ |name|
                 MetaUdef.fromName(name).synthDefs( [ [\numChannels,1] ] )
-            }).flat;
+            }).flat.select(_.notNil);
 
             defs.do({|def|
-	            if( def.notNil ) { def.load( server.m ) }
+	           def.load( server.m );
             });
 
 			SyncCenter.loadMasterDefs;
@@ -156,7 +156,7 @@ WFS {
 			 defs = (Udef.loadAllFromDefaultDirectory.collect(_.synthDef) ++
             [ 'bufferPlayer','diskPlayer', ].collect{ |name|
                 MetaUdef.fromName(name).synthDefs( [ [\numChannels,1] ] )
-            }).flat;
+            }).flat.select(_.notNil);
             
             server.multiServers.do({ |ms|
                 ms.servers.do({ |server|
@@ -188,13 +188,20 @@ WFS {
 		server.makeWindow;	
 
 		Routine({ 
-			var allTypes;
+			var allTypes, defs;
 			while({ server.multiServers[0].servers
 					.collect( _.serverRunning ).every( _ == true ).not; },
 				{ 0.2.wait; });
 			//allTypes = WFSSynthDef.allTypes( server.wfsConfigurations[0] );
 			//allTypes.do({ |def| def.def.writeDefFile });
 			// server.writeServerSyncSynthDefs;
+			
+			defs = (Udef.loadAllFromDefaultDirectory.collect(_.synthDef) ++
+           	 [ 'bufferPlayer','diskPlayer', ].collect{ |name|
+	                MetaUdef.fromName(name).synthDefs( [ [\numChannels,1] ] )
+	            }).flat.select(_.notNil);
+            
+			defs.do({|def| def.writeDefFile; });			
 			SyncCenter.writeDefs;
 			server.multiServers[0].servers.do({ |server|
 				server.loadDirectory( SynthDef.synthDefDir );
