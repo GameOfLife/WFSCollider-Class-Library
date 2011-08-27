@@ -23,8 +23,8 @@ UChainGUI {
 		var heights, units;
 		var labelWidth;
 		
-		labelWidth = 70;
-		if( RoundView.skin.notNil ) { labelWidth = RoundView.skin.labelWidth ? 70 };
+		labelWidth = 80;
+		if( RoundView.skin.notNil ) { labelWidth = RoundView.skin.labelWidth ? 80 };
 		
 		views = ();
 		
