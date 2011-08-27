@@ -548,6 +548,10 @@ DiskSndFile : AbstractSndFile {
 		^BufSndFile( this ).asUnitArg( unit );
 	}
 	
+	asUnit {
+		^BufSndFile( this ).asUnit;
+	}
+	
 	asPathFromServer { 
 		
 		// a relative path on the server is not the same as on the lang for standalone apps.
