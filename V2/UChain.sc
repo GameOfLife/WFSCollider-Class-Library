@@ -5,6 +5,9 @@
 // of at once.
 
 UChain {
+	
+	classvar <>defaultServers;
+	
 	var <>units, <>groups;
 	var <prepareTasks;
 	
@@ -174,7 +177,9 @@ UChain {
 	
 	start { |target, latency|
 		var targets, bundles;
-		target = target ? Server.default;
+		if( target.isNil ) {
+			target = this.class.defaultServers ? Server.default;
+		};
 		targets = target.asCollection;
 		bundles = this.makeBundle( targets );
 		latency = latency ? 0.2;
@@ -232,6 +237,9 @@ UChain {
 
 	prepare { |target, loadDef = true, action|
 		action = MultiActionFunc( action );
+		if( target.isNil ) {
+			target = this.class.defaultServers ? Server.default;
+		};
 		target = target.asCollection.select({ |tg|
 			this.shouldPlayOn( tg ) != false;
 		});
@@ -242,7 +250,9 @@ UChain {
 
 	prepareAndStart{ |target, loadDef = true|
 		var task;
-		if( target.isNil ) { target = Server.default };
+		if( target.isNil ) {
+			target = this.class.defaultServers ? Server.default;
+		};
 		task = fork { 
 			target = this.prepare( target, loadDef );
 			target.asCollection.do{ |t|
