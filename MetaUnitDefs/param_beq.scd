@@ -32,10 +32,9 @@ x = MetaUdef(\param_beq,{ |numChannels = 1|
 	{ | gate = 1, fadeTime = 0.05, doneAction = 2|
 
 		var frdb, input, env;
-		env = EnvGen.kr( Env.asr(fadeTime,1,fadeTime), gate, doneAction: doneAction );
 		input = UIn.ar(0, numChannels);
 		input = synthGraph.value( input );
-		UXOut.ar(0, env, input)
+		UOut.ar(0, input)
 	}	 
 },[[\numChannels,1,PositiveIntegerSpec()]],
 [
