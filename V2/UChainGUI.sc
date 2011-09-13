@@ -112,7 +112,7 @@ UChainGUI {
 			.clipLo_(0)
 			.scroll_step_(0.1)
 			.action_({ |nb|
-				chain.setFadeOut( nb.value );
+				chain.fadeOut_( nb.value );
 			});
 			
 		composite.decorator.nextLine;
@@ -148,8 +148,8 @@ UChainGUI {
 					views[ \infDur ].value = 0;
 				};
 			})
-			.put( \fadeIn, { views[ \fadeIn ].value = chain.getFadeIn })
-			.put( \fadeOut, { views[ \fadeOut ].value = chain.getFadeOut });
+			.put( \fadeIn, { views[ \fadeIn ].value = chain.fadeIn })
+			.put( \fadeOut, { views[ \fadeOut ].value = chain.fadeOut });
 		
 		chain.changed( \gain );
 		chain.changed( \dur );

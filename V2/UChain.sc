@@ -34,39 +34,54 @@ UChain {
 			};
 		});
 	}
-	
-	setDur { |dur = inf| // sets same duration for all units
-		this.prSetCanFreeSynths( \u_doneAction, 14, \u_dur, dur );
-		this.changed( \dur );
-	}
-	
-	setFadeIn { |fadeIn = 0|
-		var dur, fadeOut;
-		dur = this.getDur;
-		if( dur != inf ) {
-			fadeOut = this.getFadeOut;
-			fadeIn = fadeIn.min( dur - fadeOut );
-		};
-		this.prSetCanFreeSynths( \u_fadeIn, fadeIn );
+
+	fadeIn_ { |fadeIn = 0|
+
+		fadeIn = fadeIn.max(0);
+
+		units.do({ |unit|
+		    var unitDur, unitFadeIn, unitFadeOut;
+		    //each unit might have a different dur and fadeOut
+			if( unit.def.canFreeSynth ) {
+				unitDur = unit.get( \u_dur );
+				if( unitDur != inf ) {
+			        unitFadeOut = unit.get( \u_fadeOut );
+			        unitFadeIn = fadeIn.min( unitDur - unitFadeOut );
+			        unit.set( \u_fadeIn, unitFadeIn );
+		        } {
+				    unit.set( \u_fadeIn, fadeIn );
+				}
+			};
+		});
 		this.changed( \fadeIn );	
 	}
 	
-	setFadeOut { |fadeOut = 0|
-		var dur, fadeIn;
-		dur = this.getDur;
-		if( dur != inf ) {
-			fadeIn = this.getFadeIn;
-			fadeOut = fadeOut.min( dur - fadeIn );
-		};
-		this.prSetCanFreeSynths( \u_fadeOut, fadeOut );
-		this.changed( \fadeOut );	
+	fadeOut_ { |fadeOut = 0|
+
+		fadeOut = fadeOut.max(0);
+
+		units.do({ |unit|
+		    var unitDur, unitFadeOut, unitFadeIn;
+		    //each unit might have a different dur and fadeIn
+			if( unit.def.canFreeSynth ) {
+				unitDur = unit.get( \u_dur );
+				if( unitDur != inf ) {
+			        unitFadeIn = unit.get( \u_fadeIn );
+			        unitFadeOut = fadeOut.min( unitDur - unitFadeIn );
+			        unit.set( \u_fadeOut, unitFadeOut );
+		        } {
+				    unit.set( \u_fadeOut, fadeOut );
+				}
+			};
+		});
+		this.changed( \fadeOut );
 	}
 	
-	getFadeOut { 
+	fadeOut {
 		^this.prGetCanFreeSynths.collect({ |item| item.get( \u_fadeOut ) }).maxItem ? 0;
 	}
 	
-	getFadeIn { 
+	fadeIn {
 		^this.prGetCanFreeSynths.collect({ |item| item.get( \u_fadeIn ) }).maxItem ? 0;
 	}
 	
@@ -80,7 +95,7 @@ UChain {
 			});
 		});
 		if( durs.size > 0 ) { // only act if a sndFile is found
-			this.setDur( durs.maxItem );
+			this.dur_( durs.maxItem );
 		};
 	}
 	
@@ -99,7 +114,7 @@ UChain {
 		^out;	
 	}
 	
-	getDur { // get longest duration
+	dur { // get longest duration
 		var unit;
 		unit = this.getMaxDurUnit;
 		if( unit.isNil ) { 
@@ -108,9 +123,26 @@ UChain {
 			^unit.get( \u_dur );
 		};
 	}
+
+    /*
+	* sets same duration for all units
+	* clipFadeIn = true clips fadeIn
+	* clipFadeIn = false clips fadeOut
+	*/
+	dur_ { |dur = inf, clipFadeIn = true| //
+		this.prSetCanFreeSynths( \u_doneAction, 14, \u_dur, dur );
+		this.changed( \dur );
+		if( clipFadeIn ) {
+		    this.fadeIn = this.fadeIn.min(dur);
+		    this.fadeOut = this.fadeOut.min(dur - this.fadeIn);
+		} {
+		    this.fadeOut = this.fadeOut.min(dur);
+		    this.fadeIn = this.fadeIn.min(dur - this.fadeOut);
+		}
+	}
 	
-	dur { ^this.getDur }
-	duration { ^this.getDur }
+	duration { ^this.dur }
+	duration_ { |x| this.dur_(x)}
 	
 	setGain { |gain = 0| // set the average gain of all units that have a u_gain arg
 		var mean, add;
@@ -334,6 +366,10 @@ UChain {
 
     asUEvent{ |startTime=0, track =0, dur|
 	    ^UEvent(this, startTime, track, dur ? inf)
+	}
+
+	isFolder {
+	    ^false
 	}
 
 	printOn { arg stream;

@@ -25,8 +25,8 @@ s.notify; // make sure the server is notified!!
 x.prepareAndStart;
 x.release;
 
-x.setFadeOut( 0.5 );
-x.setFadeIn( 0.5 );
+x.fadeOut = 0.5;
+x.fadeIn = 0.5;
 
 x.setDur( 5 );
 x.setDur( inf ); // infinite duration (default)

@@ -4,11 +4,13 @@ UScore {
 	*   events: Array[UEvent]
 	*/
 	var <>events, <>name = "untitled";
-	var <prepareTask, <startTask, <releaseTask, <startedAt, <stoppedAt = 0;
+	var <prepareTask, <startTask, <releaseTask, <startedAt, <>stoppedAt = 0;
 
 	*new { |... events| 
-		^super.newCopyArgs( events.select({ |item| item.class == UEvent }) );
+		^super.newCopyArgs( events.select({ |item| UEvent.implementations.asArray.includes(item.class) }) );
 	}
+
+    duplicate { ^UScore( *events.collect( _.duplicate ) ).name_( name ); }
 
 	//ARRAY SUPPORT
 	at { |index|  ^events[ index ];  }
@@ -17,8 +19,11 @@ UScore {
 	first { ^events.first }
 	last { ^events.last }
 
-	add { |event| events = events.add( event.asUEvent ); }
-	<| { |event| this.add(event) }
+    /*
+    * newEvents -> UEvent or Array[UEvent]
+    */
+	add { |newEvents| events = events ++ newEvents.asCollection.collect( _.asUEvent ) }
+	<| { |newEvents| this.add(newEvents) }
 
 	<< { |score|
 	    ^UScore(*(events++score.events))
@@ -83,6 +88,10 @@ UScore {
 	addEventToCompletelyEmptyTrack { |evt|
 		evt.track = this.findCompletelyEmptyTrack;
 		events = events.add( evt );
+
+	}
+
+	cleanOverlaps {
 
 	}
 	
@@ -158,8 +167,8 @@ UScore {
 	}
 	
 	pos {
-		if( startedAt.notNil ) {
-			^((SystemClock.seconds - startedAt[1]) + startedAt[0]).min( stoppedAt ? inf );
+		^if( startedAt.notNil ) {
+			((SystemClock.seconds - startedAt[1]) + startedAt[0]).min( stoppedAt ? inf );
 		} {
 			stoppedAt ? 0;
 		};
@@ -188,7 +197,7 @@ UScore {
 	
     /*
     *   server: Server or Array[Server]
-    */
+      Is this for deletion ?
 	play{ |server, startTimeOffset = 0|
 
 		var playEvents = events
@@ -208,5 +217,6 @@ UScore {
 		}, WFSSynth.clock).start;
 
 	}
+	*/
 
 }

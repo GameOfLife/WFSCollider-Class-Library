@@ -369,7 +369,7 @@ AbstractSndFile : AbstractRichBuffer {
 		var chain;
 		this.unit = nil; // forget old unit
 		chain = UChain( this.makeUnit, \output);
-		if( loop.not ) { chain.setDur( this.eventDuration ) };
+		if( loop.not ) { chain.dur_( this.eventDuration ) };
 		^chain;
 	}
 

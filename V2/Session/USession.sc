@@ -2,7 +2,7 @@ USession{
 
     /*
     *   tracks -> Array[UChain]
-    *   scores -> Array[UEvent]
+    *   scores -> Array[UScore]
     */
     var <>objects, <>scores;
 
