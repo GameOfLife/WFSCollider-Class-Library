@@ -403,33 +403,45 @@ WFSArrayPanPlane : WFSBasicArrayPan {
 	var width = pi; // pi = max width
 	var polarSpeakerArray;
 	
+	/*
 	init {
 		super.init;
 		polarSpeakerArray = speakerArray.collect({ |sp| (dist@sp).asPolar});
 	}
+	*/
 	
 	ar { |source, inPos, int, mul = 1, add = 0|
-		var delayOffset, angleOffsets, tanA;
+		var delayOffset, angleOffsets, sinA, cosA, dist2;
 		
 		// rotate point to array, collect angle differences
-		pos = (inPos ? pos ? (0@0)).asPolar.rotate( angle.neg ); // pos becomes polar
+		
+		//pos = (inPos ? pos ? (0@0)).asPolar.rotate( angle.neg ); // pos becomes polar
+		pos =  (inPos ? pos ? (0@0)).asPolar.rotate( angle.neg );
+		
 		//angleOffsets = speakerArray.collect({ |item, i| pos.theta - item.theta; });
 		
 		// calculate distances
-		
+		/*
 		distances = polarSpeakerArray.collect({ |item, i|  
 			( ( pos.theta - item.theta ).cos * item.rho ).neg; 
 		});
+		*/
 		
 		
 		//tanA = pos.theta.tan; // scientiffically correct, but tends to infinity at +0.5/-0.5pi
 		//distances = speakerArray.collect({ |item,i| (tanA * item.y) + dist; });
 		
+		sinA = pos.theta.sin.neg;
+		cosA = pos.theta.cos;
+		dist2 = (cosA * dist);
+		distances = speakerArray.collect({ |item,i| (sinA * item) - dist2; });
+		
+		
 		// calculate amplitudes
 		amplitudes = 1;
 		
 		// subtract large delay
-		delayOffset = preDelay + ( pos.rho / speedOfSound );
+		delayOffset = preDelay; // - ( pos.rho / speedOfSound );
 		
 		intType = int ? intType ? 'N';
 	
