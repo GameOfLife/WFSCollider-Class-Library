@@ -121,6 +121,40 @@ WFSCrossfader {
 	
 }
 
+WFSCrossfaderPlane {
+	var <>arrayConfs;
+	var <>point;
+	var <crossfades;
+	
+	*new { |point = (0@0), arrays|
+		
+		// feed me with: 
+		//   arrays: an array of WFSArrayConfs, or an array of arrays that can be 
+		//           converted to WFSArrayConfs
+		
+		arrays = arrays.collect(_.asWFSArrayConf).collect(_.copy);
+		^super.newCopyArgs( arrays, point.asPoint ).init;
+	}
+	
+	init {
+		
+		var globalAngle;
+		
+		// for the focusFades
+		globalAngle = point.angle;
+		
+		crossfades = arrayConfs.collect({ |conf, i|
+			(globalAngle - conf.angle)
+				.wrap(-pi,pi)
+				.linlin(-0.5pi,0.5pi,0,2,\minmax)
+				.fold(0,1)
+				.sqrt;
+		});		
+
+	}
+	
+}
+
 WFSBasicPan {
 	
 	classvar <>defaultSpWidth = 0.164;
@@ -400,55 +434,29 @@ WFSArrayPan : WFSBasicArrayPan {
 
 WFSArrayPanPlane : WFSBasicArrayPan {	
 	
-	var width = pi; // pi = max width
-	var polarSpeakerArray;
-	
-	/*
-	init {
-		super.init;
-		polarSpeakerArray = speakerArray.collect({ |sp| (dist@sp).asPolar});
-	}
-	*/
-	
 	ar { |source, inPos, int, mul = 1, add = 0|
 		var delayOffset, angleOffsets, sinA, cosA, dist2;
 		
 		// rotate point to array, collect angle differences
+		pos = (inPos ? pos ? (0@0)).asPolar.rotate( angle.neg );
 		
-		//pos = (inPos ? pos ? (0@0)).asPolar.rotate( angle.neg ); // pos becomes polar
-		pos =  (inPos ? pos ? (0@0)).asPolar.rotate( angle.neg );
-		
-		//angleOffsets = speakerArray.collect({ |item, i| pos.theta - item.theta; });
-		
-		// calculate distances
-		/*
-		distances = polarSpeakerArray.collect({ |item, i|  
-			( ( pos.theta - item.theta ).cos * item.rho ).neg; 
-		});
-		*/
-		
-		
-		//tanA = pos.theta.tan; // scientiffically correct, but tends to infinity at +0.5/-0.5pi
-		//distances = speakerArray.collect({ |item,i| (tanA * item.y) + dist; });
-		
-		sinA = pos.theta.sin.neg;
+		sinA = pos.theta.sin.neg / speedOfSound;
 		cosA = pos.theta.cos;
-		dist2 = (cosA * dist);
+		dist2 = (cosA * dist) / speedOfSound;
 		distances = speakerArray.collect({ |item,i| (sinA * item) - dist2; });
 		
-		
 		// calculate amplitudes
-		amplitudes = 1;
+		amplitudes = 1/n; // normalize sum
 		
 		// subtract large delay
-		delayOffset = preDelay; // - ( pos.rho / speedOfSound );
+		delayOffset = preDelay;
 		
 		intType = int ? intType ? 'N';
 	
 		// all together
 		^this.delay( 
 			source * mul, 
-			( distances / speedOfSound ) + delayOffset, 
+			distances + delayOffset, 
 			amplitudes,
 			add 
 		);

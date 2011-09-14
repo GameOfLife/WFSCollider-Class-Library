@@ -53,18 +53,16 @@ w.drawFunc = {
 		speakerLines = c.arrayConfs;
 		speakerPoints = speakerLines.collect(_.asPoints).collect(_.reverse);
 		prePan = WFSPrePan().ar( 1, p )[0];
-		crossfader = WFSCrossfader( p, speakerLines );
-		
-		crossfades = (crossfader.cornerfades * crossfader.arraysShouldRun( false ))
-			.max( crossfader.arraysShouldRun( true ) );
-			
 		
 		if( a === \point ) {
+			crossfader = WFSCrossfader( p, speakerLines );
+			crossfades = (crossfader.cornerfades * crossfader.arraysShouldRun( false ))
+				.max( crossfader.arraysShouldRun( true ) );
 			arrayPan = speakerLines.collect({ |line|
 				WFSArrayPan( *line.asArray ).focus_(nil).ar( 1, p ) + [-0.06 + prePan,0];
 			});
 		} {	
-			crossfades = crossfades.collect(1);
+			crossfades = WFSCrossfaderPlane( p, speakerLines ).crossfades;
 			arrayPan = speakerLines.collect({ |line|
 				WFSArrayPanPlane( *line.asArray ).ar( 1, p ) + [-0.06 + prePan,0];
 			});
@@ -73,6 +71,7 @@ w.drawFunc = {
 		arrayPan.collect({ |times, i|
 			var color;
 			color = Color.blue(0.5).alpha_(crossfades[i]);
+			times = times.flop.flop;
 			speakerPoints[i].do({ |sp, ii|
 				Pen.color = color.copy.alpha_( (color.alpha * times[1][ii]).sqrt);
 				Pen.addArc( sp, ((t - times[0][ii] )*344).max(0), 0, 2pi ).stroke;

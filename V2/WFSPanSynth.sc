@@ -199,6 +199,8 @@ WFSPrePanSynthDefs {
 			UOut.kr( 0, point );
 			point = point.asPoint;
 			
+			if( crossfadeMode == \p ) { dbRollOff = 0 };
+			
 			dbRollOff = \dbRollOff.kr( dbRollOff );
 			limit = \limit.kr( limit );
 			
@@ -212,7 +214,10 @@ WFSPrePanSynthDefs {
 			UOut.ar( 0, panner.ar( input, point, WFSLevelBus.kr ) * UEnv.kr( extraSilence: 0.2 ) );
 			
 			// crossfading: manage the array panners
-			if( [ \d, \u ].includes(crossfadeMode) ) {
+			case { [ \d, \u ].includes(crossfadeMode) } { 
+				
+				// Point sources //
+				
 				#arrayConfs, cornerPoints = numArrays.collect({ |i| [ 
 					("arrayConf" ++ i).asSymbol
 						.ir( [ 48, 5, i.linlin(0,numArrays, 0.5pi, -0.5pi), 0, 0.164 ] ),
@@ -275,7 +280,6 @@ WFSPrePanSynthDefs {
 						}.value
 					},
 					\u, { // unified mode (focused and normal in one array panner)
-						
 						{
 							var uniIDs;
 							var uniLevelBuses;
@@ -307,9 +311,48 @@ WFSPrePanSynthDefs {
 						}.value;					
 					}
 				);
-			};
 				
-			// \p crossfading not yet implemented (might only need pausing)
+			} { crossfadeMode === \p  } {
+				
+				// Plane wave //
+				
+				arrayConfs = numArrays.collect({ |i| 
+					("arrayConf" ++ i).asSymbol
+						.ir( [ 48, 5, i.linlin(0,numArrays, 0.5pi, -0.5pi), 0, 0.164 ] ) 
+				});
+				
+				crossfader = WFSCrossfaderPlane( point, arrayConfs );
+				
+				{
+					var planeIDs;
+					var planeLevelBuses;
+					var planeLevels;
+					var dontPause = 0;
+					
+					dontPause = \dontPause.kr(dontPause);
+					
+					// id's of synths to pause (-1 for none)
+					planeIDs = \planeIDs.ir( -1.dup(numArrays) ).asCollection;
+					
+					// level buses (-1 for none)
+					planeLevelBuses = \planeLevelBuses.kr( -1.dup(numArrays) ).asCollection;
+					
+					planeLevels = crossfader.crossfades;
+					
+					// output levels to appropriate buses (replace existing)
+					planeLevelBuses.collect({ |bus, i|
+						ReplaceOut.kr( bus, planeLevels[i] );
+					});
+					
+					// pause non-sounding panners
+					planeIDs.collect({ |id, i|
+						var pause;
+						pause = (planeLevels[i] > 0);
+						pause = Slew.kr( pause, inf, 1/pauseLag ) > 0;
+						Pause.kr( pause.max(dontPause), id );
+					});
+				}.value;
+			};
 		});
 		
 	}

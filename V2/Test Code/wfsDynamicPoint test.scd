@@ -18,6 +18,11 @@ x = UChain( \sine, \wfsDynamicPoint );
 
 x = UChain( \sine, \wfsStaticPoint );
 
+x = UChain( \sine, \wfsStaticPlane );
+
+x = UChain( \sine, \wfsDynamicPlane );
+
+
 x.gui;
 
 // or: 
