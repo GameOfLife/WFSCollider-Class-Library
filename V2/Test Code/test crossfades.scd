@@ -1,6 +1,7 @@
 (
 c = WFSSpeakerConf.rect( 48, 48, 5, 5 );
 m = \lines;
+a = \point;
 p = (0@0);
 w = ScaledUserView.window( "WFSSpeakerConf", 
 	Rect( 128, 64, 400, 400 ), 
@@ -21,37 +22,53 @@ w.drawFunc = {
 	});
 	
 	// draw normal as blue lines behind arrays
-	fader = WFSCrossfader( p, c.arrayConfs );
-	crossfades = fader.cornerfades;
-	lines = c.asLines;
-	Pen.use({
-		Pen.scale(1.1, -1.1);
-		Pen.width = 0.2;
-		fader.arraysShouldRun( false ).do({ |fade, i|
-			if( fade == 1 ) {
+	if( a === \point ) {
+		fader = WFSCrossfader( p, c.arrayConfs );
+		crossfades = fader.cornerfades;
+		lines = c.asLines;
+		Pen.use({
+			Pen.scale(1.1, -1.1);
+			Pen.width = 0.2;
+			fader.arraysShouldRun( false ).do({ |fade, i|
+				if( fade == 1 ) {
+					Pen.color = Color.blue.alpha_( crossfades[i] );
+					Pen.line( *lines[i] ).stroke;
+				};
+			});
+		});
+		
+		// draw focused as blue lines inside arrays
+		Pen.use({
+			Pen.scale(0.9, -0.9);
+			Pen.color = Color.blue;
+			Pen.width = 0.2;
+			fader.arraysShouldRun( true ).do({ |fade, i|
+				if( fade == 1 ) {
+					Pen.line( *lines[i] ).stroke;
+				};
+			});
+		});
+	} {
+		fader = WFSCrossfaderPlane(p, c.arrayConfs );
+		crossfades = fader.crossfades;
+		lines = c.asLines;
+		Pen.use({
+			Pen.scale(1.1, -1.1);
+			Pen.width = 0.2;
+			lines.do({ |line, i|
 				Pen.color = Color.blue.alpha_( crossfades[i] );
-				Pen.line( *lines[i] ).stroke;
-			};
+				Pen.line( *lines[i] ).stroke;		
+			});
 		});
-	});
+
+	};
 	
-	// draw focused as blue lines inside arrays
-	Pen.use({
-		Pen.scale(0.9, -0.9);
-		Pen.color = Color.blue;
-		Pen.width = 0.2;
-		fader.arraysShouldRun( true ).do({ |fade, i|
-			if( fade == 1 ) {
-				Pen.line( *lines[i] ).stroke;
-			};
-		});
-	});
 
 };
 w.scale = 2;
 w.mouseDownAction = { |v, x,y| p = (x @ y.neg); };
 w.mouseMoveAction = { |v, x,y| p = (x @ y.neg); };
-);
+	);
 
 
 c = WFSSpeakerConf.rect( 40, 56, 6, 4 ); w.refresh; // rectangular setup
@@ -67,6 +84,9 @@ c.arrayConfs.removeAt(3);
 c.arrayConfs.removeAt(2);
 w.refresh; 
 )
+
+//switch to plane
+a = \plane;
 
 // problems with determining focus:
 c = WFSSpeakerConf.polygon(24, 6, 192); w.refresh;
