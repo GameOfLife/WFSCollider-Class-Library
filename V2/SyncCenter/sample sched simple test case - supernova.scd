@@ -10,7 +10,8 @@ Server.program = "cd % && exec ./supernova -U plugins".format(String.scDir.quote
 .numInputBusChannels_(30)
 .numWireBufs_(2048)
 .sampleRate_( 44100 )
-.blockAllocClass_( ContiguousBlockAllocator );
+.blockAllocClass_( ContiguousBlockAllocator )
+.blockSize_( 512 );
 //.device_("JackRouter");
 
 ~slaves = [
@@ -40,7 +41,10 @@ SyncCenter.master_(~master);
         };
         "servers booted".postln;
         
-      "jack_connect supernova:output_1 supernova-01:input_1 && jack_connect supernova:output_1 supernova-02:input_1".runInTerminal;
+      "jack_connect supernova:output_1 supernova-01:input_1 && 
+      jack_connect supernova:output_1 supernova-02:input_1 &&
+      jack_connect supernova-01:output_1 system:playback_1 &&
+      jack_connect supernova-02:output_1 system:playback_1".runInTerminal;
         
         SyncCenter.sendDefs;
         
@@ -66,7 +70,7 @@ SyncCenter.serverCounts.collect{ |x| x.value - SyncCenter.current.localCount }
 
 
 OSCBundle.new.add([ "/s_new", "sine", 2000, 1, 1, 'freq', 1000, 'amp', 0.25 ]).syncedSend(~slaves[0],1);
-OSCBundle.new.add([ "/s_new", "sine", 2000, 1, 1, 'freq', 1000, 'amp', -0.25 ]).syncedSend(~slaves[1],2);
+OSCBundle.new.add([ "/s_new", "sine", 2000, 1, 1, 'freq', 1000, 'amp', -0.25 ]).syncedSend(~slaves[1],1);
 //kill slave1 or slave2 and you will hear sine wave again.
 
 //this number should be the same between syncs
