@@ -22,14 +22,19 @@ WFSBasicEditView {
 	var <undoManager;
 	
 	*new { |parent, bounds, object|
-		^this.newCopyArgs(object).makeView( parent, bounds );
+		^this.newCopyArgs(object).init.makeView( parent, bounds ).setDefaults;
+	}
+	
+	init { // subclass might want to init
+	}
+	
+	setDefaults {
+		object = object ?? { this.defaultObject };
 	}
 	
 	makeView { |parent, bounds|
 		
 		gridColor = gridColor ?? { Color.white.alpha_(0.25) };
-
-		object = object ?? { WFSPath2( { (8.0@8.0).rand2 } ! 7, [0.5] ); }; // default object
 		
 		view = ScaledUserView.withSliders( parent, bounds, Rect(-100, -100, 200, 200 ) )
 			.scaleSliderLength_( 40 )
@@ -46,7 +51,7 @@ WFSBasicEditView {
 		view.mouseDownAction = { |vw, x,y, mod, oX, oY, isInside, bn, cc|
 			var scaler, includes;
 			
-			scaler = vw.pixelScale.asArray.mean;
+			scaler = vw.pixelScale;
 			mod = ModKey(mod);
 			mouseEdit = false;
 			
@@ -55,7 +60,7 @@ WFSBasicEditView {
 					this.changed( \mouse_down );
 					hitPoint = (x@y);
 					lastPoint = hitPoint;
-					hitIndex = this.getNearestIndex( hitPoint * (1@ -1), scaler * 5 );
+					hitIndex = this.getNearestIndex( hitPoint * (1@ -1), scaler );
 					includes = selected.asCollection.includes( hitIndex );
 					if( mod.shift ) { 
 						if( hitIndex.notNil ) { 
@@ -232,7 +237,7 @@ WFSBasicEditView {
 		};
 		
 		view.drawFunc = { |vw|			
-			this.drawContents(  vw.pixelScale.asArray.mean );
+			this.drawContents(  vw.pixelScale );
 		};
 			
 		view.unscaledDrawFunc = { |vw|
@@ -282,7 +287,8 @@ WFSBasicEditView {
 		if( undoManager.notNil ) {
 			obj = undoManager.undo( numSteps );
 			if( obj.notNil ) {
-				object = obj;
+				object.positions = obj.positions;
+				object.forceTimes( obj.times );
 				externalEdit = true;
 				this.refresh;
 				this.changed( \undo );
@@ -370,15 +376,13 @@ WFSBasicEditView {
 	selectNone { this.select( ) }
 }
 
-
-
 WFSPathView : WFSBasicEditView {
-	
 	
 	var <pos; 
 	var <recordLastTime;
 	var <animationTask, <>animationRate = 1;
-	
+
+	defaultObject	{ ^WFSPath2( { (8.0@8.0).rand2 } ! 7, [0.5] ); }	
 	mouseEditSelected { |newPoint|
 		var pt;
 		// returns true if changed
@@ -425,6 +429,8 @@ WFSPathView : WFSBasicEditView {
 		var pospt, times;
 		var points, controls;
 		
+		scale = scale.asArray.mean;
+		
 		Pen.use({	
 			
 			Pen.width = 0.164;
@@ -435,10 +441,10 @@ WFSPathView : WFSBasicEditView {
 				WFSSpeakerConf.rect(48,48,5,5);
 			}).draw;
 				
-				// draw center
+			// draw center
 			Pen.line( -0.25 @ 0, 0.25 @ 0 ).line( 0 @ -0.25, 0 @ 0.25).stroke;
 				
-				// draw contents
+			// draw contents
 			Pen.scale( 1, -1 );	
 					
 			//// object
@@ -548,7 +554,9 @@ WFSPathView : WFSBasicEditView {
 		
 	}
 	
-	getNearestIndex { |point, radius| // returns nil if outside radius
+	getNearestIndex { |point, scaler| // returns nil if outside radius
+		var radius;
+		radius = scaler.asArray.mean * 5;
 		^object.positions.detectIndex({ |pt, i|
 			pt.asPoint.dist( point ) <= radius
 		});
@@ -564,6 +572,9 @@ WFSPathView : WFSBasicEditView {
 	
 	// general methods
 	
+	resize { ^view.resize }
+	resize_ { |resize| view.resize = resize }
+	
 	path_ { |path| this.object = path }
 	path { ^object }
 	
@@ -573,8 +584,9 @@ WFSPathView : WFSBasicEditView {
 		this.changed( \pos );
 	}
 	
-	undoKeys { ^[ \mouse_edit, \new_object, \removeSelected, \moveSelected, 
-			\scaleSelected, \rotateSelected, \duplicateSelected, \endRecord
+	undoKeys { ^[ 
+			\edit, \mouse_edit, \new_object, 
+			\removeSelected, \duplicateSelected, \endRecord
 		]; 
 	}
 	
@@ -585,8 +597,9 @@ WFSPathView : WFSBasicEditView {
 			selected.do({ |index|
 				object.positions[ index ] = object.positions[ index ] + (x@y);
 			});
-			this.refresh;
-			if( update ) { this.changed( \moveSelected ); };
+			this.refresh; 
+			this.changed( \moveSelected ); 
+			if( update ) { this.changed( \edit, \move ); };
 		};
 	}
 	
@@ -597,7 +610,8 @@ WFSPathView : WFSBasicEditView {
 				object.positions[ index ] = object.positions[ index ] * (x@y);
 			});
 			this.refresh;
-			if( update ) { this.changed( \scaleSelected ); };
+			this.changed( \scaleSelected );
+			if( update ) { this.changed( \edit, \scale ); };
 		};
 	}
 	
@@ -607,7 +621,8 @@ WFSPathView : WFSBasicEditView {
 				object.positions[ index ] = object.positions[ index ].rotate( angle ) * scale;
 			});
 			this.refresh;
-			if( update ) { this.changed( \rotateSelected ); };
+			this.changed( \rotateSelected ); 
+			if( update ) { this.changed( \edit, \rotate ); };
 		};
 	}
 	
@@ -625,9 +640,9 @@ WFSPathView : WFSBasicEditView {
 				points ++ 
 				object.positions[selected.last+1..];
 			object.forceTimes(
-				object.times[..selected.last] ++
+				(object.times[..selected.last] ++
 				times ++ 
-				object.times[selected.last+1..];
+				object.times[selected.last+1..]).collect( _ ? 0.1 );
 			);
 			selected = (0..points.size-1) + selected.last + 1;
 			this.refresh;
@@ -636,13 +651,22 @@ WFSPathView : WFSBasicEditView {
 	}
 	
 	removeSelected {
+		var times;
+		times = object.times;
+		selected.do({ |item, i|
+			var addTime;
+			addTime = times[ item ];
+			if( addTime.notNil && (item != 0) ) {
+				times[item-1] = times[item-1] + addTime;
+			};
+		});
 		object.positions = object.positions.select({ |item, i|
 			selected.includes(i).not;
 		});
 		object.forceTimes( 
-			object.times.select({ |item, i|
+			times.select({ |item, i|
 				selected.includes(i).not;
-			}) 
+			}).collect( _ ? 0.1 )
 		);
 		selected = [];
 		this.refresh;
@@ -727,7 +751,198 @@ WFSPathView : WFSBasicEditView {
 		recordLastTime = nil;
 		this.changed( \endRecord );
 	}
-	
-
-
 }
+
+
+
+WFSPathTimeView : WFSPathView {
+	
+	setDefaults {
+		object = object ?? { this.defaultObject };
+		view.fromBounds_( Rect( 0, -0.5, 1, 1 ) )
+			.gridLines_( [ inf, inf ] )
+			.scale_( 1 )
+			.moveVEnabled_( false )
+			.scaleVEnabled_( false )
+			.keepRatio_( false );
+	}
+	
+	
+	defaultObject	{ ^WFSPath2( { (8.0@8.0).rand2 } ! 7, [0.5] ); }
+
+	drawContents { |scale = 1|
+		var times, speeds, timesSum, meanSpeed;
+		var drawPoint;
+		var selectColor = Color.yellow;
+		var pospt;
+		
+		scale = scale.asPoint;
+		
+		drawPoint = { |point, r = 3, w = 1|
+			Pen.addOval( 
+				Rect.aboutPoint( point, scale.x * r, scale.y * r ) );
+			Pen.addOval( 
+				Rect.aboutPoint( point, scale.x * (r-(w/2)) , scale.y * (r-(w/2)) ) );
+		};
+		
+		if( object.times.size > 0 ) {	
+			timesSum = this.getTimesSum;
+			times = ([ 0 ] ++ object.times.integrate) / timesSum;
+			
+			
+			speeds = object.speeds;
+			meanSpeed = (speeds * object.times).sum / timesSum;
+			speeds = speeds ++ [0];
+			
+			Pen.color = Color.blue(0.5).blend( Color.white, 0.5 );
+			times.do({ |item, i|
+				//Pen.color = Color.red(0.75).alpha_( (speeds[i] / 334).min(1) );
+				Pen.addRect( 
+					Rect( item, 0.5, times.clipAt(i+1) - item, speeds[i] / -344));
+							
+			});
+			Pen.fill;	
+						
+			Pen.color = Color.gray(0.25); // line
+			Pen.addRect(Rect( 0, 0 - (scale.y/4), times.last, scale.y/2 ) ).fill;
+		
+			Pen.color = Color.green(0.5,0.5); // start point
+			Pen.addOval( Rect.aboutPoint( times[0]@0, 
+				scale.x * 5, scale.y * 5 ) );		
+			Pen.fill;
+				
+			Pen.color = Color.red(1, 0.5); // end point
+			Pen.addOval( Rect.aboutPoint( times.last@0, 
+				scale.x * 5, scale.y * 5 ) );		
+			Pen.fill;
+			
+			Pen.color = selectColor; // selected points
+			selected.do({ |item| 
+				Pen.addOval( Rect.aboutPoint( times[item]@0, 
+					scale.x * 3.5, scale.y * 3.5 ) );
+			});
+			Pen.fill;
+			
+			if( pos.notNil ) {
+				pospt = pos / timesSum;
+				Pen.color = Color.black.alpha_(0.5);
+				Pen.width = scale.x * 2;
+				Pen.line( pospt @ -0.5, pospt @ 0.5 ).stroke;
+			};
+			
+			Pen.color = Color.blue(0.5);
+			times[1..].do({ |item, i| drawPoint.( item@0 ); });
+			Pen.draw(1);
+		};
+	}
+	
+	zoomToFit { |includeCenter = true|
+		view.scale = 1;
+		view.move = 0.5;
+	}
+	
+	zoomToRect { |rect|
+		rect = (rect ?? { Rect( 0, -0.5, 1, 1 ) }).copy;
+		rect.top = -0.5;
+		rect.height = 1;
+		view.viewRect = rect;
+	}
+	
+	zoomIn { |amt|
+		amt = amt ?? { 2.sqrt };
+		view.scale = view.scale * amt;
+	}
+	
+	zoomOut { |amt|
+		amt = amt ?? { 2.sqrt };
+		view.scale = view.scale / amt;
+	}
+	
+	zoom { |level = 1|
+		view.scale = level;
+	}
+	
+	move { |x,y|
+		x = x ? 0;
+		view.move_(x);
+	}
+	
+	moveToCenter { 
+		view.move_([0.5,0.5]);
+	}
+	
+	getTimesSum { ^object.times.sum }
+	
+	getNearestIndex { |point, scaler| // returns nil if outside radius
+		var times, rect;
+		times = (([ 0 ] ++ object.times.integrate) / this.getTimesSum);
+		rect = Rect.aboutPoint( point, scaler.x * 5, scaler.y * 5 );
+		^times.detectIndex({ |t, i|
+			rect.contains( t@0 );
+		});
+	}
+	
+	getIndicesInRect { |rect|
+		var pts = [], times;
+		times = ([ 0 ] ++ object.times.integrate) / this.getTimesSum;
+		times.do({ |t, i|
+			if( rect.contains( t@0 ) ) { pts = pts.add(i) };
+		});
+		^pts;					
+	}
+	
+	mouseEditSelected { |newPoint|
+		var pt;
+		// returns true if changed
+		switch( editMode,
+			\move,  { 
+				pt = (newPoint.round(round) - lastPoint.round(round));
+				this.moveSelected( pt.x, pt.y, false );
+			}
+		);
+	}
+
+	moveSelected { |x = 0, y = 0, update = true|
+		var timesPositions;
+		var moveAmt;
+		if( (selected.size > 0) ) {
+			moveAmt = x * this.getTimesSum;
+			
+			timesPositions = [ 
+				[ 0 ] ++ object.times.integrate, 
+				object.positions,
+				object.positions.collect({ |item, i| selected.includesEqual(i) })
+			].flop;
+			
+			selected.do({ |index|
+				timesPositions[ index ][0] = timesPositions[ index ][0] + moveAmt;
+			});
+			
+			timesPositions = timesPositions.sort({ |a,b| a[0] <= b[0] }).flop;
+			object.positions = timesPositions[1];
+			object.forceTimes((timesPositions[0]).differentiate[1..]);
+			selected = timesPositions[2].indicesOfEqual( true );
+			this.refresh;
+			this.changed( \moveSelected );
+			if( update ) { this.changed( \edit, \move ) };
+		};
+	}
+	
+	scaleSelected { |x = 1, y, update = true|
+		y = y ? x;
+		if( selected.size > 0 ) {
+			selected.do({ |index|
+				object.positions[ index ] = object.positions[ index ] * (x@y);
+			});
+			this.refresh;
+			if( update ) { this.changed( \scaleSelected ); };
+		};
+	}
+	
+	rotateSelected { |angle = 0, scale = 1, update = true|
+		// can't rotate times
+	}
+
+	
+}
+

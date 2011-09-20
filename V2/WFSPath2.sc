@@ -52,6 +52,13 @@ WFSPath2 {
 		^positions.wrapAt([ index.floor, index.floor+1])
 			.splineIntFunction( index.frac, *(controls[index.floor]) ); 
 		}	
+		
+/// POSITIONS AND TIMES /////////////////////////////
+
+	at { |index|
+		^[ positions.at( index ), times.clipAt( index ) ]
+	}
+
 	
 /// CONTROLS ////////////////////////////////////////
 
@@ -59,19 +66,20 @@ WFSPath2 {
 		^this.generateAutoControls
 	}
 		
-	generateAutoControls {
+	generateAutoControls { |inType, inClipMode, inCurve|
 		if( positions.size > 1 )
 		{ 
-		^switch( type.asString[0].toLower,
-			$c, { positions.allSplineIntControls( curve / 3, clipMode ).flop },
-			$b, { (	positions.modeAt( (-4..-1), clipMode ) ++ 
+		^switch( (inType ? type).asString[0].toLower,
+			$c, { positions.allSplineIntControls( (inCurve ? curve) / 3, 
+					inClipMode ? clipMode ).flop },
+			$b, { (	positions.modeAt( (-4..-1), inClipMode ? clipMode ) ++ 
 					positions ++ 
-					positions.modeAt( positions.size + (..3), clipMode ) )
+					positions.modeAt( positions.size + (..3), inClipMode ? clipMode ) )
 						.bSplineIntControls.flop[4..positions.size+4]
 				},
 			$l, { positions.size.collect({ |i|
 					var pts;
-					pts = positions.modeAt( [i, i+1], clipMode );
+					pts = positions.modeAt( [i, i+1], inClipMode ? clipMode );
 					[ 	pts[0].blend( pts[1], curve / 3 ),  
 						pts[0].blend( pts[1], 1 - (curve / 3) ) 
 					]
