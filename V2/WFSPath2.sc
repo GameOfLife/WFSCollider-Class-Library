@@ -107,6 +107,10 @@ WFSPath2 {
 	length { ^this.duration } 
 	atTime2 { |time = 0, loop = true| ^this.atTime( time ); }
 	
+	asWFSPath {
+		^WFSPath( positions.collect(_.asWFSPoint), times.clipAt( (0..positions.size-2) ) );
+	}
+	
 	// these are still used in WFSPathEditor2
 	intType { ^type }
 	intClipMode { ^clipMode }
