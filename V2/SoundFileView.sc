@@ -168,9 +168,15 @@ BufSndFileView {
 		
 		if( bounds.isNil ) { bounds= 350 @ (this.class.viewNumLines * (viewHeight + 4)) };
 		
+		/*
 		#view, bounds = EZGui().prMakeMarginGap.prMakeView( parent, bounds );
 		view.bounds = view.bounds.height_( (this.class.viewNumLines * (viewHeight + 4)) );
 		view.addFlowLayout( 0@0, 4@4 );
+		
+		*/
+		
+		view = EZCompositeView( parent, bounds, gap: 4@4 );
+		bounds = view.asView.bounds;
 		view.onClose_({ this.remove; });
 		view.resize_( resize ? 5 );
 		views = ();

@@ -51,6 +51,11 @@ AbstractRichBuffer {
 	    ^this.currentBuffers(server).last;
 	}
 	
+	freeBuffer { |buf, action|
+		buf.checkFree( action );
+		this.removeBuffer( buf );
+	}
+	
 	freeAllBuffers { |server|
 	    if( server.notNil ) {
 		    this.currentBuffers( server ).do( this.freeBuffer(_) )
@@ -138,11 +143,6 @@ RichBuffer : AbstractRichBuffer {
 		}).add;
 		buffers = buffers.add( buf );
 		^buf;
-	}
-
-	freeBuffer { |buf, action|
-		buf.checkFree( action );
-		buffers.remove( buf );
 	}
 
 	printOn { arg stream;
@@ -450,11 +450,6 @@ BufSndFile : AbstractSndFile {
 		};
 		buffers = buffers.add( buf );
 		^buf;
-	}
-
-    freeBuffer { |buf, action|
-		buf.checkFree( action );
-		this.removeBuffer( buf );
 	}
 
     unitNamePrefix{ ^"buffer" }
