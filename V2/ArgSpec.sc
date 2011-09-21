@@ -140,12 +140,6 @@ ArgSpec : Spec {
 
 }
 
-SynthArgSpec : ArgSpec {
-	asSynthArg { |value|
-		^[ name, this.constrain( value ) ]
-	}
-}
-
 + Array {
 	asArgSpec { ^ArgSpec(*this) }
 }
