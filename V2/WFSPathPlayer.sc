@@ -11,7 +11,7 @@ WFSPathPlayer {
 		// ch 6-10: spline part 1 values for dimension 2
 		// etc..
 		
-		length = if( loop.booleanValue, inf, (BufFrames.kr( bufnum ) - startIndex.floor) );
+		length = Select.kr( loop, [ (BufFrames.kr( bufnum ) - startIndex.floor), inf ] );
 		index = Dstutter( 2, Dseries( startIndex.floor, 1, length ));
 		phase = DemandEnvGen.kr( 
 				index + Dseq([startIndex.frac, Dseq([0],length - 1)], 1),
@@ -27,7 +27,7 @@ WFSPathPlayer {
 			numDim = 2, doneAction = 0|
 		var phase, length, index, pos;
 		
-		length = if( loop.booleanValue, inf, (BufFrames.kr( bufnum ) - startIndex.floor) );
+		length = Select.kr( loop, [ (BufFrames.kr( bufnum ) - startIndex.floor), inf ] );
 		index = Dstutter( 2, Dseries( startIndex.floor, 1, length ));
 		phase = DemandEnvGen.ar( 
 				index + Dseq([startIndex.frac, Dseq([0],length - 1)], 1),
@@ -63,7 +63,7 @@ WFSPathBufferPlayer { // use this inside an Udef
 		key = key ? 'wfsPath';
 		#bufnum, startFrame, rate, loop = key.asSymbol.kr( [ 0, 0, 1, 0 ] );
 		startFrame = startFrame + startPos;
-		^[ bufnum, startFrame, rate, loop, trigger ];
+		^[ bufnum, startFrame, rate, loop, trigger, 2 ];
 	}
 	
 	*ar { |key, trigger = 1, startPos = 0, doneAction = 0|
@@ -89,7 +89,7 @@ WFSPathBufferPlayer { // use this inside an Udef
 	
 	*fromBufferArray { |bufferArray, name|
 		var times, positions, p2, c1, c2, controls;
-		var path, intType, clipMode = 'clip';
+		var path, intType = 'cubic', clipMode = 'clip';
 		
 		bufferArray = bufferArray.clump(9);
 		

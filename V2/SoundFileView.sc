@@ -37,7 +37,7 @@ BufSndFileView {
 		all = [];
 	}
 	
-	doAction { action.value }
+	doAction { action.value( this ) }
 	
 	value { ^sndFile }
 	value_ { |newSndFile|
@@ -65,10 +65,8 @@ BufSndFileView {
 	}
 	
 	setViews { |inSndFile|
-		{
-			views[ \basename ].string = inSndFile.basename;
-			views[ \dirname ].string = inSndFile.dirname;
-		}.defer;
+		
+		views[ \path ].value = inSndFile.path;
 		
 		views[ \startFrame ].value = inSndFile.startFrame;
 		views[ \startFrame ].clipHi = inSndFile.numFrames ? inf;
@@ -130,8 +128,6 @@ BufSndFileView {
 			{ Font( Font.defaultSansFace, 10 ) };
 		
 		{
-			views[ \basename ].font = font;
-			views[ \dirname ].font = font;
 			views[ \startLabel ].font = font;
 			views[ \timeMode ].font = font;
 			views[ \endLabel ].font = font;
@@ -139,6 +135,7 @@ BufSndFileView {
 			views[ \rateMode ].font = font;
 		}.defer;
 		
+		views[ \path ].font = font;
 		views[ \startFrame ].font = font;
 		views[ \startSecond ].font = font;
 		views[ \endFrame ].font = font;
@@ -168,47 +165,19 @@ BufSndFileView {
 		
 		if( bounds.isNil ) { bounds= 350 @ (this.class.viewNumLines * (viewHeight + 4)) };
 		
-		/*
-		#view, bounds = EZGui().prMakeMarginGap.prMakeView( parent, bounds );
-		view.bounds = view.bounds.height_( (this.class.viewNumLines * (viewHeight + 4)) );
-		view.addFlowLayout( 0@0, 4@4 );
-		
-		*/
-		
 		view = EZCompositeView( parent, bounds, gap: 4@4 );
 		bounds = view.asView.bounds;
 		view.onClose_({ this.remove; });
 		view.resize_( resize ? 5 );
 		views = ();
 		
-		views[ \basename ] = TextField( view, (bounds.width - (viewHeight + 4)) @ viewHeight )
-			.applySkin( RoundView.skin )
+		views[ \path ] = FilePathView( view, bounds.width @ ( (viewHeight * 2) + 4) )
 			.resize_( 2 )
-			.action_({ |tf|
-				this.performSndFile( \basename_ , tf.string );
+			.action_({ |fv|
+				this.performSndFile( \path_ , fv.value );
 				action.value( this );
 			});
-			
-		views[ \browse ] = SmoothButton( view, viewHeight @ viewHeight )
-			.radius_( 0 )
-			.border_(0)
-			.resize_( 3 )
-			.label_( 'folder' )
-			.action_({
-				Dialog.getPaths( { |paths|
-				  this.performSndFile( \path_ , paths[0], true );
-				  action.value( this );
-				});
-			});
-			
-		views[ \dirname ] = TextField( view, bounds.width @ viewHeight )
-			.applySkin( RoundView.skin )
-			.resize_( 2 )
-			.action_({ |tf|
-				this.performSndFile( \dirname_ , tf.string );
-				action.value( this );
-			});
-			
+					
 		views[ \startLabel ] = StaticText( view, 30 @ viewHeight )
 			.applySkin( RoundView.skin )
 			.string_( "start" );

@@ -1,18 +1,16 @@
 WFSPathBufferView {
 	
 	// this is not finished yet, just a copy of BufSndFileView for now
-	classvar <rateMode;
 	classvar <timeMode = \seconds; // or \frames
 	classvar <all; 
 	
-	var <sndFile;
+	var <wfsPathBuffer;
 	var <parent, <view, <views;
 	var <>action;
 	var <viewHeight = 14;
-	var <>autoCreateSndFile = false;
 	
-	*new { |parent, bounds, action, sndFile|
-		^super.new.init( parent, bounds, action ).value_( sndFile ).addToAll;
+	*new { |parent, bounds, action, wfsPathBuffer|
+		^super.new.init( parent, bounds, action ).value_( wfsPathBuffer ).addToAll;
 	}
 	
 	init { |parent, bounds, inAction|
@@ -28,30 +26,25 @@ WFSPathBufferView {
 		timeMode = new.asSymbol;
 		all.do( _.setTimeMode( timeMode ) );
 	}
-	
-	*rateMode_ { |new = \semitones|
-		rateMode = new.asSymbol;
-		all.do( _.setRateMode( rateMode ) );
-	}
-	
+
 	initClass {
 		all = [];
 	}
 	
-	doAction { action.value }
+	doAction { action.value( this ) }
 	
-	value { ^sndFile }
-	value_ { |newSndFile|
-		if( sndFile != newSndFile ) {
-			sndFile.removeDependant( this );
-			sndFile = newSndFile;
-			sndFile.addDependant( this );
+	value { ^wfsPathBuffer }
+	value_ { |newWFSPathBuffer|
+		if( wfsPathBuffer != newWFSPathBuffer ) {
+			newWFSPathBuffer.removeDependant( this );
+			wfsPathBuffer = newWFSPathBuffer;
+			newWFSPathBuffer.addDependant( this );
 			this.update;
 		};
 	}
 	
 	update {
-		if( sndFile.notNil ) { this.setViews( sndFile ) };
+		if( wfsPathBuffer.notNil ) { this.setViews( wfsPathBuffer ) };
 	}
 	
 	resize_ { |resize|
@@ -59,68 +52,34 @@ WFSPathBufferView {
 	}
 	
 	remove {
-		if( sndFile.notNil ) { 
-			sndFile.removeDependant( this );
+		if( wfsPathBuffer.notNil ) { 
+			wfsPathBuffer.removeDependant( this );
 		};
 		all.remove( this );
 	}
 	
-	setViews { |inSndFile|
-		{
-			views[ \basename ].string = inSndFile.basename;
-			views[ \dirname ].string = inSndFile.dirname;
-		}.defer;
-		
-		views[ \startFrame ].value = inSndFile.startFrame;
-		views[ \startFrame ].clipHi = inSndFile.numFrames ? inf;
-		
-		views[ \startSecond ].value = inSndFile.startSecond;
-		views[ \startSecond ].clipHi = inSndFile.fileDuration ? inf;
-		
-		views[ \endFrame ].value = inSndFile.endFrame;
-		views[ \endFrame ].clipHi = inSndFile.numFrames ? inf;
-		
-		views[ \endSecond ].value = inSndFile.endSecond;
-		views[ \endSecond ].clipHi = inSndFile.fileDuration ? inf;
-		
-		views[ \loop ].value = inSndFile.loop.binaryValue;
-		
-		views[ \rateRatio ].value = inSndFile.rate;
-		views[ \rateSemitones ].value = inSndFile.rate.ratiomidi.round( 1e-6);
-		
+	setViews { |inWFSPathBuffer|
+		// views[ \name ].value = inWFSPathBuffer.name ? "";
+		views[ \filePath ].value = inWFSPathBuffer.filePath;
+		views[ \loop ].value = inWFSPathBuffer.loop.binaryValue;
+		views[ \miniPlot ].fromBounds = inWFSPathBuffer.wfsPath.asRect.scale(1@ -1).insetBy(-2,-2);
+		views[ \startSecond ].value = inWFSPathBuffer.startSecond;
+		views[ \startFrame ].value = inWFSPathBuffer.startFrame;
+
 	}
 	
-	setTimeMode { |mode = \frames|
+	setTimeMode { |mode = \seconds|
 		switch ( ( mode.asString[0] ? $f ).toLower,
 			$s, { // \seconds
 				views[ \startSecond ].visible_( true );
 				views[ \startFrame ].visible_( false );
-				views[ \endSecond ].visible_( true );
-				views[ \endFrame ].visible_( false );
 				{ views[ \timeMode ].value = 0 }.defer;
 						
 			}, 
 			$f, { // \frames
 				views[ \startSecond ].visible_( false );
 				views[ \startFrame ].visible_( true );
-				views[ \endSecond ].visible_( false );
-				views[ \endFrame ].visible_( true );
 				{ views[ \timeMode ].value = 1 }.defer;
-			}
-		);
-	}
-	
-	setRateMode { |mode = \semitones|
-		switch( ( mode.asString[0] ? $s ).toLower,
-			$r, { // \ratio
-				views[ \rateRatio ].visible_( true );
-				views[ \rateSemitones ].visible_( false );
-				{ views[ \rateMode ].value = 0 }.defer;
-			}, 
-			$s, { 
-				views[ \rateRatio ].visible_( false );
-				views[ \rateSemitones ].visible_( true );
-				{ views[ \rateMode ].value = 1 }.defer;
 			}
 		);
 	}
@@ -130,36 +89,28 @@ WFSPathBufferView {
 			{ RoundView.skin !? { RoundView.skin.font } } ?? 
 			{ Font( Font.defaultSansFace, 10 ) };
 		
-		{
-			views[ \basename ].font = font;
-			views[ \dirname ].font = font;
-			views[ \startLabel ].font = font;
+		{	
+			views[ \fileLabel ].font = font;
 			views[ \timeMode ].font = font;
-			views[ \endLabel ].font = font;
-			views[ \rateLabel ].font = font;
-			views[ \rateMode ].font = font;
 		}.defer;
 		
+		views[ \loop ].font = font;
+		views[ \plot ].font = font;
+		views[ \edit ].font = font;
+		views[ \write ].font = font;
+		views[ \read ].font = font;
+		views[ \filePath ].font = font;
 		views[ \startFrame ].font = font;
 		views[ \startSecond ].font = font;
-		views[ \endFrame ].font = font;
-		views[ \endSecond ].font = font;
-		views[ \loop ].font = font;
-		views[ \rateRatio ].font = font;
-		views[ \rateSemitones ].font = font;
+		views[ \startLabel ].font = font;
 
 	}
 	
-	performSndFile { |selector ...args|
-		if( sndFile.notNil ) {
-			^sndFile.perform( selector, *args );
+	performWFSPathBuffer { |selector ...args|
+		if( wfsPathBuffer.notNil ) {
+			^wfsPathBuffer.perform( selector, *args );
 		} {
-			if( autoCreateSndFile ) {
-				this.value = BufSndFile.newBasic( );
-				^sndFile.perform( selector, *args );
-			} {
-				^nil;
-			};
+			^nil;
 		};
 	}
 	
@@ -169,41 +120,167 @@ WFSPathBufferView {
 		
 		if( bounds.isNil ) { bounds= 350 @ (this.class.viewNumLines * (viewHeight + 4)) };
 		
-		#view, bounds = EZGui().prMakeMarginGap.prMakeView( parent, bounds );
-		view.bounds = view.bounds.height_( (this.class.viewNumLines * (viewHeight + 4)) );
-		view.addFlowLayout( 0@0, 4@4 );
-		view.onClose_({ this.remove; });
-		view.resize_( resize ? 5 );
+		view = EZCompositeView( parent, bounds, gap: 4@4 );
+		bounds = view.asView.bounds;
+		view.onClose_({ this.remove; }).resize_( resize ? 5 );
 		views = ();
 		
-		views[ \basename ] = TextField( view, (bounds.width - (viewHeight + 4)) @ viewHeight )
-			.applySkin( RoundView.skin )
-			.resize_( 2 )
-			.action_({ |tf|
-				this.performSndFile( \basename_ , tf.string );
+		views[ \miniPlot ] = ScaledUserView( view, ((viewHeight * 2) + 4).asPoint )
+			.fromBounds_( Rect.aboutPoint( 0@0, 100, 100 ) )
+			.keepRatio_( true )
+			.background_( Color.gray(0.9) )
+			.drawFunc_({ |vw|
+				var path;
+				path = this.performWFSPathBuffer( \wfsPath );
+				if( path.notNil ) {
+					
+					Pen.width = 0.164;
+					Pen.color = Color.red(0.5, 0.5);
+					
+					//// draw configuration
+					(WFSSpeakerConf.default ?? {
+						WFSSpeakerConf.rect(48,48,5,5);
+					}).draw;
+					
+					path.draw( 1, pixelScale: vw.pixelScale * 1.5);
+				};
+			});
+			
+		views[ \buttonComp ] = CompositeView( view, 104@ ((viewHeight * 2) + 4) );
+		views[ \buttonComp ].addFlowLayout( 0@0, 4@4 );
+			
+		views[ \plot ] = SmoothButton( views[ \buttonComp ], 40 @ viewHeight )
+			.radius_( 3 )
+			.border_( 1 )
+			.label_( "plot" )
+			.action_({ |bt|
+				WFSPathView( )
+					.path_( wfsPathBuffer.wfsPath )
+					.editMode_( \none )
+					.mouseMode_( \zoom );
+			});
+		
+		views[ \write ] = SmoothButton( views[ \buttonComp ], 60 @ viewHeight )
+			.radius_( 3 )
+			.border_( 1 )
+			.label_( "write data" )
+			.action_({ |bt|
+				var writeFunc;
+				writeFunc = { this.performWFSPathBuffer( \writeFile ); };
+				
+				if( this.performWFSPathBuffer( \filePath ).isNil ) {
+						Dialog.savePanel( { |path|
+				  			this.performWFSPathBuffer( \filePath_ , path );
+				  			writeFunc.value;
+						});
+				} {
+					writeFunc.value;
+				};
+			});
+			
+		views[ \loop ] = SmoothButton( view, 40 @ viewHeight )
+			.radius_( 3 )
+			.border_( 1 )
+			.label_( [ "loop", "loop" ] )
+			.hiliteColor_( Color.green )
+			.action_({ |bt|
+				this.performWFSPathBuffer( \loop_ , bt.value.booleanValue );
 				action.value( this );
 			});
 			
-		views[ \browse ] = SmoothButton( view, viewHeight @ viewHeight )
-			.radius_( 0 )
-			.border_(0)
-			.resize_( 3 )
-			.label_( 'folder' )
-			.action_({
-				Dialog.getPaths( { |paths|
-				  this.performSndFile( \path_ , paths[0], true );
-				  action.value( this );
+		views[ \buttonComp ].decorator.nextLine;
+
+		views[ \edit ] = SmoothButton( views[ \buttonComp ], 40 @ viewHeight )
+			.radius_( 3 )
+			.border_( 1 )
+			.label_( "edit" )
+			.action_({ |bt|
+				WFSPathEditor2( wfsPathBuffer.wfsPath ); 
+			});	
+		
+					
+		views[ \read ] = SmoothButton( views[ \buttonComp ], 60 @ viewHeight )
+			.radius_( 3 )
+			.border_( 1 )
+			.label_( "read data" )
+			.action_({ |bt|
+				Dialog.getPaths({ |paths|
+					var sf, pth, wfspath, fa;
+					pth = paths[0];
+					sf = SoundFile.openRead( pth );
+					if( sf.notNil ) {
+						if( sf.numChannels == 9 ) {
+							fa = FloatArray.newClear( sf.numFrames * sf.numChannels );
+							sf.readData( fa );
+							wfspath = WFSPath2.fromBufferArray( fa );
+							wfspath.name = pth.basename.removeExtension;
+							this.performWFSPathBuffer( \filePath_ , pth );
+							this.performWFSPathBuffer( \wfsPath_ , wfspath );
+						} {
+							"wrong number of channels (% instead of 9)\n"
+								.postf( sf.numChannels );
+						};
+						sf.close;
+					} {
+						"could not read file '%'\n".postf( pth );
+					};
 				});
 			});
+		
 			
-		views[ \dirname ] = TextField( view, bounds.width @ viewHeight )
+		view.view.decorator.nextLine;
+		
+		views[ \fileLabel ] = StaticText( view, 30 @ viewHeight )
 			.applySkin( RoundView.skin )
+			.string_( "file" );
+		
+		views[ \filePath ] = FilePathView( view, 
+			(bounds.width - (30 + 4)) @ ( (viewHeight * 2) + 4 ) )
 			.resize_( 2 )
-			.action_({ |tf|
-				this.performSndFile( \dirname_ , tf.string );
+			.action_({ |fv|
+				this.performWFSPathBuffer( \filePath_ , fv.value );
+				action.value( this );
+			});	
+
+			
+		views[ \startLabel ] = StaticText( view, 30 @ viewHeight )
+			.applySkin( RoundView.skin )
+			.string_( "start" );
+		
+		views[ \startComp ] = CompositeView( view, (bounds.width - 78) @ viewHeight )
+			.resize_( 2 );
+		
+		views[ \startSecond ] = SMPTEBox( views[ \startComp ], 
+				views[ \startComp ].bounds.moveTo(0,0) )
+			.applySmoothSkin
+			.resize_( 5 )
+			.clipLo_( 0 )
+			.action_({ |nb|
+				this.performWFSPathBuffer( \startSecond_ , nb.value );
 				action.value( this );
 			});
 			
+		views[ \startFrame] = SmoothNumberBox( views[ \startComp ], 
+				views[ \startComp ].bounds.moveTo(0,0) )
+			.resize_( 5 )
+			.clipLo_( 0 )
+			.scroll_step_( 0.1 )
+			.action_({ |nb|
+				this.performWFSPathBuffer( \startFrame_ , nb.value );
+				action.value( this );
+			})
+			.visible_( false );
+			
+		views[ \timeMode ] = PopUpMenu( view, 40 @ viewHeight )
+			.applySkin( RoundView.skin )
+			.items_( [ "s", "fr" ] )
+			.resize_( 3 )
+			.action_({ |pu|
+				this.class.timeMode = [ \seconds, \frames ][ pu.value ];
+			});
+
+		
+		/*	
 		views[ \startLabel ] = StaticText( view, 30 @ viewHeight )
 			.applySkin( RoundView.skin )
 			.string_( "start" );
@@ -230,14 +307,6 @@ WFSPathBufferView {
 				action.value( this );
 			})
 			.visible_( false );
-		
-		views[ \timeMode ] = PopUpMenu( view, 40 @ viewHeight )
-			.applySkin( RoundView.skin )
-			.items_( [ "s", "smp" ] )
-			.resize_( 3 )
-			.action_({ |pu|
-				this.class.timeMode = [ \seconds, \frames ][ pu.value ];
-			});
 			
 		views[ \endLabel ] = StaticText( view, 30 @ viewHeight )
 			.applySkin( RoundView.skin )
@@ -265,17 +334,6 @@ WFSPathBufferView {
 				action.value( this );
 			})
 			.visible_( false );
-		
-		views[ \loop ] = SmoothButton( view, 40 @ viewHeight )
-			.radius_( 3 )
-			.border_( 1 )
-			.resize_( 3 )
-			.label_( [ "loop", "loop" ] )
-			.hiliteColor_( Color.green )
-			.action_({ |bt|
-				this.performSndFile( \loop_ , bt.value.booleanValue );
-				action.value( this );
-			});
 			
 		views[ \rateLabel ] = StaticText( view, 30 @ viewHeight )
 			.applySkin( RoundView.skin )
@@ -312,9 +370,12 @@ WFSPathBufferView {
 				this.class.rateMode = [ \ratio, \semitones ][ pu.value ];
 			});
 			
-		this.setFont;
+		
 		this.setTimeMode( timeMode );
 		this.setRateMode( rateMode );
+		*/
+		
+		this.setFont;
 	}
 	
 }

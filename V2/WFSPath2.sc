@@ -45,6 +45,8 @@ WFSPath2 {
 	asTimeIndexEnv { ^Env( [0] ++ this.times.collect({ |time, i| i+1 }), this.times ); }
 	indexAtTime { |time = 0| ^this.asTimeIndexEnv.at( time ); }
 	
+	timeAtIndex { |index = 0| ^([0] ++ this.times.integrate).blendAt( index ) }
+	
 	atTime { |time = 0|
 		var index, controls;
 		index = this.indexAtTime( time );

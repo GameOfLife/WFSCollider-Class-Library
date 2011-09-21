@@ -1,15 +1,25 @@
 WFSPathBuffer : AbstractRichBuffer {
 	
+	classvar <>writeServers;
+	
 	var <wfsPath, <filePath;
 	var <>fileStartFrame, <>fileEndFrame; // in case the file is shared with other paths
 	var <startFrame = 0, endFrame;
 	var <rate = 1;
 	var <loop = false;
 	
+	*initClass {
+		writeServers = [ Server.default ];
+	}
+	
 	*new { |wfsPath, filePath|
 		^super.new( wfsPath !? { wfsPath.positions.size } ? 0, 9 )
 			.wfsPath_( wfsPath )
 			.filePath_( filePath );
+	}
+	
+	shallowCopy{
+        ^this.class.new(wfsPath, filePath);
 	}
 	
 	asControlInputFor { |server, startPos = 0| 
@@ -22,7 +32,7 @@ WFSPathBuffer : AbstractRichBuffer {
 	}
 	 
 	filePath_ { |new|
-		filePath = new ? filePath;
+		filePath = new;
 		this.changed( \filePath, filePath );
 	}
 
@@ -44,16 +54,31 @@ WFSPathBuffer : AbstractRichBuffer {
 	}
 	
 	endFrame_ { |new|
-		endFrame = new.min(numFrames);
+		endFrame = new.min(wfsPath.positions.size);
 		this.changed( \endFrame, endFrame );
 	}
 	
-	endFrame { if( numFrames.notNil ) { 
+	endFrame { 
+		if( numFrames.notNil ) { 
 			^(endFrame ? numFrames) % (numFrames+1) 
 		} { 
 			^endFrame 
 		};
 	}
+	
+	startSecond_ { |second = 0|
+		this.startFrame = wfsPath.indexAtTime( second );
+	}
+	
+	startSecond {
+		^wfsPath.timeAtIndex( startFrame );
+	}
+	
+	name_ { |new|
+		wfsPath.name = new.asString;
+	}
+	
+	name { ^wfsPath.name }
 	
 	makeBuffer { |server, action, bufnum|
 	    var buf;
@@ -93,6 +118,14 @@ WFSPathBuffer : AbstractRichBuffer {
 			};
 		}).add;
 		^buf;
+	}
+	
+	writeFile { |servers, path|
+		servers = (servers ? writeServers).asCollection;
+		filePath = path ? filePath;
+		servers.do({ |srv|
+			this.writeBuffer( srv, path );
+		});
 	}
 	
 	writeBuffer { |server, path, action|
