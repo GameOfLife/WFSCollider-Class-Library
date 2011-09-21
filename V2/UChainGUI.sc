@@ -105,7 +105,7 @@ UChainGUI {
 			.clipLo_(0)
 			.scroll_step_(0.1)
 			.action_({ |nb|
-				chain.setFadeIn( nb.value );
+				chain.fadeIn_( nb.value );
 			});
 			
 		views[ \fadeOut ] = SmoothNumberBox( composite, 40@14 )
@@ -138,7 +138,7 @@ UChainGUI {
 			} )
 			.put( \gain, { views[ \gain ].value = chain.getGain } )
 			.put( \dur, { var dur;
-				dur = chain.getDur;
+				dur = chain.dur;
 				if( dur == inf ) {
 					views[ \dur ].enabled = false; // don't set value
 					views[ \infDur ].value = 1;
