@@ -108,7 +108,27 @@ WFSPath2 {
 			if( i < selectionPath.times.size ) { times.put( item, selectionPath.times[i] ) };
 		});	
 	}	
+	
+/// OPERATIONS //////////////////////////////////////////////////////////////
 
+	insertPoint { |index = 0, point|
+		var timeToSplit;
+		point = point.asPoint;
+		timeToSplit = times.foldAt( index - 1 );
+		positions = positions.insert( index, point );
+		times = this.times.put( index, timeToSplit / 2 ).insert( index, timeToSplit / 2 );
+	}
+	
+	insertMultiple { |index = 0, points, inTimes|
+		points = points.asCollection;
+		inTimes = (inTimes ? points.collect(0.1))
+			.extend( points.size, 0.1 )
+			.collect({ |item| item ? 0.1 });
+		positions = positions[..index-1] ++ points ++ positions[index..];
+		times = this.times[..index-1] ++ inTimes ++ this.times[index..];
+		^index + (..points.size-1); // return indices of selection
+	}
+	
 //// COMPAT WITH OLD WFSPATH VERSION ////////////////////////////////////////
 
 	forceTimes { |timesArray| times = timesArray.asCollection; }
@@ -119,10 +139,19 @@ WFSPath2 {
 		^WFSPath( positions.collect(_.asWFSPoint), times.clipAt( (0..positions.size-2) ) );
 	}
 	
+	asWFSPath2 { ^this }
+	
 	// these are still used in WFSPathEditor2
 	intType { ^type }
 	intClipMode { ^clipMode }
 	intType_ { |type| this.type = type }
 	intClipMode_ { |mode| this.clipMode = mode }
 	
+}
+
++ WFSPath {
+	asWFSPath2 {
+		^WFSPath2( this.positions.collect(_.asPoint), this.times, this.name )
+			.intType_( \cubic );
+	}
 }

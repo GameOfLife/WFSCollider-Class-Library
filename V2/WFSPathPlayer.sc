@@ -56,6 +56,27 @@ WFSPathPlayer {
 		 }
 }
 
+WFSPathBufferPlayer { // use this inside an Udef
+	
+	*getArgs { |key, trigger = 1, startPos = 0| 
+		var bufnum, rate, loop, startFrame;
+		key = key ? 'wfsPath';
+		#bufnum, startFrame, rate, loop = key.asSymbol.kr( [ 0, 0, 1, 0 ] );
+		startFrame = startFrame + startPos;
+		^[ bufnum, startFrame, rate, loop, trigger ];
+	}
+	
+	*ar { |key, trigger = 1, startPos = 0, doneAction = 0|
+		^WFSPathPlayer.ar( *this.getArgs( key, trigger, startPos ) ++ [ doneAction ] );
+	}
+	
+	*kr { |key, trigger = 1, startPos = 0, doneAction = 0|
+		^WFSPathPlayer.kr( *this.getArgs( key, trigger, startPos ) ++ [ doneAction ] );
+	}
+	
+}
+
+
 + WFSPath2 {
 	asBufferArray {
 		var controls;
@@ -124,6 +145,7 @@ WFSPathPlayer {
 	}
 	
 	asBuffer { |server, bufnum, action, load = false|
+		// ** NOT USED BY WFSPathBuffer ** //
 		var array, buf;
 		array = this.asBufferArray;
 		if( load ) {
