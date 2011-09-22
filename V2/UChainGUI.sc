@@ -62,9 +62,9 @@ UChainGUI {
 			.clipLo_(0)
 			.action_({ |nb|
 				if( nb.value == 0 ) {
-					chain.setDur( inf );
+					chain.dur_( inf );
 				} {
-					chain.setDur( nb.value );
+					chain.dur_( nb.value );
 				};
 			});
 			
@@ -81,8 +81,8 @@ UChainGUI {
 						if( dur == 0 ) {
 							dur = 1;
 						};
-						chain.setDur( dur ) },
-					1, { chain.setDur( inf ) }
+						chain.dur_( dur ) },
+					1, { chain.dur_( inf ) }
 				);
 		});
 			
