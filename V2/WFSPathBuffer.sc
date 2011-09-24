@@ -149,3 +149,14 @@ WFSPathBuffer : AbstractRichBuffer {
 	}
 	
 }
+
++ WFSPath2 {
+	
+	asUnitArg { |unit|
+		^WFSPathBuffer( this ).asUnitArg( unit );
+	}
+	
+	asUnit {
+		^U( \wfsPathPlayer, [ \wfsPath, this ] );
+	}
+}

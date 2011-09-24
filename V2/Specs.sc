@@ -98,7 +98,7 @@ PointSpec : Spec {
 	// only for gui; output will always be Point
 
 	*new { |rect, step, default, units, mode|
-		^super.newCopyArgs( rect, (step ? 0).asPoint, default, units ? "", mode ).init;
+		^super.newCopyArgs( rect ? inf, (step ? 0).asPoint, default, units ? "", mode ? \point ).init;
 	}
 	
 	*testObject { |obj|
@@ -150,7 +150,7 @@ PointSpec : Spec {
 	}
 	
 	constrain { |value|
-		^value.asPoint.clip( clipRect.leftTop, clipRect.rightBottom ).round( step );
+		^value.asPoint.clip( clipRect.leftTop, clipRect.rightBottom ); //.round( step );
 	}
 	
 	map { |value|

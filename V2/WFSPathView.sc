@@ -841,3 +841,223 @@ WFSPathTimeView : WFSPathView {
 	
 }
 
+WFSPointView : WFSBasicEditView {
+		
+	var <pos; 
+	var <recordLastTime;
+	var <animationTask, <>animationRate = 1;
+
+	defaultObject	{ ^WFSPath2( { (8.0@8.0).rand2 } ! 7, [0.5] ); }	
+	mouseEditSelected { |newPoint|
+		var pt;
+		// returns true if changed
+		switch( editMode,
+			\move,  { 
+				pt = (newPoint.round(round) - lastPoint.round(round)) * (1@(-1));
+				this.moveSelected( pt.x, pt.y, false );
+			},
+			\scale, { 
+				pt = [ lastPoint.round(round).excess(0.001) * 
+						lastPoint.asArray.collect({ |item|
+							(item > 0).binaryValue.linlin(0,1,-1,1)
+						}).asPoint,
+					  newPoint.round(round).abs.max(0.001) * 
+						newPoint.asArray.collect({ |item|
+							(item > 0).binaryValue.linlin(0,1,-1,1)
+						}).asPoint
+				]; // prevent inf/nan
+				pt = pt[1] / pt[0];
+				this.scaleSelected( pt.x, pt.y, false ); 
+			},
+			\rotate, { 
+				this.rotateSelected( 
+					lastPoint.angle - newPoint.angle, 
+					1, 
+					false
+				);
+			},
+			\rotateScale, { 
+				this.rotateSelected( 
+					lastPoint.theta - newPoint.theta, 
+					newPoint.rho.max(0.001) / lastPoint.rho.max(0.001), 
+					false
+				);
+			}
+		);
+	}
+	
+	
+	drawContents { |scale = 1|
+		
+		//var curves;
+		//var selectColor = Color.yellow;
+		////var pospt, times;
+		var points, controls;
+		
+		scale = scale.asArray.mean;
+		
+		Pen.use({	
+			
+			Pen.width = 0.164;
+			Pen.color = Color.red(0.5, 0.5);
+				
+			//// draw configuration
+			(WFSSpeakerConf.default ?? {
+				WFSSpeakerConf.rect(48,48,5,5);
+			}).draw;
+				
+			// draw center
+			Pen.line( -0.25 @ 0, 0.25 @ 0 ).line( 0 @ -0.25, 0 @ 0.25).stroke;
+			
+			object.draw( drawMode, selected, pos, showControls, scale );
+			
+		});
+		
+	}
+	
+	getNearestIndex { |point, scaler| // returns nil if outside radius
+		var radius;
+		radius = scaler.asArray.mean * 5;
+		^object.positions.detectIndex({ |pt, i|
+			pt.asPoint.dist( point ) <= radius
+		});
+	}
+	
+	getIndicesInRect { |rect|
+		var pts = [];
+		object.positions.do({ |pt, i|
+			if( rect.contains( pt.asPoint ) ) { pts = pts.add(i) };
+		});
+		^pts;					
+	}
+	
+	// general methods
+	
+	resize { ^view.resize }
+	resize_ { |resize| view.resize = resize }
+	
+	path_ { |path| this.object = path }
+	path { ^object }
+	
+	pos_ { |newPos|
+		pos = newPos;
+		{ this.refresh; }.defer; // for animation
+		this.changed( \pos );
+	}
+	
+	undoKeys { ^[ 
+			\edit, \mouse_edit, \new_object, 
+			\removeSelected, \duplicateSelected, \endRecord
+		]; 
+	}
+	
+	// changing the object
+	
+	moveSelected { |x = 0,y = 0, update = true|
+		if( selected.size > 0 ) {
+			selected.do({ |index|
+				var pt;
+				pt = object.positions[ index ];
+				pt.x = pt.x + x;
+				pt.y = pt.y + y;
+			});
+			this.refresh; 
+			this.changed( \moveSelected ); 
+			if( update ) { this.changed( \edit, \move ); };
+		};
+	}
+	
+	scaleSelected { |x = 1, y, update = true|
+		y = y ? x;
+		if( selected.size > 0 ) {
+			selected.do({ |index|
+				var pt;
+				pt = object.positions[ index ];
+				pt.x = pt.x * x;
+				pt.y = pt.y * y;
+			});
+			this.refresh;
+			this.changed( \scaleSelected );
+			if( update ) { this.changed( \edit, \scale ); };
+		};
+	}
+	
+	rotateSelected { |angle = 0, scale = 1, update = true|
+		if( selected.size > 0 ) {
+			selected.do({ |index|
+				var pt, rpt;
+				pt = object.positions[ index ];
+				rpt = pt.rotate( angle ) * scale;
+				pt.x = rpt.x;
+				pt.y = rpt.y;
+			});
+			this.refresh;
+			this.changed( \rotateSelected ); 
+			if( update ) { this.changed( \edit, \rotate ); };
+		};
+	}
+	
+	duplicateSelected { 
+		var points, times, index;
+		if( selected.size >= 1 ) {
+			selected = selected.sort;
+			points = object.positions[ selected ].collect(_.copy);
+			times = object.times[ selected ];
+			index = selected.maxItem + 1;
+			selected = object.insertMultiple( index, points, times );
+			this.refresh;
+			this.changed( \duplicateSelected );
+		};
+	}
+	
+	removeSelected {
+		var times;
+		times = object.times;
+		selected.do({ |item, i|
+			var addTime;
+			addTime = times[ item ];
+			if( addTime.notNil && (item != 0) ) {
+				times[item-1] = times[item-1] + addTime;
+			};
+		});
+		object.positions = object.positions.select({ |item, i|
+			selected.includes(i).not;
+		});
+		object.forceTimes( 
+			times.select({ |item, i|
+				selected.includes(i).not;
+			}).collect( _ ? 0.1 )
+		);
+		selected = [];
+		this.refresh;
+		this.changed( \removeSelected );
+	}
+	
+	// selection
+	
+	select { |...indices|
+		if( indices[0] === \all ) { 
+			indices = object.positions.collect({ |item, i| i }).flat; 
+		} { 
+			indices = indices.flat;
+		};
+		if( selected != indices ) {
+			selected = indices; 
+			this.refresh;
+			this.changed( \select );
+		};
+	}
+	
+	selectNoUpdate { |...index|
+		if( index[0] === \all ) { 
+			index = object.positions.collect({ |item, i| i }).flat 
+		} {
+			index = index.flat;
+		};
+		if( selected != index ) {
+			selected = index;
+			this.changed( \select ); 
+		};
+	}
+	
+}

@@ -154,5 +154,6 @@ WFSPathBufferPlayer { // use this inside an Udef
 			^Buffer.sendCollection( server, array, 9, 0, action ); 
 		};
 	}
+
 }
 
