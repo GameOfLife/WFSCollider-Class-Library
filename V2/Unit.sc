@@ -352,6 +352,13 @@ U : ObjectWithArgs {
 		};	
 	}
 	
+	// override methods from Object to support args with names 'loop' and 'rate'
+	rate { ^this.get( \rate ) }
+	rate_ { |new| this.set( \rate, new ) }
+	loop { ^this.get( \loop ) }
+	loop_ { |new| this.set( \loop, new ) }
+	
+	
 	defName_ { |name, keepArgs = true|
 	  	this.init( name.asSymbol, if( keepArgs ) { args } { [] }); // keep args
 	}
