@@ -4,6 +4,8 @@ WFSBasicEditView {
 	
 	var <selected, <allSelected = false;
 	
+	var <>action;
+	
 	var <selectRect, <hitIndex;
 	var <hitPoint, <lastPoint, <optionOn = false;
 	
@@ -91,7 +93,7 @@ WFSBasicEditView {
 						hitPoint = (x@y); 
 					};
 				}, \record, {
-					this.changed( \start_record );
+					this.edited( \start_record );
 					selected = [];
 					this.startRecord( (x@y) * (1 @ -1), true );
 				});
@@ -129,7 +131,7 @@ WFSBasicEditView {
 						} { // selected point hit -> edit contents
 							if( editMode != \none ) {
 								if( externalEdit ) {
-									this.changed( \mouse_edit );
+									this.edited( \mouse_edit );
 									externalEdit = false;
 								};
 								if( mod.option && { optionOn.not }) { 
@@ -190,7 +192,7 @@ WFSBasicEditView {
 				} {	
 					if( mouseEdit ) { 
 						mouseEdit = false;
-						this.changed( \mouse_edit, editMode );
+						this.edited( \mouse_edit, editMode );
 					};
 					selectRect = nil;
 					hitPoint = nil;
@@ -274,12 +276,10 @@ WFSBasicEditView {
 	refresh {
 		if( view.view.isClosed.not ) { view.refresh };
 	}
-	
-	undoKeys { ^[ \mouse_edit, \new_object ] }
-	
+		
 	undoManager_ { |um|
 		undoManager = um;
-		this.changed( \new_object ); // force first undo state
+		this.edited( \new_object ); // force first undo state
 	}
 	
 	undo { |numSteps = 1|
@@ -291,18 +291,19 @@ WFSBasicEditView {
 				object.forceTimes( obj.times );
 				externalEdit = true;
 				this.refresh;
-				this.changed( \undo );
+				this.edited( \undo, \no_undo );
 			};
 		};
 	}
 	
-	changed { |what ... moreArgs|
+	edited { |what ... moreArgs| // creates undo state, calls action and changed
 		if( undoManager.notNil ) {
-			if( this.undoKeys.includes( what ) ) {
+			if( moreArgs.includes( \no_undo ).not ) { 
 				undoManager.add( this.object, ([ what ] ++ moreArgs).join("_").asSymbol );
 			};
 		};
-		super.changed( what, *moreArgs );
+		action.value( this );
+		this.changed( what, *moreArgs );		
 	}
 	
 	zoomToFit { |includeCenter = true|
@@ -348,7 +349,7 @@ WFSBasicEditView {
 	object_ { |newPath| 
 			object = newPath;
 			this.refresh;
-			this.changed( \new_object ); // update gui 
+			this.edited( \new_object ); // update gui 
 	}
 	
 	mouseMode_ { |newMode|
@@ -389,7 +390,7 @@ WFSPathView : WFSBasicEditView {
 		switch( editMode,
 			\move,  { 
 				pt = (newPoint.round(round) - lastPoint.round(round)) * (1@(-1));
-				this.moveSelected( pt.x, pt.y, false );
+				this.moveSelected( pt.x, pt.y, \no_undo );
 			},
 			\scale, { 
 				pt = [ lastPoint.round(round).excess(0.001) * 
@@ -402,20 +403,20 @@ WFSPathView : WFSBasicEditView {
 						}).asPoint
 				]; // prevent inf/nan
 				pt = pt[1] / pt[0];
-				this.scaleSelected( pt.x, pt.y, false ); 
+				this.scaleSelected( pt.x, pt.y, \no_undo ); 
 			},
 			\rotate, { 
 				this.rotateSelected( 
 					lastPoint.angle - newPoint.angle, 
 					1, 
-					false
+					\no_undo
 				);
 			},
 			\rotateScale, { 
 				this.rotateSelected( 
 					lastPoint.theta - newPoint.theta, 
 					newPoint.rho.max(0.001) / lastPoint.rho.max(0.001), 
-					false
+					\no_undo
 				);
 			}
 		);
@@ -480,15 +481,9 @@ WFSPathView : WFSBasicEditView {
 		this.changed( \pos );
 	}
 	
-	undoKeys { ^[ 
-			\edit, \mouse_edit, \new_object, 
-			\removeSelected, \duplicateSelected, \endRecord
-		]; 
-	}
-	
 	// changing the object
 	
-	moveSelected { |x = 0,y = 0, update = true|
+	moveSelected { |x = 0,y = 0 ...moreArgs|
 		if( selected.size > 0 ) {
 			selected.do({ |index|
 				var pt;
@@ -497,12 +492,11 @@ WFSPathView : WFSBasicEditView {
 				pt.y = pt.y + y;
 			});
 			this.refresh; 
-			this.changed( \moveSelected ); 
-			if( update ) { this.changed( \edit, \move ); };
+			this.edited( \edit, \move, *moreArgs );
 		};
 	}
 	
-	scaleSelected { |x = 1, y, update = true|
+	scaleSelected { |x = 1, y ...moreArgs|
 		y = y ? x;
 		if( selected.size > 0 ) {
 			selected.do({ |index|
@@ -512,12 +506,11 @@ WFSPathView : WFSBasicEditView {
 				pt.y = pt.y * y;
 			});
 			this.refresh;
-			this.changed( \scaleSelected );
-			if( update ) { this.changed( \edit, \scale ); };
+			this.edited( \edit, \scale, *moreArgs );
 		};
 	}
 	
-	rotateSelected { |angle = 0, scale = 1, update = true|
+	rotateSelected { |angle = 0, scale = 1 ...moreArgs|
 		if( selected.size > 0 ) {
 			selected.do({ |index|
 				var pt, rpt;
@@ -527,8 +520,7 @@ WFSPathView : WFSBasicEditView {
 				pt.y = rpt.y;
 			});
 			this.refresh;
-			this.changed( \rotateSelected ); 
-			if( update ) { this.changed( \edit, \rotate ); };
+			this.edited( \edit, \rotate, *moreArgs );
 		};
 	}
 	
@@ -541,7 +533,7 @@ WFSPathView : WFSBasicEditView {
 			index = selected.maxItem + 1;
 			selected = object.insertMultiple( index, points, times );
 			this.refresh;
-			this.changed( \duplicateSelected );
+			this.edited( \duplicateSelected );
 		};
 	}
 	
@@ -565,7 +557,7 @@ WFSPathView : WFSBasicEditView {
 		);
 		selected = [];
 		this.refresh;
-		this.changed( \removeSelected );
+		this.edited( \removeSelected );
 	}
 	
 	// selection
@@ -644,7 +636,7 @@ WFSPathView : WFSBasicEditView {
 			
 	endRecord {
 		recordLastTime = nil;
-		this.changed( \endRecord );
+		this.edited( \endRecord );
 	}
 }
 
@@ -788,16 +780,16 @@ WFSPathTimeView : WFSPathView {
 	
 	mouseEditSelected { |newPoint|
 		var pt;
-		// returns true if changed
+		// returns true if edited
 		switch( editMode,
 			\move,  { 
 				pt = (newPoint.round(round) - lastPoint.round(round));
-				this.moveSelected( pt.x, pt.y, false );
+				this.moveSelected( pt.x, pt.y, \no_undo );
 			}
 		);
 	}
 
-	moveSelected { |x = 0, y = 0, update = true|
+	moveSelected { |x = 0, y = 0 ...moreArgs|
 		var timesPositions;
 		var moveAmt;
 		if( (selected.size > 0) ) {
@@ -818,19 +810,18 @@ WFSPathTimeView : WFSPathView {
 			object.forceTimes((timesPositions[0]).differentiate[1..]);
 			selected = timesPositions[2].indicesOfEqual( true );
 			this.refresh;
-			this.changed( \moveSelected );
-			if( update ) { this.changed( \edit, \move ) };
+			this.edited( \edit, \move, *moreArgs );
 		};
 	}
 	
-	scaleSelected { |x = 1, y, update = true|
+	scaleSelected { |x = 1, y ...moreArgs|
 		y = y ? x;
 		if( selected.size > 0 ) {
 			selected.do({ |index|
 				object.positions[ index ] = object.positions[ index ] * (x@y);
 			});
 			this.refresh;
-			if( update ) { this.changed( \scaleSelected ); };
+			this.edited( \edit, \scale, *moreArgs );
 		};
 	}
 	
@@ -842,15 +833,14 @@ WFSPathTimeView : WFSPathView {
 }
 
 WFSPointView : WFSBasicEditView {
-		
-	var <pos; 
-	var <recordLastTime;
-	var <animationTask, <>animationRate = 1;
+	
+	// object is an array of points
 
-	defaultObject	{ ^WFSPath2( { (8.0@8.0).rand2 } ! 7, [0.5] ); }	
+	defaultObject	{ ^[ Point(0,0) ]	 }	
+	
 	mouseEditSelected { |newPoint|
 		var pt;
-		// returns true if changed
+		// returns true if edited
 		switch( editMode,
 			\move,  { 
 				pt = (newPoint.round(round) - lastPoint.round(round)) * (1@(-1));
@@ -893,6 +883,7 @@ WFSPointView : WFSBasicEditView {
 		//var selectColor = Color.yellow;
 		////var pospt, times;
 		var points, controls;
+		var selectColor = Color.yellow;
 		
 		scale = scale.asArray.mean;
 		
@@ -909,7 +900,34 @@ WFSPointView : WFSBasicEditView {
 			// draw center
 			Pen.line( -0.25 @ 0, 0.25 @ 0 ).line( 0 @ -0.25, 0 @ 0.25).stroke;
 			
-			object.draw( drawMode, selected, pos, showControls, scale );
+			Pen.scale(1,-1);
+			
+			points = object.asCollection.collect(_.asPoint);
+			
+			Pen.width = scale;
+			
+			// selected
+			Pen.use({	
+				if( selected.notNil ) {	
+					Pen.width = scale * 2;
+					Pen.color = selectColor;
+					selected.do({ |item|
+						Pen.moveTo( points[item] );
+						Pen.addArc( points[item] , 4 * scale, 0, 2pi );
+					});
+					
+					Pen.fill;
+				};
+			});
+			
+			Pen.color = Color.blue(1,0.5);
+			points.do({ |item|
+					Pen.moveTo( item );
+					Pen.addArc( item, 3 * scale, 0, 2pi );
+					Pen.line( item - ((5 * scale)@0), item + ((5 * scale)@0));
+					Pen.line( item - (0@(5 * scale)), item + (0@(5 * scale)));
+			});
+			Pen.stroke;
 			
 		});
 		
@@ -918,14 +936,14 @@ WFSPointView : WFSBasicEditView {
 	getNearestIndex { |point, scaler| // returns nil if outside radius
 		var radius;
 		radius = scaler.asArray.mean * 5;
-		^object.positions.detectIndex({ |pt, i|
+		^object.asCollection.detectIndex({ |pt, i|
 			pt.asPoint.dist( point ) <= radius
 		});
 	}
 	
 	getIndicesInRect { |rect|
 		var pts = [];
-		object.positions.do({ |pt, i|
+		object.asCollection.do({ |pt, i|
 			if( rect.contains( pt.asPoint ) ) { pts = pts.add(i) };
 		});
 		^pts;					
@@ -936,108 +954,86 @@ WFSPointView : WFSBasicEditView {
 	resize { ^view.resize }
 	resize_ { |resize| view.resize = resize }
 	
-	path_ { |path| this.object = path }
-	path { ^object }
+	point_ { |point| this.object = (object ? [0]).asCollection[0] = point.asPoint }
+	point { ^object.asCollection[0] }
 	
-	pos_ { |newPos|
-		pos = newPos;
-		{ this.refresh; }.defer; // for animation
-		this.changed( \pos );
-	}
-	
-	undoKeys { ^[ 
-			\edit, \mouse_edit, \new_object, 
-			\removeSelected, \duplicateSelected, \endRecord
-		]; 
-	}
+	at { |index| ^object.asCollection[index] }
+		
+		
 	
 	// changing the object
 	
-	moveSelected { |x = 0,y = 0, update = true|
+	moveSelected { |x = 0,y = 0 ...moreArgs|
 		if( selected.size > 0 ) {
 			selected.do({ |index|
 				var pt;
-				pt = object.positions[ index ];
+				pt = object.asCollection[ index ];
 				pt.x = pt.x + x;
 				pt.y = pt.y + y;
 			});
 			this.refresh; 
-			this.changed( \moveSelected ); 
-			if( update ) { this.changed( \edit, \move ); };
+			this.edited( \edit, \move );
 		};
 	}
 	
-	scaleSelected { |x = 1, y, update = true|
+	scaleSelected { |x = 1, y ...moreArgs|
 		y = y ? x;
 		if( selected.size > 0 ) {
 			selected.do({ |index|
 				var pt;
-				pt = object.positions[ index ];
+				pt = object.asCollection[ index ];
 				pt.x = pt.x * x;
 				pt.y = pt.y * y;
 			});
 			this.refresh;
-			this.changed( \scaleSelected );
-			if( update ) { this.changed( \edit, \scale ); };
+			this.edited( \edit, \scale, *moreArgs );
 		};
 	}
 	
-	rotateSelected { |angle = 0, scale = 1, update = true|
+	rotateSelected { |angle = 0, scale = 1 ...moreArgs|
 		if( selected.size > 0 ) {
 			selected.do({ |index|
 				var pt, rpt;
-				pt = object.positions[ index ];
+				pt = object.asCollection[ index ];
 				rpt = pt.rotate( angle ) * scale;
 				pt.x = rpt.x;
 				pt.y = rpt.y;
 			});
 			this.refresh;
-			this.changed( \rotateSelected ); 
-			if( update ) { this.changed( \edit, \rotate ); };
+			this.edited( \edit, \rotate, *moreArgs );
 		};
 	}
 	
 	duplicateSelected { 
-		var points, times, index;
+		var points;
 		if( selected.size >= 1 ) {
 			selected = selected.sort;
-			points = object.positions[ selected ].collect(_.copy);
-			times = object.times[ selected ];
-			index = selected.maxItem + 1;
-			selected = object.insertMultiple( index, points, times );
+			points = object.asCollection[ selected ].collect(_.copy);
+			selected = object.size + (..points.size-1);
+			object = object ++ points;
 			this.refresh;
-			this.changed( \duplicateSelected );
+			this.edited( \duplicateSelected );
 		};
 	}
 	
 	removeSelected {
-		var times;
-		times = object.times;
-		selected.do({ |item, i|
-			var addTime;
-			addTime = times[ item ];
-			if( addTime.notNil && (item != 0) ) {
-				times[item-1] = times[item-1] + addTime;
-			};
-		});
-		object.positions = object.positions.select({ |item, i|
-			selected.includes(i).not;
-		});
-		object.forceTimes( 
-			times.select({ |item, i|
+		if( object.size > selected.size ) {
+			object = object.asCollectionselect({ |item, i|
 				selected.includes(i).not;
-			}).collect( _ ? 0.1 )
-		);
-		selected = [];
+			});
+			selected = [];
+		} {
+			"WFSPointView-removeSelected : should leave at least one point".warn;
+		};
 		this.refresh;
-		this.changed( \removeSelected );
+		this.edited( \removeSelected );
 	}
 	
 	// selection
 	
 	select { |...indices|
 		if( indices[0] === \all ) { 
-			indices = object.positions.collect({ |item, i| i }).flat; 
+			indices = object.asCollection.collect({ |item, i| i }).flat; 
 		} { 
 			indices = indices.flat;
 		};
@@ -1050,7 +1046,7 @@ WFSPointView : WFSBasicEditView {
 	
 	selectNoUpdate { |...index|
 		if( index[0] === \all ) { 
-			index = object.positions.collect({ |item, i| i }).flat 
+			index = object.asCollection.collect({ |item, i| i }).flat 
 		} {
 			index = index.flat;
 		};
