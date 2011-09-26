@@ -65,12 +65,15 @@ WFSPointSpec : PointSpec {
 		var vws, view, labelWidth, val = 0@0;
 		var localStep;
 		var modeFunc;
+		var font;
+		var editAction;
 		vws = ();
+		
+		font =  (RoundView.skin ? ()).font ?? { Font( Font.defaultSansFace, 10 ); };
 		
 		localStep = step.copy;
 		if( step.x == 0 ) { localStep.x = 1 };
 		if( step.y == 0 ) { localStep.y = 1 };
-		
 		bounds.isNil.if{bounds= 320@20};
 		
 		view = EZCompositeView( parent, bounds, gap: 4@4 );
@@ -95,16 +98,6 @@ WFSPointSpec : PointSpec {
 			.action_({ |xy|
 				var newVal, theta;
 				newVal = val + (xy.value * localStep * (1 @ -1));
-				/*
-				theta = newVal.theta;
-				vws[ \x ].value = newVal.x;
-				vws[ \y ].value = newVal.y;
-				vws[ \rho ].value = newVal.rho;
-				vws[ \theta ].value = theta / pi;
-				vws[ \deg_cw ].value = theta
-					.wrap( -1.5pi, 0.5pi)
-					.linlin(-1.5pi, 0.5pi, 360, 0 );
-				*/
 				this.setView( vws, newVal );
 				action.value( vws, newVal );
 			})
@@ -115,7 +108,7 @@ WFSPointSpec : PointSpec {
 		vws[ \comp2 ] = CompositeView( view, 60 @ (bounds.height) );
 		
 		vws[ \mode ] = PopUpMenu( view, 60 @ (bounds.height) )
-			.font_( Font( Font.defaultSansFace, 10 ) )
+			.font_( font )
 			.applySkin( RoundView.skin ? () )
 			.items_([ 'point', 'polar', 'deg_cw' ])
 			.action_({ |pu|
@@ -197,7 +190,29 @@ WFSPointSpec : PointSpec {
 			.wrap_(true)
 			.value_(0);
 			
-		//vws[ \rotate ] = 
+		editAction = { |vw|
+			val = vw.object[0];
+			this.setMode( vws, mode );
+			action.value( vws, val );
+		};
+		
+		vws[ \edit ] = SmoothButton( view, 40 @ (bounds.height) )
+			.label_( "edit" )
+			.border_( 1 )
+			.radius_( 2 )
+			.font_( font )
+			.action_({
+				var editor;
+				editor = WFSPointView( object: [ val ] )
+					.canChangeAmount_( false )
+					.action_( editAction )
+					.onClose_({ 
+						if( vws[ \editor ] == editor ) {
+							vws[ \editor ] = nil;
+						};
+					});
+				vws[ \editor ] = editor;
+			});
 			
 		this.setMode( vws, mode );
 	
@@ -244,7 +259,10 @@ WFSPointSpec : PointSpec {
 		view[ \deg_cw ].value = theta
 			.wrap( -1.5pi, 0.5pi)
 			.linlin(-1.5pi, 0.5pi, 360, 0 );
-
+		view[ \editor ] !? {
+			view[ \editor ].object[ 0 ] = value;
+			view[ \editor ].refresh;
+		};
 		this.setMode( view, mode );
 		{ view[ \mode ].value = view[ \mode ].items.indexOf( mode ) ? 0; }.defer;
 		if( active ) { view[ \x ].doAction };

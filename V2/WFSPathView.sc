@@ -1,3 +1,11 @@
+/*
+These are basic editors for WFSPath2 and (WFS-)Points.
+use classes:
+	WFSPathView( parent, bounds, object ); // object: a WFSPath2
+	WFSPathTimeView( parent, bounds, object );  // object: a WFSPath2
+	WFSPointView( parent, bounds, object );  // object: a Point or Array of Points
+*/
+
 WFSBasicEditView {
 	
 	var <object, <view;
@@ -276,6 +284,9 @@ WFSBasicEditView {
 	refresh {
 		if( view.view.isClosed.not ) { view.refresh };
 	}
+	
+	onClose { ^view.onClose }
+	onClose_ { |func| view.onClose = func }
 		
 	undoManager_ { |um|
 		undoManager = um;
@@ -377,6 +388,8 @@ WFSBasicEditView {
 	selectNone { this.select( ) }
 }
 
+//////// PATH EDITOR /////////////////////////////////////////////////////////////////
+
 WFSPathView : WFSBasicEditView {
 	
 	var <pos; 
@@ -393,7 +406,7 @@ WFSPathView : WFSBasicEditView {
 				this.moveSelected( pt.x, pt.y, \no_undo );
 			},
 			\scale, { 
-				pt = [ lastPoint.round(round).excess(0.001) * 
+				pt = [ lastPoint.round(round).abs.max(0.001) * 
 						lastPoint.asArray.collect({ |item|
 							(item > 0).binaryValue.linlin(0,1,-1,1)
 						}).asPoint,
@@ -424,10 +437,6 @@ WFSPathView : WFSBasicEditView {
 	
 	
 	drawContents { |scale = 1|
-		
-		//var curves;
-		//var selectColor = Color.yellow;
-		////var pospt, times;
 		var points, controls;
 		
 		scale = scale.asArray.mean;
@@ -640,7 +649,7 @@ WFSPathView : WFSBasicEditView {
 	}
 }
 
-
+//////// PATH TIMELINE EDITOR /////////////////////////////////////////////////////////////////
 
 WFSPathTimeView : WFSPathView {
 	
@@ -832,7 +841,13 @@ WFSPathTimeView : WFSPathView {
 	
 }
 
+//////// POINT EDITOR /////////////////////////////////////////////////////////////////
+
 WFSPointView : WFSBasicEditView {
+	
+	var <>canChangeAmount = true;
+	var <showLabels = true;
+	var <labels;
 	
 	// object is an array of points
 
@@ -847,7 +862,7 @@ WFSPointView : WFSBasicEditView {
 				this.moveSelected( pt.x, pt.y, false );
 			},
 			\scale, { 
-				pt = [ lastPoint.round(round).excess(0.001) * 
+				pt = [ lastPoint.round(round).abs.max(0.001) * 
 						lastPoint.asArray.collect({ |item|
 							(item > 0).binaryValue.linlin(0,1,-1,1)
 						}).asPoint,
@@ -876,12 +891,20 @@ WFSPointView : WFSBasicEditView {
 		);
 	}
 	
+	showLabels_ { |bool| 
+		showLabels = bool; 
+		this.refresh; 
+		this.changed( \showLabels ); 
+	}
+	
+	labels_ { |array| 
+		labels = array.asCollection;
+		this.refresh; 
+		this.changed( \labels ); 
+	}
+	
 	
 	drawContents { |scale = 1|
-		
-		//var curves;
-		//var selectColor = Color.yellow;
-		////var pospt, times;
 		var points, controls;
 		var selectColor = Color.yellow;
 		
@@ -905,29 +928,43 @@ WFSPointView : WFSBasicEditView {
 			points = object.asCollection.collect(_.asPoint);
 			
 			Pen.width = scale;
-			
-			// selected
-			Pen.use({	
-				if( selected.notNil ) {	
-					Pen.width = scale * 2;
-					Pen.color = selectColor;
-					selected.do({ |item|
-						Pen.moveTo( points[item] );
-						Pen.addArc( points[item] , 4 * scale, 0, 2pi );
-					});
-					
-					Pen.fill;
-				};
-			});
-			
-			Pen.color = Color.blue(1,0.5);
+		
+			Pen.color = Color.blue(0.5,0.75);
 			points.do({ |item|
 					Pen.moveTo( item );
 					Pen.addArc( item, 3 * scale, 0, 2pi );
 					Pen.line( item - ((5 * scale)@0), item + ((5 * scale)@0));
 					Pen.line( item - (0@(5 * scale)), item + (0@(5 * scale)));
 			});
-			Pen.stroke;
+			Pen.stroke;	
+		
+			// selected
+			Pen.use({	
+				if( selected.notNil ) {	
+					Pen.width = scale;
+					Pen.color = selectColor;
+					selected.do({ |item|
+						Pen.moveTo( points[item] );
+						Pen.addArc( points[item] , 2.5 * scale, 0, 2pi );
+					});
+					
+					Pen.fill;
+				};
+			});
+			
+			if( showLabels && { points.size > 1 } ) {
+					Pen.font = Font( Font.defaultSansFace, 9 );
+					Pen.color = Color.black;
+					points.do({ |item, i|
+						Pen.use({
+							Pen.translate( item.x, item.y );
+							Pen.scale(scale,scale.neg);
+							Pen.stringAtPoint( 
+								((labels ? [])[i] ? i).asString, 
+								5 @ -12 );
+						});
+					});
+			};
 			
 		});
 		
@@ -935,7 +972,7 @@ WFSPointView : WFSBasicEditView {
 	
 	getNearestIndex { |point, scaler| // returns nil if outside radius
 		var radius;
-		radius = scaler.asArray.mean * 5;
+		radius = scaler.asArray.mean * 7;
 		^object.asCollection.detectIndex({ |pt, i|
 			pt.asPoint.dist( point ) <= radius
 		});
@@ -958,9 +995,20 @@ WFSPointView : WFSBasicEditView {
 	point { ^object.asCollection[0] }
 	
 	at { |index| ^object.asCollection[index] }
-		
-		
 	
+	zoomToFit { |includeCenter = true|
+		var x,y;
+		#x, y = object.collect({ |item| item.asArray }).flop;
+		if( includeCenter ) { 
+			view.viewRect_( Rect.fromPoints( x.minItem @ y.minItem, x.maxItem @ y.maxItem )
+				.union( Rect(0,0,0,0) ).insetBy(-5,-5) );  
+		} { 
+			view.viewRect_( Rect.fromPoints( x.minItem @ y.minItem, x.maxItem @ y.maxItem )
+				.asRect.scale(1@(-1)).insetBy(-5,-5) ); 
+		};
+	}
+
+		
 	// changing the object
 	
 	moveSelected { |x = 0,y = 0 ...moreArgs|
@@ -1006,7 +1054,7 @@ WFSPointView : WFSBasicEditView {
 	
 	duplicateSelected { 
 		var points;
-		if( selected.size >= 1 ) {
+		if( canChangeAmount && { selected.size >= 1} ) {
 			selected = selected.sort;
 			points = object.asCollection[ selected ].collect(_.copy);
 			selected = object.size + (..points.size-1);
@@ -1017,8 +1065,8 @@ WFSPointView : WFSBasicEditView {
 	}
 	
 	removeSelected {
-		if( object.size > selected.size ) {
-			object = object.asCollectionselect({ |item, i|
+		if( canChangeAmount && { object.size > selected.size } ) {
+			object = object.asCollection.select({ |item, i|
 				selected.includes(i).not;
 			});
 			selected = [];
@@ -1056,4 +1104,78 @@ WFSPointView : WFSBasicEditView {
 		};
 	}
 	
+}
+
+//////// PLANE EDITOR /////////////////////////////////////////////////////////////////
+
+WFSPlaneView : WFSPointView {
+
+	drawContents { |scale = 1|
+		var points, controls;
+		var selectColor = Color.yellow;
+		
+		scale = scale.asArray.mean;
+		
+		Pen.use({	
+			
+			Pen.width = 0.164;
+			Pen.color = Color.red(0.5, 0.5);
+				
+			//// draw configuration
+			(WFSSpeakerConf.default ?? {
+				WFSSpeakerConf.rect(48,48,5,5);
+			}).draw;
+				
+			// draw center
+			Pen.line( -0.25 @ 0, 0.25 @ 0 ).line( 0 @ -0.25, 0 @ 0.25).stroke;
+			
+			Pen.scale(1,-1);
+			
+			points = object.asCollection.collect(_.asPoint);
+			
+			Pen.width = scale;
+		
+			Pen.color = Color.blue(0.5,0.75);
+			points.do({ |p|
+				var polar, p1, p2;
+				polar = (p * (1@ 1)).asPolar;
+				p1 = polar.asPoint;
+				p2 = Polar( 50, polar.angle-0.5pi).asPoint;
+				Pen.line( p1 + p2, p1 - p2 ).stroke;
+				p2 = Polar( scale * 15, polar.angle ).asPoint;
+				Pen.arrow( p1 + p2, p1 - p2, scale * 5 );
+			});
+			Pen.stroke;
+		
+			// selected
+			Pen.use({	
+				if( selected.notNil ) {	
+					Pen.width = scale;
+					Pen.color = selectColor;
+					selected.do({ |item|
+						Pen.moveTo( points[item] );
+						Pen.addArc( points[item] , 2.5 * scale, 0, 2pi );
+					});
+					
+					Pen.fill;
+				};
+			});
+			
+			if( showLabels && { points.size > 1 } ) {
+					Pen.font = Font( Font.defaultSansFace, 9 );
+					Pen.color = Color.black;
+					points.do({ |item, i|
+						Pen.use({
+							Pen.translate( item.x, item.y );
+							Pen.scale(scale,scale.neg);
+							Pen.stringAtPoint( 
+								((labels ? [])[i] ? i).asString, 
+								5 @ -12 );
+						});
+					});
+			};
+			
+		});
+		
+	}	
 }
