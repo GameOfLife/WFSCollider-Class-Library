@@ -4,6 +4,7 @@ use classes:
 	WFSPathView( parent, bounds, object ); // object: a WFSPath2
 	WFSPathTimeView( parent, bounds, object );  // object: a WFSPath2
 	WFSPointView( parent, bounds, object );  // object: a Point or Array of Points
+	WFSPlaneView( parent, bounds, object );  // object: a Point or Array of Points
 */
 
 WFSBasicEditView {
@@ -287,6 +288,17 @@ WFSBasicEditView {
 	
 	onClose { ^view.onClose }
 	onClose_ { |func| view.onClose = func }
+	
+	close { // close enclosing window
+		view.view.getParents.last.findWindow.close;
+	}
+	
+	front { // close enclosing window
+		view.view.getParents.last.findWindow.front;
+	}
+
+	
+	isClosed { ^view.isClosed }
 		
 	undoManager_ { |um|
 		undoManager = um;
@@ -357,11 +369,17 @@ WFSBasicEditView {
 		view.move_([0.5,0.5]);
 	}
 	
-	object_ { |newPath| 
+	object_ { |newPath, active = true| 
 			object = newPath;
 			this.refresh;
-			this.edited( \new_object ); // update gui 
+			if( active ) { 
+				this.edited( \new_object ); // update gui 
+			} {
+				this.changed( \new_object ); 
+			};
 	}
+	
+	doAction { action.value( this ) }
 	
 	mouseMode_ { |newMode|
 		newMode = newMode ? \select;

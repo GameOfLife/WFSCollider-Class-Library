@@ -62,7 +62,7 @@ WFSPathSpec : Spec {
 WFSPointSpec : PointSpec {
 	
 	makeView { |parent, bounds, label, action, resize|
-		var vws, view, labelWidth, val = 0@0;
+		var vws, view, labelWidth;
 		var localStep;
 		var modeFunc;
 		var font;
@@ -80,6 +80,8 @@ WFSPointSpec : PointSpec {
 		bounds = view.asView.bounds;
 				
 		vws[ \view ] = view;
+		
+		vws[ \val ] = 0@0;
 		 		
 		if( label.notNil ) {
 			labelWidth = (RoundView.skin ? ()).labelWidth ? 80;
@@ -97,12 +99,12 @@ WFSPointSpec : PointSpec {
 		vws[ \xy ] = XYView( view, bounds.height.asPoint )
 			.action_({ |xy|
 				var newVal, theta;
-				newVal = val + (xy.value * localStep * (1 @ -1));
+				newVal = vws[ \val ] + (xy.value * localStep * (1 @ -1));
 				this.setView( vws, newVal );
 				action.value( vws, newVal );
 			})
 			.mouseUpAction_({
-				val = vws[ \x ].value @ vws[ \y ].value;
+				vws[ \val ] = vws[ \x ].value @ vws[ \y ].value;
 			});
 			
 		vws[ \comp2 ] = CompositeView( view, 60 @ (bounds.height) );
@@ -119,9 +121,9 @@ WFSPointSpec : PointSpec {
 		// point mode
 		vws[ \x ] = SmoothNumberBox( vws[ \comp1 ], 40 @ (bounds.height) )
 			.action_({ |nb|
-				val = nb.value @ val.y;
-				this.setView( vws, val );
-				action.value( vws, val);
+				vws[ \val ] = nb.value @ vws[ \val ] .y;
+				this.setView( vws, vws[ \val ]  );
+				action.value( vws, vws[ \val ] );
 			})
 			//.step_( localStep.x )
 			.scroll_step_( localStep.x )
@@ -131,9 +133,9 @@ WFSPointSpec : PointSpec {
 			
 		vws[ \y ] = SmoothNumberBox( vws[ \comp2 ], 40 @ (bounds.height) )
 			.action_({ |nb|
-				val = val.x @ nb.value;
-				this.setView( vws, val );
-				action.value( vws, val );
+				vws[ \val ]  = vws[ \val ] .x @ nb.value;
+				this.setView( vws, vws[ \val ]  );
+				action.value( vws, vws[ \val ]  );
 			})
 			//.step_( localStep.y )
 			.scroll_step_( localStep.y )
@@ -144,9 +146,9 @@ WFSPointSpec : PointSpec {
 		// polar, deg_cw
 		vws[ \rho ] = SmoothNumberBox( vws[ \comp1 ], 40 @ (bounds.height) )
 			.action_({ |nb|
-				val = val.asPolar.rho_( nb.value ).asPoint;
-				this.setView( vws, val );
-				action.value( vws, val );
+				vws[ \val ]  = vws[ \val ] .asPolar.rho_( nb.value ).asPoint;
+				this.setView( vws, vws[ \val ]  );
+				action.value( vws, vws[ \val ]  );
 			})
 			//.step_( localStep.x )
 			.scroll_step_( localStep.x )
@@ -158,9 +160,9 @@ WFSPointSpec : PointSpec {
 		// -pi - pi counterclockwise (0 = straight right)
 		vws[ \theta ] = SmoothNumberBox( vws[ \comp2 ], 40 @ (bounds.height) )
 			.action_({ |nb|
-				val = val.asPolar.theta_( nb.value * pi ).asPoint;
-				this.setView( vws, val );
-				action.value( vws, val );
+				vws[ \val ]  = vws[ \val ] .asPolar.theta_( nb.value * pi ).asPoint;
+				this.setView( vws, vws[ \val ]  );
+				action.value( vws, vws[ \val ]  );
 			})
 			.step_( 0.25 )
 			.scroll_step_( 0.005 )
@@ -177,11 +179,11 @@ WFSPointSpec : PointSpec {
 		// 0 - 360 clockwise (0 = straight front)
 		vws[ \deg_cw ] = SmoothNumberBox( vws[ \comp2 ], 40 @ (bounds.height) )
 			.action_({ |nb|
-				val = val.asPolar.theta_( 
+				vws[ \val ]  = vws[ \val ] .asPolar.theta_( 
 					nb.value.neg.linlin(-360,0,-1.5pi,0.5pi)
 				).asPoint;
-				this.setView( vws, val );
-				action.value( vws, val );
+				this.setView( vws, vws[ \val ]  );
+				action.value( vws, vws[ \val ]  );
 			})
 			.step_( 1 )
 			.scroll_step_( 1 )
@@ -191,11 +193,11 @@ WFSPointSpec : PointSpec {
 			.value_(0);
 			
 		editAction = { |vw|
-			val = vw.object[0];
+			vws[ \val ]  = vw.object[0];
 			this.setMode( vws, mode );
-			action.value( vws, val );
+			action.value( vws, vws[ \val ]  );
 		};
-		
+			
 		vws[ \edit ] = SmoothButton( view, 40 @ (bounds.height) )
 			.label_( "edit" )
 			.border_( 1 )
@@ -203,16 +205,27 @@ WFSPointSpec : PointSpec {
 			.font_( font )
 			.action_({
 				var editor;
-				editor = WFSPointView( object: [ val ] )
-					.canChangeAmount_( false )
-					.action_( editAction )
-					.onClose_({ 
-						if( vws[ \editor ] == editor ) {
-							vws[ \editor ] = nil;
-						};
-					});
-				vws[ \editor ] = editor;
+				if( vws[ \editor ].isNil or: { vws[ \editor ].isClosed } ) {
+					editor = WFSPointView( object: [ vws[ \val ] ] )
+						.canChangeAmount_( false )
+						.action_( editAction )
+						.onClose_({ 
+							if( vws[ \editor ] == editor ) {
+								vws[ \editor ] = nil;
+							};
+						});
+					vws[ \editor ] = editor;
+				} {
+					vws[ \editor ].front;
+				};
+				
 			});
+			
+		view.view.onClose_({
+			if( vws[ \editor ].notNil ) {
+				vws[ \editor ].close;
+			};
+		});
 			
 		this.setMode( vws, mode );
 	
@@ -252,6 +265,7 @@ WFSPointSpec : PointSpec {
 		var constrained, theta;
 		constrained = this.constrain( value );
 		theta = constrained.theta;
+		view[ \val ] = value;
 		view[ \x ].value = constrained.x;
 		view[ \y ].value = constrained.y;
 		view[ \rho ].value = constrained.rho;
@@ -272,7 +286,115 @@ WFSPointSpec : PointSpec {
 		this.setView( view, this.map( value ), active );
 	}
 	
-
+	massEditSpec { |inArray|
+		^WFSMultiPointSpec( rect, step, inArray, units, mode ); 
+	}
 	
+	massEditValue { |inArray|
+		^inArray
+	}
+	
+	massEdit { |inArray, params|
+		^params;
+	}
+
 }
 
+WFSMultiPointSpec : PointSpec {
+	
+	// array of points instead of a single point
+	
+	*testObject { |obj|
+		^obj.isCollection && { obj[0].class == Point };
+	}
+	
+	constrain { |value|
+		^value.collect(_.clip( clipRect.leftTop, clipRect.rightBottom )); //.round( step );
+	}
+	
+	map { |value|
+		^this.constrain( value.linlin(0, 1, rect.leftTop, rect.rightBottom, \none ) );
+	}
+	
+	unmap { |value|
+		^this.constrain( value ).linlin( rect.leftTop, rect.rightBottom, 0, 1, \none );
+	}
+	
+	makeView { |parent, bounds, label, action, resize|
+		var vws, view, labelWidth;
+		var localStep;
+		var font;
+		var editAction;
+		vws = ();
+		
+		font =  (RoundView.skin ? ()).font ?? { Font( Font.defaultSansFace, 10 ); };
+		
+		localStep = step.copy;
+		if( step.x == 0 ) { localStep.x = 1 };
+		if( step.y == 0 ) { localStep.y = 1 };
+		bounds.isNil.if{bounds= 320@20};
+		
+		view = EZCompositeView( parent, bounds, gap: 4@4 );
+		bounds = view.asView.bounds;
+		
+		vws[ \view ] = view;
+		
+		vws[ \val ] = this.default ? [];
+		
+		if( label.notNil ) {
+			labelWidth = (RoundView.skin ? ()).labelWidth ? 80;
+			vws[ \labelView ] = StaticText( vws[ \view ], labelWidth @ bounds.height )
+				.string_( label.asString ++ " " )
+				.align_( \right )
+				.resize_( 4 )
+				.applySkin( RoundView.skin );
+		} {
+			labelWidth = 0;
+		};
+
+				
+		editAction = { |vw|
+			vws[ \val ] = vw.object;
+			action.value( vws, vws[ \val ] );
+		};
+		
+		vws[ \edit ] = SmoothButton( view, 40 @ (bounds.height) )
+			.label_( "edit" )
+			.border_( 1 )
+			.radius_( 2 )
+			.font_( font )
+			.action_({
+				var editor;
+				if( vws[ \editor ].isNil or: { vws[ \editor ].isClosed } ) {
+					editor = WFSPointView( object: vws[ \val ] )
+						.canChangeAmount_( false )
+						.action_( editAction )
+						.onClose_({ 
+							if( vws[ \editor ] == editor ) {
+								vws[ \editor ] = nil;
+							};
+						});
+					vws[ \editor ] = editor;
+				} {
+					vws[ \editor ].front;
+				};
+				
+			});
+			
+		view.view.onClose_({
+			if( vws[ \editor ].notNil ) {
+				vws[ \editor ].close;
+			};
+		});
+	
+		^vws;
+	}
+	
+	setView { |view, value, active = false|
+		view[ \val ] = value.deepCopy;
+		view[ \editor ] !? {
+			view[ \editor ].object_( value, active ); 
+		};
+	}
+	
+}
