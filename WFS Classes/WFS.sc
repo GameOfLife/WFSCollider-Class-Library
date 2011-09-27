@@ -124,6 +124,8 @@ WFS {
 			
 			"\n\tWelcome to the WFS Offline System".postln	
 		});
+		
+		Server.default = WFSServers.default.m;
 
 		^server
 	}
@@ -169,6 +171,9 @@ WFS {
             WFSLevelBus.makeWindow;
 			"\n\tWelcome to the WFS System".postln; 
 		});	
+		
+		Server.default = WFSServers.default.m;
+		
 		^server	
 	}
 	
