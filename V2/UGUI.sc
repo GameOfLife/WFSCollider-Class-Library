@@ -21,7 +21,7 @@ UGUI {
 		margin = margin ?? {0@0};
 		gap = gap ??  {4@4};
 		^(margin.y * 2) + ( 
-			unit.def.argSpecs
+			unit.argSpecs
 				.select({|x|
 					x.private.not
 				})
@@ -47,7 +47,7 @@ UGUI {
 		unit.args.pairsDo({ |key, value, i|
 			var vw, argSpec;
 			
-			argSpec = unit.def.argSpecs[i/2];
+			argSpec = unit.argSpecs[i/2];
 			
 			if( argSpec.private.not ) { // show only if not private
 				vw = ObjectView( composite, nil, unit, key, 

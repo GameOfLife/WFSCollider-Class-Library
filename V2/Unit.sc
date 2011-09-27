@@ -249,6 +249,7 @@ U : ObjectWithArgs {
 		synths = [];
 		preparedServers = [];
 		env = (); // a place to store things in (for FreeUdef)
+		this.changed( \init );
 	}
 	
 	allKeys { ^this.keys }
@@ -273,7 +274,7 @@ U : ObjectWithArgs {
 	}
 
 	mapSet { |key, value|
-		var spec = def.getSpec(key);
+		var spec = this.getSpec(key);
 		if( spec.notNil ) {
 		    this.set(key, spec.map(value) )
 		} {
@@ -282,7 +283,7 @@ U : ObjectWithArgs {
 	}
 
 	mapGet { |key|
-		var spec = def.getSpec(key);
+		var spec = this.getSpec(key);
 		^if( spec.notNil ) {
 		    spec.unmap( this.get(key) )
 		} {
@@ -401,6 +402,9 @@ U : ObjectWithArgs {
 		this.values = this.def.values.deepCopy; 
 		def.setSynth( this, *args );
 	}
+	
+	argSpecs { ^def.argSpecs }
+	getSpec { |key| ^def.getSpec( key ); }
 
 	isPlaying { ^(synths.size != 0) }
 	
