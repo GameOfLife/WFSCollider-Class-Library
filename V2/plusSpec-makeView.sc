@@ -235,7 +235,8 @@
 	makeView { |parent, bounds, label, action, resize|
 		var vw = EZSmoothRanger( parent, bounds, label !? { label.asString ++ " " }, 
 			this.asControlSpec, 
-			{ |sl| sl.value = this.constrain( sl.value ); action.value(sl, sl.value) }
+			{ |sl| sl.value = this.constrain( sl.value ); action.value(sl, sl.value) },
+			labelWidth: (RoundView.skin ? ()).labelWidth ? 80
 			).value_( this.default );
 		// later incorporate rangeSpec into EZSmoothRanger
 		if( resize.notNil ) { vw.view.resize = resize };
