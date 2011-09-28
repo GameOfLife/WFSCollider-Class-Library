@@ -96,6 +96,7 @@ Udef : GenericDef {
 				item.private = true;
 			};
 		});
+		this.changed( \init );
 	}
 	
 	// this may change 
@@ -241,7 +242,7 @@ U : ObjectWithArgs {
 			def = this.class.defClass.fromName( inName.asSymbol );
 		};
 		if( def.notNil ) {	
-			args = def.asArgsArray( inArgs );
+			args = def.asArgsArray( inArgs ? [] );
 			this.values = this.values.collect(_.asUnitArg(this));
 		} { 
 			"defName '%' not found".format(inName).warn; 
@@ -359,9 +360,13 @@ U : ObjectWithArgs {
 	loop { ^this.get( \loop ) }
 	loop_ { |new| this.set( \loop, new ) }
 	
-	
+	defName { ^def !? { def.name } }
 	defName_ { |name, keepArgs = true|
-	  	this.init( name.asSymbol, if( keepArgs ) { args } { [] }); // keep args
+	  	this.def_( name, keepArgs );
+	}
+	
+	def_ { |newDef, keepArgs = true|
+		this.init( newDef, if( keepArgs ) { args } { [] }); // keep args
 	}
 
 	makeSynth { |target, synthAction|
@@ -407,9 +412,7 @@ U : ObjectWithArgs {
 	getSpec { |key| ^def.getSpec( key ); }
 
 	isPlaying { ^(synths.size != 0) }
-	
-	defName { ^def !? { def.name } }
-	
+		
 	printOn { arg stream;
 		stream << "a " << this.class.name << "(" <<* [this.defName, args]  <<")"
 	}

@@ -12,6 +12,7 @@ FreeUdef( \wfsDynamicPoint, [
 		[ \crossfadeLag:	0.2,		[ 0, 1, \lin, 0, 0.2 ].asSpec ],
 		[ \dontPause:		false,	BoolSpec( false ) ]
 ] )
+	.category_( \wfs_panner )
 	// first a few general things
 	.envPut( \getArgsFor, { |evt, which, args, server|
 		if( which.notNil ) {

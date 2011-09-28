@@ -13,6 +13,7 @@ Udef( \stereo_output, { |bus = 0, point = #[0,0], lag = 2, rollOff = (-6)|
 
 	Out.ar( bus, panned * pankr * UEnv.kr  );
 } )
+	.category_( \output )
 	.setSpec( \bus, PositiveIntegerSpec( 0 ) )
 	.setSpec( \point, PointSpec( 200, step: 0.1 ) )
 	.setSpec( \rollOff, [ -12, 0, \lin, 1 ].asSpec )

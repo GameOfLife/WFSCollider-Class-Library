@@ -1,9 +1,21 @@
 UChainGUI {
 	
+	classvar <>skin;
+	
 	var <chain;
 	
 	var <parent, <composite, <views, <startButton, <uguis, <controller;
 	var <>action;
+	
+	*initClass {
+		StartUp.defer({
+			skin = ( 
+				labelWidth: 80, 
+				font: Font( Font.defaultSansFace, 10 ), 
+				hiliteColor: Color.gray(0.33)
+			);
+		});
+	}
 	
 	*new { |parent, bounds, unit|
 		^super.newCopyArgs( unit ).init( parent, bounds );
@@ -15,18 +27,26 @@ UChainGUI {
 		this.makeViews( bounds );
 	}
 	
-	setViews {
+	makeViews { |bounds|
+		RoundView.useWithSkin( skin ++ (RoundView.skin ? ()), {
+			this.prMakeViews( bounds );
+		});
 	}
 	
-	makeViews { |bounds|
+	prMakeViews { |bounds|
 		var margin = 0@0, gap = 4@4;
 		var heights, units;
 		var labelWidth;
+		var unitInitFunc;
+		var originalBounds;
 		
 		labelWidth = 80;
+		
 		if( RoundView.skin.notNil ) { labelWidth = RoundView.skin.labelWidth ? 80 };
 		
 		views = ();
+		
+		originalBounds = bounds.copy;
 		
 		bounds = bounds ?? { parent.asView.bounds.insetBy(4,4) };
 		units = chain.units.collect({ |u| 
@@ -156,8 +176,17 @@ UChainGUI {
 		chain.changed( \fadeIn );
 		chain.changed( \fadeOut );
 		
+		unitInitFunc = { |unit, what ...args|
+			if( what === \init ) { // close all views and create new
+				composite.remove;
+				this.makeViews( originalBounds );
+			};
+		};
+		
 		uguis = units.collect({ |unit, i|
-			StaticText( composite, (composite.bounds.width - (margin.x * 2))@14 )
+			var header;
+			
+			header = DragSink( composite, (composite.bounds.width - (margin.x * 2))@14 )
 				.applySkin( RoundView.skin )
 				.string_( " " ++ i ++ ": " ++ unit.defName )
 				.background_( Color.white.alpha_(0.5) )
@@ -166,8 +195,36 @@ UChainGUI {
 					(RoundView.skin.tryPerform( \at, \font ) ?? 
 						{ Font( Font.defaultSansFace, 12) }).boldVariant 
 				);
+			
+			if( chain.class != MassEditUChain ) {
+				header.canReceiveDragHandler_({ |sink|
+					var drg;
+					drg = View.currentDrag;
+					case { drg.isKindOf( Udef ) } 
+						{ true }
+						{ [ Symbol, String ].includes( drg.class ) }
+						{ Udef.all.keys.includes( drg.asSymbol ) }
+						{ false }
+				})
+				.receiveDragHandler_({ |sink, x, y|
+					unit.defName = View.currentDrag;
+				});
+			};
+						
+			unit.addDependant( unitInitFunc );
+			header.onClose_({ unit.removeDependant( unitInitFunc ) });
 			unit.gui( composite, composite.bounds  );
 		});
+	}
+	
+	remove {
+		composite.remove;
+	}
+	
+	close {
+		if( composite.isClosed.not ) {
+			composite.getParents.last.findWindow.close;
+		};
 	}
 	
 	resize_ { |resize| composite.resize_(resize) }

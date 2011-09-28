@@ -19,6 +19,8 @@ FreeUdef( \wfsStaticPoint, [
 		[ \maxAmpRadius:	2,		[ 1, 5, \lin, 0, 2, "m" ].asSpec ],
 		[ \arrayLimit:	1,		[ 0.164, 1, \lin, 0, 1 ].asSpec ],  // better name?
 ] )
+
+	.category_( \wfs_panner )
 	// first a few general things
 	.envPut( \getArgsFor, { |evt, which, args, server|
 		if( which.notNil ) {
