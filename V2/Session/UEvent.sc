@@ -33,9 +33,9 @@ UEvent {
 	<= { |that| ^this.prepareTime <= that.prepareTime } // sort support
 	
 	/*
-     UEvent can impose a duration upon uchains. It's called eventDuration. It imposes a duration on the uchain.
-     The difference is that if a uchain has a non-inf duration, it ends itself ("oneshot"), but if the eventDuration
-     is non-inf, and lower than the uchain duration, it frees the uchain via .release ("flexible").
+     UEvent can impose a duration upon uchains using the variable eventDuration.
+     The difference is that if a uchain has a non-inf duration, it ends itself but if the eventDuration
+     is non-inf, and lower than the uchain duration, it frees the uchain via .release.
      The actual duration of the event is the lowest of these two durations (eventDuration, uchain.duration).
 	*/
 	duration { ^(object.tryPerform( \duration ) ? inf).min( eventDuration ) }
