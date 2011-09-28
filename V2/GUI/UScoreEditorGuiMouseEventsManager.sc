@@ -1,7 +1,7 @@
 UScoreEditorGuiMouseEventsManager {
 	classvar minimumMov = 3;
-	var <uscoreEditor;
-	var <eventViews, <uscoreEditorGUI, <>state = \nothing;
+	var <scoreEditor;
+	var <eventViews, <scoreEditorGUI, <>state = \nothing;
 	var <mouseMoved = false, <mouseDownPos, <unscaledMouseDownPos;
 	var <selectionRect, event;
 	var <xLimit, <yLimit;
@@ -26,21 +26,22 @@ UScoreEditorGuiMouseEventsManager {
 	//     - no shiftDown -> only set newly selected events
 	
 	
-	*new { |uscoreEditor|
-		^super.newCopyArgs(uscoreEditor).init
+	*new { |scoreEditor|
+		^super.newCopyArgs(scoreEditor).init
 	}
 
 	init {
         this.makeEventViews;
-	    scoreEditorController = SimpleController( uscoreEditor );
+	    scoreEditorController = SimpleController( scoreEditor );
 
 		scoreEditorController.put(\score, {
+		    //"rebuilding views".postln;
 		    this.makeEventViews
 		});
 	}
 
 	makeEventViews{
-	    eventViews = uscoreEditor.events.collect{ |event,i|
+	    eventViews = scoreEditor.events.collect{ |event,i|
 			event.makeView(i)
 	    };
 	}
@@ -61,6 +62,15 @@ UScoreEditorGuiMouseEventsManager {
 
 	selectedEvents {
 	    ^this.selectedEventViews.collect( _.event )
+	}
+
+	selectedEventsOrAll {
+	    var v = this.selectedEventViews;
+	    if(v.size > 0){
+	        ^v.collect( _.event )
+	    } {
+	        ^scoreEditor.score.events
+	    }
 	}
 		
 	mouseDownEvent{ |mousePos,unscaledMousePos,shiftDown,altDown,scaledUserView|
@@ -149,7 +159,7 @@ UScoreEditorGuiMouseEventsManager {
 		yLimit = this.selectedEventViews.collect({ |ev| ev.event.track }).minItem;
 		
 		if([\nothing, \selecting].includes(state).not) {
-			uscoreEditor.storeUndoState;
+			scoreEditor.storeUndoState;
 
 		};
 		
@@ -185,10 +195,10 @@ UScoreEditorGuiMouseEventsManager {
 
 
 				// NEEDS FIXING
-                uscoreEditor.score.events = uscoreEditor.score.events ++ newEventViews.collect( _.event );
+                scoreEditor.score.events = scoreEditor.score.events ++ newEventViews.collect( _.event );
                 eventViews = eventViews ++ newEventViews;
 
-				//("scoreEvents "++uscoreEditor.score.events.size).postln;
+				//("scoreEvents "++scoreEditor.score.events.size).postln;
 
 				//("selected events"++this.selectedEventViews).postln;
 				copyed = true;				
@@ -227,8 +237,9 @@ UScoreEditorGuiMouseEventsManager {
 	
 	mouseUpEvent{ |mousePos,unscaledMousePos,shiftDown,scaledUserView|
 		var oldSelectedEvents;
-		
-		if(this.isResizingOrFades) { 
+
+		if(this.isResizingOrFades) {
+		    //"resizing or fades".postln;
 			if(mouseMoved.not) {
 				eventViews.do{ |eventView|
 					if(eventView.isResizingOrFades.not) {
@@ -241,8 +252,10 @@ UScoreEditorGuiMouseEventsManager {
 				
 		} {
 			if((state == \moving)) {
-				"finished move";
+				//"finished move".postln;
 				if(mouseMoved.not){
+				    //"mouse didn't move".postln;
+				    state = \nothing;
 					eventViews.do({ |eventView|
 						if(shiftDown.not) {
 							if(eventView != event) {
@@ -259,21 +272,16 @@ UScoreEditorGuiMouseEventsManager {
 						eventView.checkSelectionStatus(selectionRect,shiftDown);
 					};
 					if(mouseMoved.not) {
-						uscoreEditor.score.stoppedAt = mouseDownPos.x;
+						scoreEditor.score.pos = mouseDownPos.x;
 					};
 				}
 			}
 		};
 			
 		/*if( UEventEditor.current.notNil && { this.selectedEventViews[0].notNil } ) {
-			this.selectedEventViews[0].event.edit( parent: uscoreEditor );
+			this.selectedEventViews[0].event.edit( parent: scoreEditor );
 		};*/
-		
-		if([\nothing, \selecting].includes(state).not) {
-			uscoreEditor.changed(\score);
 
-		};
-		
 		//go back to start state
 		eventViews.do{ |eventView|
 			eventView.clearState
@@ -283,7 +291,6 @@ UScoreEditorGuiMouseEventsManager {
 		state = \nothing;
 		isCopying = false;
 		copyed = false;
-
 
 	}
 	
