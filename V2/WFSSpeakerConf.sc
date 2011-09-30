@@ -152,6 +152,8 @@ WFSArrayConf { // configuration for one single speaker array
 			);
 		});
 	}
+	
+	storeArgs { ^[n, dist, Angle(angle), offset, spWidth] }
 
 }
 
@@ -225,6 +227,26 @@ WFSSpeakerConf {
 		};
 	}
 	
+	firstSpeakerIndexOf { |server|
+		var i;
+		i = this.class.systemOfServer( server );
+		if( i.notNil ) {
+			^this.divideArrays[..i-1].flatten(1).collect(_.n).sum;
+		} {
+			^nil; // nil if not found
+		};
+	}
+	
+	lastSpeakerIndexOf { |server|
+		var i;
+		i = this.class.systemOfServer( server );
+		if( i.notNil ) {
+			^this.divideArrays[..i].flatten(1).collect(_.n).sum - 1;
+		} {
+			^nil; // nil if not found
+		};
+	}
+	
 	// Server management
 	
 	*numSystems_ { |n = 2| // number of systems to divide the speakerarrays over
@@ -255,6 +277,10 @@ WFSSpeakerConf {
 		^nil;
 	}
 	
+	*includesServer { |server|
+		^this.systemOfServer( server ).notNil;
+	}
+	
 	*initClass { 
 		this.numSystems = 2; // create server library
 	}
@@ -267,5 +293,7 @@ WFSSpeakerConf {
 	asLines { ^arrayConfs.collect(_.asLine) }
 	
 	draw { |mode = \lines| arrayConfs.do(_.draw(mode)); }
+	
+	storeArgs { ^arrayConfs.collect(_.storeArgs) }
 	
 }
