@@ -375,5 +375,7 @@ UChain {
 	printOn { arg stream;
 		stream << "a " << this.class.name << "(" <<* units.collect(_.defName)  <<")"
 	}
+	
+	storeArgs { ^units }
 
 }

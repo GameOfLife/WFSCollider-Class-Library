@@ -417,12 +417,16 @@ U : ObjectWithArgs {
 		stream << "a " << this.class.name << "(" <<* [this.defName, args]  <<")"
 	}
 
+	/*
 	storeOn { arg stream;
 		stream << this.class.name << "(" <<* [
 			( this.defName ? this.def ).asCompileString,
 			args.asCompileString
 		]  <<")"
 	}
+	*/
+	
+	storeArgs { ^[ this.defName ? this.def, args ] }
 	
 	asUnit { ^this }
 
