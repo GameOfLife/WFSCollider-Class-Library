@@ -120,7 +120,7 @@ Udef : GenericDef {
 	load { |server| this.loadSynthDef( server ) }
 	send { |server| this.sendSynthDef( server ) }
 	
-	makeSynth { |unit, target, synthAction|
+	makeSynth { |unit, target, startPos = 0, synthAction|
 	    var synth;
 	    if( unit.shouldPlayOn( target ) != false ) {
 		    /* // maybe we don't need this, or only at verbose level
@@ -130,7 +130,7 @@ Udef : GenericDef {
 					.warn;
 			};
 			*/
-			synth = this.createSynth( unit, target );
+			synth = this.createSynth( unit, target, startPos );
 			synth.startAction_({ |synth|
 				unit.changed( \go, synth );
 			});
@@ -187,9 +187,9 @@ Udef : GenericDef {
 	canFreeSynth { ^this.keys.includes( \u_doneAction ) } // assumes the Udef contains a UEnv
 	
 	// these may differ in subclasses of Udef
-	createSynth { |unit, target| // create A single synth based on server
+	createSynth { |unit, target, startPos = 0| // create A single synth based on server
 		target = target ? Server.default;
-		^Synth( this.synthDefName, unit.getArgsFor( target ), target, \addToTail );
+		^Synth( this.synthDefName, unit.getArgsFor( target, startPos ), target, \addToTail );
 	}
 	
 	setSynth { |unit ...keyValuePairs|
@@ -221,6 +221,8 @@ Udef : GenericDef {
 
 U : ObjectWithArgs {
 	
+	classvar <>loadDef = false;
+	
 	var <def;
 	var <>synths;
 	var <>disposeOnFree = true;
@@ -228,7 +230,6 @@ U : ObjectWithArgs {
 	var >waitTime; // use only to override waittime from args
 	var <>env;
 
-	
 	*new { |defName, args|
 		^super.new.init( defName, args ? [] )
 	}
@@ -304,15 +305,16 @@ U : ObjectWithArgs {
 		);
 	}
 	
-	getArgsFor { |server|
+	getArgsFor { |server, startPos = 0|
 		server = server.asTarget.server;
-		^this.args.collect({ |item, i|
-			if( i.odd ) {
-				item.asControlInputFor( server );
-			} {
-				item
-			}
-		});
+		^this.args.clump(2).collect({ |item, i|
+			[ item[0], switch( item[0], 
+				\u_startPos, { startPos },
+				\u_dur, { item[1] - startPos },
+				\u_fadeIn, { (item[1] - startPos).max(0) },
+				{ item[1].asControlInputFor( server, startPos ) }
+			) ];
+		}).flatten(1);
 	}
 	
 	setAudioIn { |id = 0, bus = 0|
@@ -369,20 +371,20 @@ U : ObjectWithArgs {
 		this.init( newDef, if( keepArgs ) { args } { [] }); // keep args
 	}
 
-	makeSynth { |target, synthAction|
-		def.makeSynth( this, target, synthAction );
+	makeSynth { |target, startPos = 0, synthAction|
+		def.makeSynth( this, target, startPos, synthAction );
 	}
 	
-	makeBundle { |targets, synthAction|
+	makeBundle { |targets, startPos = 0, synthAction|
 		^targets.asCollection.collect({ |target|
 			target.asTarget.server.makeBundle( false, {
-			    this.makeSynth(target, synthAction)
+			    this.makeSynth(target, startPos, synthAction)
 			});
 		})
 	}
 	
-	start { |target, latency|
-		var targets, bundles, unprepared;
+	start { |target, startPos = 0, latency|
+		var targets, bundles;
 		target = target ? Server.default;
 		targets = target.asCollection;
 		bundles = this.makeBundle( targets );
@@ -447,7 +449,7 @@ U : ObjectWithArgs {
 		^this.valuesToPrepare.size > 0;
 	}
 	
-	prepare { |target, loadDef = true, action|
+	prepare { |target, startPos = 0, action|
 		var valuesToPrepare, act;
 		target = target.asCollection.collect{ |t| t.asTarget.server };
 		target = target.select({ |tg|
@@ -461,7 +463,7 @@ U : ObjectWithArgs {
 	    if( valuesToPrepare.size > 0 ) {
 		    act = MultiActionFunc( act );
 		    valuesToPrepare.do({ |val|
-			     val.prepare(target.asCollection, action: act.getAction)
+			     val.prepare(target.asCollection, startPos, action: act.getAction)
 		    });
 	    } {
 		    act.value; // if no prepare args done immediately
@@ -510,9 +512,13 @@ U : ObjectWithArgs {
 }
 
 + Object {
-	asControlInputFor { |server| ^this.asControlInput } // may split between servers
+	asControlInputFor { |server, startPos| ^this.asControlInput } // may split between servers
 	u_waitTime { ^0 }
 	asUnitArg { |unit| ^this }
+}
+
++ Function {
+	asControlInputFor { |server, startPos| ^this.value( server, startPos ) }
 }
 
 + Symbol { 

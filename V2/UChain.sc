@@ -179,7 +179,7 @@ UChain {
 	
 	/// creation
 
-	makeGroupAndSynth { |target|
+	makeGroupAndSynth { |target, startPos = 0|
 		var maxDurUnit;
 	    var group;
 	    if( this.shouldPlayOn( target ) != false ) {
@@ -194,27 +194,27 @@ UChain {
 	                });
 	        groups = groups.add( group );
 	        this.changed( \start, group );
-	        units.do( _.makeSynth(group) );
+	        units.do( _.makeSynth(group, startPos) );
 	    };
 	}
 
-	makeBundle { |targets|
+	makeBundle { |targets, startPos = 0|
 		this.setDoneAction;
 	    ^targets.asCollection.collect{ |target|
 	        target.asTarget.server.makeBundle( false, {
-                this.makeGroupAndSynth(target)
+                this.makeGroupAndSynth(target, startPos)
             })
 		}
 	}
 	
-	start { |target, latency|
+	start { |target, startPos = 0, latency|
 		var targets, bundles;
 		if( target.isNil ) {
 			target = this.class.defaultServers ? Server.default;
 		};
 		targets = target.asCollection;
-		bundles = this.makeBundle( targets );
-		latency = latency ? 0.2;
+		bundles = this.makeBundle( targets, startPos );
+		latency = latency ?? { Server.default.latency; };
 		targets.do({ |target, i|
 			if( bundles[i].size > 0 ) {
 				target.asTarget.server.sendSyncedBundle( latency, nil, *bundles[i] );
@@ -267,7 +267,7 @@ UChain {
 		};
 	}
 
-	prepare { |target, loadDef = true, action|
+	prepare { |target, startPos = 0, action|
 		action = MultiActionFunc( action );
 		if( target.isNil ) {
 			target = this.class.defaultServers ? Server.default;
@@ -275,22 +275,22 @@ UChain {
 		target = target.asCollection.select({ |tg|
 			this.shouldPlayOn( tg ) != false;
 		});
-	     units.do( _.prepare(target, loadDef, action.getAction ) );
+	     units.do( _.prepare(target, startPos, action.getAction ) );
 	     action.getAction.value; // fire action at least once
 	     ^target; // return array of actually prepared servers
 	}
 
-	prepareAndStart{ |target, loadDef = true|
+	prepareAndStart{ |target, startPos = 0|
 		var task;
 		if( target.isNil ) {
 			target = this.class.defaultServers ? Server.default;
 		};
 		task = fork { 
-			target = this.prepare( target, loadDef );
+			target = this.prepare( target, startPos );
 			target.asCollection.do{ |t|
 				t.asTarget.server.sync;
 			};
-	       	this.start(target);
+	       	this.start(target, startPos);
 	       	prepareTasks.remove(task);
 		};
 	    prepareTasks = prepareTasks.add( task );
@@ -298,12 +298,12 @@ UChain {
 	
 	waitTime { ^this.units.collect(_.waitTime).sum }
 	
-	prepareWaitAndStart { |target, loadDef = true|
+	prepareWaitAndStart { |target, startPos = 0|
 		var task;
 		task = fork { 
-			this.prepare( target, loadDef );
+			this.prepare( target, startPos );
 			this.waitTime.wait; // doesn't care if prepare is done
-	       	this.start(target);
+	       	this.start(target, startPos);
 	       	prepareTasks.remove(task);
 		};
 	    prepareTasks = prepareTasks.add( task );

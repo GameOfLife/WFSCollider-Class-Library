@@ -76,10 +76,10 @@ AbstractRichBuffer {
 		});
 	}
 
-	prepare { |servers, action|
+	prepare { |servers, startPos = 0, action|
 	    //this.resetBuffers;
 	    action = MultiActionFunc( action );
-	    servers.do({ |server| this.makeBuffer(server, action: action.getAction) })
+	    servers.do({ |server| this.makeBuffer(server, startPos, action: action.getAction) })
 	}
 
 	dispose {
@@ -132,7 +132,7 @@ RichBuffer : AbstractRichBuffer {
         ^super.new(numFrames, numChannels, sampleRate)
     }
 
-	makeBuffer { |server, action, bufnum|
+	makeBuffer { |server, startPos = 0, action, bufnum|
 	    var buf;
 		buf = Buffer.alloc(server, numFrames, numChannels, nil, bufnum );
 		OSCresponderNode( server.addr, '/done', { |time, resp, msg, addr|
@@ -373,9 +373,9 @@ AbstractSndFile : AbstractRichBuffer {
 		^chain;
 	}
 
-	play{ |target|
+	play{ |target, startPos = 0|
 	    var chain = this.makeUChain;
-	    chain.prepareAndStart(target ? Server.default);
+	    chain.prepareAndStart(target ? Server.default, startPos);
 	    ^chain
 	}
 

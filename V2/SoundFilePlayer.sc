@@ -14,7 +14,7 @@ BufSndFilePlayer {
 		if( startPos.isNil ) { startPos = 'u_startPos'.kr(0); }; // for use inside a U or UChain
 		startFrame = ((startPos * BufSampleRate.kr( bufnum )) / rate);
 		if( ugenRate == \control ) { startFrame = startFrame / (SampleRate.ir / ControlRate.ir); };
-		^[ numChannels, bufnum, BufRateScale.kr( bufnum ) * rate, trigger, startPos, loop ];
+		^[ numChannels, bufnum, BufRateScale.kr( bufnum ) * rate, trigger, startFrame, loop ];
 	}
 	
 	*ar { |numChannels = 1, key, trigger = 1, startPos, doneAction = 0|
