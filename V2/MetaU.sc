@@ -57,13 +57,19 @@ MetaUdef : GenericDef {
 
     // metaArgs -> [\arg1,val1,\arg2,val2]
     createName { |metaArgs|
-	    ^this.name++"_"++metaArgs.reduce{ |a,b| a.asString++"_"++b.asString }
+	    ^(this.name++"_"++metaArgs.reduce{ |a,b| a.asString++"_"++b.asString }).asSymbol;
     }
 
     // metaArgs -> [\arg1,val1,\arg2,val2]
     createUdef { |metaArgs|
         var values = metaArgs[1,3..];
-        ^Udef(this.createName(metaArgs), func.value(*values), udefArgsFunc.value(*values) );
+        var name;
+        name = this.createName(metaArgs);
+        if( Udef.all.keys.includes( name ).not ) {
+	       ^Udef( name, func.value(*values), udefArgsFunc.value(*values) );
+        } {
+	        ^Udef.all[ name ];
+        };
     }
 
     /*
