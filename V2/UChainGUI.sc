@@ -17,20 +17,23 @@ UChainGUI {
 		});
 	}
 	
-	*new { |parent, bounds, unit|
-		^super.newCopyArgs( unit ).init( parent, bounds );
+	*new { |parent, bounds, chain|
+		^super.newCopyArgs( chain ).init( parent, bounds );
 	}
 	
 	init { |inParent, bounds|
 		parent = inParent;
-		case { 
-			parent.isNil 
-		} { 
-			parent = Window( "UChain", bounds, scroll: true ).front;
-		} { 
-			parent.class == String;
-		} {
-			parent = Window( parent, bounds, scroll: true ).front;
+		
+		if( parent.isNil ) { 
+			parent = chain.class.asString;
+		};
+		if( parent.class == String ) {
+			
+			parent = Window(
+				parent, 
+				bounds ?? { Rect(128 rrand: 256, 64 rrand: 128, 300, 400) }, 
+				scroll: true
+			).front;
 		};
 		
 		this.makeViews( bounds );
@@ -77,6 +80,22 @@ UChainGUI {
 			.hiliteColor_( Color.green.alpha_(0.5) )
 			.action_( [ { chain.prepareAndStart }, { chain.release } ] );
 			
+		composite.decorator.nextLine;
+		
+		// startTime
+		StaticText( composite, labelWidth@14 )
+			.applySkin( RoundView.skin )
+			.string_( "startTime" )
+			.align_( \right );
+			
+		views[ \startTime ] = SMPTEBox( composite, 84@14 )
+			.applySmoothSkin
+			.applySkin( RoundView.skin )
+			.clipLo_(0)
+			.action_({ |nb|
+				chain.startTime_( nb.value );
+			});
+		
 		composite.decorator.nextLine;
 		
 		// duration
@@ -166,6 +185,7 @@ UChainGUI {
 				};
 			} )
 			.put( \gain, { views[ \gain ].value = chain.getGain } )
+			.put( \startTime, { views[ \startTime ].value = chain.startTime ? 0; })
 			.put( \dur, { var dur;
 				dur = chain.dur;
 				if( dur == inf ) {
@@ -181,6 +201,7 @@ UChainGUI {
 			.put( \fadeOut, { views[ \fadeOut ].value = chain.fadeOut });
 		
 		chain.changed( \gain );
+		chain.changed( \startTime );
 		chain.changed( \dur );
 		chain.changed( \fadeIn );
 		chain.changed( \fadeOut );
@@ -193,9 +214,11 @@ UChainGUI {
 		};
 		
 		uguis = units.collect({ |unit, i|
-			var header;
+			var header, comp, uview;
 			
-			header = DragSink( composite, (composite.bounds.width - (margin.x * 2))@14 )
+			comp = CompositeView( composite, (composite.bounds.width - (margin.x * 2))@14 );
+			
+			header = StaticText( comp, comp.bounds.moveTo(0,0) )
 				.applySkin( RoundView.skin )
 				.string_( " " ++ i ++ ": " ++ unit.defName )
 				.background_( Color.white.alpha_(0.5) )
@@ -204,20 +227,37 @@ UChainGUI {
 					(RoundView.skin.tryPerform( \at, \font ) ?? 
 						{ Font( Font.defaultSansFace, 12) }).boldVariant 
 				);
+			uview = UserView( comp, comp.bounds.moveTo(0,0) );
 			
 			if( chain.class != MassEditUChain ) {
-				header.canReceiveDragHandler_({ |sink|
+				uview.canReceiveDragHandler_({ |sink|
 					var drg;
 					drg = View.currentDrag;
 					case { drg.isKindOf( Udef ) } 
 						{ true }
 						{ [ Symbol, String ].includes( drg.class ) }
 						{ Udef.all.keys.includes( drg.asSymbol ) }
+						{ drg.isKindOf( U ) }
+						{ true }
 						{ false }
 				})
 				.receiveDragHandler_({ |sink, x, y|
-					unit.defName = View.currentDrag;
+					var u;
+					if( View.currentDrag.isKindOf( U ) ) {
+						u = View.currentDrag;
+						composite.remove;
+						if( chain.units.includes( u ) ) { chain.units.remove( u ); };
+						chain.units = chain.units.insert( i, u );
+						this.makeViews( originalBounds );
+					} {
+						unit.defName = View.currentDrag;
+					};
+				})
+				.beginDragAction_({ 
+					unit;
 				});
+			} {
+				header.canReceiveDragHandler_({ false })
 			};
 						
 			unit.addDependant( unitInitFunc );
