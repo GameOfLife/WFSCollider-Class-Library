@@ -178,7 +178,6 @@ UChain : UEvent {
 	*/
 	prSetChainsDur { |dur = inf, clipFadeIn = true| //
 		this.prSetCanFreeSynths( \u_doneAction, 14, \u_dur, dur );
-		this.changed( \dur );
 		if( clipFadeIn ) {
 		    this.fadeIn = this.fadeIn.min(dur);
 		    this.fadeOut = this.fadeOut.min(dur - this.fadeIn);
@@ -190,6 +189,7 @@ UChain : UEvent {
 
 	duration_{ |dur|
         duration = dur;
+        this.changed( \dur );
         if(releaseSelf){
             this.prSetChainsDur(dur);
         }

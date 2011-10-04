@@ -1,6 +1,6 @@
 UEvent {
 
-    var <>startTime;
+    var <startTime;
     var <>track=0;  //track number (horizontal segment) on the score editor
     var <duration = inf;
     var <>muted = false;
@@ -21,6 +21,11 @@ UEvent {
 
     duration_{ this.subclassResponsibility(thisMethod) }
     isPausable_{ this.subclassResponsibility(thisMethod) }
+    
+    startTime_ { |newTime|
+	   startTime = newTime; 
+	   this.changed( \startTime )
+    }
 
     endTime { ^startTime + this.duration; } // may be inf
     eventSustain { ^duration - this.fadeOut; }

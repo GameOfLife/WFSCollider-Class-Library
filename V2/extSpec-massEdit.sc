@@ -62,22 +62,19 @@
 	massEditSpec { |inArray|
 		var minmax;
 		minmax = this.massEditValue( inArray );
-		^RangeSpec( 0, (minmax[1] * 10).round(1), 0, inf, \lin, 1, minmax.round(1) );
+		//^RangeSpec( 0, (minmax[1] * 10).round(1), 0, inf, \lin, 1, minmax.round(1) );
+		^PositiveIntegerSpec()
 	}
 	
 	massEditValue { |inArray|
 		if( inArray.notNil ) {
-			^[ inArray.minItem, inArray.maxItem ];
+			^inArray.minItem;
 		} {
-			^[0, inf];
+			^0;
 		};
 	}
 
 	massEdit { |inArray, params|
-		var linlinArgs;
-		linlinArgs = this.massEditValue( inArray ) ++ params;
-		^inArray.collect({ |item|
-			this.constrain( item.linlin( *linlinArgs ) );
-		});
+		^(inArray - inArray.minItem) + params;
 	}
 }

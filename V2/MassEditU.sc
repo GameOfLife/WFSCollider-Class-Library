@@ -56,7 +56,11 @@ MassEditU : U { // mimicks a real U, but in fact edits multiple instances of the
 	}
 	
 	update { |obj, what ...args|
-		if( autoUpdate ) { this.resetArg( what ); }
+		if( autoUpdate ) { 
+			if( this.keys.includes( what ) ) {
+				this.resetArg( what );
+			}; 
+		}
 	}
 	
 	set { |...args|
@@ -227,6 +231,25 @@ MassEditUChain {
 	
 	duration { ^this.dur }
 	duration_ { |x| this.dur_(x)}
+	
+	startTime {
+		^uchains.collect({ |ch| ch.startTime ? 0 }).minItem;
+	}
+	
+	startTime_ { |newTime|
+		var oldStartTime, delta;
+		oldStartTime = this.startTime;
+		if( newTime.notNil ) {
+			delta = newTime - oldStartTime;
+		} {
+			delta = 0;
+		};
+		if( delta != 0 ) {
+			uchains.do({ |ch|
+				ch.startTime = (ch.startTime ? 0) + delta;
+			});
+		};
+	}
 	
 	setGain { |gain = 0| // set the average gain of all units that have a u_gain arg
 		var mean, add;
