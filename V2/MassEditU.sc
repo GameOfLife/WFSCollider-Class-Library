@@ -1,6 +1,7 @@
 MassEditU : U { // mimicks a real U, but in fact edits multiple instances of the same
 	
 	var <units, <>argSpecs;
+	var <>autoUpdate = true;
 	
 	*new { |units| // all units have to be of the same Udef
 		^super.newCopyArgs.init( units );
@@ -26,13 +27,23 @@ MassEditU : U { // mimicks a real U, but in fact edits multiple instances of the
 				};
 			}).select(_.notNil);
 			args = argSpecs.collect({ |item| [ item.name, item.default ] }).flatten(1);
-			
 		} {
 			"MassEditU:init - not all units are of the same Udef".warn;
 		};
 	}
 	
-	units_ { |inUnits| this.init( inUnits ); }
+	units_ { |inUnits| 
+		this.disconnect;
+		this.init( inUnits ); 
+	}
+	
+	connect {
+		units.do(_.addDependant(this));
+	}
+	
+	disconnect {
+		units.do(_.removeDependant(this));
+	}
 	
 	resetArg { |key| // doesn't change the units
 		if( key.notNil ) {
@@ -44,17 +55,28 @@ MassEditU : U { // mimicks a real U, but in fact edits multiple instances of the
 		};
 	}
 	
+	update { |obj, what ...args|
+		if( autoUpdate ) { this.resetArg( what ); }
+	}
+	
 	set { |...args|
-		var synthArgs;
+		var autoUpdateWas;
+		
+		// disable auto updating to prevent loop
+		autoUpdateWas = autoUpdate;
+		autoUpdate = false;
+		
 		args.pairsDo({ |key, value|
 			var values;
-			//value = value.asUnitArg( this );
 			this.setArg( key, value );
 			values = def.getSpec( key ).massEdit( units.collect(_.get(key) ), value );
 			units.do({ |unit, i|
 				unit.set( key, values[i] );
 			});
 		});
+		
+		// re-enable auto updating
+		autoUpdate = autoUpdateWas;
 	}
 	
 	defName { ^((def !? { def.name }).asString + "(% units)".format( units.size )).asSymbol }
@@ -103,6 +125,22 @@ MassEditUChain {
 		}).select(_.notNil);
 		
 		this.changed( \init );
+	}
+	
+	connect {
+		units.do({ |unit| 
+			if( unit.class == MassEditU ) {
+				unit.connect;
+			};
+		})
+	}
+	
+	disconnect {
+		units.do({ |unit| 
+			if( unit.class == MassEditU ) {
+				unit.disconnect;
+			};
+		})
 	}
 	
 	fadeIn_ { |fadeIn = 0|

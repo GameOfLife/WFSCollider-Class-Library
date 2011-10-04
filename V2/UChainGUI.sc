@@ -69,7 +69,7 @@ UChainGUI {
 		
 		composite = CompositeView( parent, bounds ).resize_(2);
 		composite.addFlowLayout( margin, gap );
-		composite.onClose = { controller.remove };
+		composite.onClose = { controller.remove; };
 		
 		// startbutton
 		views[ \startButton ] = SmoothButton( composite, 14@14 )

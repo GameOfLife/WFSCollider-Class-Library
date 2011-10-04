@@ -38,9 +38,18 @@ UGUI {
 		bounds.height = this.class.getHeight( unit, viewHeight, margin, gap );
 		controller = SimpleController( unit );
 		
+		if( unit.class == MassEditU ) {
+			unit.connect;
+		};
+		
 		composite = CompositeView( parent, bounds ).resize_(2);
 		composite.addFlowLayout( margin, gap );
-		composite.onClose = { controller.remove };
+		composite.onClose = {
+			if( unit.class == MassEditU ) {
+				unit.disconnect;
+			}; 
+			controller.remove
+		 };
 		
 		views = ();
 		
