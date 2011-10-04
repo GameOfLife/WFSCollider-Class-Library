@@ -177,6 +177,7 @@ UScore {
 	
 	prStartTasks { |targets, startPos = 0, prepStartRelEvents, updatePosition = true|
         var prepareEvents, startEvents, releaseEvents, preparePos, lastActionIsAStartEvent;
+        var dur;
         #prepareEvents, startEvents, releaseEvents = prepStartRelEvents;
         preparePos = if(prepareEvents.size == 0){ startPos }{ prepareEvents[0].prepareTime.min(startPos) };
 		lastActionIsAStartEvent = if(startEvents.size == 0){false}{
@@ -249,7 +250,7 @@ UScore {
 		};
 
         if( updatePosition ) {
-            var dur = this.duration;
+            dur = this.duration;
             updatePosTask = Task({
                 var t = startPos;
                 var waitTime = 0.1;
