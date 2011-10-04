@@ -90,13 +90,17 @@ MassEditUChain {
 			});
 		});
 		
-		units = allUnits.asArray.collect({ |item|
-			if( item.size == 1 ) {
-				item[0];
+		units = allUnits.asArray.collect({ |item, i|
+			if( allDefNames[i].notNil ) {
+				if( item.size == 1 ) {
+					item[0];
+				} {
+					MassEditU( item );
+				};
 			} {
-				MassEditU( item );
+				nil
 			};
-		});
+		}).select(_.notNil);
 		
 		this.changed( \init );
 	}
