@@ -9,6 +9,7 @@
 UChain : UEvent {
 	
 	classvar <>defaultServers;
+	classvar <>verbose = false;
 	
 	var <>units, <>groups;
 	var <prepareTasks;
@@ -351,6 +352,7 @@ UChain : UEvent {
 		};
 		preparedServers = nil;
 		targets = target.asCollection;
+		 if( verbose ) { "% starting on %".format( this, targets ).postln; };
 		bundles = this.makeBundle( targets, startPos );
 		latency = latency ?? { Server.default.latency; };
 		targets.do({ |target, i|
@@ -413,9 +415,10 @@ UChain : UEvent {
 	prepare { |target, startPos = 0, action|
 		var cpu;
 		action = MultiActionFunc( action );
-		if( target.isNil ) {
+		if( target.isNil or: { target.size == 0 } ) {
 			target = this.class.defaultServers ? Server.default;
 		};
+		
 		target = target.asCollection.select({ |tg|
 			this.shouldPlayOn( tg ) != false;
 		});
@@ -426,6 +429,9 @@ UChain : UEvent {
 		preparedServers = target;
 	     units.do( _.prepare(target, startPos, action.getAction ) );
 	     action.getAction.value; // fire action at least once
+	     
+	     if( verbose ) { "% preparing for %".format( this, preparedServers ).postln; };
+	     
 	     ^target; // return array of actually prepared servers
 	}
 
@@ -462,6 +468,7 @@ UChain : UEvent {
 		preparedServers.do({ |srv|
 			srv.asTarget.server.loadBalancerAddLoad( this.apxCPU.neg );
 		});
+		preparedServers = [];
 	}
 	
 	resetGroups { groups = []; } // after unexpected server quit
