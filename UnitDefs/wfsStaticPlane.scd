@@ -9,7 +9,7 @@ The plane is entered as a point location, can only be changed at init, and canno
 */
 (
 FreeUdef( \wfsStaticPlane, [
-		[ \point: 		0@0,  	PointSpec( 200, 0.1 ) ],
+		[ \point: 		0@0,  	WFSPointSpec( 200, 0.1 ) ],
 		[ \latencyComp:  	0,		[0,1].asSpec ],
 		[ \dbRollOff:		0,		[ -24, 0, \lin, 1, -6 ].asSpec ],
 		[ \maxAmpRadius:	2,		[ 1, 5, \lin, 0, 2, "m" ].asSpec ],

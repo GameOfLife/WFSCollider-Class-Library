@@ -67,6 +67,7 @@ WFSPointSpec : PointSpec {
 		var modeFunc;
 		var font;
 		var editAction;
+		var tempVal;
 		vws = ();
 		
 		font =  (RoundView.skin ? ()).font ?? { Font( Font.defaultSansFace, 10 ); };
@@ -99,12 +100,13 @@ WFSPointSpec : PointSpec {
 		vws[ \xy ] = XYView( view, bounds.height.asPoint )
 			.action_({ |xy|
 				var newVal, theta;
-				newVal = vws[ \val ] + (xy.value * localStep * (1 @ -1));
+				tempVal = tempVal ?? { vws[ \val ].copy };
+				newVal = tempVal + (xy.value * localStep * (1 @ -1));
 				this.setView( vws, newVal );
 				action.value( vws, newVal );
 			})
 			.mouseUpAction_({
-				vws[ \val ] = vws[ \x ].value @ vws[ \y ].value;
+				tempVal = nil;
 			});
 			
 		vws[ \comp2 ] = CompositeView( view, 60 @ (bounds.height) );
@@ -180,21 +182,20 @@ WFSPointSpec : PointSpec {
 		vws[ \deg_cw ] = SmoothNumberBox( vws[ \comp2 ], 40 @ (bounds.height) )
 			.action_({ |nb|
 				vws[ \val ]  = vws[ \val ] .asPolar.theta_( 
-					nb.value.neg.linlin(-360,0,-1.5pi,0.5pi)
+					nb.value.neg.linlin(-180,180,-0.5pi,1.5pi)
 				).asPoint;
 				this.setView( vws, vws[ \val ]  );
 				action.value( vws, vws[ \val ]  );
 			})
 			.step_( 1 )
 			.scroll_step_( 1 )
-			.clipLo_( 0 )
-			.clipHi_( 360 )
+			.clipLo_( -180 )
+			.clipHi_( 180 )
 			.wrap_(true)
 			.value_(0);
 			
 		editAction = { |vw|
-			vws[ \val ]  = vw.object[0];
-			this.setMode( vws, mode );
+			this.setView( vws, vw.object[0].copy );
 			action.value( vws, vws[ \val ]  );
 		};
 			
@@ -271,8 +272,8 @@ WFSPointSpec : PointSpec {
 		view[ \rho ].value = constrained.rho;
 		view[ \theta ].value = theta / pi;
 		view[ \deg_cw ].value = theta
-			.wrap( -1.5pi, 0.5pi)
-			.linlin(-1.5pi, 0.5pi, 360, 0 );
+			.wrap( -0.5pi, 1.5pi)
+			.linlin(-0.5pi, 1.5pi, 180, -180 );
 		view[ \editor ] !? {
 			view[ \editor ].object[ 0 ] = value;
 			view[ \editor ].refresh;
