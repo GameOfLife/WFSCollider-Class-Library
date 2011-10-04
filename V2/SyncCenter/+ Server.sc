@@ -5,7 +5,7 @@
 		if( syncCenter.notNil ) {
 			syncCenter.listSendSyncedBundle( this, delta, msgs );
 		} {
-			"falling back to normal bundle".postln;
+			if( SyncCenter.verbose ) { "falling back to normal bundle".postln; };
 			this.listSendBundle( delta, msgs );
 		};
 		
@@ -16,7 +16,7 @@
 		if( syncCenter.notNil ) {
 			syncCenter.sendSyncedBundle( this, delta, *msgs );
 		} {
-			"falling back to normal bundle".postln;
+			if( SyncCenter.verbose ) { "falling back to normal bundle".postln; };
 			this.sendBundle( delta, *msgs );
 		};
 	}
