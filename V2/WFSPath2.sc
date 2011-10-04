@@ -39,7 +39,8 @@ WFSPath2 {
 
 	times { ^positions[1..].collect({ |item, i| times.wrapAt( i ) }); }
 	
-	duration { ^this.times.sum }	
+	duration { ^this.times.sum }
+	dur { ^this.duration }
 	speeds { ^this.distances / this.times } // speeds in m/s
 	
 	asTimeIndexEnv { ^Env( [0] ++ this.times.collect({ |time, i| i+1 }), this.times ); }
@@ -91,6 +92,14 @@ WFSPath2 {
 		{ ^[  [ positions.first, positions.first ] ] };
 	}
 	
+/// EDITING  ///////////////////////////////////////////
+
+	dur_ { |newDur|
+		var oldTimes;
+		oldTimes = this.times;
+		times = (times / times.sum) * newDur;
+	}
+	
 /// SELECTION //////////////////////////////////////////
 
 	
@@ -98,16 +107,18 @@ WFSPath2 {
 		var pos, tim;
 		indices = indices ?? { (..positions.size-1) };
 		pos = positions[ indices ].collect(_.copy);
-		tim = times[ indices[ 0..indices.size-2 ] ];
+		tim = this.times[ indices[ 0..indices.size-2 ] ];
 		^this.class.new( pos, tim, newName );
 	}
 	
 	putSelection { |indices, selectionPath| // in place operation !!
-		selectionPath = selectionPath.asWFSPath; 
+		selectionPath = selectionPath.asWFSPath2; 
 		indices = indices ?? { (..selectionPath.positions.size-1) };
 		indices.do({ |item, i|
 			positions.put( item, selectionPath.positions[i].copy );
-			if( i < selectionPath.times.size ) { times.put( item, selectionPath.times[i] ) };
+			if( i < selectionPath.times.size ) { 
+				this.times = this.times.put( item, selectionPath.times[i] ) 
+			};
 		});	
 	}	
 	

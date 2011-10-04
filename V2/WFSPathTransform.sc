@@ -25,10 +25,35 @@ WFSPathTransformDef : TransformDef {
 	var <>useSelection = true;
 	
 	*defaultFunc { 
-		^{ |path, mul = 1, add = 0| 
+		^{ |path, mul = 1.0, add = 0.0| 
 			path.positions = path.positions.collect({ |pos,i| (pos * mul) + add; });
 		};
 	}
+	
+	value { |transform, path, selection ...inArgs|
+		if( bypassFunc.value( transform ).not ) { 
+			if( transform.makeCopy ) { path = path.deepCopy };
+			if( useSelection ) { 
+				^this.prValueSelection( transform, path, selection );
+			} {
+				^this.prValue( transform, path ); 
+			};
+		} {
+			^path;
+		};
+	}
+	
+	prValueSelection { |transform, path, selection|
+		var result;
+		result = this.prValue( transform, path.copySelection( selection ) );
+		path.putSelection( selection, result );
+		^path;
+	}
+	
+	prValue { |transform, path| // no selection
+		^func.value( path, *transform.values );
+	}	
+
 
 	
 }
@@ -39,29 +64,8 @@ WFSPathTransform : Transform {
 	
 	value { |path, selection ...inArgs|
 		this.values = inArgs;
-		if( def.bypassFunc.value( this ).not ) { 
-			if( makeCopy ) { path = path.copyNew };
-			if( def.useSelection ) { 
-				^this.prValueSelection( path, selection );
-			} {
-				^this.prValue( path ); 
-			};
-		} {
-			^path;
-		};
+		def.value( this, path, selection );
 	}
-	
-	prValueSelection { |path, selection|
-		var result;
-		result = this.prValue( path.copySelection( selection ) );
-		path.putSelection( selection, result );
-		^path;
-	}
-	
-	prValue { |path| // no selection
-		^def.func.value( path, *this.values );
-	}	
-	
 }
 
 
