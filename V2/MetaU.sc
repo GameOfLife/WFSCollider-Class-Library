@@ -40,6 +40,7 @@ MetaUdef : GenericDef {
 
 	var <>func, <>category;
 	var <>udefArgsFunc;
+	var <>apxCPU = 1; // indicator for the amount of cpu this unit uses (for load balancing)
 
 	*initClass{
 		defsFolder = this.filenameSymbol.asString.dirname.dirname +/+ "MetaUnitDefs";

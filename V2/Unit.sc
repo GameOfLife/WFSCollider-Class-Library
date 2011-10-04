@@ -136,6 +136,7 @@ Udef : GenericDef {
 			});
 			synth.freeAction_({ |synth|
 				unit.synths.remove( synth );
+				synth.server.loadBalancerAddLoad( this.apxCPU.neg );
 				unit.changed( \end, synth );
 				if(unit.disposeOnFree) {
 					unit.disposeArgsFor(synth.server)
@@ -385,7 +386,7 @@ U : ObjectWithArgs {
 	
 	start { |target, startPos = 0, latency|
 		var targets, bundles;
-		target = target ? Server.default;
+		target = target ? preparedServers ? Server.default;
 		targets = target.asCollection;
 		bundles = this.makeBundle( targets );
 		latency = latency ? 0.2;
@@ -449,9 +450,11 @@ U : ObjectWithArgs {
 		^this.valuesToPrepare.size > 0;
 	}
 	
+	apxCPU { ^def.apxCPU }
+	
 	prepare { |target, startPos = 0, action|
 		var valuesToPrepare, act;
-		target = target.asCollection.collect{ |t| t.asTarget.server };
+		target = target.asCollection.collect{ |t| t.asTarget( this.apxCPU ).server };
 		target = target.select({ |tg|
 			this.shouldPlayOn( tg ) != false;
 		});
