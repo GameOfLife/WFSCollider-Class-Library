@@ -197,6 +197,8 @@ UChain : UEvent {
     releaseSelf_ { |bool|
 
         if(releaseSelf != bool) {
+	        releaseSelf = bool;
+	        this.changed( \releaseSelf );
             if(bool){
                 this.prSetChainsDur(duration);
             } {
