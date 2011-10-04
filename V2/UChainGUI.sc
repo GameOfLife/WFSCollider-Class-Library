@@ -23,7 +23,16 @@ UChainGUI {
 	
 	init { |inParent, bounds|
 		parent = inParent;
-		if( parent.isNil ) { parent = Window( "UChain" ).front };
+		case { 
+			parent.isNil 
+		} { 
+			parent = Window( "UChain", bounds, scroll: true ).front;
+		} { 
+			parent.class == String;
+		} {
+			parent = Window( parent, bounds, scroll: true ).front;
+		};
+		
 		this.makeViews( bounds );
 	}
 	
