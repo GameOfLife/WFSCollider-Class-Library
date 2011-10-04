@@ -458,19 +458,23 @@ U : ObjectWithArgs {
 		target = target.select({ |tg|
 			this.shouldPlayOn( tg ) != false;
 		});
-	    act = { preparedServers = preparedServers.addAll( target ); action.value };
-	    if( loadDef) {
-	        this.def.loadSynthDef( target );
-	    };
-	    valuesToPrepare = this.valuesToPrepare;
-	    if( valuesToPrepare.size > 0 ) {
-		    act = MultiActionFunc( act );
-		    valuesToPrepare.do({ |val|
-			     val.prepare(target.asCollection, startPos, action: act.getAction)
-		    });
-	    } {
-		    act.value; // if no prepare args done immediately
-	    };
+		if( target.size > 0 ) {
+	   	 act = { preparedServers = preparedServers.addAll( target ); action.value };
+		    if( loadDef) {
+		        this.def.loadSynthDef( target );
+		    };
+		    valuesToPrepare = this.valuesToPrepare;
+		    if( valuesToPrepare.size > 0  ) {
+			    act = MultiActionFunc( act );
+			    valuesToPrepare.do({ |val|
+				     val.prepare(target.asCollection, startPos, action: act.getAction)
+			    });
+		    } {
+			    act.value; // if no prepare args done immediately
+		    };
+		} {
+			action.value;
+		};
 	    ^target; // returns targets actually prepared for
     }
     
