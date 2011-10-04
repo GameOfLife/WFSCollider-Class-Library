@@ -12,6 +12,7 @@ UChain : UEvent {
 	
 	var <>units, <>groups;
 	var <prepareTasks;
+	var <>preparedServers;
 	
 	*new { |...args|
 		^super.new.init( args );
@@ -344,8 +345,9 @@ UChain : UEvent {
 	start { |target, startPos = 0, latency|
 		var targets, bundles;
 		if( target.isNil ) {
-			target = this.class.defaultServers ? Server.default;
+			target = preparedServers ? this.class.defaultServers ? Server.default;
 		};
+		preparedServers = nil;
 		targets = target.asCollection;
 		bundles = this.makeBundle( targets, startPos );
 		latency = latency ?? { Server.default.latency; };
@@ -402,7 +404,12 @@ UChain : UEvent {
 		};
 	}
 
+	apxCPU {
+		^units.collect(_.apxCPU).sum;
+	}
+
 	prepare { |target, startPos = 0, action|
+		var cpu;
 		action = MultiActionFunc( action );
 		if( target.isNil ) {
 			target = this.class.defaultServers ? Server.default;
@@ -410,21 +417,25 @@ UChain : UEvent {
 		target = target.asCollection.select({ |tg|
 			this.shouldPlayOn( tg ) != false;
 		});
+		cpu = this.apxCPU;
+		target = target.collect({ |tg|
+			tg.asTarget(cpu);
+		});
+		preparedServers = target;
 	     units.do( _.prepare(target, startPos, action.getAction ) );
 	     action.getAction.value; // fire action at least once
 	     ^target; // return array of actually prepared servers
 	}
 
 	prepareAndStart{ |target, startPos = 0|
-		var task;
+		var task, cond;
 		if( target.isNil ) {
 			target = this.class.defaultServers ? Server.default;
 		};
+		cond = Condition(false);
 		task = fork { 
-			target = this.prepare( target, startPos );
-			target.asCollection.do{ |t|
-				t.asTarget.server.sync;
-			};
+			target = this.prepare( target, startPos, { cond.test = true; cond.signal } );
+			cond.wait;
 	       	this.start(target, startPos);
 	       	prepareTasks.remove(task);
 		};
@@ -436,7 +447,7 @@ UChain : UEvent {
 	prepareWaitAndStart { |target, startPos = 0|
 		var task;
 		task = fork { 
-			this.prepare( target, startPos );
+			target = this.prepare( target, startPos );
 			this.waitTime.wait; // doesn't care if prepare is done
 	       	this.start(target, startPos);
 	       	prepareTasks.remove(task);
@@ -444,7 +455,12 @@ UChain : UEvent {
 	    prepareTasks = prepareTasks.add( task );
 	}
 
-	dispose { units.do( _.dispose ) }
+	dispose { 
+		units.do( _.dispose );
+		preparedServers.do({ |srv|
+			srv.asTarget.server.loadBalancerAddLoad( this.apxCPU.neg );
+		});
+	}
 	
 	resetGroups { groups = []; } // after unexpected server quit
 	
