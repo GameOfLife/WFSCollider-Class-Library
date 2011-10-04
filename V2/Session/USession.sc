@@ -1,15 +1,23 @@
 USession{
 
+	classvar <>all, <>current;
+	
     /*
     *   tracks -> Array[UChain]
     *   scores -> Array[UScore]
     */
-    var <>objects, <>scores;
+    var <>objects;
+    
+    *initClass { all = [] }
 
-    *new{ |tracks, scores|
-        ^super.newCopyArgs(tracks, scores)
+    *new{ |tracks|
+        ^super.newCopyArgs(tracks).addToAll;
     }
     
+    addToAll { if( all.includes( this ).not ) { all = all.add( this ) }; }
+    
+    makeCurrent { current = this  }
+     
     at { |index| ^objects[ index ] }
 
     startAll {
