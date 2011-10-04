@@ -8,10 +8,10 @@ UScore {
 	var <>events, <>name = "untitled";
 	var pos = 0, <isPlaying = false, <isPaused = false;
 	//private
-	var <prepareTask, <startTask, <releaseTask, <updatePosTask, <startedAt;
+	var <prepareTask, <startTask, <releaseTask, <updatePosTask, <startedAt, <pausedAt;
 
 	*new { |... events| 
-		^super.newCopyArgs( events.select({ |item| UEvent.implementations.asArray.includes(item.class) }) );
+		^super.newCopyArgs( events );
 	}
 
     duplicate { ^UScore( *events.collect( _.duplicate ) ).name_( name ); }
@@ -98,73 +98,133 @@ UScore {
 	cleanOverlaps {
 
 	}
-	
+
+	//SCORE PLAYING
+
+	eventsToPrepareNow{ |startPos|
+	    ^events.sort({ |a,b| a.startTime <= b.startTime })
+			.select({ |evt| (evt.startTime >= startPos) && { evt.prepareTime < startPos } })
+	}
+
 	prepare { |targets, startPos = 0, action|
 		action = MultiActionFunc( action );
 		targets = targets.asCollection.collect(_.asTarget);
-		events.sort({ |a,b| a.startTime <= b.startTime })
-			.select({ |evt| (evt.startTime >= startPos) && { evt.prepareTime < startPos } })
-			.do({ |item|
-				item.prepare( targets, action: action.getAction );
-			});
+		this.eventsToPrepareNow(startPos).do({ |item|
+		    item.prepare( targets, action: action.getAction );
+		});
 	}
-	
-	start { |targets, startPos = 0, assumePrepared = false, callStopFirst = true, updatePosition = true|
-		var prepareEvents, startEvents, releaseEvents;
-		if( callStopFirst ) { this.stop(nil,false); }; // in case it was still running
 
-		prepareEvents = events.select({ |evt| evt.startTime >= startPos }).sort;
-		startEvents = prepareEvents.sort({ |a,b| a.startTime <= b.startTime });
+    eventsForPlay{ |startPos, assumePrepared = false|
+        var evs, prepareEvents, startEvents, releaseEvents;
+
+        evs = events.select({ |evt| evt.startTime >= startPos }).sort;
+		prepareEvents = if(assumePrepared){evs.select({ |item| item.prepareTime >= startPos })}{evs};
+		startEvents = evs.sort({ |a,b| a.startTime <= b.startTime });
 		releaseEvents = events
-			.select({ |item| (item.eventDuration < inf) && { item.eventEndTime >= startPos } })
+			.select({ |item| (item.duration < inf) && { item.eventEndTime >= startPos } })
 			.sort({ |a,b| a.eventEndTime <= b.eventEndTime });
 
-		if(prepareEvents.size > 0) {
-            if( assumePrepared ) {
-                prepareEvents = prepareEvents.select({ |item| item.prepareTime >= startPos });
-                this.prStart( targets, startPos, prepareEvents, startEvents, releaseEvents );
+		^[prepareEvents,startEvents,releaseEvents]
+	}
 
+    //prepares events as fast as possible and starts the playing the score.
+	start{ |targets, startPos = 0, updatePosition = true|
+	    var prepEvents, servers, prepStartRelEvents, playStatus;
+	    targets = targets.asCollection.collect(_.asTarget);
+	    servers = targets.collect(_.server);
+
+	    this.stop(nil,false);
+
+	    prepEvents = this.eventsToPrepareNow(startPos);
+        prepStartRelEvents = this.eventsForPlay(startPos, true);
+	    playStatus = prepStartRelEvents.flat.size > 0;
+	    if( playStatus ){
+            if(prepEvents.size > 0) {
+                fork{
+                    prepEvents.do({ |item|
+                        item.prepare( targets );
+                    });
+                    servers.do( _.sync );
+                    this.prStartTasks( targets, startPos, prepStartRelEvents, updatePosition );
+
+                };
             } {
-                this.prStart( targets, prepareEvents[0].prepareTime, prepareEvents,
-                    startEvents, releaseEvents );
+                this.prStartTasks( targets, startPos, prepStartRelEvents, updatePosition );
+
             };
-            ^true
-		} {
-		    ^false
-		}
+        }
+        ^playStatus
+
+	}
+
+    //starts the score some time before startPos in order to give enough time for events to prepare.
+    preRollStart{ |targets, startPos = 0, updatePosition = true|
+        this.prStart(targets, startPos, false, true, updatePosition)
+    }
+
+	prStart { |targets, startPos = 0, assumePrepared = false, callStopFirst = true, updatePosition = true|
+		var prepStartRelEvents, playStatus;
+		if( callStopFirst ) { this.stop(nil,false); }; // in case it was still running
+
+		prepStartRelEvents = this.eventsForPlay(startPos, assumePrepared).postln;
+	    playStatus = prepStartRelEvents.flat.size > 0;
+
+        if( playStatus ){
+            this.prStartTasks( targets, startPos, prepStartRelEvents, updatePosition );
+        };
+        ^playStatus
 	}
 	
-	prStart { |targets, startPos = 0, prepareEvents, startEvents, releaseEvents, prepareDoneAction, updatePosition = true|
+	prStartTasks { |targets, startPos = 0, prepStartRelEvents, updatePosition = true|
+        var prepareEvents, startEvents, releaseEvents, preparePos, lastActionIsAStartEvent;
+        #prepareEvents, startEvents, releaseEvents = prepStartRelEvents;
+        preparePos = if(prepareEvents.size == 0){ startPos }{ prepareEvents[0].prepareTime.min(startPos) };
+		lastActionIsAStartEvent = if(startEvents.size == 0){false}{
+		    if(releaseEvents.size >0){startEvents.last.startTime >= releaseEvents.last.endTime}{nil}
+		};
 		startedAt = [ startPos, SystemClock.seconds ];
-
-		prepareTask = Task({
-			var pos = startPos;
-			prepareEvents.do({ |item|
-				(item.prepareTime - pos).wait;
-				pos = item.prepareTime;
-				//"prepare % at %, %".format( events.indexOf(item), 
-				//	pos, thisThread.seconds ).postln;
-				item.prepare( targets );
-			});
-
-		}).start;
+		("prepareEvents :"++prepareEvents).postln;
+		("startEvents :"++startEvents).postln;
+		("releaseEvents :"++releaseEvents).postln;
 
 
-		startTask = Task({
-			var pos = startPos;
-			startEvents.do({ |item,i|
-				(item.startTime - pos).wait;
-				//when first event starts playing this means that the score has started playing
-				if(i == 0) {
-				    isPlaying = true;
-				    this.changed(\playing);
-				};
-				pos = item.startTime;
-				//"start % at %, %".format(  events.indexOf(item), 
-				//	pos, thisThread.seconds ).postln;
-				item.start;
-			});
-		}).start;
+
+        if( prepareEvents.size > 0 ) {
+            prepareTask = Task({
+                var pos = preparePos;
+                prepareEvents.do({ |item|
+                    (item.prepareTime - pos).wait;
+                    pos = item.prepareTime;
+                    //"prepare % at %, %".format( events.indexOf(item),
+                    //	pos, thisThread.seconds ).postln;
+                    item.prepare( targets );
+                });
+            }).start;
+        };
+
+        if( startEvents.size > 0 ) {
+            startTask = Task({
+                var pos = startPos;
+                (startPos - preparePos).wait;
+                isPlaying = true;
+                this.changed(\playing);
+                startEvents.do({ |item,i|
+                    (item.startTime - pos).wait;
+                    pos = item.startTime;
+                    //"start % at %, %".format(  events.indexOf(item),
+                    //	pos, thisThread.seconds ).postln;
+                    item.start;
+                });
+                if( lastActionIsAStartEvent ) {
+                    // the score has stopped playing i.e. all events are finished
+                    1.postln;
+                    startedAt = nil;
+                    this.pos = startEvents.last.startTime;
+                    isPlaying = false;
+                    this.changed( \stop );
+                }
+            }).start;
+        };
 
 		if( releaseEvents.size > 0 ) {
 			releaseTask = Task({
@@ -172,52 +232,38 @@ UScore {
 				releaseEvents.do({ |item|
 					(item.eventEndTime - pos).wait;
 					pos = item.eventEndTime;
-					//"release % at %, %".format( events.indexOf(item), 
+					//"release % at %, %".format( events.indexOf(item),
 					//	pos, thisThread.seconds ).postln;
 					item.release;
 				});
 				releaseEvents.last.fadeOut.wait;
-				// the score has stopped playing i.e. all events are finished
-				startedAt = nil;
-				this.pos = this.duration;
-				isPlaying = false;
-				this.changed( \stop );
+				if( lastActionIsAStartEvent.not ) {
+                    // the score has stopped playing i.e. all events are finished
+                    startedAt = nil;
+                    this.pos = releaseEvents.last.endTime;
+                    isPlaying = false;
+                    this.changed( \stop );
+                }
 			}).start;
 
 		};
 
         if( updatePosition ) {
+            var dur = this.duration;
             updatePosTask = Task({
-                var t = 0;
+                var t = startPos;
                 var waitTime = 0.1;
-                (startEvents[0].startTime - startPos).wait;
-                while({t < (this.duration-(startEvents[0].startTime))}, {
+                (startPos - preparePos).wait;
+                while({t < dur}, {
                     waitTime.wait;
                     t = t + waitTime;
-                    this.changed(\pos, this.pos);
+                    this.changed(\pos, t);
                 });
 
             }).start;
 		};
 
 		this.changed( \start, startPos );
-	}
-
-	/*
-	In case the score is not self-updating the pos variable, then the current pos (which might go on forever as the score plays)
-	is given by the ammount of time elapsed since the score started playing;
-	*/
-	pos {
-		^if( startedAt.notNil && isPlaying ) {
-			((SystemClock.seconds - startedAt[1]) + startedAt[0]);
-		} {
-			pos ? 0;
-		};
-	}
-
-	pos_ { |x|
-	    pos = x;
-	    this.changed(\pos);
 	}
 
 	//stop just the spawning and releasing of events
@@ -240,6 +286,7 @@ UScore {
 	    startedAt = nil;
 	    this.stopScore;
 	    this.stopChains(releaseTime);
+	    //events.do{ _.disposeIfNotPlaying };
 	    isPlaying = false;
 	    isPaused = false;
 	    if( changed) {
@@ -252,17 +299,36 @@ UScore {
 		    this.stopScore;
 		    isPaused = true;
 		    pos = this.pos;
+		    pausedAt = pos;
 		    startedAt = nil;
 		    this.changed(\paused)
 		}
 	}
 	
 	resume { |targets|
-	    if(isPlaying && isPaused){
-		    this.start( targets, this.pos, true, false );
+	    if(isPlaying.postln && isPaused.postln){
+		    this.prStart( targets, pausedAt, true, false );
 		    isPaused = false;
-		    this.changed(\resumed)
+		    pausedAt = nil;
+		    this.changed(\resumed);
 		}
+	}
+
+	/*
+	In case the score is not self-updating the pos variable, then the current pos (which might go on forever as the score plays)
+	is given by the ammount of time elapsed since the score started playing;
+	*/
+	pos {
+		^if( startedAt.notNil && isPlaying ) {
+			((SystemClock.seconds - startedAt[1]) + startedAt[0]);
+		} {
+			pos ? 0;
+		};
+	}
+
+	pos_ { |x|
+	    pos = x;
+	    this.changed(\pos);
 	}
 
 }

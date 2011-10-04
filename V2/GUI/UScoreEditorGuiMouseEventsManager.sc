@@ -97,7 +97,7 @@ UScoreEditorGuiMouseEventsManager {
 				state = \resizingBack
 			} {
 				
-				event = 	eventViews.select{ |eventView|
+				event = eventViews.select{ |eventView|
 					eventView.state == \fadeIn
 				
 				}.at(0);

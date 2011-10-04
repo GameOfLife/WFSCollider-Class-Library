@@ -27,6 +27,18 @@ UScoreEditorGui_TransportBar {
 
 		});
 
+		scoreController.put(\resumed, {
+            {views[\pause].value = 0;}.defer;
+		});
+
+		scoreController.put(\paused, {
+            {views[\pause].value = 1;}.defer;
+		});
+
+		scoreController.put(\start, {
+            {views[\play].value = 1;}.defer;
+		});
+
     }
 
     makeGui{ |parent, bounds, score|

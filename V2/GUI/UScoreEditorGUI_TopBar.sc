@@ -67,7 +67,7 @@ UScoreEditorGui_TopBar {
 				var events = usessionMouseEventsManager.selectedEvents;
 				switch(events.size)
 				    {0}{}
-				    {1}{ events[0].object.gui }
+				    {1}{ events[0].gui }
 				    { MassEditUChain(events.collect(_.object).select{ |x| x.class == UChain}).gui }
 
 			});

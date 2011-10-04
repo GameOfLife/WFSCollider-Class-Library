@@ -3,23 +3,66 @@
 // they are played together in a Group. There should be only one chain playing
 // per Server at a time, although it is not impossible to play multiple instances
 // of at once.
+//
+// UChain implements the UEvent interface, therefore it has a startTime, track, duration, muted, releaseSelf variables.
 
-UChain {
+UChain : UEvent {
 	
 	classvar <>defaultServers;
 	
 	var <>units, <>groups;
 	var <prepareTasks;
 	
-	*new { |...units|
-		^super.newCopyArgs( units.collect(_.asUnit) ).init;
+	*new { |...args|
+		^super.new.init( args );
 	}
-	
-	init {
+
+	/*
+	* Syntaxes for UChain creation:
+	* UChain(\defName)
+	* UChain(startTime,\defName1,\defName2,...)
+	* UChain(startTime,track,\defName1,\defName2,...)
+	* UChain(startTime,track,duration,\defName1,\defName2,...)
+	* Uchain(startTime,track,duration,releaseSelf,\defName1,\defName2,...)
+	*/
+
+	init { |args|
+	    var bools = 3.collect{ |i| args[i].notNil.if({args[i].isNumber},{false}) }++[args[3].notNil.if({args[3].class.superclass == Boolean},{false})];
+	    if(bools[3]) {
+	        startTime = args[0];
+	        track = args[1];
+	        duration = args[2];
+	        units = args[4..].collect(_.asUnit);
+	        this.releaseSelf_(args[3]);
+        }{
+            if(bools[2]) {
+	            startTime = args[0];
+	            track = args[1];
+	            duration = args[2];
+	            units = args[3..].collect(_.asUnit);
+            } {
+                if(bools[1]) {
+	            startTime = args[0];
+	            track = args[1];
+	            units = args[2..].collect(_.asUnit);
+                } {
+                    if(bools[0]) {
+	                    startTime = args[0];
+	                    units = args[1..].collect(_.asUnit);
+                    } {
+                        units = args.collect(_.asUnit);
+                    }
+                }
+            }
+        };
 		prepareTasks = [];
 		groups = [];
 	}
-	
+
+    //will this work ?
+	duplicate{
+	    ^this.deepCopy;
+	}
 	
 	// global setters (acces specific units inside the chain)
 	
@@ -84,6 +127,8 @@ UChain {
 	fadeIn {
 		^this.prGetCanFreeSynths.collect({ |item| item.get( \u_fadeIn ) }).maxItem ? 0;
 	}
+
+	fadeTimes { ^[this.fadeIn, this.fadeOut] }
 	
 	useSndFileDur { // look for SndFiles in all units, use the longest duration found
 		var durs;
@@ -114,7 +159,7 @@ UChain {
 		^out;	
 	}
 	
-	dur { // get longest duration
+	prGetChainsDur { // get longest duration
 		var unit;
 		unit = this.getMaxDurUnit;
 		if( unit.isNil ) { 
@@ -129,7 +174,7 @@ UChain {
 	* clipFadeIn = true clips fadeIn
 	* clipFadeIn = false clips fadeOut
 	*/
-	dur_ { |dur = inf, clipFadeIn = true| //
+	prSetChainsDur { |dur = inf, clipFadeIn = true| //
 		this.prSetCanFreeSynths( \u_doneAction, 14, \u_dur, dur );
 		this.changed( \dur );
 		if( clipFadeIn ) {
@@ -140,9 +185,27 @@ UChain {
 		    this.fadeIn = this.fadeIn.min(dur - this.fadeOut);
 		}
 	}
+
+	duration_{ |dur|
+        duration = dur;
+        if(releaseSelf){
+            this.prSetChainsDur(dur);
+        }
+    }
+
+    releaseSelf_ { |bool|
+
+        if(releaseSelf != bool) {
+            if(bool){
+                this.prSetChainsDur(duration);
+            } {
+                this.prSetChainsDur(inf);
+            }
+        }
+    }
 	
-	duration { ^this.dur }
-	duration_ { |x| this.dur_(x)}
+	dur { ^this.duration }
+	dur_ { |x| this.duration_(x)}
 	
 	setGain { |gain = 0| // set the average gain of all units that have a u_gain arg
 		var mean, add;
@@ -176,6 +239,77 @@ UChain {
 	        	});
 		};
 	}
+
+	 //events can become bigger
+	trimEnd { |newEnd, removeFade = false|
+		var delta = newEnd - startTime;
+		if( delta > 0) {
+			this.dur = delta;
+			if( removeFade ) {
+				this.fadeOut_(0)
+			};
+		}
+	}
+
+	//events can only become smaller
+	cutEnd{ |newEnd, removeFade = false|
+        var delta;
+
+        if((this.startTime < newEnd) && (( this.startTime + this.dur ) > newEnd) ) {
+            this.dur = newEnd - startTime;
+            if( removeFade ) {
+                this.fadeOut_(0)
+            };
+        }
+    }
+
+    //events can become bigger
+	trimStart{ |newStart,removeFade = false|
+		var delta1,delta2;
+		delta1 = newStart - startTime;
+		if(newStart < this.endTime) {
+            startTime = newStart;
+			this.dur = this.dur - delta1;
+			if(removeFade){
+		        this.fadeIn = 0
+			};
+			if(delta1 > 0) {
+				//do something when making event shorter
+			} {	//making event bigger
+				//do something when making event bigger
+			}
+
+		}
+	}
+
+	//events can only become smaller
+	cutStart{ |newStart, belongsToFolder = false, removeFade = false|
+        var delta1;
+	    if( belongsToFolder ) {
+	        delta1 = newStart - startTime;
+	        startTime = delta1.neg.max(0);
+	        if( (this.startTime < newStart) && (this.endTime > newStart) ) {
+                this.dur = this.dur - delta1;
+                if( removeFade ){
+                    this.fadeIn = 0
+                };
+            }
+        } {
+
+	        if( (this.startTime < newStart) && (this.endTime > newStart) ) {
+                delta1 = newStart - startTime;
+	            startTime = newStart;
+                this.dur = this.dur - delta1;
+                if(removeFade){
+                    this.fadeIn = 0
+                };
+            }
+
+        }
+	}
+
+	 makeView{ |i=0| ^UChainEventView(this, i) }
+
 	
 	/// creation
 
@@ -239,6 +373,7 @@ UChain {
 	
 	release { |time|
 		var releaseUnits;
+		("releasing "++this).postln;
 		releaseUnits = units.select({ |unit| unit.def.canFreeSynth });
 		if( releaseUnits.size > 0 ) {
 			if( time.isNil ) {
@@ -349,7 +484,6 @@ UChain {
 		^out;
 	}
 	
-	
 	/*
 	*   uchain: UChain
 	*/
@@ -358,14 +492,10 @@ UChain {
 	}
 
 	/*
-	*   units: U or Array[U]
+	*   unit: U or Array[U]
 	*/
 	<| { |unit|
 	    ^UChain(*(units++unit.asCollection))
-	}
-
-    asUEvent{ |startTime=0, track =0, dur|
-	    ^UEvent(this, startTime, track, dur ? inf)
 	}
 
 	isFolder {
