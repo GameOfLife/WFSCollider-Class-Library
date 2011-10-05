@@ -10,7 +10,7 @@ fork{
 )
 
 
-//play 3 seconds and stop;
+//play 3.5 seconds and stop;
 (
 r = UChain(0,0,10,false,\sine, \output).fadeOut_(1).fadeIn_(1);
 z = UScore(r);

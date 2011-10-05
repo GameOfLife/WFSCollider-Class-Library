@@ -115,9 +115,10 @@ UScoreEditorGUI {
         view.decorator.nextLine;
         
         //CENTER
-        userView = ScaledUserView(view,
+        userView = ScaledUserViewContainer(view,
         			Rect(0,0, 680-8, 300-( topBarH + tranBarH + (2*margin) + (2*gap) )),
-        			Rect( 0, 0, scoreEditor.score.duration.ceil.max(1), numTracks ) );
+        			Rect( 0, 0, scoreEditor.score.duration.ceil.max(1), numTracks ),
+        			5);
 
         view.decorator.nextLine;
         
@@ -126,9 +127,10 @@ UScoreEditorGUI {
 
         //CONFIGURE USERVIEW
         userView.background = Color.gray(0.8);
-        userView.view.resize = 5;
-	    userView.gridLines = [scoreEditor.score.duration.ceil,max(1), numTracks];
+        userView.composite.resize = 5;
+	    userView.gridLines = [scoreEditor.score.finiteDuration.ceil.max(1), numTracks];
 		userView.gridMode = ['blocks','lines'];
+		userView.sliderWidth = 8;
 		//userView.maxZoom = [16,5];
 
 		userView
@@ -162,10 +164,11 @@ UScoreEditorGUI {
 				}
 			})
 			.beforeDrawFunc_( {
+			    var dur = scoreEditor.score.finiteDuration.ceil.max(1);
 				numTracks = ((scoreEditor.events.collect( _.track ).maxItem ? ( numTracks - 2)) + 2)
 					.max( numTracks );
-				userView.fromBounds = Rect( 0, 0, scoreEditor.score.duration.ceil.max(1), numTracks );
-				userView.gridLines = [scoreEditor.score.duration.ceil.max(1), numTracks];
+				userView.fromBounds = Rect( 0, 0, dur, numTracks );
+				userView.gridLines = [dur, numTracks];
 				} )
 
 			.unscaledDrawFunc_( { |v|
