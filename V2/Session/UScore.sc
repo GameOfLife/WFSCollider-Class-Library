@@ -39,8 +39,9 @@ UScore {
 	durations { ^events.collect( _.dur ); }
 	
 	duration { ^(this.startTimes + this.durations).maxItem ? 0; }
-	dur { ^this.duration } 
-	
+	dur { ^this.duration }
+	finiteDuration { ^(this.startTimes + this.durations).select( _ < inf ).maxItem ? 1 }
+
 	waitTime {
 		(events.select({ |item| item.prepareTime <= 0 })
 			.sort({ |a,b| a.prepareTime <= b.prepareTime })[0] ? 0).neg;
