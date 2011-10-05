@@ -135,7 +135,7 @@ Udef : GenericDef {
 				unit.changed( \go, synth );
 			});
 			synth.freeAction_({ |synth|
-				unit.synths.remove( synth );
+				unit.removeSynth( synth );
 				synth.server.loadBalancerAddLoad( this.apxCPU.neg );
 				unit.changed( \end, synth );
 				if(unit.disposeOnFree) {
@@ -144,7 +144,7 @@ Udef : GenericDef {
 			});
 			unit.changed( \start, synth );
 			synthAction.value( synth );
-			unit.synths = unit.synths.add(synth);
+			unit.addSynth(synth);
 		};
 	}
 	
@@ -217,19 +217,25 @@ Udef : GenericDef {
 			category.asCompileString
 		]  <<")"
 	}
+	
+	asUdef { ^this }
 		
 }
 
 U : ObjectWithArgs {
 	
 	classvar <>loadDef = false;
+	classvar <>synthDict;
 	
-	var <def;
-	var <>synths;
+	// var <def;
+	var defName;
+	//var <>synths;
 	var <>disposeOnFree = true;
 	var <>preparedServers;
 	var >waitTime; // use only to override waittime from args
 	var <>env;
+	
+	*initClass { synthDict = IdentityDictionary( ) }
 
 	*new { |defName, args|
 		^super.new.init( defName, args ? [] )
@@ -238,18 +244,23 @@ U : ObjectWithArgs {
 	*defClass { ^Udef }
 	
 	init { |inName, inArgs|
+		var def;
 		if( inName.isKindOf( this.class.defClass ) ) {
 			def = inName;
+			defName = def.name;
+			if( defName.isNil ) { defName = def };
 		} {
-			def = this.class.defClass.fromName( inName.asSymbol );
+			def = inName.asSymbol.asUdef;
+			
 		};
 		if( def.notNil ) {	
 			args = def.asArgsArray( inArgs ? [] );
+			defName = def.name;
 			this.values = this.values.collect(_.asUnitArg(this));
 		} { 
+			defName = inName;
 			"defName '%' not found".format(inName).warn; 
 		};
-		synths = [];
 		preparedServers = [];
 		env = (); // a place to store things in (for FreeUdef)
 		this.changed( \init );
@@ -265,11 +276,11 @@ U : ObjectWithArgs {
 			this.setArg( key, value );
 			synthArgs = synthArgs.addAll( [ key, value ] ); 
 		});
-		def.setSynth( this, *synthArgs );
+		this.def.setSynth( this, *synthArgs );
 	}
 	
 	prSet { |...args| // without changing the arg
-		def.setSynth( this, *args );
+		this.def.setSynth( this, *args );
 	}
 	
 	get { |key|
@@ -319,33 +330,33 @@ U : ObjectWithArgs {
 	}
 	
 	setAudioIn { |id = 0, bus = 0|
-		this.set( def.prGetIOKey( \in, \audio, id, "bus" ).asSymbol, bus );
+		this.set( this.def.prGetIOKey( \in, \audio, id, "bus" ).asSymbol, bus );
 	}
 	setControlIn { |id = 0, bus = 0|
-		this.set( def.prGetIOKey( \in, \control, id, "bus" ).asSymbol, bus );
+		this.set( this.def.prGetIOKey( \in, \control, id, "bus" ).asSymbol, bus );
 	}
 	setAudioOut { |id = 0, bus = 0|
-		this.set( def.prGetIOKey( \out, \audio, id, "bus" ).asSymbol, bus );
+		this.set( this.def.prGetIOKey( \out, \audio, id, "bus" ).asSymbol, bus );
 	}
 	setControlOut { |id = 0, bus = 0|
-		this.set( def.prGetIOKey( \out, \control, id, "bus" ).asSymbol, bus );
+		this.set( this.def.prGetIOKey( \out, \control, id, "bus" ).asSymbol, bus );
 	}
 	
 	getAudioIn { |id = 0, bus = 0|
-		^this.get( def.prGetIOKey( \in, \audio, id, "bus" ).asSymbol );
+		^this.get( this.def.prGetIOKey( \in, \audio, id, "bus" ).asSymbol );
 	}
 	getControlIn { |id = 0, bus = 0|
-		^this.get( def.prGetIOKey( \in, \control, id, "bus" ).asSymbol );
+		^this.get( this.def.prGetIOKey( \in, \control, id, "bus" ).asSymbol );
 	}
 	getAudioOut { |id = 0, bus = 0|
-		^this.get( def.prGetIOKey( \out, \audio, id, "bus" ).asSymbol );
+		^this.get( this.def.prGetIOKey( \out, \audio, id, "bus" ).asSymbol );
 	}
 	getControlOut { |id = 0, bus = 0|
-		^this.get( def.prGetIOKey( \out, \control, id, "bus" ).asSymbol );
+		^this.get( this.def.prGetIOKey( \out, \control, id, "bus" ).asSymbol );
 	}
 	
 	shouldPlayOn { |target| // this may prevent a unit or chain to play on a specific server 
-		^def.shouldPlayOn( this, target );
+		^this.def.shouldPlayOn( this, target );
 	}
 	
 	doesNotUnderstand { |selector ...args| 
@@ -363,17 +374,38 @@ U : ObjectWithArgs {
 	loop { ^this.get( \loop ) }
 	loop_ { |new| this.set( \loop, new ) }
 	
-	defName { ^def !? { def.name } }
-	defName_ { |name, keepArgs = true|
-	  	this.def_( name, keepArgs );
-	}
+	def { ^defName.asUdef }
+	defName { ^if( defName.class == Symbol ) { defName } { defName.name } }
 	
 	def_ { |newDef, keepArgs = true|
-		this.init( newDef, if( keepArgs ) { args } { [] }); // keep args
+	  	this.defName_( newDef, keepArgs );
+	}
+
+	defName_ { |newName, keepArgs = true|
+		this.init( newName, if( keepArgs ) { args } { [] }); // keep args
+	}
+	
+	synths { ^synthDict[ this ] ? [] }
+	
+	synths_ { |synths| synthDict.put( this, synths ); }
+	
+	addSynth { |synth|
+		 synthDict.put( this, synthDict.at( this ).add( synth ) ); 
+	}
+	
+	removeSynth { |synth|
+		var synths;
+		synths = this.synths;
+		synths.remove( synth );
+		if( synths.size == 0 ) {
+			 synthDict.put( this, nil ); 
+		} {
+			 synthDict.put( this, synths ); 
+		};
 	}
 
 	makeSynth { |target, startPos = 0, synthAction|
-		def.makeSynth( this, target, startPos, synthAction );
+		this.def.makeSynth( this, target, startPos, synthAction );
 	}
 	
 	makeBundle { |targets, startPos = 0, synthAction|
@@ -396,25 +428,25 @@ U : ObjectWithArgs {
 			};
 		});
 		if( target.size == 0 ) {
-			^synths[0]
+			^this.synths[0]
 		} { 
-			^synths;
+			^this.synths;
 		};
 	}
 	
-	free { synths.do(_.free) } 
+	free { this.synths.do(_.free) } 
 	stop { this.free }
 	
-	resetSynths { synths = []; } // after unexpected server quit
+	resetSynths { this.synths = nil; } // after unexpected server quit
 	resetArgs {
 		this.values = this.def.values.deepCopy; 
-		def.setSynth( this, *args );
+		this.def.setSynth( this, *args );
 	}
 	
-	argSpecs { ^def.argSpecs }
-	getSpec { |key| ^def.getSpec( key ); }
+	argSpecs { ^this.def.argSpecs }
+	getSpec { |key| ^this.def.getSpec( key ); }
 
-	isPlaying { ^(synths.size != 0) }
+	isPlaying { ^(this.synths.size != 0) }
 		
 	printOn { arg stream;
 		stream << "a " << this.class.name << "(" <<* [this.defName, args]  <<")"
@@ -450,7 +482,7 @@ U : ObjectWithArgs {
 		^this.valuesToPrepare.size > 0;
 	}
 	
-	apxCPU { ^def.apxCPU }
+	apxCPU { ^this.def.apxCPU }
 	
 	prepare { |target, startPos = 0, action|
 		var valuesToPrepare, act;
@@ -530,6 +562,7 @@ U : ObjectWithArgs {
 
 + Symbol { 
 	asUnit { |args| ^U( this, args ) }
+	asUdef { |defClass| ^(defClass ? Udef).fromName( this ); }
 }
 
 + Array {

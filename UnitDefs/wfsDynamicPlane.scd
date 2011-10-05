@@ -92,7 +92,7 @@ FreeUdef( \wfsDynamicPlane, [
 		});
 		
 		arrayGroup.freeAction_({ |group| unit.synths.remove( group ); });
-		unit.synths = unit.synths.add( arrayGroup );
+		unit.addSynth( arrayGroup );
 		
 		prePanSynth;
 	})

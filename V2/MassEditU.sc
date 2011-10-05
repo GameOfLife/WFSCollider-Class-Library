@@ -8,7 +8,7 @@ MassEditU : U { // mimicks a real U, but in fact edits multiple instances of the
 	}
 	
 	init { |inUnits|
-		var firstDef, defs;
+		var firstDef, defs, def;
 		units = inUnits.asCollection;
 		defs = inUnits.collect(_.def);
 		firstDef = defs[0];
@@ -27,6 +27,7 @@ MassEditU : U { // mimicks a real U, but in fact edits multiple instances of the
 				};
 			}).select(_.notNil);
 			args = argSpecs.collect({ |item| [ item.name, item.default ] }).flatten(1);
+			defName = def.name;
 		} {
 			"MassEditU:init - not all units are of the same Udef".warn;
 		};
@@ -47,7 +48,7 @@ MassEditU : U { // mimicks a real U, but in fact edits multiple instances of the
 	
 	resetArg { |key| // doesn't change the units
 		if( key.notNil ) {
-			this.setArg( key, def.getSpec( key ).massEditValue( 
+			this.setArg( key, this.def.getSpec( key ).massEditValue( 
 				units.collect({ |unit| unit.get( key ) }) ) 
 			);
 		} {
@@ -73,7 +74,7 @@ MassEditU : U { // mimicks a real U, but in fact edits multiple instances of the
 		args.pairsDo({ |key, value|
 			var values;
 			this.setArg( key, value );
-			values = def.getSpec( key ).massEdit( units.collect(_.get(key) ), value );
+			values = this.def.getSpec( key ).massEdit( units.collect(_.get(key) ), value );
 			units.do({ |unit, i|
 				unit.set( key, values[i] );
 			});
@@ -83,7 +84,7 @@ MassEditU : U { // mimicks a real U, but in fact edits multiple instances of the
 		autoUpdate = autoUpdateWas;
 	}
 	
-	defName { ^((def !? { def.name }).asString + "(% units)".format( units.size )).asSymbol }
+	defName { ^((this.def !? { this.def.name }).asString + "(% units)".format( units.size )).asSymbol }
 	
 }
 
