@@ -312,7 +312,7 @@ UChain : UEvent {
         }
 	}
 
-	 makeView{ |i=0| ^UChainEventView(this, i) }
+	 makeView{ |i=0,maxWidth| ^UChainEventView(this, i, maxWidth) }
 
 	
 	/// creation

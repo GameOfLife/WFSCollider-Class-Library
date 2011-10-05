@@ -30,7 +30,6 @@ UScoreEditorGUI {
 		snapActive = true;
 		snapH = 0.25;
 		numTracks = 16;
-		usessionMouseEventsManager = UScoreEditorGuiMouseEventsManager(scoreEditor);
 		this.addControllers;
 	}
 
@@ -133,6 +132,9 @@ UScoreEditorGUI {
 		userView.sliderWidth = 8;
 		//userView.maxZoom = [16,5];
 
+		usessionMouseEventsManager = UScoreEditorGuiMouseEventsManager(scoreEditor, userView.fromBounds.width);
+
+
 		userView
 			.mouseDownAction_( { |v, x, y,mod,x2,y2| 	 // only drag when one event is selected for now
 				var scaledPoint, shiftDown,altDown;
@@ -148,7 +150,7 @@ UScoreEditorGUI {
 				var snap = if(snapActive){snapH * v.gridSpacingH}{0};
 				var shiftDown = ModKey( mod ).shift( \only );
 
-				usessionMouseEventsManager.mouseMoveEvent(Point(x,y),Point(x2,y2),v,snap, shiftDown);
+				usessionMouseEventsManager.mouseMoveEvent(Point(x,y),Point(x2,y2),v,snap, shiftDown, v.fromBounds.width);
 
 			} )
 			.mouseUpAction_( { |v, x, y, mod, x2, y2, isInside|
@@ -174,6 +176,7 @@ UScoreEditorGUI {
 			.unscaledDrawFunc_( { |v|
 				var scPos, rect;
 				rect = v.view.drawBounds.moveTo(0,0);
+
 				//draw border
 				GUI.pen.use({	 
 					GUI.pen.addRect( rect.insetBy(0.5,0.5) );
@@ -185,7 +188,7 @@ UScoreEditorGUI {
 				Pen.font = Font( Font.defaultSansFace, 10 );												
 				//draw events
 				usessionMouseEventsManager.eventViews.do({ |eventView|
-					eventView.draw(v);
+					eventView.draw(v, v.fromBounds.width );
 				});	
 				
 				//draw selection rectangle

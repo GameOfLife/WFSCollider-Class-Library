@@ -5,13 +5,13 @@ UEventView {
 	var <>originalStartTime, <>originalEndTime, <>originalFades, <>originalTrack;
 	//state is \nothing, \moving, \resizingFront, \resizingBack, \selecting, \fadeIn, \fadeOut;
 
-	*new{ |event,i|
-		^super.newCopyArgs(event,i).createRect
+	*new{ |event,i,maxWidth|
+		^super.newCopyArgs(event,i).createRect(maxWidth)
 	}
 
 	//notice variable i will also be the same...
-	duplicate{
-		^this.class.new(event.duplicate,i)
+	duplicate{ |maxWidth|
+		^this.class.new(event.duplicate,i, maxWidth)
 		.originalStartTime_(originalStartTime)
 		.originalEndTime_(originalEndTime)
 		.originalFades_(originalFades)
@@ -26,8 +26,10 @@ UEventView {
 		^(state == \resizingFront) || (state == \resizingBack ) || (state == \fadeIn) || (state == \fadeOut )
 	}
 
-	createRect {
-		rect = Rect( event.startTime, event.track, event.dur, 1 );
+	createRect { |maxWidth|
+	    var dur = event.dur;
+	    dur = if( dur == inf){maxWidth-event.startTime}{event.dur};
+		rect = Rect( event.startTime, event.track, dur, 1 );
 	}
 
 	getTypeColor { }
@@ -58,8 +60,8 @@ UEventView {
 		state = \nothing;
 	}
 
-	checkSelectionStatus { |selectionRect,shiftDown|
-		this.createRect;
+	checkSelectionStatus { |selectionRect,shiftDown, maxWidth|
+		this.createRect(maxWidth);
 		if(selectionRect.intersects(rect)) {
 			selected = true
 		} {
@@ -103,7 +105,7 @@ UChainEventView : UEventView {
 					[ event.wfsSynth.intType ] ? Color.gray ), 0.5 )
 			};
         */
-        var color = Color.red;
+        var color = if(event.duration == inf){Color.blue}{Color.red};
 		^color;
 	}
 
@@ -129,11 +131,12 @@ UChainEventView : UEventView {
 	// resize - only resizing events activated
 	// fades - only changing fade times activated
 	mouseDownAll{ |mousePos,scaledUserView,shiftDown|
+	    var maxWidth = scaledUserView.viewRect.width;
 		var px5Scaled =  scaledUserView.doReverseScale(Point(5,0)).x; 
 		var px10Scaled = scaledUserView.doReverseScale(Point(10,0)).x;
 		var resizeFrontDetectArea,resizeBackDetectArea,fadeInDetectArea,fadeOutDetectArea, fadeInB10, fadeOutB10, fadeAreaHeight;
 		
-		this.createRect;
+		this.createRect(maxWidth);
 		
 		fadeAreaHeight = (rect.height*0.3);
 
@@ -216,11 +219,12 @@ UChainEventView : UEventView {
 	}
 	
 	mouseDownMove{ |mousePos,scaledUserView,shiftDown|
+	    var maxWidth = scaledUserView.viewRect.width;
 		var px5Scaled =  scaledUserView.doReverseScale(Point(5,0)).x; 
 		var px10Scaled = scaledUserView.doReverseScale(Point(10,0)).x;
 		var resizeFrontDetectArea,resizeBackDetectArea,fadeInDetectArea,fadeOutDetectArea, fadeInB10, fadeOutB10, fadeAreaHeight;
 		
-		this.createRect;
+		this.createRect(maxWidth);
 			
         //moving
         if(rect.containsPoint(mousePos)) {
@@ -240,11 +244,12 @@ UChainEventView : UEventView {
 	}
 	
 	mouseDownResize{ |mousePos,scaledUserView,shiftDown|
-		var px5Scaled =  scaledUserView.doReverseScale(Point(5,0)).x; 
+		var maxWidth = scaledUserView.viewRect.width;
+		var px5Scaled =  scaledUserView.doReverseScale(Point(5,0)).x;
 		var px10Scaled = scaledUserView.doReverseScale(Point(10,0)).x;
 		var resizeFrontDetectArea,resizeBackDetectArea,fadeInDetectArea,fadeOutDetectArea, fadeInB10, fadeOutB10, fadeAreaHeight;
 		
-		this.createRect;
+		this.createRect(maxWidth);
 
         if(rect.containsPoint(mousePos)) {
 
@@ -289,11 +294,12 @@ UChainEventView : UEventView {
 	}
 	
 	mouseDownFades{ |mousePos,scaledUserView,shiftDown|
-		var px5Scaled =  scaledUserView.doReverseScale(Point(5,0)).x; 
+		var maxWidth = scaledUserView.viewRect.width;
+		var px5Scaled =  scaledUserView.doReverseScale(Point(5,0)).x;
 		var px10Scaled = scaledUserView.doReverseScale(Point(10,0)).x;
 		var resizeFrontDetectArea,resizeBackDetectArea,fadeInDetectArea,fadeOutDetectArea, fadeInB10, fadeOutB10;
 		
-		this.createRect;
+		this.createRect(maxWidth);
 
         if(rect.containsPoint(mousePos)) {
 
@@ -366,7 +372,7 @@ UChainEventView : UEventView {
 
 	}
 
-	draw { |scaledUserView|
+	draw { |scaledUserView, maxWidth|
 		var textrect;
 		var muted = event.muted;
 		var lineAlpha =  if( muted ) { 0.5  } { 1.0  };
@@ -375,7 +381,7 @@ UChainEventView : UEventView {
 		var px10Scaled = scaledUserView.doReverseScale(Point(10,0)).x;
 		var px5Scaled =  scaledUserView.doReverseScale(Point(5,0)).x;
 
-		this.createRect;
+		this.createRect(maxWidth);
 		
 		scaledRect = scaledUserView.translateScale(rect);
 		innerRect = scaledRect.insetBy(0.5,0.5);

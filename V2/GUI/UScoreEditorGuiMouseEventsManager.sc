@@ -26,23 +26,23 @@ UScoreEditorGuiMouseEventsManager {
 	//     - no shiftDown -> only set newly selected events
 	
 	
-	*new { |scoreEditor|
-		^super.newCopyArgs(scoreEditor).init
+	*new { |scoreEditor, maxWidth|
+		^super.newCopyArgs(scoreEditor).init(maxWidth)
 	}
 
-	init {
-        this.makeEventViews;
+	init { |maxWidth|
+        this.makeEventViews(maxWidth);
 	    scoreEditorController = SimpleController( scoreEditor );
 
 		scoreEditorController.put(\score, {
 		    //"rebuilding views".postln;
-		    this.makeEventViews
+		    this.makeEventViews(maxWidth)
 		});
 	}
 
-	makeEventViews{
+	makeEventViews{ |maxWidth|
 	    eventViews = scoreEditor.events.collect{ |event,i|
-			event.makeView(i)
+			event.makeView(i,maxWidth)
 	    };
 	}
 	
@@ -174,7 +174,7 @@ UScoreEditorGuiMouseEventsManager {
 		^mousePos.y - mouseDownPos.y
 	}
 	
-	mouseMoveEvent{ |mousePos,unscaledMousePos,scaledUserView,snap,shiftDown|
+	mouseMoveEvent{ |mousePos,unscaledMousePos,scaledUserView,snap,shiftDown,maxWidth|
 		var deltaX, deltaY, scoreEvents, selEvents, newEvents, newEventViews;
 		
 		//check if movement exceeds threshold
@@ -187,7 +187,7 @@ UScoreEditorGuiMouseEventsManager {
 				selEvents = this.selectedEventViews;
 				
 				newEventViews = this.selectedEventViews.collect({ |ev,j|
-					ev.duplicate.i_(eventViews.size + j).selected_(true).state_(\moving)
+					ev.duplicate(maxWidth).i_(eventViews.size + j).selected_(true).state_(\moving)
 				});
 				event = newEventViews[0];
 				
@@ -269,7 +269,7 @@ UScoreEditorGuiMouseEventsManager {
 	
 				if(state == \selecting) {
 					eventViews.do{ |eventView|
-						eventView.checkSelectionStatus(selectionRect,shiftDown);
+						eventView.checkSelectionStatus(selectionRect,shiftDown, scaledUserView.viewRect.width);
 					};
 					if(mouseMoved.not) {
 						scoreEditor.score.pos = mouseDownPos.x;

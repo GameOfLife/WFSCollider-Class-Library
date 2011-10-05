@@ -40,7 +40,8 @@ UScore {
 	
 	duration { ^(this.startTimes + this.durations).maxItem ? 0; }
 	dur { ^this.duration }
-	finiteDuration { ^(this.startTimes + this.durations).select( _ < inf ).maxItem ? 1 }
+	finiteDuration { ^(this.startTimes + this.durations).select( _ < inf ).maxItem ? (this.startTimes.maxItem + 10) }
+    isFinite{ ^this.duration < inf}
 
 	waitTime {
 		(events.select({ |item| item.prepareTime <= 0 })
@@ -178,16 +179,12 @@ UScore {
 	}
 	
 	prStartTasks { |targets, startPos = 0, prepStartRelEvents, updatePosition = true|
-        var prepareEvents, startEvents, releaseEvents, preparePos, lastActionIsAStartEvent;
+        var prepareEvents, startEvents, releaseEvents, preparePos;
         var dur;
 
         #prepareEvents, startEvents, releaseEvents = prepStartRelEvents;
 
         preparePos = if(prepareEvents.size == 0){ startPos }{ prepareEvents[0].prepareTime.min(startPos) };
-
-		lastActionIsAStartEvent = if(startEvents.size == 0){false}{
-		    if(releaseEvents.size >0){startEvents.last.startTime >= releaseEvents.last.endTime}{nil}
-		};
 
 		startedAt = [ startPos, SystemClock.seconds ];
 
@@ -221,13 +218,6 @@ UScore {
                     //	pos, thisThread.seconds ).postln;
                     item.start;
                 });
-                if( lastActionIsAStartEvent ) {
-                    // the score has stopped playing i.e. all events are finished
-                    startedAt = nil;
-                    this.pos = startEvents.last.startTime;
-                    isPlaying = false;
-                    this.changed( \stop );
-                }
             }).start;
         };
 
@@ -242,7 +232,8 @@ UScore {
 					item.release;
 				});
 				releaseEvents.last.fadeOut.wait;
-				if( lastActionIsAStartEvent.not ) {
+				//if the score has finite duration, then the score is finished after the last event is released.
+				if( this.isFinite ) {
                     // the score has stopped playing i.e. all events are finished
                     startedAt = nil;
                     this.pos = releaseEvents.last.endTime;
