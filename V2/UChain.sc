@@ -322,11 +322,11 @@ UChain : UEvent {
 	    var group;
 	    if( this.shouldPlayOn( target ) != false ) {
 	    		group = Group( target )
-	                .startAction_({ |synth|
+	                .startAction2_({ |synth|
 	                    // only add if started (in case this is a bundle)
 	                    this.changed( \go, group );
 	                })
-	                .freeAction_({ |synth|
+	                .freeAction2_({ |synth|
 	                    groups.remove( group );
 	                    this.changed( \end, group );
 	                });
