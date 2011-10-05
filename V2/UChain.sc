@@ -379,7 +379,6 @@ UChain : UEvent {
 	
 	release { |time|
 		var releaseUnits;
-		("releasing "++this).postln;
 		releaseUnits = units.select({ |unit| unit.def.canFreeSynth });
 		if( releaseUnits.size > 0 ) {
 			if( time.isNil ) {

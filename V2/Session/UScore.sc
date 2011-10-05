@@ -168,7 +168,7 @@ UScore {
 		var prepStartRelEvents, playStatus;
 		if( callStopFirst ) { this.stop(nil,false); }; // in case it was still running
 
-		prepStartRelEvents = this.eventsForPlay(startPos, assumePrepared).postln;
+		prepStartRelEvents = this.eventsForPlay(startPos, assumePrepared);
 	    playStatus = prepStartRelEvents.flat.size > 0;
 
         if( playStatus ){
@@ -191,9 +191,9 @@ UScore {
 
 		startedAt = [ startPos, SystemClock.seconds ];
 
-		("prepareEvents :"++prepareEvents).postln;
-		("startEvents :"++startEvents).postln;
-		("releaseEvents :"++releaseEvents).postln;
+		//("prepareEvents :"++prepareEvents).postln;
+		//("startEvents :"++startEvents).postln;
+		//("releaseEvents :"++releaseEvents).postln;
 
         if( prepareEvents.size > 0 ) {
             prepareTask = Task({
@@ -223,7 +223,6 @@ UScore {
                 });
                 if( lastActionIsAStartEvent ) {
                     // the score has stopped playing i.e. all events are finished
-                    1.postln;
                     startedAt = nil;
                     this.pos = startEvents.last.startTime;
                     isPlaying = false;
@@ -312,7 +311,7 @@ UScore {
 	}
 	
 	resume { |targets|
-	    if(isPlaying.postln && isPaused.postln){
+	    if(isPlaying && isPaused){
 		    this.prStart( targets, pausedAt, true, false );
 		    isPaused = false;
 		    pausedAt = nil;
