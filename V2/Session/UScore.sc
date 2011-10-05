@@ -107,14 +107,6 @@ UScore {
 			.select({ |evt| (evt.startTime >= startPos) && { evt.prepareTime < startPos } })
 	}
 
-	prepare { |targets, startPos = 0, action|
-		action = MultiActionFunc( action );
-		targets = targets.asCollection.collect(_.asTarget);
-		this.eventsToPrepareNow(startPos).do({ |item|
-		    item.prepare( targets, action: action.getAction );
-		});
-	}
-
     eventsForPlay{ |startPos, assumePrepared = false|
         var evs, prepareEvents, startEvents, releaseEvents;
 
@@ -128,26 +120,35 @@ UScore {
 		^[prepareEvents,startEvents,releaseEvents]
 	}
 
+    //prepare resources needed to play score, i.e. load buffers, send synthdefs.
+    prepare { |targets, startPos = 0, action|
+		action = MultiActionFunc( action );
+		targets = targets.asCollection.collect(_.asTarget);
+		this.eventsToPrepareNow(startPos).do({ |item|
+		    item.prepare( targets, action: action.getAction );
+		});
+	}
+
+    //start immediately, assume prepared by default
+    start{ |targets, startPos = 0, updatePosition = true|
+        ^this.prStart(targets, startPos, true, true, updatePosition)
+    }
+
     //prepares events as fast as possible and starts the playing the score.
-	start{ |targets, startPos = 0, updatePosition = true|
+	prepareAndStart{ |targets, startPos = 0, updatePosition = true|
 	    var prepEvents, servers, prepStartRelEvents, playStatus;
-	    targets = targets.asCollection.collect(_.asTarget);
-	    servers = targets.collect(_.server);
 
 	    this.stop(nil,false);
 
-	    prepEvents = this.eventsToPrepareNow(startPos);
         prepStartRelEvents = this.eventsForPlay(startPos, true);
 	    playStatus = prepStartRelEvents.flat.size > 0;
+
 	    if( playStatus ){
             if(prepEvents.size > 0) {
                 fork{
-                    prepEvents.do({ |item|
-                        item.prepare( targets );
+                    this.prepare(targets, startPos, {
+                        this.prStartTasks( targets, startPos, prepStartRelEvents, updatePosition )
                     });
-                    servers.do( _.sync );
-                    this.prStartTasks( targets, startPos, prepStartRelEvents, updatePosition );
-
                 };
             } {
                 this.prStartTasks( targets, startPos, prepStartRelEvents, updatePosition );
@@ -158,9 +159,9 @@ UScore {
 
 	}
 
-    //starts the score some time before startPos in order to give enough time for events to prepare.
-    preRollStart{ |targets, startPos = 0, updatePosition = true|
-        this.prStart(targets, startPos, false, true, updatePosition)
+    //prepare during waitTime and start after that, no matter if the prepare succeeded
+    prepareWaitAndStart{ |targets, startPos = 0, updatePosition = true|
+        ^this.prStart(targets, startPos, false, true, updatePosition)
     }
 
 	prStart { |targets, startPos = 0, assumePrepared = false, callStopFirst = true, updatePosition = true|
@@ -179,17 +180,20 @@ UScore {
 	prStartTasks { |targets, startPos = 0, prepStartRelEvents, updatePosition = true|
         var prepareEvents, startEvents, releaseEvents, preparePos, lastActionIsAStartEvent;
         var dur;
+
         #prepareEvents, startEvents, releaseEvents = prepStartRelEvents;
+
         preparePos = if(prepareEvents.size == 0){ startPos }{ prepareEvents[0].prepareTime.min(startPos) };
+
 		lastActionIsAStartEvent = if(startEvents.size == 0){false}{
 		    if(releaseEvents.size >0){startEvents.last.startTime >= releaseEvents.last.endTime}{nil}
 		};
+
 		startedAt = [ startPos, SystemClock.seconds ];
+
 		("prepareEvents :"++prepareEvents).postln;
 		("startEvents :"++startEvents).postln;
 		("releaseEvents :"++releaseEvents).postln;
-
-
 
         if( prepareEvents.size > 0 ) {
             prepareTask = Task({
@@ -256,10 +260,10 @@ UScore {
                 var t = startPos;
                 var waitTime = 0.1;
                 (startPos - preparePos).wait;
-                while({t < dur}, {
+                while({t <= dur}, {
                     waitTime.wait;
                     t = t + waitTime;
-                    this.changed(\pos, t);
+                    this.pos_(t);
                 });
 
             }).start;
@@ -329,8 +333,8 @@ UScore {
 	}
 
 	pos_ { |x|
-	    pos = x;
-	    this.changed(\pos);
+	    pos = if(x>=this.duration){0}{x};
+	    this.changed(\pos, pos);
 	}
 
 }
