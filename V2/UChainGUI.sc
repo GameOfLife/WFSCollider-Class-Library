@@ -31,7 +31,7 @@ UChainGUI {
 			
 			parent = Window(
 				parent, 
-				bounds ?? { Rect(128 rrand: 256, 64 rrand: 128, 300, 400) }, 
+				bounds ?? { Rect(128 rrand: 256, 64 rrand: 128, 330, 400) }, 
 				scroll: true
 			).front;
 		};
