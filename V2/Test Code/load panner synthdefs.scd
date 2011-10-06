@@ -1,6 +1,6 @@
 (
-WFSPrePanSynth.generateAllDefs;
-WFSArrayPanSynth.generateAllDefs( { |defs| d = defs } ); // takes apx 30s, watch post window
+WFSPrePanSynthDefs.generateAll;
+WFSArrayPanSynthDefs.generateAll( { |defs| d = defs } ); // takes apx 30s, watch post window
 )
 
 d; // these are all the array defs
