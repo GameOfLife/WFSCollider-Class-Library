@@ -80,6 +80,8 @@
 			server = WFSServers( ips, startPort, serversPerSystem ).makeDefault;
 			server.hostNames_( *hostnames );
 			
+			server.makeWindow;
+			
 			WFSSpeakerConf.numSystems_( ips.size );
 			
 			server.multiServers.do({ |ms, i|
@@ -93,11 +95,18 @@
 			server.m.waitForBoot({
 				var defs;
 				SyncCenter.loadMasterDefs;
+				
 				 defs = (Udef.loadAllFromDefaultDirectory.collect(_.synthDef) ++
 	            [ 'bufferPlayer','diskPlayer', ].collect{ |name|
 	                MetaUdef.fromName(name).synthDefs( [ [\numChannels,1] ] )
 	            }).flat.select(_.notNil);
 	            
+	            defs.do({|def|
+		         		def.load( server.m );
+	              });
+	
+
+	            /*
 	            server.multiServers.do({ |ms|
 	                ms.servers.do({ |server|
 	                    defs.do({|def|
@@ -105,6 +114,7 @@
 	                    })
 	                })
 	            });
+	            */
 	            
 	            WFSLevelBus.makeWindow;
 				"\n\tWelcome to the WFS System".postln; 
