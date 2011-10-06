@@ -35,7 +35,7 @@ NodeActionKeeper {
 		};
 		
 		NodeActionKeeper.startDict[ this ] = OSCresponderNode( this.server.addr,
-			'/n_end', { |time, resp, msg|
+			'/n_go', { |time, resp, msg|
 				if( msg[1] == this.nodeID ) {
 					action.value( this );
 					resp.remove;
