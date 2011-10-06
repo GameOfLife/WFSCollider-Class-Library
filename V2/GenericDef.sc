@@ -146,12 +146,13 @@ GenericDef {
 	* if the argPairs arrays doesn't have a certain argument, the default value
 	* is used.
 	*/
-	asArgsArray { |argPairs|
+	asArgsArray { |argPairs, constrain = true|
 		argPairs = argPairs ? #[];
 		^argSpecs.collect({ |item| 
 			var val;
-			val = argPairs.pairsAt(item.name);
-			[ item.name, val ?? { item.default.copy } ] 
+			val = argPairs.pairsAt(item.name) ?? { item.default.copy };
+			if( constrain ) { val = item.constrain( val ) };
+			[ item.name,  val ] 
 		}).flatten(1);
 	}
 	

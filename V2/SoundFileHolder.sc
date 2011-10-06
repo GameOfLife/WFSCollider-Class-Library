@@ -1,10 +1,19 @@
 // wslib 2010
 
 AbstractRichBuffer {
+	
+	classvar <>allBuffers;
+	classvar <>allUnits;
+	
     var <numFrames, <numChannels, <sampleRate;
 
-	var <>buffers; // holder for all buffers
-    var <unit, <unitArgName;
+	// var <>buffers; // holder for all buffers
+    // var <unit, <unitArgName;
+    
+    *initClass { 
+	    allBuffers = IdentityDictionary();
+	    allUnits = IdentityDictionary();
+	}
 
     *new{ |numFrames, numChannels = 1, sampleRate = 44100|
         ^super.newCopyArgs(numFrames, numChannels, sampleRate)
@@ -28,23 +37,27 @@ AbstractRichBuffer {
 		sampleRate = new ? 44100;
 		this.changed( \sampleRate, sampleRate );
 	}
+	
+	buffers { ^allBuffers[ this ] }
+	buffers_ { |buffers| allBuffers[ this ] = buffers; }
 
     //BUFFER MANAGEMENT
 	addBuffer { |buf|
-		buffers = buffers.add( buf );
-		this.changed( \buffers, buffers );
+		this.buffers = this.buffers.add( buf );
+		this.changed( \buffers, this.buffers );
 	}
 
 	removeBuffer { |buf|
-		buffers.remove( buf );
-		this.changed( \buffers, buffers );
+		this.buffers.remove( buf );
+		if( this.buffers.size == 0 ) { this.buffers = nil };
+		this.changed( \buffers, this.buffers );
 	}
 
 	currentBuffers { |server| // returns all buffers if server == nil
 		if( server.notNil ) {
-			^buffers.select({ |item| item.server == server });
+			^this.buffers.select({ |item| item.server == server });
 		};
-		^buffers;
+		^this.buffers;
 	}
 
 	currentBuffer { |server|
@@ -97,6 +110,23 @@ AbstractRichBuffer {
 	}
 
 	unit_ { |aUnit|
+		if( aUnit.notNil ) {
+			case { this.unit == aUnit } {
+				// do nothing
+			} { allUnits[ this ].isNil } {
+				allUnits[ this ] = [ aUnit, nil ];
+			} {
+				"Warning: unit_ \n%\nis already being used by\n%\n".postf(
+					this.class,
+					this.asCompileString, 
+					this.unit 
+				);
+			};
+		} {
+			allUnits[ this ] = nil; // forget unit
+		};
+		
+		/*
 	    case { unit == aUnit } { 
 		    // do nothing
 		} {
@@ -110,15 +140,37 @@ AbstractRichBuffer {
 	        "\nis already being used by".postln;
 	        unit.postln;
 	    };
+	    */
+	}
+	
+	unit { ^allUnits[ this ] !? { allUnits[ this ][0] }; }
+	
+	unitArgName {  
+		var array;
+		^allUnits[ this ] !? { 
+			allUnits[ this ][1] ?? {
+				array = allUnits[ this ];
+				array[1] = array[0].findKeyForValue( this );
+				array[1];
+			};
+		}; 
+	}
+	
+	unitArgName_ { |unitArgName|
+		if( allUnits[ this ].notNil ) {
+			allUnits[ this ][1] = unitArgName;
+		} {
+			"Warning: unitArgName_ - no unit specified for\n%\n"
+				.postf( this.asCompileString )
+		};
 	}
 	
 	unitSet { // sets this object in the unit to enforce setting of the synths
-		if( unit.notNil ) {	
-			if( unitArgName.isNil ) {
-				unitArgName = unit.findKeyForValue( this );
-			};
+		var unitArgName;
+		if( this.unit.notNil ) {	
+			unitArgName = this.unitArgName;
 			if( unitArgName.notNil ) {
-				unit.set( unitArgName, this );
+				this.unit.set( unitArgName, this );
 			};
 		};
 	}
@@ -141,7 +193,7 @@ RichBuffer : AbstractRichBuffer {
 				action.value( buf );
 			};
 		}).add;
-		buffers = buffers.add( buf );
+		this.addBuffer( buf );
 		^buf;
 	}
 
@@ -411,7 +463,12 @@ BufSndFile : AbstractSndFile {
 	}
 	
 	asBufSndFile { ^this }
-	asDiskSndFile { ^DiskSndFile.newCopyVars( this ); }
+	asDiskSndFile { 
+		var unit; // pass unit on to new object
+		unit = this.unit;
+		this.unit = nil;
+		^DiskSndFile.newCopyVars( this ).unit_( unit ); 
+	}
 
     useChannels_ { |new|
         useChannels = new;
@@ -448,7 +505,7 @@ BufSndFile : AbstractSndFile {
 			buf = Buffer.read( server, path.standardizePath,
 					startFrame + addStartFrame, localUsedFrames, action, bufnum );
 		};
-		buffers = buffers.add( buf );
+		this.addBuffer( buf );
 		^buf;
 	}
 
@@ -479,7 +536,12 @@ DiskSndFile : AbstractSndFile {
 		};
 	}
 	
-	asBufSndFile { ^BufSndFile.newCopyVars( this ); }
+	asBufSndFile { 
+		var unit; // pass unit on to new object
+		unit = this.unit;
+		this.unit = nil;
+		^BufSndFile.newCopyVars( this ).unit_( unit ); 
+	}
 	asDiskSndFile { ^this }
 	
 	asControlInputFor { |server, startPos = 0| 
@@ -504,7 +566,7 @@ DiskSndFile : AbstractSndFile {
 					}
 				);
 			}).doOnInfo_(action).cache;
-			buffers = buffers.add( buf );
+			this.addBuffer( buf );
 			^buf;
 		} {
 			"DiskSndFile:prReadBuffer : file not found".warn;
@@ -538,13 +600,32 @@ DiskSndFile : AbstractSndFile {
 	}
 }
 
++ Object {
+	
+	asBufSndFile { 
+		^BufSndFile.newBasic("sounds/a11wlk01-44_1.aiff", 107520, 1, 44100, 0, nil, 1, false)
+	}
+	
+	asDiskSndFile {
+		^DiskSndFile.newBasic("sounds/a11wlk01-44_1.aiff", 107520, 1, 44100, 0, nil, 1, false)
+	}
+}
+
 + String {
 	asUnitArg { |unit|
-		^BufSndFile( this ).asUnitArg( unit );
+		^this.asBufSndFile.asUnitArg( unit );
 	}
 	
 	asUnit {
-		^BufSndFile( this ).asUnit;
+		^this.asBufSndFile.asUnit;
+	}
+	
+	asBufSndFile { 
+		^BufSndFile( this );
+	}
+	
+	asDiskSndFile {
+		^DiskSndFile( this );
 	}
 	
 	asPathFromServer { 

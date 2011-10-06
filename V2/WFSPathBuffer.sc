@@ -87,7 +87,7 @@ WFSPathBuffer : AbstractRichBuffer {
 	    } {
 		    buf = this.sendBuffer( server, action, bufnum );
 	    };
-		buffers = buffers.add( buf );
+		this.addBuffer( buf );
 		^buf;
 	}
 	

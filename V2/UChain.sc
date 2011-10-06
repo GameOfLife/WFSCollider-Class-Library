@@ -10,10 +10,13 @@ UChain : UEvent {
 	
 	classvar <>defaultServers;
 	classvar <>verbose = false;
+	classvar <>groupDict;
 	
-	var <>units, <>groups;
+	var <>units; //, <>groups;
 	var <prepareTasks;
 	var <>preparedServers;
+	
+	*initClass { groupDict = IdentityDictionary( ) }
 	
 	*new { |...args|
 		^super.new.init( args );
@@ -58,10 +61,10 @@ UChain : UEvent {
             }
         };
 		prepareTasks = [];
-		groups = [];
+		//groups = [];
 	}
 
-    //will this work ?
+    //will this work ? Yes
 	duplicate{
 	    ^this.deepCopy;
 	}
@@ -316,6 +319,25 @@ UChain : UEvent {
 
 	
 	/// creation
+	
+	groups { ^groupDict[ this ] ? [] }
+	
+	groups_ { |groups| groupDict.put( this, groups ); }
+	
+	addGroup { |group|
+		 groupDict.put( this, groupDict.at( this ).add( group ) ); 
+	}
+	
+	removeGroup { |group|
+		var groups;
+		groups = this.groups;
+		groups.remove( group );
+		if( groups.size == 0 ) {
+			groupDict.put( this, nil ); 
+		} {
+			groupDict.put( this, groups );  // not needed?
+		};
+	}
 
 	makeGroupAndSynth { |target, startPos = 0|
 		var maxDurUnit;
@@ -327,10 +349,10 @@ UChain : UEvent {
 	                    this.changed( \go, group );
 	                })
 	                .freeAction2_({ |synth|
-	                    groups.remove( group );
+	                    this.removeGroup( group );
 	                    this.changed( \end, group );
 	                });
-	        groups = groups.add( group );
+	        this.addGroup( group );
 	        this.changed( \start, group );
 	        units.do( _.makeSynth(group, startPos) );
 	    };
@@ -361,9 +383,9 @@ UChain : UEvent {
 			};
 		});
 		if( target.size == 0 ) {
-			^groups[0]
+			^this.groups[0]
 		} {
-			^groups;
+			^this.groups;
 		};
 	}
 	
@@ -374,7 +396,7 @@ UChain : UEvent {
 		};
 	}
 	
-	free { groups.do(_.free) }
+	free { this.groups.do(_.free) }
 	stop { this.stopPrepareTasks; this.free; }
 	
 	release { |time|
@@ -470,7 +492,7 @@ UChain : UEvent {
 		preparedServers = [];
 	}
 	
-	resetGroups { groups = []; } // after unexpected server quit
+	resetGroups { this.groups = nil; } // after unexpected server quit
 	
 	// indexing / access
 		

@@ -366,11 +366,7 @@ BufSndFileSpec : BufferSpec {
 	}
 	
 	constrain { |value|
-		case { value.class == DiskSndFile } {
-			value = value.asBufSndFile;
-		} { value.class != BufSndFile } {
-			value = this.default;
-		};
+		value = value.asBufSndFile;
 		
 		if( value.numChannels != numChannels ) {
 			if( value.useChannels.size != numChannels ) {
@@ -381,7 +377,7 @@ BufSndFileSpec : BufferSpec {
 	}
 	
 	default { 
-		^BufSndFile.newBasic("sounds/a11wlk01-44_1.aiff", 107520, 1, 44100, 0, nil, 1, false)
+		^nil.asBufSndFile;
 	}
 	
 	*newFromObject { |obj|
@@ -397,11 +393,8 @@ DiskSndFileSpec : BufSndFileSpec {
 	}
 	
 	constrain { |value|
-		case { value.class == BufSndFile } {
-			value = value.asDiskSndFile;
-		} { value.class != DiskSndFile } {
-			value = this.default;
-		};
+		value = value.asDiskSndFile;
+		
 		if( value.numChannels != numChannels ) {
 			"DiskSndFileSpec - soundfile '%' should have % channels but has %.\nIt might not playback"
 				.format( value.path.basename, numChannels, value.numChannels );
@@ -410,7 +403,7 @@ DiskSndFileSpec : BufSndFileSpec {
 	}
 	
 	default { 
-		^DiskSndFile.newBasic("sounds/a11wlk01-44_1.aiff", 107520, 1, 44100, 0, nil, 1, false)
+		^nil.asDiskSndFile;
 	}
 	
 	*newFromObject { |obj|
