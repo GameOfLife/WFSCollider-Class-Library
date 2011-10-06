@@ -6,6 +6,7 @@ LoadBalancer {
 	
 	var <servers;
 	var <>loads;
+	var <>verbose = false;
 	
 	*initClass { all = [] }
 	
@@ -52,6 +53,12 @@ LoadBalancer {
 	addLoad { |server, load = 0|
 		var index;
 		index = this.indexOf( server );
+		if( verbose ) {
+			if( load != 0 && index.notNil ) {
+				"LoadBalancer-addLoad: adding % for % (%)\n"
+					.postf( load, server, index );
+			};
+		};
 		if( index.notNil ) {
 			loads[ index ] = loads[ index ] + load;
 		};
@@ -60,6 +67,9 @@ LoadBalancer {
 	setLoad { |server, load = 0|
 		var index;
 		index = this.indexOf( server );
+		if( verbose ) {
+			"LoadBalancer-setLoad: setting % for % (%)\n".postf( load, server, index );
+		};
 		if( index.notNil ) {
 			loads[ index ] = load;
 		};
@@ -75,6 +85,16 @@ LoadBalancer {
 		var server;
 		server = this.lowest;
 		this.addLoad( server, addLoad );
+		/*
+		if( verbose ) {
+			if( addLoad != 0 ) {
+				"LoadBalancer-asTarget: using %, adding %\n"
+					.postf( server, addLoad );
+			} {
+				"LoadBalancer-asTarget: using %\n".postf( server );
+			};
+		};
+		*/
 		^server.asTarget;
 	}
 	
