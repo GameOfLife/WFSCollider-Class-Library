@@ -30,16 +30,17 @@ def = FreeUdef( \wfsStaticIndex, [
 	.addSynthDefControls
 	.shouldPlayOnFunc_({ |unit, target|
 		target = target.asTarget.server;
-		WFSSpeakerConf.includesServer( target );
-		unit.get( \index ).inclusivelyBetween( 
-			WFSSpeakerConf.default.firstSpeakerIndexOf( target ),
-			WFSSpeakerConf.default.lastSpeakerIndexOf( target )
-		);
+		WFSSpeakerConf.includesServer( target ) && {
+			unit.get( \index ).inclusivelyBetween( 
+				WFSSpeakerConf.default.firstSpeakerIndexOf( target ),
+				WFSSpeakerConf.default.lastSpeakerIndexOf( target )
+			);
+		};
 	})
 	.createSynthFunc_({ |unit, target|
 		var startIndex;
 		startIndex = WFSSpeakerConf.default.firstSpeakerIndexOf( target.asTarget.server );
-		Synth( "wfsp_is", [ \startIndex, startIndex ] ++ unit.getArgsFor( target ), 
+		Synth( "wfsp_is", [ \startIndex, startIndex ] ++ unit.getArgsFor( target.asTarget.server ), 
 			target, \addToTail );
 	});
 
