@@ -544,9 +544,7 @@ UChain : UEvent {
 	    ^UChain(*(units++unit.asCollection))
 	}
 
-	isFolder {
-	    ^false
-	}
+	isFolder { ^false }
 
 	printOn { arg stream;
 		stream << "a " << this.class.name << "(" <<* units.collect(_.defName)  <<")"

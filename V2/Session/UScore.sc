@@ -1,4 +1,4 @@
-UScore {
+UScore : UEvent {
 
 	/*
 	*   events: Array[UEvent]
@@ -11,11 +11,17 @@ UScore {
 	var <prepareTask, <startTask, <releaseTask, <updatePosTask, <startedAt, <pausedAt;
 
 	*new { |... events| 
-		^super.newCopyArgs( events );
+		^super.new.init( events );
+	}
+
+	init{ |inEvents|
+	    events = inEvents;
 	}
 
     duplicate { ^UScore( *events.collect( _.duplicate ) ).name_( name ); }
 
+    makeView{ |i,maxWidth| ^UScoreEventView(this,i,maxWidth) }
+    isFolder{ ^true }
 	//ARRAY SUPPORT
 	at { |index|  ^events[ index ];  }
 	collect { |func|  ^events.collect( func );  }
@@ -44,11 +50,10 @@ UScore {
     isFinite{ ^this.duration < inf}
 
 	waitTime {
-		(events.select({ |item| item.prepareTime <= 0 })
-			.sort({ |a,b| a.prepareTime <= b.prepareTime })[0] ? 0).neg;
+		^(events.collect(_.prepareTime).minItem ? 0).min(0).neg
 	}
 
-	track { |track = 0| ^this.class.new( events.select({ |event| event.track == track }) ); }
+	fromTrack { |track = 0| ^this.class.new( events.select({ |event| event.track == track }) ); }
 	
 	sort { events.sort; }
 

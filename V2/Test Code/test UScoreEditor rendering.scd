@@ -30,3 +30,24 @@ x = UScoreEditor(z);
 y = UScoreEditorGUI(x);
 
 )
+
+// score within score within a score 
+
+(
+f = { 12.collect({ |i|
+		var evt;
+		evt = UChain(i/2,i+1,rrand(3.0,10.0),false,\sine, \output).fadeOut_(1).fadeIn_(1);
+		evt.units[0].set(\freq,rrand(200.0,600.0) );
+		evt;
+	}) };
+z = UScore(*f.()++[
+	UScore(*f.()++[
+		UScore(*f.())
+	]
+)]);
+x = UScoreEditor(z);
+y = UScoreEditorGUI(x);
+
+)
+
+Document.openStartup

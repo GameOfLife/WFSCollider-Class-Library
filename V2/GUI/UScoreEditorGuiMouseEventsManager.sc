@@ -1,14 +1,15 @@
 UScoreEditorGuiMouseEventsManager {
 	classvar minimumMov = 3;
-	var <scoreEditor;
+	var <scoreEditor, <scoreView;
 	var <eventViews, <scoreEditorGUI, <>state = \nothing;
-	var <mouseMoved = false, <mouseDownPos, <unscaledMouseDownPos;
-	var <selectionRect, event;
+	var <mouseMoved = false, <mouseDownPos, <unscaledMouseDownPos, <clickCount;
+	var <selectionRect, theEventView;
 	var <xLimit, <yLimit;
 	var <isCopying = false, copyed = false;
 	var <>mode = \all;
 	var tranportPos = 0;
 	var scoreEditorController;
+
 	//state is \nothing, \moving, \resizingFront, \resizingBack, \selecting, \fadeIn, \fadeOut;
 	//mode is \all, \move, \resize, \fades
 	//protocol:
@@ -26,8 +27,8 @@ UScoreEditorGuiMouseEventsManager {
 	//     - no shiftDown -> only set newly selected events
 	
 	
-	*new { |scoreEditor, maxWidth|
-		^super.newCopyArgs(scoreEditor).init(maxWidth)
+	*new { |scoreEditor, scoreView, maxWidth|
+		^super.newCopyArgs(scoreEditor, scoreView).init(maxWidth)
 	}
 
 	init { |maxWidth|
@@ -38,6 +39,10 @@ UScoreEditorGuiMouseEventsManager {
 		    //"rebuilding views".postln;
 		    this.makeEventViews(maxWidth)
 		});
+	}
+
+	remove{
+	    scoreEditorController.remove;
 	}
 
 	makeEventViews{ |maxWidth|
@@ -73,63 +78,64 @@ UScoreEditorGuiMouseEventsManager {
 	    }
 	}
 		
-	mouseDownEvent{ |mousePos,unscaledMousePos,shiftDown,altDown,scaledUserView|
+	mouseDownEvent{ |mousePos,unscaledMousePos,shiftDown,altDown,scaledUserView, inClickCount|
 		
 		mouseDownPos = mousePos;
 		unscaledMouseDownPos = unscaledMousePos;
-		
+		clickCount = inClickCount;
+
 		eventViews.do{ |eventView|
 			eventView.mouseDownEvent(mousePos,scaledUserView,shiftDown,mode)
 		};
 		
-		event = eventViews.select{ |eventView|
+		theEventView = eventViews.select{ |eventView|
 			eventView.state == \resizingFront
 		}.at(0);
 		
-		if(event.notNil){
+		if(theEventView.notNil){
 			state = \resizingFront
 		} {
-			event = eventViews.select{ |eventView|
+			theEventView = eventViews.select{ |eventView|
 				eventView.state == \resizingBack
 			}.at(0);
 			
-			if(event.notNil){
+			if(theEventView.notNil){
 				state = \resizingBack
 			} {
 				
-				event = eventViews.select{ |eventView|
+				theEventView = eventViews.select{ |eventView|
 					eventView.state == \fadeIn
 				
 				}.at(0);
 				
-				if(event.notNil){
+				if(theEventView.notNil){
 					state = \fadeIn
 				} {
-					event = 	eventViews.select{ |eventView|
+					theEventView = 	eventViews.select{ |eventView|
 						eventView.state == \fadeOut
 					
 					}.at(0);
 					
-					if(event.notNil){
+					if(theEventView.notNil){
 						state = \fadeOut
 					} {
-						event = 	eventViews.select{ |eventView|
+						theEventView = 	eventViews.select{ |eventView|
 							eventView.state == \moving
 						
 						}.at(0);
-						if(event.notNil) {
+						if(theEventView.notNil) {
 							state = \moving;
 							if(shiftDown.not) {
-								if(event.selected.not) {
-									event.selected = true;
+								if(theEventView.selected.not) {
+									theEventView.selected = true;
 									eventViews.do({ |eventView|
-										if(eventView != event) {
+										if(eventView != theEventView) {
 											eventView.selected = false
 										}
 									});
 								} 
 							} {
-								event.selected = event.selected.not;
+								theEventView.selected = theEventView.selected.not;
 							};				
 							if(altDown){
 								isCopying = true;
@@ -145,13 +151,16 @@ UScoreEditorGuiMouseEventsManager {
 						
 		};
 		
-		//make sure there is only one event being operated on
-		if(event.notNil) {
+		//make sure there is only one theEventView being operated on
+		if(theEventView.notNil) {
 			eventViews.do{ |eventView|
-				if(event != eventView) {
+				if(theEventView != eventView) {
 					eventView.state = \nothing
 				}			
 			};
+			if(theEventView.event.isFolder && (clickCount == 2)){
+			    fork{ 0.2.wait; { scoreView.addtoScoreList(theEventView.event) }.defer }
+			}
 		};
 		
 		//for making sure groups of events being moved are not sent off screen
@@ -189,7 +198,7 @@ UScoreEditorGuiMouseEventsManager {
 				newEventViews = this.selectedEventViews.collect({ |ev,j|
 					ev.duplicate(maxWidth).i_(eventViews.size + j).selected_(true).state_(\moving)
 				});
-				event = newEventViews[0];
+				theEventView = newEventViews[0];
 				
 				eventViews.do{ |ev| ev.selected_(false).clearState };
 
@@ -214,14 +223,14 @@ UScoreEditorGuiMouseEventsManager {
 				};
 				
 				//if event is selected apply action all selected, otherwise apply action only to the event
-				if(event.selected) {
+				if(theEventView.selected) {
 					
 					this.selectedEventViews.do{ |eventView|
 						("resizing "++eventView);
 						eventView.mouseMoveEvent(deltaX,deltaY,state,snap,shiftDown)
 					}
 				} {
-					event.mouseMoveEvent(deltaX,deltaY,state,snap,shiftDown)
+					theEventView.mouseMoveEvent(deltaX,deltaY,state,snap,shiftDown)
 				}				
 
 			} {
@@ -258,7 +267,7 @@ UScoreEditorGuiMouseEventsManager {
 				    state = \nothing;
 					eventViews.do({ |eventView|
 						if(shiftDown.not) {
-							if(eventView != event) {
+							if(eventView != theEventView) {
 								eventView.selected = false
 							}
 						}
@@ -271,7 +280,7 @@ UScoreEditorGuiMouseEventsManager {
 					eventViews.do{ |eventView|
 						eventView.checkSelectionStatus(selectionRect,shiftDown, scaledUserView.viewRect.width);
 					};
-					if(mouseMoved.not) {
+					if(mouseMoved.not && (clickCount == 2) ) {
 						scoreEditor.score.pos = mouseDownPos.x;
 					};
 				}

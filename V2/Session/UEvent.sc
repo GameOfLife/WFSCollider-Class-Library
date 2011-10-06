@@ -1,6 +1,6 @@
 UEvent {
 
-    var <startTime;
+    var <startTime=0;
     var <>track=0;  //track number (horizontal segment) on the score editor
     var <duration = inf;
     var <>muted = false;
