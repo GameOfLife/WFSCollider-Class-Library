@@ -471,7 +471,7 @@ U : ObjectWithArgs {
 	    };
 	}
 	
-	waitTime { ^waitTime ?? { this.values.collect( _.u_waitTime ).sum } }
+	waitTime { ^(waitTime ?? { this.values.collect( _.u_waitTime ).sum }) + 0.01 }
 	
 	
 	valuesToPrepare {
