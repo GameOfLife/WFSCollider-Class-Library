@@ -131,19 +131,25 @@ UScore : UEvent {
 		prepareEvents = if(assumePrepared){evs.select({ |item| item.prepareTime >= startPos })}{evs};
 		startEvents = evs.sort({ |a,b| a.startTime <= b.startTime });
 		releaseEvents = events
-			.select({ |item| (item.duration < inf) && { item.eventEndTime >= startPos } })
+			.select({ |item| (item.duration < inf) && { item.eventEndTime >= startPos } && item.isFolder.not })
 			.sort({ |a,b| a.eventEndTime <= b.eventEndTime });
 
 		^[prepareEvents,startEvents,releaseEvents]
 	}
 
     //prepare resources needed to play score, i.e. load buffers, send synthdefs.
-    prepare { |targets, startPos = 0, action|
-		action = MultiActionFunc( action );
-		targets = targets.asCollection.collect(_.asTarget);
-		this.eventsToPrepareNow(startPos).do({ |item|
-		    item.prepare( targets, action: action.getAction );
-		});
+	prepare { |targets, startPos = 0, action|
+	    var eventsToPrepareNow;
+	    eventsToPrepareNow = this.eventsToPrepareNow(startPos);
+	    if( eventsToPrepareNow.size > 0 ) {
+			action = MultiActionFunc( action );
+			// targets = targets.asCollection.collect(_.asTarget); // leave this to UChain:prepare
+			this.eventsToPrepareNow(startPos).do({ |item|
+			    item.prepare( targets, action: action.getAction );
+			});
+	    } {
+		    action.value; // fire immediately if nothing to prepare
+	    };
 	}
 
     //start immediately, assume prepared by default
@@ -161,16 +167,9 @@ UScore : UEvent {
 	    playStatus = prepStartRelEvents.flat.size > 0;
 
 	    if( playStatus ){
-            if(prepEvents.size > 0) {
-                fork{
-                    this.prepare(targets, startPos, {
-                        this.prStartTasks( targets, startPos, prepStartRelEvents, updatePosition )
-                    });
-                };
-            } {
-                this.prStartTasks( targets, startPos, prepStartRelEvents, updatePosition );
-
-            };
+            this.prepare(targets, startPos, {
+                this.prStartTasks( targets, startPos, prepStartRelEvents, updatePosition )
+            });
         }
         ^playStatus
 
@@ -284,10 +283,8 @@ UScore : UEvent {
 	}
 
     //stop synths
-	stopChains { |releaseTime = 0.1|
-		if( releaseTime.notNil ) {
-			events.do(_.release(releaseTime));
-		};
+	stopChains { |releaseTime|
+		events.do(_.release(releaseTime ? 0.1));
 	}
 
 	//stop everything
@@ -313,7 +310,8 @@ UScore : UEvent {
 		    pos = this.pos;
 		    pausedAt = pos;
 		    startedAt = nil;
-		    this.changed(\paused)
+		    this.changed(\paused);
+		    //events.select(_.isFolder).do(_.pause);
 		}
 	}
 	
