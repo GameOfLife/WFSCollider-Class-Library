@@ -12,7 +12,7 @@ UChain : UEvent {
 	classvar <>verbose = false;
 	classvar <>groupDict;
 	
-	var <>units; //, <>groups;
+	var <units; //, <>groups;
 	var <prepareTasks;
 	var <>preparedServers;
 	
@@ -81,6 +81,11 @@ UChain : UEvent {
 				unit.set( *args );
 			};
 		});
+	}
+	
+	units_ { |newUnits|
+		units = newUnits;
+		this.changed( \units );
 	}
 
     eventSustain { ^duration - this.fadeOut; }

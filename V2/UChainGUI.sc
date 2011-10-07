@@ -198,7 +198,15 @@ UChainGUI {
 				};
 			})
 			.put( \fadeIn, { views[ \fadeIn ].value = chain.fadeIn })
-			.put( \fadeOut, { views[ \fadeOut ].value = chain.fadeOut });
+			.put( \fadeOut, { views[ \fadeOut ].value = chain.fadeOut })
+			.put( \units, { 
+				if( composite.isClosed.not ) {
+					{
+						composite.remove;
+						this.makeViews( originalBounds );
+					}.defer(0.01);
+				};
+			});
 		
 		chain.changed( \gain );
 		chain.changed( \startTime );
@@ -206,15 +214,16 @@ UChainGUI {
 		chain.changed( \fadeIn );
 		chain.changed( \fadeOut );
 		
+		
 		unitInitFunc = { |unit, what ...args|
 			if( what === \init ) { // close all views and create new
-				composite.remove;
-				this.makeViews( originalBounds );
+				chain.changed( \units );
 			};
 		};
 		
+		
 		uguis = units.collect({ |unit, i|
-			var header, comp, uview;
+			var header, comp, uview, plus, min;
 			
 			comp = CompositeView( composite, (composite.bounds.width - (margin.x * 2))@14 );
 			
@@ -227,9 +236,12 @@ UChainGUI {
 					(RoundView.skin.tryPerform( \at, \font ) ?? 
 						{ Font( Font.defaultSansFace, 12) }).boldVariant 
 				);
-			uview = UserView( comp, comp.bounds.moveTo(0,0) );
+			
 			
 			if( chain.class != MassEditUChain ) {
+				
+				uview = UserView( comp, comp.bounds.moveTo(0,0) );
+				
 				uview.canReceiveDragHandler_({ |sink|
 					var drg;
 					drg = View.currentDrag;
@@ -243,21 +255,53 @@ UChainGUI {
 				})
 				.receiveDragHandler_({ |sink, x, y|
 					var u;
-					if( View.currentDrag.isKindOf( U ) ) {
+					case { View.currentDrag.isKindOf( U ) } {
 						u = View.currentDrag;
-						composite.remove;
-						if( chain.units.includes( u ) ) { chain.units.remove( u ); };
-						chain.units = chain.units.insert( i, u );
-						this.makeViews( originalBounds );
-					} {
+
+						if( chain.units.includes( u ) ) { 
+							chain.units.remove( u ); 
+							chain.units = chain.units.insert( i, u );
+						} {
+							chain.units = chain.units.insert( i, u.deepCopy );
+						};
+						
+					} { View.currentDrag.isKindOf( Udef ) } {
 						unit.defName = View.currentDrag;
+					} {   [ Symbol, String ].includes( View.currentDrag.class )  } {
+						unit.defName = View.currentDrag.asSymbol;
 					};
 				})
 				.beginDragAction_({ 
 					unit;
 				});
-			} {
-				header.canReceiveDragHandler_({ false })
+				
+				if( i != 0 ) {	
+					min = SmoothButton( comp, 
+							Rect( comp.bounds.right - (12 + 4 + 12), 1, 12, 12 ) )
+						.label_( '-' )
+						.border_( 1 )
+						.action_({
+							chain.units = chain.units.select(_ != unit);
+						}).resize_(3);
+				} {
+					min = SmoothButton( comp, 
+							Rect( comp.bounds.right - (36 + 4 + 12), 1, 36, 12 ) )
+						.label_( "defs" )
+						.border_( 1 )
+						.radius_( 2 )
+						.action_({
+							UdefListView();
+						}).resize_(3);
+				};
+				
+				plus = SmoothButton( comp, 
+						Rect( comp.bounds.right - (12 + 2), 1, 12, 12 ) )
+					.label_( '+' )
+					.border_( 1 )
+					.action_({
+						chain.units = chain.units.insert( i, unit.deepCopy );
+					}).resize_(3);
+					
 			};
 						
 			unit.addDependant( unitInitFunc );

@@ -254,9 +254,15 @@ U : ObjectWithArgs {
 			
 		};
 		if( def.notNil ) {	
-			args = def.asArgsArray( inArgs ? [] );
+			args = def.asArgsArray( inArgs ? [] )
+				.collect({ |item, i|
+					if( i.odd ) {
+						item.asUnitArg( this );
+					} {
+						item;
+					};
+				});
 			defName = def.name;
-			this.values = this.values.collect(_.asUnitArg(this));
 		} { 
 			defName = inName;
 			"defName '%' not found".format(inName).warn; 

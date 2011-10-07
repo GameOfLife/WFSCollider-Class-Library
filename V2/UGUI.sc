@@ -68,6 +68,10 @@ UGUI {
 			}
 		
 		});
+		
+		if( views.size == 0 ) {
+			controller.remove;
+		};
 	}
 	
 	resize_ { |resize| composite.resize_(resize) }
