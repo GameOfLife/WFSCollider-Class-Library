@@ -55,18 +55,32 @@ AbstractRichBuffer {
 
 	currentBuffers { |server| // returns all buffers if server == nil
 		if( server.notNil ) {
-			^this.buffers.select({ |item| item.server == server });
+			^this.buffers.select({ |item| item.server == server }) ? #[];
 		};
 		^this.buffers;
 	}
 
 	currentBuffer { |server|
-	    ^this.currentBuffers(server).last;
+		var buf;
+	    buf = this.currentBuffers(server).last;
+	    if( buf.notNil ) { 
+		    ^buf;
+	    } {
+		    "%:currentBuffer - no buffer loaded for %"
+		    		.format( this.class, server ).warn;
+		    	^buf
+	    };   
 	}
 	
 	freeBuffer { |buf, action|
-		buf.checkFree( action );
-		this.removeBuffer( buf );
+		if( buf.notNil ) {
+			buf.checkFree( action );
+			this.removeBuffer( buf );
+		} {
+			 "%:freeBuffer - no buffer to be freed"
+		    		.format( this.class ).warn;
+		    	action.value;
+		};
 	}
 	
 	freeAllBuffers { |server|
