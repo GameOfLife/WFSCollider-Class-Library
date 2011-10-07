@@ -29,6 +29,13 @@ UScoreEditor {
 
 	events { ^score.events }
 
+	changeScore{ |action|
+	    this.changed(\preparingToChangeScore);
+	    this.storeUndoState;
+	    action.value;
+		this.changed(\score);
+	}
+
 	//--UNDO/REDO--
 	storeUndoState {
 
@@ -81,94 +88,96 @@ UScoreEditor {
     //--SCORE IMPORTING--
 
 	importScorePlaceAtPos { |score, pos = 0|
+	    this.changeScore({
 		score <| score.events.collect({ |event|
 	        event.startTime = pos + event.startTime;
 		});
-		score.cleanOverlaps;
-		this.changed(\score);
+		    score.cleanOverlaps;
+		})
 	}
 
 	importScoreAsFolder { |score|
-	    score <| Event(score, 0 );
-		score.cleanOverlaps;
-		this.changed(\score);
+	    this.changeScore({
+	        score <| Event(score, 0 );
+		    score.cleanOverlaps;
+		})
 	}
 
     //--EVENT MANAGEMENT--
 
     <| { |events|
-        this.storeUndoState;
-        score <| events;
-        this.changed(\score);
+        this.changeScore({
+            score <| events;
+        })
     }
 
 	duplicateEvents{ |events|
-		this.storeUndoState;
-	    events.do({ |ev| score.addEventToCompletelyEmptyTrack( ev.duplicate ) } );
-		this.changed(\score);
+		this.changeScore({
+	        events.do({ |ev| score.addEventToCompletelyEmptyTrack( ev.duplicate ) } );
+		})
 	}
 
 	deleteEvents { |events|
-		this.storeUndoState;
-		events.do( score.events.remove(_) );
-		this.changed(\score);
+		this.changeScore({
+		    events.do( score.events.remove(_) );
+		})
 	}
 
 	muteEvents { |events|
-		this.storeUndoState;
-		events.do( _.mute );
-		this.changed(\score);
+		this.changeScore({
+		    events.do( _.mute );
+		})
 	}
 
 	unmuteEvents { |events|
-		this.storeUndoState;
-		events.do( _.unMute );
-		this.changed(\score);
+		this.changeScore({
+		    events.do( _.unMute );
+		})
 	}
 
 	toggleMuteEvents { |events|
-	    this.storeUndoState;
-	    events.do( _.toggleMute );
-	    this.changed(\score)
+	    this.changeScore({
+	        events.do( _.toggleMute );
+	    })
 	}
 
 	unmuteAll {
-		this.unmuteEvents(score.events);
-		this.changed(\score);
+	    this.changeScore({
+		    this.unmuteEvents(score.events);
+		})
 	}
 
 	soloEvents { |events|
-		this.storeUndoState;
-		if( events.size > 0 ) {
-			score.events.do({ |event|
-				if( events.includes( event ) ) {
-					event.unMute
-				} {
-					event.mute
-				};
-			});
-		};
-		this.changed(\score);
+		this.changeScore({
+            if( events.size > 0 ) {
+                score.events.do({ |event|
+                    if( events.includes( event ) ) {
+                        event.unMute
+                    } {
+                        event.mute
+                    };
+                });
+            };
+		})
 	}
 
 	folderFromEvents { |events|
 		var folderEvents, folderStartTime;
-		this.storeUndoState;
+
 		if( events.size > 0 ) {
-			events.do({ |item|
-				score.events.remove( item );
-			});
-			folderStartTime = events.sort[0].startTime;
-			score.events = score.events.add(
-                UEvent( folderStartTime,
+		    this.changeScore({
+                events.do({ |item|
+                    score.events.remove( item );
+                });
+                folderStartTime = events.sort[0].startTime;
+                score.events = score.events.add(
                     UScore(
                         *events.collect({ |event|
                             event.startTime_( event.startTime - folderStartTime )
-                        }) ),
-                    events[0].track
-                )
-			);
-            this.changed(\score);
+                        })
+                    ).startTime_(folderStartTime).track_(events[0].track)
+                );
+            })
 		};
 	}
 
@@ -181,43 +190,43 @@ UScoreEditor {
 				folderEvents.size > 0
 				}
 		) {
-			this.storeUndoState;
-			folderEvents.do({ |folderEvent|
-				newEvents = newEvents
-					++ folderEvent.object.events.collect({ |item|
-						item.startTime_( item.startTime + folderEvent.startTime )
-					});
-				score.events.remove( folderEvent );
-			});
+			this.changeScore({
+                folderEvents.do({ |folderEvent|
+                    newEvents = newEvents
+                        ++ folderEvent.events.collect({ |item|
+                            item.startTime_( item.startTime + folderEvent.startTime )
+                        });
+                    score.events.remove( folderEvent );
+                });
 
-			newEvents.do({ |evt|
-					score.addEventToCompletelyEmptyTrack( evt );
-			});
+                newEvents.do({ |evt|
+                        score.addEventToEmptyTrack( evt );
+                });
 
-			this.changed(\score);
+			})
 		}
 	}
 
 	cutEventsStart { |events,pos,isFolder=false,removeFadeIn = true|
-        this.storeUndoState;
-		events.do{ |ev|
-		    ev.cutStart(pos, false, removeFadeIn)
-		};
-		this.changed(\score);
+        this.changeScore({
+            events.do{ |ev|
+                ev.cutStart(pos, false, removeFadeIn)
+            };
+		})
 	}
 
 	cutEventsEnd { |events,pos, isFolder = false, removeFadeOut = false|
-        this.storeUndoState;
-		events.do{ |ev|
-		    ev.cutEnd(pos, removeFadeOut)
-		};
-		this.changed(\score);
+        this.changeScore({
+            events.do{ |ev|
+                ev.cutEnd(pos, removeFadeOut)
+            };
+		})
 	}
 
 	splitEvents { |events, pos|
 		var frontEvents, backEvents;
 
-		this.storeUndoState;
+		this.changeScore({
 		frontEvents = events.select({ |event|
 			var dur = event.dur;
 			var start = event.startTime;
@@ -225,9 +234,13 @@ UScoreEditor {
 		});
 		backEvents = frontEvents.collect(_.duplicate);
 		score.events = score.events ++ backEvents;
-		this.cutEventsStart(backEvents, pos, removeFadeIn:true);
-		this.cutEventsEnd(frontEvents, pos, removeFadeOut:true);
-		this.changed(\score);
+		backEvents.do{ |ev|
+                ev.cutStart(pos, false, true)
+            };
+		frontEvents.do{ |ev|
+                ev.cutEnd(pos, true)
+            };
+		})
 	}
 
     //perform editing operations at the current transport position

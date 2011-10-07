@@ -14,40 +14,13 @@ UScoreEditorGUI {
 
 	var <>scoreView, <>window;
 	var <usessionMouseEventsManager;
-	var <scoreEditorController, <scoreController;
 
 	//*initClass { UI.registerForShutdown({ scoreEditor.askForSave = false }); }
 
 	*new { |scoreEditor|
 		^super.newCopyArgs( scoreEditor)
-			.init
 			.addToAll
 			.newWindow
-	}
-
-	init {
-	    this.addControllers;
-	}
-
-	addControllers {
-	    scoreEditorController = SimpleController( scoreEditor );
-
-		scoreEditorController.put(\score, {
-		    this.update
-		});
-
-        scoreController = SimpleController( scoreEditor.score );
-
-        scoreController.put(\pos, {
-		    { this.update }.defer;
-		});
-
-	}
-
-	update {
-		if( window.isClosed.not ) {
-			scoreView.refresh;
-		};
 	}
 
 	toFront {
@@ -69,8 +42,6 @@ UScoreEditorGUI {
 
         window = Window("Score Editor", bounds).front;
 
-		window.onClose = { scoreEditorController.remove };
-
         margin = 4;
         gap = 2;
         topBarH = 22;
@@ -79,18 +50,20 @@ UScoreEditorGUI {
         view.background_( Color.grey(0.5) );
         view.addFlowLayout(margin@margin,gap@gap);
         view.resize_(5);
+
+        centerBounds = Rect(0,0, 680-8, 300-( topBarH + tranBarH + (2*margin) + (2*gap) ));
+        //centerView = CompositeView(view, centerBounds).resize_(5);
+        scoreView = UScoreView(view, centerBounds, scoreEditor );
         
         //TOP
-        UScoreEditorGui_TopBar(view,Rect(0,0, bounds.width-(2*margin), topBarH ),scoreEditor,usessionMouseEventsManager, this);
+        UScoreEditorGui_TopBar(view,Rect(0,0, bounds.width-(2*margin), topBarH ),scoreView);
         view.decorator.nextLine;
         
         //CENTER
-        centerBounds = Rect(0,0, 680-8, 300-( topBarH + tranBarH + (2*margin) + (2*gap) ));
-        centerView = CompositeView(view, centerBounds).resize_(5);
-        scoreView = UScoreView(centerView, centerBounds, scoreEditor );
+        scoreView.makeView;
         view.decorator.nextLine;
         
         //BOTTOM
-        UScoreEditorGui_TransportBar(view,  Rect(0,0, bounds.width - (2*margin), tranBarH ), scoreEditor.score);
+        UScoreEditorGui_TransportBar(view,  Rect(0,0, bounds.width - (2*margin), tranBarH ), scoreView);
 	}
 }		

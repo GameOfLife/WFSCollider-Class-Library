@@ -4,7 +4,7 @@ UScoreEventView : UEventView {
         ^if(event.duration == inf){Color.blue}{Color.red};
 	}
 
-	getName { ^i.asString ++": a nice score" }
+	getName { ^i.asString ++": "++event.name }
 
 	ifIsInsideRect{ |mousePos, yesAction, noAction|
 

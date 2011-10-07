@@ -32,7 +32,7 @@ y = UScoreEditorGUI(x);
 )
 
 // score within score within a score 
-
+//double click scores to enter score
 (
 f = { 12.collect({ |i|
 		var evt;

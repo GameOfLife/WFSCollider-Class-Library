@@ -1,19 +1,33 @@
 UScoreEditorGui_TopBar {
 
-    var <>usessionMouseEventsManager;
-    var <>views, <>scoreEditorController;
+    var <>scoreView;
+    var <header, <>views, <>scoreEditorController;
 
-    *new{ |parent, bounds, scoreEditor, usessionMouseEventsManager, scoreEditorGUI|
-        ^super.newCopyArgs(usessionMouseEventsManager).init(parent, bounds, scoreEditor, scoreEditorGUI)
+    *new{ |parent, bounds, scoreView|
+        ^super.newCopyArgs(scoreView).init(parent, bounds)
     }
 
-    init{ |parent, bounds, scoreEditor, scoreEditorGUI|
-        this.makeGui(parent, bounds, scoreEditor, scoreEditorGUI);
-        this.addControllers(scoreEditor);
+    init{ |parent, bounds|
+        this.makeGui(parent, bounds);
+        this.addScoreEditorController;
     }
 
-    addControllers{ |scoreEditor|
-        scoreEditorController = SimpleController( scoreEditor );
+    remove{
+        if(scoreEditorController.notNil) {
+                scoreEditorController.remove;
+        };
+        header.remove;
+    }
+
+    scoreEditor{
+         ^scoreView.currentEditor
+    }
+
+    addScoreEditorController{
+        if(scoreEditorController.notNil) {
+                scoreEditorController.remove;
+        };
+        scoreEditorController = SimpleController( scoreView.scoreEditorsList[0] );
 
 		scoreEditorController.put(\score, {
 		    views[\undo].enabled_(true);
@@ -22,30 +36,52 @@ UScoreEditorGui_TopBar {
 
 		scoreEditorController.put(\undo, {
 
-            if( scoreEditor.redoStates.size != 0 ) {
+            if( this.scoreEditor.redoStates.size != 0 ) {
                 views[\redo].enabled_(true)
             };
-            if( scoreEditor.undoStates.size == 0 ) {
+            if( this.scoreEditor.undoStates.size == 0 ) {
                 views[\undo].enabled_(false)
             };
         });
 
         scoreEditorController.put(\redo, {
 
-            if( scoreEditor.undoStates.size != 0 ) {
+            if( this.scoreEditor.undoStates.size != 0 ) {
 			views[\undo].enabled_(true)
             };
-            if( scoreEditor.redoStates.size == 0 ) {
+            if( this.scoreEditor.redoStates.size == 0 ) {
                 views[\redo].enabled_(false)
             }
         });
 
     }
 
-    selectedEvents { ^usessionMouseEventsManager.selectedEvents  }
+    resetUndoRedoButtons{
+        views[\redo].enabled_(this.scoreEditor.redoStates.size != 0);
+        views[\undo].enabled_(this.scoreEditor.undoStates.size != 0);
+    }
 
-    makeGui{ |parent, bounds, scoreEditor, scoreEditorGUI|
-        var font = Font( Font.defaultSansFace, 11 ), header, size, marginH, marginV;
+    selectedEvents{
+        ^scoreView.usessionMouseEventsManager.selectedEvents;
+    }
+
+    selectedEventsOrAll{
+        ^scoreView.usessionMouseEventsManager.selectedEventsOrAll
+    }
+
+    doToSelectedEvents{ |action|
+        var events = this.selectedEvents;
+        if(events.size > 0){
+            action.value(events)
+        }
+    }
+
+    doToSelectedEventsOrAll{ |action|
+        action.value(this.selectedEventsOrAll)
+    }
+
+    makeGui{ |parent, bounds|
+        var font = Font( Font.defaultSansFace, 11 ), size, marginH, marginV;
 		views = ();
 		
 	    marginH = 2;
@@ -56,19 +92,24 @@ UScoreEditorGui_TopBar {
         
 		header.addFlowLayout(marginH@marginV);
 		header.resize_(2);
-		
-
 
 		SmoothButton( header, size@size )
 			.states_( [[ \i, Color.black, Color.blue.alpha_(0.125) ]] )
 			.canFocus_(false)
 			.border_(1).background_(Color.grey(0.8))
 			.action_({ |b|
-				var events = usessionMouseEventsManager.selectedEvents;
+				var event, events = this.selectedEvents;
 				switch(events.size)
 				    {0}{}
-				    {1}{ events[0].gui }
-				    { MassEditUChain(events.collect(_.object).select{ |x| x.class == UChain}).gui }
+				    {1}{
+				        event = events[0];
+				        if(event.isFolder){
+				            MassEditUChain(event.getAllUChains).gui
+				        } {
+				            event.gui
+				        }
+				    }
+				    { MassEditUChain(events.collect(_.getAllUChains).flat).gui }
 
 			});
 
@@ -79,7 +120,7 @@ UScoreEditorGui_TopBar {
 			.canFocus_(false)
 			.border_(1).background_(Color.grey(0.8))
 			.action_({
-				scoreEditor.deleteEvents( usessionMouseEventsManager.selectedEvents )
+				this.doToSelectedEvents{ |x| this.scoreEditor.deleteEvents(x) }
 			});
 
 		SmoothButton( header, size@size )
@@ -87,9 +128,7 @@ UScoreEditorGui_TopBar {
 			.canFocus_(false)
 			.border_(1).background_(Color.grey(0.8))
 			.action_({
-				if( usessionMouseEventsManager.selectedEvents.size > 0 )
-					{ scoreEditor.duplicateEvents(usessionMouseEventsManager.selectedEvents) }
-					//{ this.addAudioFiles }
+				this.doToSelectedEvents{ |x|  this.scoreEditor.duplicateEvents(x) }
 			});
 
 		header.decorator.shift(10);
@@ -102,7 +141,7 @@ UScoreEditorGui_TopBar {
 			.font_( Font( font.name, 10 ).boldVariant )
 			.radius_([8,0,0,8])
 			.action_({
-				scoreEditor.trimEventsStartAtPos( usessionMouseEventsManager.selectedEventsOrAll )
+				this.doToSelectedEventsOrAll{ |x| this.scoreEditor.trimEventsStartAtPos( x ) }
 			});
 
 		SmoothButton( header, size@size  )
@@ -111,7 +150,7 @@ UScoreEditorGui_TopBar {
 			.radius_(0)
 			.border_(1).background_(Color.grey(0.8))
 			.action_({
-				scoreEditor.splitEventsAtPos( usessionMouseEventsManager.selectedEventsOrAll )
+				this.doToSelectedEventsOrAll{ |x| this.scoreEditor.splitEventsAtPos( x ) }
 			});
 
 		SmoothButton( header, size@size  )
@@ -120,7 +159,7 @@ UScoreEditorGui_TopBar {
 			.radius_([0,8,8,0])
 			.border_(1).background_(Color.grey(0.8))
 			.action_({
-			    scoreEditor.trimEventsEndAtPos( usessionMouseEventsManager.selectedEventsOrAll )
+			    this.doToSelectedEventsOrAll{ |x| this.scoreEditor.trimEventsEndAtPos( x ) }
 		    });
 
 		header.decorator.shift(10);
@@ -131,7 +170,7 @@ UScoreEditorGui_TopBar {
 			.border_(1).background_(Color.grey(0.8))
 			.enabled_(false)
 			.action_({
-				scoreEditor.undo
+				this.scoreEditor.undo
 			});
 
 		views[\redo] = SmoothButton( header, size@size )
@@ -140,7 +179,7 @@ UScoreEditorGui_TopBar {
 			.border_(1).background_(Color.grey(0.8))
 			.enabled_(false)
 			.action_({
-				scoreEditor.redo
+				this.scoreEditor.redo
 			});
 
 		header.decorator.shift(10);
@@ -150,7 +189,7 @@ UScoreEditorGui_TopBar {
 			.canFocus_(false)
 			.border_(1).background_(Color.grey(0.8))
 			.action_({ |b|
-				scoreEditor.toggleMuteEvents( usessionMouseEventsManager.selectedEvents )
+				this.doToSelectedEvents{ |x|  this.scoreEditor.toggleMuteEvents( x ) }
 			});
 
 		SmoothButton( header, size@size  )
@@ -158,11 +197,13 @@ UScoreEditorGui_TopBar {
 			.canFocus_(false)
 			.border_(1).background_(Color.grey(0.8))
 			.action_({
-				if( usessionMouseEventsManager.selectedEvents.every(_.isFolder) ) {
-					usessionMouseEventsManager.unpackSelectedFolders
-				}{
-					usessionMouseEventsManager.folderFromSelectedEvents;
-				};
+			    this.doToSelectedEvents{ |x|
+                    if( x.every(_.isFolder) ) {
+                        this.scoreEditor.unpackSelectedFolders(x)
+                    }{
+                        this.scoreEditor.folderFromEvents(x);
+                    }
+				}
 			});
 
 		header.decorator.shift(10);
@@ -177,19 +218,7 @@ UScoreEditorGui_TopBar {
 				//UMixer(this.selectedEventsOrAll,List.new);
 			});
 
-		header.decorator.shift(10);
-
-		SmoothButton( header, 40@18  )
-			.states_( [[ "plot", Color.black, Color.clear ]] )
-			.canFocus_(false)
-			.font_( font )
-			.border_(1).background_(Color.grey(0.8))
-			.action_({
-			    //not implemented yet
-				//scoreEditor.score.plot;
-			});
-
-		header.decorator.shift(10);
+		header.decorator.shift(100);
 
 		StaticText( header, 30@size ).string_( "snap" ).font_( font ).align_( \right );
 
@@ -200,10 +229,10 @@ UScoreEditorGui_TopBar {
 			.value_(4)
 			.action_({ |v|
 				if (v.value == 0)
-					{ scoreEditorGUI.snapActive = false; }
-					{ scoreEditorGUI.snapActive = true; };
+					{ scoreView.snapActive = false; }
+					{ scoreView.snapActive = true; };
 
-				scoreEditorGUI.snapH = [0, 0.001, 0.01, 0.1, 0.25, 1/3, 1][ v.value ];
+				scoreView.snapH = [0, 0.001, 0.01, 0.1, 0.25, 1/3, 1][ v.value ];
 				});
 
 		StaticText( header, 10@size ).string_( "s" ).font_( font );
@@ -218,7 +247,7 @@ UScoreEditorGui_TopBar {
 			.font_( font )
 			.value_(0)
 			.action_({ |v|
-				usessionMouseEventsManager.mode = v.items[v.value].asSymbol;
+				scoreView.usessionMouseEventsManager.mode = v.items[v.value].asSymbol;
 			});
 
     }

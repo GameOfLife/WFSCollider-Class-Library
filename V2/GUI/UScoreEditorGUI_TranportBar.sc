@@ -1,18 +1,29 @@
 UScoreEditorGui_TransportBar {
+    var <scoreView;
+    var <>views, <>scoreController, <scoreViewController;
 
-    var <>views, <>scoreController;
-
-    *new{ |parent, bounds, score|
-        ^super.new.init(parent, bounds, score)
+    *new{ |parent, bounds, scoreView|
+        ^super.newCopyArgs(scoreView).init(parent, bounds)
     }
 
-    init{ |parent, bounds, score|
-        this.makeGui(parent, bounds, score);
-        this.addControllers(score);
+    init{ |parent, bounds|
+        this.makeGui(parent, bounds);
+        scoreViewController = SimpleController( scoreView );
+        scoreViewController.put(\scoreChanged, {
+		    this.addControllers;
+		});
+        this.addControllers;
     }
 
-    addControllers{ |score|
-        scoreController = SimpleController( score );
+    score{
+        ^scoreView.currentScore
+    }
+
+    addControllers{
+        if(scoreController.notNil) {
+            scoreController.remove;
+        };
+        scoreController = SimpleController( this.score );
 
 		scoreController.put(\playing, {
 
@@ -47,7 +58,7 @@ UScoreEditorGui_TransportBar {
 
     }
 
-    makeGui{ |parent, bounds, score|
+    makeGui{ |parent, bounds|
 
         var font = Font( Font.defaultSansFace, 11 ), view, size, marginH, marginV, playAlt;
 		views = ();
@@ -77,10 +88,10 @@ UScoreEditorGui_TransportBar {
 
 			    var startedPlaying;
 			    if( v.value == 1) {
-                    startedPlaying = score.start( UServerCenter.servers, score.pos);
+                    startedPlaying = this.score.prepareAndStart( UServerCenter.servers, this.score.pos);
 			        if( startedPlaying) { views[\prepare].start }{ v.value = 0 };
 			    } {
-                    score.stop;
+                    this.score.stop;
                     views[\pause].value = 0;
                     views[\prepare].stop;
 			    }
@@ -97,13 +108,13 @@ UScoreEditorGui_TransportBar {
 			.background_(Color.grey(0.8))
 			.action_({ |v|
 			    if( v.value == 1) {
-			        if(score.isPlaying) {
-			         score.pause;
+			        if(this.score.isPlaying) {
+			         this.score.pause;
 			       } {
 			        v.value = 0;
 			       }
 			    } {
-                    score.resume(UServerCenter.servers)
+                    this.score.resume(UServerCenter.servers)
 			    }
 			});
 
@@ -113,20 +124,20 @@ UScoreEditorGui_TransportBar {
 			.font_( font )
 			.border_(1).background_(Color.grey(0.8))
 			.action_({
-			    score.pos = 0;
+			    this.score.pos = 0;
 			});
 
         view.decorator.shift(20,0);
 
 	    views[\counter] = SMPTEBox( view, 150@size )
-			.value_( score.pos )
+			.value_( this.score.pos )
 			.radius_( 12 )
 			.align_( \center )
 			.clipLo_(0)
 			.background_( Color.clear )
 			.charSelectColor_( Color.white.alpha_(0.5) )
 			.autoScale_( true )
-            .action_({ |v| score.pos = v.value });
+            .action_({ |v| this.score.pos = v.value });
 
     }
 

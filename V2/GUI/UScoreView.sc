@@ -9,21 +9,79 @@ UScoreView {
      var <scoreEditorsList;
      var <usessionMouseEventsManager;
      var <>snapActive, <>snapH;
-     var <scoreView, <scoreListView, <mainComposite, font;
+     var <scoreView, <scoreListView, <mainComposite, font, <parent, <bounds;
      var <>scoreList;
+     var <baseScoreEditorController, <currentScoreEditorController, <scoreController;
 
      *new{ |parent, bounds, scoreEditor| ^super.new.init(scoreEditor, parent,bounds) }
 
-     init { |scoreEditor, parent, bounds|
+     init { |scoreEditor, inParent, inBounds|
 
         scoreEditorsList = [scoreEditor];
-        mainComposite = CompositeView(parent,bounds).resize_(5);
         snapActive = true;
 		snapH = 0.25;
         font = Font( Font.defaultSansFace, 11 );
 		scoreList = [scoreEditor.score];
+		parent = inParent;
+		bounds = inBounds;
+		this.addCurrentScoreControllers;
 
-		this.makeScoreView;
+     }
+
+     addCurrentScoreControllers {
+	    if( currentScoreEditorController.notNil ) {
+	        currentScoreEditorController.remove;
+	    };
+	    currentScoreEditorController = SimpleController( scoreEditorsList.last );
+
+		currentScoreEditorController.put(\score, {
+		    this.update;
+		    if(this.isInnerScore){
+		        this.baseEditor.changed(\score);
+		    }
+		});
+
+        if(this.isInnerScore){
+            currentScoreEditorController.put(\preparingToChangeScore, {
+                    this.baseEditor.storeUndoState;
+            });
+        };
+
+        if( scoreController.notNil ) {
+	        scoreController.remove;
+	    };
+        scoreController = SimpleController( scoreEditorsList.last.score );
+
+        scoreController.put(\pos, {
+		    { this.update }.defer;
+		});
+
+	}
+
+	update {
+	    scoreView.refresh;
+	}
+
+     currentEditor{
+        ^scoreEditorsList.last
+     }
+
+     baseEditor{
+        ^scoreEditorsList[0]
+     }
+
+     currentScore{
+        ^scoreEditorsList.last.score
+     }
+
+     isInnerScore{
+        ^(scoreEditorsList.size > 1)
+     }
+
+     //call to initialize and draw view. This is needed to be able to pass an instance of this class to the topbar object.
+     makeView{
+        mainComposite = CompositeView(parent,bounds).resize_(5);
+        this.makeScoreView
      }
 
      remake{
@@ -42,7 +100,17 @@ UScoreView {
      addtoScoreList{ |score|
         scoreList = scoreList.add(score);
         scoreEditorsList = scoreEditorsList.add(UScoreEditor(score));
+        this.addCurrentScoreControllers;
         this.remake;
+        this.changed(\scoreChanged);
+     }
+
+     goToHigherScore{ |i|
+        scoreList = scoreList[..i];
+        scoreEditorsList = scoreEditorsList[..i];
+        this.addCurrentScoreControllers;
+        this.changed(\scoreChanged);
+        fork{ { this.remake; }.defer }
      }
 
      makeScoreListView{
@@ -51,43 +119,40 @@ UScoreView {
         scoreListView.addFlowLayout;
         scoreList[..(listSize-2)].do{ |score,i|
             SmoothButton(scoreListView,60@16)
-                .states_([["score "++(i+1), Color.black, Color.clear]])
+                .states_([[(i+1).asString++": "++score.name, Color.black, Color.clear]])
                 .font_( font )
 			    .border_(1).background_(Color.grey(0.8))
 			    .radius_(5)
 			    .canFocus_(false)
 			    .action_({
-                       scoreList = scoreList[..i];
-                       scoreEditorsList = scoreEditorsList[..i];
-                       fork{ { this.remake; }.defer }
+                    this.goToHigherScore(i);
 			    })
             }
      }
 
      makeScoreView{
-        var score = scoreList.last;
         var scoreEditor = scoreEditorsList.last;
-        var numTracks = ((score.events.collect( _.track ).maxItem ? 14) + 2).max(16);
+        var numTracks = ((scoreEditor.score.events.collect( _.track ).maxItem ? 14) + 2).max(16);
         var scoreBounds = if(scoreList.size > 1) {
             mainComposite.bounds.copy.height_(mainComposite.bounds.height - 24).moveTo(0,24);
         }  {
-            mainComposite.bounds
+            mainComposite.bounds.copy.moveTo(0,0)
         };
 
         scoreView = ScaledUserViewContainer(mainComposite,
         			scoreBounds,
-        			Rect( 0, 0, score.duration.ceil.max(1), numTracks ),
+        			Rect( 0, 0, scoreEditor.score.duration.ceil.max(1), numTracks ),
         			5);
 
         //CONFIGURE scoreView
         scoreView.background = Color.gray(0.8);
         scoreView.composite.resize = 5;
-	    scoreView.gridLines = [score.finiteDuration.ceil.max(1), numTracks];
+	    scoreView.gridLines = [scoreEditor.score.finiteDuration.ceil.max(1), numTracks];
 		scoreView.gridMode = ['blocks','lines'];
 		scoreView.sliderWidth = 8;
 		//scoreView.maxZoom = [16,5];
 
-		usessionMouseEventsManager = UScoreEditorGuiMouseEventsManager(scoreEditor, this, scoreView.fromBounds.width);
+		usessionMouseEventsManager = UScoreEditorGuiMouseEventsManager(this);
 
 		scoreView
 			.mouseDownAction_( { |v, x, y,mod,x2,y2, isInside, buttonNumber, clickCount| 	 // only drag when one event is selected for now
@@ -121,8 +186,8 @@ UScoreView {
 				}
 			})
 			.beforeDrawFunc_( {
-			    var dur = score.finiteDuration.ceil.max(1);
-				numTracks = ((score.events.collect( _.track ).maxItem ? ( numTracks - 2)) + 2)
+			    var dur = scoreEditor.score.finiteDuration.ceil.max(1);
+				numTracks = ((scoreEditor.score.events.collect( _.track ).maxItem ? ( numTracks - 2)) + 2)
 					.max( numTracks );
 				scoreView.fromBounds = Rect( 0, 0, dur, numTracks );
 				scoreView.gridLines = [dur, numTracks];
@@ -159,7 +224,7 @@ UScoreView {
 				//draw Transport line
 				Pen.width = 2;
 				Pen.color = Color.black.alpha_(0.5);
-				scPos = v.translateScale( score.pos@0 );
+				scPos = v.translateScale( scoreEditor.score.pos@0 );
 				Pen.line( (scPos.x)@0, (scPos.x)@v.bounds.height);
 				Pen.stroke;
 
@@ -170,5 +235,5 @@ UScoreView {
 		})
      }
 
-     refresh{ scoreView.refresh }
+     refresh{ scoreView.refresh; scoreView.refresh }
 }

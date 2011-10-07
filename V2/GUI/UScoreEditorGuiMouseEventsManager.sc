@@ -1,13 +1,12 @@
 UScoreEditorGuiMouseEventsManager {
 	classvar minimumMov = 3;
-	var <scoreEditor, <scoreView;
-	var <eventViews, <scoreEditorGUI, <>state = \nothing;
+	var <scoreView;
+	var <scoreEditor, <eventViews, <scoreEditorGUI, <>state = \nothing;
 	var <mouseMoved = false, <mouseDownPos, <unscaledMouseDownPos, <clickCount;
 	var <selectionRect, theEventView;
 	var <xLimit, <yLimit;
 	var <isCopying = false, copyed = false;
 	var <>mode = \all;
-	var tranportPos = 0;
 	var scoreEditorController;
 
 	//state is \nothing, \moving, \resizingFront, \resizingBack, \selecting, \fadeIn, \fadeOut;
@@ -27,11 +26,13 @@ UScoreEditorGuiMouseEventsManager {
 	//     - no shiftDown -> only set newly selected events
 	
 	
-	*new { |scoreEditor, scoreView, maxWidth|
-		^super.newCopyArgs(scoreEditor, scoreView).init(maxWidth)
+	*new { |scoreView|
+		^super.newCopyArgs(scoreView).init
 	}
 
-	init { |maxWidth|
+	init {
+	    var maxWidth = scoreView.scoreView.fromBounds.width;
+        scoreEditor = scoreView.currentEditor;
         this.makeEventViews(maxWidth);
 	    scoreEditorController = SimpleController( scoreEditor );
 
@@ -144,6 +145,9 @@ UScoreEditorGuiMouseEventsManager {
 						} {
 							state = \selecting;
 							selectionRect = Rect.fromPoints(mousePos,mousePos);
+							if(clickCount == 2) {
+                                scoreEditor.score.pos = mouseDownPos.x;
+                            };
 						}
 					}
 				}		
@@ -159,19 +163,17 @@ UScoreEditorGuiMouseEventsManager {
 				}			
 			};
 			if(theEventView.event.isFolder && (clickCount == 2)){
-			    fork{ 0.2.wait; { scoreView.addtoScoreList(theEventView.event) }.defer }
+
+			    fork{ 0.2.wait; {
+			        scoreView.addtoScoreList(theEventView.event);
+			    }.defer }
 			}
 		};
 		
 		//for making sure groups of events being moved are not sent off screen
 		xLimit = this.selectedEventViews.collect({ |ev| ev.event.startTime }).minItem;
 		yLimit = this.selectedEventViews.collect({ |ev| ev.event.track }).minItem;
-		
-		if([\nothing, \selecting].includes(state).not) {
-			scoreEditor.storeUndoState;
 
-		};
-		
 		("Current state is "++state);
 	}
 	
@@ -188,6 +190,12 @@ UScoreEditorGuiMouseEventsManager {
 		
 		//check if movement exceeds threshold
 		if((unscaledMousePos - mouseDownPos).x.abs > minimumMov) {
+			//score will change store undo state
+			if((mouseMoved == false) && [\nothing, \selecting].includes(state).not){
+
+                scoreEditor.storeUndoState;
+                scoreEditor.changed(\preparingToChangeScore);
+			};
 			mouseMoved = true;
 
 			if( isCopying && copyed.not ) {
@@ -202,19 +210,16 @@ UScoreEditorGuiMouseEventsManager {
 				
 				eventViews.do{ |ev| ev.selected_(false).clearState };
 
-
-				// NEEDS FIXING
                 scoreEditor.score.events = scoreEditor.score.events ++ newEventViews.collect( _.event );
                 eventViews = eventViews ++ newEventViews;
 
 				//("scoreEvents "++scoreEditor.score.events.size).postln;
-
 				//("selected events"++this.selectedEventViews).postln;
 				copyed = true;				
 			};
 		
 			if([\nothing, \selecting].includes(state).not) {
-				
+
 				deltaX = this.mouseXDelta(mousePos,scaledUserView);
 				deltaY = this.mouseYDelta(mousePos,scaledUserView).round( scaledUserView.gridSpacingV );
 				if(state == \moving) {
@@ -280,9 +285,7 @@ UScoreEditorGuiMouseEventsManager {
 					eventViews.do{ |eventView|
 						eventView.checkSelectionStatus(selectionRect,shiftDown, scaledUserView.viewRect.width);
 					};
-					if(mouseMoved.not && (clickCount == 2) ) {
-						scoreEditor.score.pos = mouseDownPos.x;
-					};
+
 				}
 			}
 		};
@@ -290,6 +293,11 @@ UScoreEditorGuiMouseEventsManager {
 		/*if( UEventEditor.current.notNil && { this.selectedEventViews[0].notNil } ) {
 			this.selectedEventViews[0].event.edit( parent: scoreEditor );
 		};*/
+
+        //score was changed, warn others !
+        if( (mouseMoved == true) && [\nothing, \selecting].includes(state).not){
+            scoreEditor.changed(\score);
+		};
 
 		//go back to start state
 		eventViews.do{ |eventView|
