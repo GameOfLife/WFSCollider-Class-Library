@@ -83,6 +83,8 @@ UChain : UEvent {
 		});
 	}
 
+    eventSustain { ^duration - this.fadeOut; }
+
 	fadeIn_ { |fadeIn = 0|
 
 		fadeIn = fadeIn.max(0);
@@ -545,6 +547,7 @@ UChain : UEvent {
 	}
 
 	isFolder { ^false }
+    getAllUChains{ ^this }
 
 	printOn { arg stream;
 		stream << "a " << this.class.name << "(" <<* units.collect(_.defName)  <<")"

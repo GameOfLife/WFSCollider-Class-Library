@@ -28,7 +28,6 @@ UEvent {
     }
 
     endTime { ^startTime + this.duration; } // may be inf
-    eventSustain { ^duration - this.fadeOut; }
     eventEndTime { ^startTime + this.eventSustain }
 
 	mute { this.muted_(true) }

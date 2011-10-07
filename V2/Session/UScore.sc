@@ -40,14 +40,25 @@ UScore : UEvent {
 	}
 
 	size { ^events.size }
-	
+	getAllUChains{
+	    ^events.collect(_.getAllUChains).flat
+	}
 	startTimes { ^events.collect( _.startTime ); }
 	durations { ^events.collect( _.dur ); }
 	
 	duration { ^(this.startTimes + this.durations).maxItem ? 0; }
 	dur { ^this.duration }
-	finiteDuration { ^(this.startTimes + this.durations).select( _ < inf ).maxItem ? (this.startTimes.maxItem + 10) }
+	finiteDuration { ^(this.startTimes + this.durations).select( _ < inf ).maxItem ? ((this.startTimes.maxItem ? 0) + 10) }
     isFinite{ ^this.duration < inf}
+
+    //mimic a UChain
+    eventSustain{ ^inf }
+    release{ ^this.stop }
+
+    cutStart{}
+
+    cutEnd{}
+
 
 	waitTime {
 		^(events.collect(_.prepareTime).minItem ? 0).min(0).neg
