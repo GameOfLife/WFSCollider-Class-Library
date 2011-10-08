@@ -67,7 +67,7 @@ MetaUdef : GenericDef {
         var name;
         name = this.createName(metaArgs);
         if( Udef.all.keys.includes( name ).not ) {
-	       ^Udef( name, func.value(*values), udefArgsFunc.value(*values) );
+	       ^Udef( name, func.value(*values), udefArgsFunc.value(*values) ).category_( category );
         } {
 	        ^Udef.all[ name ];
         };
