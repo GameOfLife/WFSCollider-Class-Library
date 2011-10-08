@@ -67,6 +67,7 @@
 			});
 			
 			Server.default = WFSServers.default.m;
+			UServerCenter.servers = [ Server.default ];
 	
 			^server
 		}
@@ -121,6 +122,13 @@
 			});	
 			
 			Server.default = WFSServers.default.m;
+			
+			UServerCenter.servers = [ Server.default ] ++
+				WFSServers.default.multiServers.collect({ |ms|
+					LoadBalancer( *ms.servers )
+				});
+				
+			UChain.defaultServers = UServerCenter.servers;
 			
 			^server	
 		}
