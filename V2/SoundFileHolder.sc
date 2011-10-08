@@ -119,6 +119,8 @@ AbstractRichBuffer {
 
 	asControlInputFor { |server| ^this.currentBuffer(server) }
 	
+	u_waitTime { ^1 }
+	
 	asUnitArg { |unit|
 		this.unit = unit; ^this;
 	}
