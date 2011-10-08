@@ -146,7 +146,7 @@ PointSpec : Spec {
 	rect_ { |newRect| rect = newRect; this.init }
 	
 	clip { |value|
-		^this.clip( clipRect.leftTop, clipRect.rightBottom );
+		^value.clip( clipRect.leftTop, clipRect.rightBottom );
 	}
 	
 	constrain { |value|
@@ -236,6 +236,76 @@ PolarSpec : Spec {
 	unmap { |value|
 		^this.scaleRho( this.constrain( value ), 1/(maxRadius ? 1));
 	}	
+}
+
+RectSpec {
+	
+	var <rect, >default, <>units; // constrains inside rect
+	var clipRect;
+	
+	// mode can be \point, \polar, \deg_cw, \deg_ccw
+	// only for gui; output will always be Point
+
+	*new { |rect, default, units, mode|
+		^super.newCopyArgs( rect ? inf, default, units ? "" ).init;
+	}
+	
+	*testObject { |obj|
+		^obj.class == Rect;
+	}
+	
+	*newFromObject { |obj|
+		var cspecs;
+		cspecs = obj.asArray.collect({ |item| ControlSpec.newFromObject( item ) });
+		^this.new( 200 );
+	}
+	
+	init {
+		// number becomes radius
+		if( rect.isNumber ) { rect = Rect.aboutPoint( 0@0, rect, rect ); };
+		rect = rect.asRect;
+		clipRect = Rect.fromPoints( rect.leftTop, rect.rightBottom );
+	}
+	
+	default { ^default ?? { Rect.aboutPoint( 0@0, 5, 5 ); } }
+	
+	minval { ^clipRect.leftTop }
+	maxval { ^clipRect.rightBottom }
+	
+	minval_ { |value|
+		var x,y;
+		#x, y = value.asPoint.asArray;
+		rect.left = x;
+		rect.top = y;
+		this.init;
+	}
+	
+	maxval_ { |value|
+		var x,y;
+		#x, y = value.asPoint.asArray;
+		rect.right = x;
+		rect.top = y;
+		this.init;
+	}
+	
+	rect_ { |newRect| rect = newRect; this.init }
+	
+	clip { |value|
+		^value.clip( clipRect.leftTop, clipRect.rightBottom );
+	}
+	
+	constrain { |value|
+		^value.asRect; //.clip( clipRect.leftTop, clipRect.rightBottom ); //.round( step );
+	}
+	
+	map { |value|
+		^this.constrain( value.asRect.linlin(0, 1, rect.leftTop, rect.rightBottom, \none ) );
+	}
+	
+	unmap { |value|
+		^this.constrain( value.asRect ).linlin( rect.leftTop, rect.rightBottom, 0, 1, \none );
+	}
+	
 }
 
 RangeSpec : ControlSpec {

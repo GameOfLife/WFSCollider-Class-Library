@@ -230,6 +230,132 @@
 	
 }
 
++ RectSpec {
+	
+	makeView { |parent, bounds, label, action, resize|
+		var vws, view, labelWidth, val = 0@0;
+		var localStep, setCenter, setWH;
+		vws = ();
+		
+		localStep = 0.01@0.01;
+		
+		vws[ \rect ] = this.default;
+		
+		setCenter = { |center|
+			vws[ \rect ] = vws[ \rect ].center_( center );
+		};
+		
+		setWH = { |wh|
+			vws[ \rect ].centeredExtent_( wh );
+		};
+		
+		bounds.isNil.if{bounds= 320@20};
+		
+		#view, bounds = EZGui().prMakeMarginGap.prMakeView( parent, bounds );
+		 vws[ \view ] = view;
+		 
+		view.addFlowLayout;
+		 		
+		if( label.notNil ) {
+			labelWidth = (RoundView.skin ? ()).labelWidth ? 80;
+			vws[ \labelView ] = StaticText( vws[ \view ], labelWidth @ bounds.height )
+				.string_( label.asString ++ " " )
+				.align_( \right )
+				.resize_( 4 )
+				.applySkin( RoundView.skin );
+		} {
+			labelWidth = 0;
+		};
+		
+		vws[ \x ] = SmoothNumberBox( vws[ \view ], Rect( labelWidth + 2, 0, 40, bounds.height ) )
+			.action_({ |nb|
+				setCenter.value( nb.value @ vws[ \y ].value );
+				action.value( vws, vws[ \rect ]);
+			})
+			//.step_( localStep.x )
+			.scroll_step_( localStep.x )
+			.clipLo_( rect.left )
+			.clipHi_( rect.right )
+			.value_(0);
+			
+		vws[ \xy ] = XYView( vws[ \view ], 
+			Rect( labelWidth + 2 + 42, 0, bounds.height, bounds.height ) )
+			.action_({ |xy|
+				vws[ \x ].value = (val.x + (xy.x * localStep.x))
+					.clip( rect.left, rect.right );
+				vws[ \y ].value = (val.y + (xy.y * localStep.y.neg))
+					.clip( rect.top, rect.bottom );
+				setCenter.value( val + (xy.value * localStep * (1 @ -1) ) );
+				action.value( vws, vws[ \rect ] );
+			})
+			.mouseUpAction_({
+				val = vws[ \x ].value @ vws[ \y ].value;
+			});
+			
+		vws[ \y ] = SmoothNumberBox( vws[ \view ], 
+				Rect( labelWidth + 2 + 42 + bounds.height + 2, 0, 40, bounds.height ) )
+			.action_({ |nb|
+				setCenter.value( vws[ \x ].value @ nb.value );
+				action.value( vws, vws[ \rect ] );
+			})
+			//.step_( localStep.y )
+			.scroll_step_( localStep.y )
+			.clipLo_( rect.top )
+			.clipHi_( rect.bottom )
+			.value_(0);
+			
+		vws[ \width ] = 
+			SmoothNumberBox( vws[ \view ], Rect( labelWidth + 2, 0, 40, bounds.height ) )
+			.action_({ |nb|
+				setWH.value( nb.value @ vws[ \height ].value );
+				action.value( vws, vws[ \rect ]);
+			})
+			//.step_( localStep.x )
+			.scroll_step_( localStep.x )
+			.clipLo_( rect.left )
+			.clipHi_( rect.right )
+			.value_(0);
+
+		vws[ \height ] = 
+			SmoothNumberBox( vws[ \view ], Rect( labelWidth + 2, 0, 40, bounds.height ) )
+			.action_({ |nb|
+				setWH.value( vws[ \width ].value @ nb.value );
+				action.value( vws, vws[ \rect ]);
+			})
+			//.step_( localStep.x )
+			.scroll_step_( localStep.x )
+			.clipLo_( rect.left )
+			.clipHi_( rect.right )
+			.value_(0);
+				
+		^vws;
+	}
+	
+	setView { |view, value, active = false|
+		var constrained;
+		constrained = this.constrain( value );
+		view[ \rect ] = constrained.copy;
+		view[ \x ].value = constrained.center.x;
+		view[ \y ].value = constrained.center.y;
+		view[ \width ].value = constrained.width;
+		view[ \height ].value = constrained.height;
+		if( active ) { view[ \x ].doAction };
+	}
+	
+	mapSetView { |view, value, active = false|
+		var mapped;
+		mapped = this.map( value );
+		view[ \rect ] = mapped.copy;
+		view[ \x ].value = mapped.center.x;
+		view[ \y ].value = mapped.center.y;
+		view[ \width ].value = mapped.width;
+		view[ \height ].value = mapped.height;
+		if( active ) { view[ \x ].doAction };
+	}
+	
+
+}
+
 + RangeSpec {
 	
 	makeView { |parent, bounds, label, action, resize|
