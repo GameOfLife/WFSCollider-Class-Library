@@ -66,4 +66,10 @@ UScoreEditorGUI {
         //BOTTOM
         UScoreEditorGui_TransportBar(view,  Rect(0,0, bounds.width - (2*margin), tranBarH ), scoreView);
 	}
-}		
+}	
+
++ UScore {
+	gui {
+		^UScoreEditorGUI( UScoreEditor( this ) );
+	}
+}	
