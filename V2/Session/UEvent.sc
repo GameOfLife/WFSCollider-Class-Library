@@ -4,7 +4,7 @@ UEvent {
     var <>track=0;  //track number (horizontal segment) on the score editor
     var <duration = inf;
     var <>muted = false;
-    var <releaseSelf = false;
+    var <releaseSelf = true;
 
     /*
     If 'releaseSelf' is set to false, then uchains will not free themselves automatically when the events stop playing.
@@ -49,6 +49,57 @@ UEvent {
 	           this.release;
             };
         }
+    }
+    
+    archiveAsCompileString { ^true }
+    
+    getInitArgs { this.subclassResponsibility(thisMethod) }
+    
+    *readTextArchive { |pathname|
+	    var res;
+	    res = pathname.load;
+	    if( res.class == this or: { this.subclasses.includes( res.class ) } ) {
+		   ^res;
+	    } {
+		    "%:readTextArchive - wrong type (%)\n".postf( this, res );
+		    ^nil;
+	    }
+    }
+    
+    readTextArchive { |pathname|
+	    var res;
+	    res = this.class.readTextArchive( pathname );
+	    if( res.notNil ) {
+		    this.init( res.getInitArgs );
+	    };
+    }
+    
+    write { |path, overwrite=false, ask=true|
+	    var writeFunc;
+	    writeFunc = { 
+		    var text;
+		    text = this.asTextArchive;
+		    File.checkDo( path, { |f| 
+				f.write( text );  
+			}, overwrite, ask); 
+	    };
+	    
+	    if( path.isNil ) {
+		    Dialog.savePanel( { |pth|
+			    path = pth;
+			    writeFunc.value;
+		    } );
+	    } {
+		    writeFunc.value;
+	    };
+    }
+    
+    read { |path|
+	    this.readTextArchive( path.standardizePath );
+    }
+    
+    *read { |path| 
+	    ^this.readTextArchive( path.standardizePath );
     }
 
 }

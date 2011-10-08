@@ -54,6 +54,8 @@ ObjectWithArgs {
 			^this.getArg( selector );
 		};	
 	}
+	
+    archiveAsCompileString { ^true }
 
 }
 

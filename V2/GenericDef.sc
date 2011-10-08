@@ -174,6 +174,8 @@ GenericDef {
 	values { ^argSpecs.collect(_.default) }
 	
 	specs { ^argSpecs.collect(_.spec) }
+	
+    archiveAsCompileString { ^true }
 
 }
 

@@ -32,36 +32,30 @@ UChain : UEvent {
 	*/
 
 	init { |args|
-	    var bools = 3.collect{ |i| args[i].notNil.if({args[i].isNumber},{false}) }++[args[3].notNil.if({args[3].class.superclass == Boolean},{false})];
-	    if(bools[3]) {
-	        startTime = args[0];
-	        track = args[1];
-	        duration = args[2];
-	        units = args[4..].collect(_.asUnit);
-	        this.releaseSelf_(args[3]);
-        }{
-            if(bools[2]) {
-	            startTime = args[0];
-	            track = args[1];
-	            duration = args[2];
-	            units = args[3..].collect(_.asUnit);
-            } {
-                if(bools[1]) {
-	            startTime = args[0];
-	            track = args[1];
-	            units = args[2..].collect(_.asUnit);
-                } {
-                    if(bools[0]) {
-	                    startTime = args[0];
-	                    units = args[1..].collect(_.asUnit);
-                    } {
-                        units = args.collect(_.asUnit);
-                    }
-                }
-            }
-        };
+		var tempDur;
+		
+		if( args[0].isNumber ) { 
+			startTime = args[0]; 
+			args = args[1..] 
+		};
+		if( args[0].isNumber ) { 
+			track = args[0]; 
+			args = args[1..] 
+		};
+		if( args[0].isNumber ) { 
+			tempDur = args[0]; 
+			args = args[1..] 
+		};
+		if( args[0].class.superclass == Boolean ) { 
+			releaseSelf = args[0]; args = args[1..] 
+		};
+		
+		units = args.collect(_.asUnit);
+		if( tempDur.notNil ) { this.duration = tempDur };
+		
 		prepareTasks = [];
-		//groups = [];
+		
+		this.changed( \init );
 	}
 
     //will this work ? Yes
@@ -84,7 +78,7 @@ UChain : UEvent {
 	}
 	
 	units_ { |newUnits|
-		units = newUnits;
+		units = newUnits.collect(_.asUnit);
 		this.changed( \units );
 	}
 
@@ -558,6 +552,27 @@ UChain : UEvent {
 		stream << "a " << this.class.name << "(" <<* units.collect(_.defName)  <<")"
 	}
 	
-	storeArgs { ^units }
+	getInitArgs {
+		var numPreArgs = -1;
+		if( releaseSelf != true ) { 
+			numPreArgs = 3
+		} {
+			if( duration != inf ) {
+				numPreArgs = 2
+			} {
+				if( track != 0 ) {
+					numPreArgs = 1
+				} {
+					if( startTime != 0 ) {
+						numPreArgs = 0
+					}
+				}
+			}
+		};
+		
+		^([ startTime, track, duration, releaseSelf ][..numPreArgs]) ++ units;
+	}
+	
+	storeArgs { ^this.getInitArgs }
 
 }

@@ -206,6 +206,14 @@ UChainGUI {
 						this.makeViews( originalBounds );
 					}.defer(0.01);
 				};
+			})
+			.put( \init, { 
+				if( composite.isClosed.not ) {
+					{
+						composite.remove;
+						this.makeViews( originalBounds );
+					}.defer(0.01);
+				};
 			});
 		
 		chain.changed( \gain );

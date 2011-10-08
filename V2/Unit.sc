@@ -455,19 +455,24 @@ U : ObjectWithArgs {
 	isPlaying { ^(this.synths.size != 0) }
 		
 	printOn { arg stream;
-		stream << "a " << this.class.name << "(" <<* [this.defName, args]  <<")"
+		stream << "a " << this.class.name << "(" <<* this.storeArgs  <<")"
 	}
-
-	/*
-	storeOn { arg stream;
-		stream << this.class.name << "(" <<* [
-			( this.defName ? this.def ).asCompileString,
-			args.asCompileString
-		]  <<")"
-	}
-	*/
 	
-	storeArgs { ^[ this.defName ? this.def, args ] }
+	getInitArgs {
+		var defArgs;
+		defArgs = (this.def.args ? []).clump(2);
+		^args.clump(2).select({ |item, i| item != defArgs[i] }).flatten(1);
+	}
+	
+	storeArgs { 
+		var initArgs;
+		initArgs = this.getInitArgs;
+		if( initArgs.size > 0 ) {
+			^[ this.defName, initArgs ];
+		} {
+			^[ this.defName ];
+		};
+	}
 	
 	asUnit { ^this }
 

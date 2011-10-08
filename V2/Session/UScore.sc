@@ -13,9 +13,26 @@ UScore : UEvent {
 	*new { |... events| 
 		^super.new.init( events );
 	}
+	
+	/*
+	* Syntaxes for UScore creation:
+	* UScore( <UEvent 1>, <UEvent 2>,...)
+	* UChain(startTime,<UEvent 1>, <UEvent 2>,...)
+	* UChain(startTime,track,<UEvent 1>, <UEvent 2>,...)
+	*/
 
-	init{ |inEvents|
-	    events = inEvents;
+	init{ |args|
+		if( args[0].isNumber ) { 
+			startTime = args[0]; 
+			args = args[1..] 
+		};
+		if( args[0].isNumber ) { 
+			track = args[0]; 
+			args = args[1..] 
+		};
+	    events = args;
+	    
+	    this.changed( \init );
 	}
 
     duplicate { ^UScore( *events.collect( _.duplicate ) ).name_( name ); }
@@ -340,5 +357,25 @@ UScore : UEvent {
 	    pos = if(x>=this.duration){0}{x};
 	    this.changed(\pos, pos);
 	}
-
+	
+	printOn { arg stream;
+		stream << "a " << this.class.name << "( " << events.size <<" events )"
+	}
+	
+	getInitArgs {
+		var numPreArgs = -1;
+		
+		if( track != 0 ) {
+			numPreArgs = 1
+		} {
+			if( startTime != 0 ) {
+				numPreArgs = 0
+			}
+		};
+		
+		^([ startTime, track ][..numPreArgs]) ++ events;
+	}
+	
+	storeArgs { ^this.getInitArgs }
+	
 }
