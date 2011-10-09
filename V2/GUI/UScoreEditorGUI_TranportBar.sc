@@ -61,6 +61,11 @@ UScoreEditorGui_TransportBar {
 
 		views[\play].value = this.score.isPlaying.binaryValue;
 		views[\pause].value = this.score.isPaused.binaryValue;
+		if(this.score.isPreparing) {
+		    views[\prepare].start
+		} {
+		    views[\prepare].stop
+		}
 
 
     }
