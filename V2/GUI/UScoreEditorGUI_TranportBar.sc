@@ -25,8 +25,11 @@ UScoreEditorGui_TransportBar {
         };
         scoreController = SimpleController( this.score );
 
-		scoreController.put(\playing, {
+		scoreController.put(\preparing, {
+		    { views[\prepare].start }.defer;
+		});
 
+		scoreController.put(\playing, {
 		    { views[\prepare].stop }.defer;
 		});
 
@@ -75,7 +78,8 @@ UScoreEditorGui_TransportBar {
 
 
         views[\prepare] = WaitView( view, size@size )
-					.alphaWhenStopped_( 0 );
+					.alphaWhenStopped_( 0 )
+					.canFocus_(false);
 
 		views[\play] = SmoothButton( view, 40@size  )
 			.states_( [
@@ -89,7 +93,7 @@ UScoreEditorGui_TransportBar {
 			    var startedPlaying;
 			    if( v.value == 1) {
                     startedPlaying = this.score.prepareAndStart( UServerCenter.servers, this.score.pos);
-			        if( startedPlaying) { views[\prepare].start }{ v.value = 0 };
+			        if( startedPlaying.not ){ v.value = 0 };
 			    } {
                     this.score.stop;
                     views[\pause].value = 0;

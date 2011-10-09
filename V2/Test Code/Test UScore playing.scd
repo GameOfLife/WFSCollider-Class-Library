@@ -62,5 +62,24 @@ fork{
 }
 )
 
+//play some sound files. These events need to prepare before:
+(
+z = UScore(
+	*12.collect({ |i|
+		var evt;
+		evt = BufSndFile("sounds/a11wlk01-44_1.aiff", 
+				rate: (i-6).midiratio, loop: [true,false].wrapAt(i) ).makeUChain
+				.releaseSelf_(true).startTime_(i/2).track_(i).fadeOut_(1).fadeIn_(1);
+		
+		if( evt.duration == inf ) {
+			evt.duration = 8; // looped events stopped by UScore
+		};
+		evt;
+	})
+);
+x = UScoreEditor(z);
+y = UScoreEditorGUI(x);
+)
+
 
 
