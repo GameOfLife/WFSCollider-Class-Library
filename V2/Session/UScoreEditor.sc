@@ -209,7 +209,7 @@ UScoreEditor {
 
 	cutEventsStart { |events,pos,isFolder=false,removeFadeIn = true|
         this.changeScore({
-            events.do{ |ev|
+            events.select(_.isFolder.not).do{ |ev|
                 ev.cutStart(pos, false, removeFadeIn)
             };
 		})
@@ -217,7 +217,7 @@ UScoreEditor {
 
 	cutEventsEnd { |events,pos, isFolder = false, removeFadeOut = false|
         this.changeScore({
-            events.do{ |ev|
+            events.select(_.isFolder.not).do{ |ev|
                 ev.cutEnd(pos, removeFadeOut)
             };
 		})
@@ -227,7 +227,7 @@ UScoreEditor {
 		var frontEvents, backEvents;
 
 		this.changeScore({
-		frontEvents = events.select({ |event|
+		frontEvents = events.select(_.isFolder.not).select({ |event|
 			var dur = event.dur;
 			var start = event.startTime;
  			(start < pos) && ((start + dur) > pos)
