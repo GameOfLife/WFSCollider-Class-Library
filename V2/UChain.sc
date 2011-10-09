@@ -86,7 +86,7 @@ UChain : UEvent {
 
 	fadeIn_ { |fadeIn = 0|
 
-		fadeIn = fadeIn.max(0);
+		fadeIn = fadeIn.max(0).min(duration - this.fadeOut);
 
 		units.do({ |unit|
 		    var unitDur, unitFadeIn, unitFadeOut;
@@ -107,7 +107,7 @@ UChain : UEvent {
 	
 	fadeOut_ { |fadeOut = 0|
 
-		fadeOut = fadeOut.max(0);
+		fadeOut = fadeOut.max(0).min(duration - this.fadeIn);
 
 		units.do({ |unit|
 		    var unitDur, unitFadeOut, unitFadeIn;
