@@ -37,19 +37,19 @@ UdefListView {
 		RoundView.useWithSkin( UChainGUI.skin ++ (RoundView.skin ? ()), {
 			categories.pairsDo({ |cat, udefs|
 				views[ cat ] = ExpandView( views[ \scrollview ], 
-					(bounds.width - 10)@( (udefs.size + 1) * 22 ),
-					(bounds.width - 10)@18,
+					(bounds.width - 18)@( (udefs.size + 1) * 22 ),
+					(bounds.width - 18)@18,
 					false 
 				);
 				
 				views[ cat ].addFlowLayout( 0@0, 4@4 );
 				
-				StaticText( views[ cat ], (bounds.width - 30)@18 )
+				StaticText( views[ cat ], (bounds.width - 36)@18 )
 					.string_( " " ++ cat.asString )
 					.applySkin( RoundView.skin ? () );
 					
 				udefs.do({ |udef|
-					DragSource( views[ cat ], (bounds.width - 30)@18 )
+					DragSource( views[ cat ], (bounds.width - 36)@18 )
 						.object_( udef )
 						.string_( " " ++ udef.name.asString )
 						.applySkin( RoundView.skin ? () );

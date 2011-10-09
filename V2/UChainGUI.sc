@@ -31,7 +31,7 @@ UChainGUI {
 			
 			parent = Window(
 				parent, 
-				bounds ?? { Rect(128 rrand: 256, 64 rrand: 128, 330, 400) }, 
+				bounds ?? { Rect(128 rrand: 256, 64 rrand: 128, 342, 400) }, 
 				scroll: true
 			).front;
 		};
@@ -61,6 +61,9 @@ UChainGUI {
 		originalBounds = bounds.copy;
 		
 		bounds = bounds ?? { parent.asView.bounds.insetBy(4,4) };
+		if( parent.asView.class.name == 'SCScrollTopView' ) {
+			bounds.width = bounds.width - 12;
+		};
 		units = chain.units.collect({ |u| 
 			if( u.class == MetaU ) { u.unit; } { u; }
 		});
