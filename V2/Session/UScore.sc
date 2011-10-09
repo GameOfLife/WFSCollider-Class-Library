@@ -6,7 +6,7 @@ UScore : UEvent {
 
 	//public
 	var <>events, <>name = "untitled";
-	var pos = 0, <isPlaying = false, <isPaused = false;
+	var pos = 0, <isPlaying = false, <isPaused = false, <isPreparing = false;
 	//private
 	var <playTask, <updatePosTask, <startedAt, <pausedAt;
 
@@ -156,13 +156,14 @@ UScore : UEvent {
 
     //prepare resources needed to play score, i.e. load buffers, send synthdefs.
 	prepare { |targets, startPos = 0, action|
-	    var eventsToPrepareNow;
+	    var eventsToPrepareNow, multiAction;
 	    eventsToPrepareNow = this.eventsToPrepareNow(startPos);
 	    if( eventsToPrepareNow.size > 0 ) {
-			action = MultiActionFunc( action );
+			multiAction = MultiActionFunc( { isPreparing = false; action.value; } );
 			// targets = targets.asCollection.collect(_.asTarget); // leave this to UChain:prepare
+			isPreparing = true;
 			this.eventsToPrepareNow(startPos).do({ |item|
-			    item.prepare( targets, action: action.getAction );
+			    item.prepare( targets, action: multiAction.getAction );
 			});
 	    } {
 		    action.value; // fire immediately if nothing to prepare
@@ -250,9 +251,11 @@ UScore : UEvent {
         if(deltaToStart !=0){
             fork{
                 this.changed(\preparing);
+                isPreparing = true;
                 deltaToStart.wait;
                 this.changed(\playing);
                 isPlaying = true;
+                isPreparing = false;
             }
         }{
             this.changed(\playing);
@@ -270,6 +273,7 @@ UScore : UEvent {
                     actions[item[1]].value(item[2]);
                 });
                 if( this.isFinite ) {
+                    (this.duration - pos).wait;
                     // the score has stopped playing i.e. all events are finished
                     startedAt = nil;
                     this.pos = releaseEvents.last.endTime;
@@ -315,6 +319,7 @@ UScore : UEvent {
 	    startedAt = nil;
 	    this.stopScore;
 	    this.stopChains(releaseTime);
+	    events.select(_.isFolder).do(_.stop);
 	    //events.do{ _.disposeIfNotPlaying };
 	    isPlaying = false;
 	    isPaused = false;
@@ -326,6 +331,7 @@ UScore : UEvent {
 	pause {
 	    if(isPlaying && isPaused.not){
 		    this.stopScore;
+		    events.select(_.isFolder).do(_.pause);
 		    isPaused = true;
 		    pos = this.pos;
 		    pausedAt = pos;
@@ -338,6 +344,7 @@ UScore : UEvent {
 	resume { |targets|
 	    if(isPlaying && isPaused){
 		    this.prStart( targets, pausedAt, true, false );
+		    events.select(_.isFolder).do(_.resume);
 		    isPaused = false;
 		    pausedAt = nil;
 		    this.changed(\resumed);
