@@ -59,6 +59,10 @@ UScoreEditorGui_TransportBar {
             }.defer;
 		});
 
+		views[\play].value = this.score.isPlaying.binaryValue;
+		views[\pause].value = this.score.isPaused.binaryValue;
+
+
     }
 
     makeGui{ |parent, bounds|

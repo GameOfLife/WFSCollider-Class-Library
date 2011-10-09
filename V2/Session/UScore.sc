@@ -252,9 +252,11 @@ UScore : UEvent {
                 this.changed(\preparing);
                 deltaToStart.wait;
                 this.changed(\playing);
+                isPlaying = true;
             }
         }{
-            this.changed(\playing)
+            this.changed(\playing);
+            isPlaying = true;
         };
 
         if( allEvents.size > 0) {
