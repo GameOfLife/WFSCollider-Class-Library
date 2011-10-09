@@ -162,12 +162,16 @@ UScoreEditorGuiMouseEventsManager {
 					eventView.state = \nothing
 				}			
 			};
-			if(theEventView.event.isFolder && (clickCount == 2)){
+			if(clickCount == 2) {
+                if(theEventView.event.isFolder){
 
-			    fork{ 0.2.wait; {
-			        scoreView.addtoScoreList(theEventView.event);
-			    }.defer }
-			}
+                    fork{ 0.2.wait; {
+                        scoreView.addtoScoreList(theEventView.event);
+                    }.defer }
+                } {
+                    theEventView.event.gui;
+                }
+            }
 		};
 		
 		//for making sure groups of events being moved are not sent off screen

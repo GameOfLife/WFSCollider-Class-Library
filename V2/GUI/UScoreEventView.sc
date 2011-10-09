@@ -1,7 +1,7 @@
 UScoreEventView : UEventView {
 
 	getTypeColor {
-        ^if(event.duration == inf){Color.blue}{Color.red};
+        ^if(event.duration == inf){Color.blue}{Color.white};
 	}
 
 	getName { ^i.asString ++": "++event.name }
