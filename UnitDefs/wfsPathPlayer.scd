@@ -4,4 +4,4 @@ Udef( \wfsPathPlayer, {
 	sig = WFSPathBufferPlayer.kr( \wfsPath );
 	UOut.kr( 0, sig + input );
 }, [ [ \wfsPath, nil, WFSPathSpec() ] ] )
-	.category_( \wfs );
+	.category_( \wfs_control );
