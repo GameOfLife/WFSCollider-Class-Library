@@ -3,7 +3,7 @@ WFSPathBuffer : AbstractRichBuffer {
 	classvar <>writeServers;
 	
 	var <wfsPath, <filePath;
-	var <>fileStartFrame, <>fileEndFrame; // in case the file is shared with other paths
+	var <>fileStartFrame = 1, <>fileEndFrame;
 	var <startFrame = 0, endFrame;
 	var <rate = 1;
 	var <loop = false;
@@ -95,16 +95,16 @@ WFSPathBuffer : AbstractRichBuffer {
 		path = path ? filePath;
 		if( path.notNil ) {
 			^Buffer.read( server, path.standardizePath,
-					fileStartFrame ? 0, fileEndFrame ? -1, action, bufnum );
+					fileStartFrame ? 1, fileEndFrame ? -1, action, bufnum );
 		} {
 			"WFSPathBuffer:readBuffer - no filePath specified".postln;
 			^nil;
 		}
 	}
 	
-	sendBuffer { |server, action, bufnum|
+	sendBuffer { |server, action, bufnum, forWriting = false|
 		var array, buf, sendFunc;
-		array = wfsPath.asBufferArray;
+		array = wfsPath.asBufferArray( forWriting );
 		sendFunc = { |buf|
 			// use 0.02 wait time to remain sending at high traffic 
 			// (only relevant for > 180 point wfsPaths)

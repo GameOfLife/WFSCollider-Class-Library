@@ -1,16 +1,91 @@
 WFSPath2 {
 	var <positions, >times;
-	var <>name;
-	var <>type = \cubic; // \cubic, \bspline, \linear (future; add \quad, \step?)
+	var <type = \cubic; // \cubic, \bspline, \linear (future; add \quad, \step?)
 	var <>curve = 1; // curve = 1: hermite
-	var <>clipMode = 'clip'; // 'clip', 'wrap', 'fold' // TODO for bspline	
-	*new { |positions, times, name|
-		^super.newCopyArgs( positions, times ).name_( name ).init;
+	var <clipMode = 'clip'; // 'clip', 'wrap', 'fold' // TODO for bspline
+	var <>name;	
+	
+	*new { |positions, times, type, curve, clipMode|
+		^super.newCopyArgs( positions, times )
+			.init
+			.type_( type )
+			.curve_( curve ? 1 )
+			.clipMode_( clipMode );
 	}
 	
 	init {
 		times = times ?? {[1]};
 	}
+	
+/// TYPES ////////////////////////////////////////
+	
+	*types { ^[ \cubic, \bspline, \linear ] }
+	*clipModes { ^[ \clip, \wrap, \fold ] }
+	
+	*getType { |in|
+		var types;
+		types = this.types;
+		if( in.isString ) { in = in.asSymbol };
+		case { in.isNil } { 
+			^types[0];
+		} { in.class == Symbol } {
+			if( types.includes( in ) ) {
+				^in 
+			} {
+				"%:getType - non existent type %, using % instead\n"
+					.format( this.class, in, types[0] )
+					.warn;
+				^types[0];
+			};
+		} { in.isNumber } {
+			if( in < types.size ) {
+				^types[ in.asInt ];
+			} { 
+				"%:getType - index (%) out of range, using % instead\n"
+					.format( this.class, in, types[0] )
+					.warn;
+				^types[0];
+			};
+		} { 
+			^types[0];
+		};
+	}
+
+	*getClipMode { |in|
+		var modes;
+		modes = this.clipModes;
+		if( in.isString ) { in = in.asSymbol };
+		case { in.isNil } { 
+			^modes[0];
+		} { in.class == Symbol } {
+			if( modes.includes( in ) ) {
+				^in 
+			} {
+				"%:getClipMode - non existent type %, using % instead\n"
+					.format( this.class, in, modes[0] )
+					.warn;
+				^modes[0];
+			};
+		} { in.isNumber } {
+			if( in < modes.size ) {
+				^modes[ in.asInt ];
+			} { 
+				"%:getType - index (%) out of range, using % instead\n"
+					.format( this.class, in, modes[0] )
+					.warn;
+				^modes[0];
+			};
+		} { 
+			^modes[0];
+		};
+	}
+	
+	indexOfType { ^this.class.types.indexOf( type ) }
+	indexOfClipMode { ^this.class.clipModes.indexOf( clipMode ) }
+	
+	type_ { |newType| type = this.class.getType( newType ); }
+	clipMode_ { |newMode| clipMode = this.class.getClipMode( newMode ); }
+	
 	
 /// POSITIONS ////////////////////////////////////////
 
@@ -100,6 +175,41 @@ WFSPath2 {
 		times = (times / times.sum) * newDur;
 	}
 	
+	cutStart { |time = 0| // careful: destructive
+		var index, ceiledIndex, firstPos, dur;
+		dur = this.dur;
+		time = time.clip(0, dur);
+		index = this.indexAtTime( time );
+		ceiledIndex = index.ceil.asInt;
+		if( index == ceiledIndex ) {
+			positions = positions[ceiledIndex..];
+			times = this.times[ceiledIndex..];
+		} {
+			firstPos = this.atTime( time );
+			positions = [ firstPos ] ++ positions[ ceiledIndex.. ];
+			times = this.times[ ceiledIndex.. ];
+			times = [ (dur - times.sum) - time ] ++ times;
+		};
+	}
+	
+	cutEnd { |time| // careful: destructive
+		var index, flooredIndex, lastPos, dur;
+		dur = this.dur;
+		if( time < dur ) {
+			index = this.indexAtTime( time );
+			flooredIndex = index.floor.asInt;
+			if( index == flooredIndex ) {
+				positions = positions[..flooredIndex];
+				times = this.times[..flooredIndex-1];
+			} {
+				lastPos = this.atTime( time );
+				positions = positions[..flooredIndex] ++ [ lastPos ];
+				times = this.times[..flooredIndex-1];
+				times = times ++ [ time - times.sum ];
+			};
+		};
+	}
+	
 /// SELECTION //////////////////////////////////////////
 
 	
@@ -160,6 +270,189 @@ WFSPath2 {
 	intType_ { |type| this.type = type }
 	intClipMode_ { |mode| this.clipMode = mode }
 	
+//// STORING AND POSTING ////////////////////////////////////////
+
+	archiveAsCompileString { ^true }
+	
+	storeArgs { ^[ positions, times, type, curve, clipMode ] }
+	
+//// WRITING AND READING ////////////////////////////////////////
+	
+	//// Path file format:
+	// 
+	// 9-channel soundfile, float format
+	//
+	// first frame:
+	//
+	// [ -1, type, curve, clipMode, 0 ... ] // space for future extra params
+	//
+	// rest of the frames:
+	//
+	// each frame holds time and position date for 1 node of the path
+	// each position is stored in 8 values; two sets of 4 (for x and y)
+	// each set of 4 position values starts with the position itself, 
+	// 		and is followed by 3 values used by the WFSPathPlayer to create the 
+	// 		spline curve to the next value. I.e.:
+	//
+	// [ time, x1, x2, x3, x4, y1, y2, y3, y4 ] 
+	
+	
+	asBufferArray { |includeSettings = false|
+		var controls, array;
+		controls = this.controls;
+		array = positions.collect({ |pos, index|
+			([times.clipAt( index )] ++ positions.wrapAt([ index, index+1])
+				.splineIntPart1( *(controls[index]) ).collect(_.asArray).flop).flat;
+		}).flat;
+		if( includeSettings ) { // for writing files
+			^[ -1, this.indexOfType ? 0, curve ? 1, this.indexOfClipMode ? 0 ].extend(9,0) ++
+				array;
+		} {
+			^array;
+		};
+	}
+	
+	*fromBufferArray { |bufferArray, name|
+		var times, positions, p2, c1, c2, controls;
+		var settingsArray;
+		var path, type, curve = 1, clipMode;
+		
+		bufferArray = bufferArray.clump(9);
+		
+		if( bufferArray[0][0] < 0 ) { // includes settings
+			
+			settingsArray = bufferArray[0];
+			
+			type = settingsArray[1];
+			curve = settingsArray[2];
+			clipMode = settingsArray[3];
+			
+			#times, positions = bufferArray[1..].collect({ |vals|
+				var time, point;
+				time = vals[0];
+				point = vals[1] @ vals[5];
+				[ time, point ]
+			}).flop;
+			
+			path = this.new( positions, times, type, curve, clipMode );
+			
+		} {
+			// try to guess the settings
+			// doesn't always work because of float32 rounding
+			
+			#times, positions, p2, c1, c2 = bufferArray.collect({ |vals|
+				var time, y1, y2, x1, x2, controls;
+				time = vals[0];
+				#y1, y2, x1, x2 = vals[1..8].clump(4).collect({ |item|
+					this.reverseSplineIntPart1( *item );
+				}).flop.collect(_.asPoint);
+				
+				[ time, y1, y2, x1, x2 ];
+			}).flop;
+			
+			path = this.new( positions, times );
+	
+			switch ( positions.last.round(1e-12),
+				positions.last.round(1e-12), { clipMode = 'clip' },
+				positions.first.round(1e-12), { clipMode = 'wrap' },
+				positions[ positions.size-2 ].round(1e-12), { clipMode = 'fold' }
+			);
+			
+			controls = [c1, c2].flop.round( 1e-12 );
+			
+			block { |break|
+				([ clipMode ] ++ (#[ clip, wrap, fold ].select(_ != clipMode))).do({ |cm|
+					#[ cubic, bspline, linear ].do({ |it|
+						if( path.generateAutoControls( it, cm ).round(1e-12) == controls ) {
+							clipMode = cm;
+							type = it;
+							break.value;
+						};
+					});
+				});
+				"WFSPath2.fromBufferArray: could not guess type and/or clipMode from array"
+					.warn;
+			};
+			
+			path.type = type;
+			path.clipMode = clipMode;
+		};
+		path.name = name;
+		^path;	
+	}
+	
+	*reverseSplineIntPart1 { |y1, c1, c2, c3|
+		var x1, x2, y2;
+		x1 = (c1 / 3) + y1;
+		x2 = (c2 / 3) + (x1*2) - y1;
+		y2 = (c3 + y1) + ((x2 - x1) * 3);
+		^[ y1, y2, x1, x2 ];
+	}
+	
+	asBuffer { |server, bufnum, action, load = false|
+		// ** NOT USED BY WFSPathBuffer ** //
+		var array, buf;
+		array = this.asBufferArray;
+		if( load ) {
+			^Buffer.loadCollection( server, array, 9, action ); 
+		} {
+			^Buffer.sendCollection( server, array, 9, 0, action ); 
+		};
+	}
+	
+	write { |path|
+	    var writeFunc;
+	    writeFunc = { 
+		    var array, sf;
+		    array = this.asBufferArray( true ).as( Signal );
+		    sf = SoundFile.new.headerFormat_("AIFF").sampleFormat_("float").numChannels_(9);
+		    sf.openWrite( path.standardizePath );
+		    sf.writeData( array );
+		    sf.close;
+		    "%:write - written to file:\n%\n".postf( this.class, path.quote );
+	    };
+	    
+	    if( path.isNil ) {
+		    Dialog.savePanel( { |pth|
+			    path = pth;
+			    writeFunc.value;
+		    } );
+	    } {
+		    writeFunc.value;
+	    };
+    }
+    
+    *read { |path|
+	    var sf, array;
+	    sf = SoundFile.new;
+	    if( sf.openRead( path.standardizePath ) ) {
+		    if( sf.numChannels != 9 ) {
+			     "%:read - numChannels (%) != 9\n% is not a valid % file\n"
+			     	.format( this.class, sf.numChannels, path, this )
+			     	.warn;
+			     sf.close;
+			     ^nil;
+		    } {
+			    if( sf.sampleFormat != "float" ) {
+				    "%:read - sampleFormat (%) != float \n% may not be a valid % file\n"
+			     		.format( this.class, sf.sampleFormat, path, this )
+			     		.warn;
+			    }; // read it anyway
+			    array = FloatArray.newClear( sf.numFrames * 9 );
+			    sf.readData( array );
+			    sf.close;
+			    ^this.fromBufferArray( array, path.basename.removeExtension )
+		    }
+	    } {
+		   "%:read - could not open file %\n"
+		   	.format( this.class, path )
+		   	.warn;
+		   ^nil;
+	    };
+    }
+
+
+	
 }
 
 + WFSPath {
@@ -167,4 +460,5 @@ WFSPath2 {
 		^WFSPath2( this.positions.collect(_.asPoint), this.times, this.name )
 			.intType_( \cubic );
 	}
+	
 }
