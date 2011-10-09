@@ -25,24 +25,26 @@ UScoreEditorGui_TransportBar {
         };
         scoreController = SimpleController( this.score );
 
-		scoreController.put(\preparing, {
-		    { views[\prepare].start }.defer;
-		});
+		scoreController.put(\playState,{ |a,b,newState,oldState|
+		    //[newState,oldState].postln;
+		    if( newState == \playing )  {
+		        { views[\prepare].stop }.defer;
+		    };
+		    if(newState == \stopped ) {
+		        {views[\prepare].stop;
+                views[\pause].value = 0;
+                views[\play].value = 0; }.defer;
+		    };
+		    if( newState == \preparing ) {
+		        { views[\prepare].start }.defer;
+		    };
+		    //resuming
+		    if( (newState == \playing) && (oldState == \paused) ) {
+		        {views[\pause].value = 0;}.defer;
+		    };
+		    if( newState == \prepared ) {
 
-		scoreController.put(\playing, {
-		    { views[\prepare].stop }.defer;
-		});
-
-		scoreController.put(\stop, {
-
-            {views[\prepare].stop;
-            views[\pause].value = 0;
-            views[\play].value = 0; }.defer;
-
-		});
-
-		scoreController.put(\resumed, {
-            {views[\pause].value = 0;}.defer;
+		    };
 		});
 
 		scoreController.put(\paused, {
@@ -97,6 +99,7 @@ UScoreEditorGui_TransportBar {
 			.canFocus_(false)
 			.font_( font )
 			.border_(1).background_(Color.grey(0.8))
+			//.changeStateWhenPressed_(false)
 			.action_({  |v,c,d,e|
 
 			    var startedPlaying;
@@ -124,7 +127,8 @@ UScoreEditorGui_TransportBar {
 			        if(this.score.isPlaying) {
 			         this.score.pause;
 			       } {
-			        v.value = 0;
+			        //v.value = 0;
+			         this.score.prepare;
 			       }
 			    } {
                     this.score.resume(UServerCenter.servers)

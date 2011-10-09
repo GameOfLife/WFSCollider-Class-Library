@@ -6,7 +6,24 @@ UScore : UEvent {
 
 	//public
 	var <>events, <>name = "untitled";
-	var pos = 0, <isPlaying = false, <isPaused = false, <isPreparing = false;
+	var pos = 0;
+	var <playState = \stopped;
+	/* playState is a finite state machine. The transitions graph:
+                                       stop
+        |---------------------------------------paused ----|
+        |                                          ^       |
+        |-----------|stop                  pause   |       | resume
+        v           |                              |       |
+     stopped --> preparing --> prepared -----> playing<----|
+        ^   prepare       prepare |                |
+        |   prepareAndStart       |                |
+        |   prepareWaitAndStart   |                |
+        |                         |                |
+        |-------------------------|stop            |
+        |------------------------------------------|stop
+
+    */
+
 	//private
 	var <playTask, <updatePosTask, <startedAt, <pausedAt;
 
@@ -33,6 +50,18 @@ UScore : UEvent {
 	    events = args;
 	    
 	    this.changed( \init );
+	}
+
+	isPlaying{ ^playState == \playing }
+	isPaused{ ^playState == \paused }
+	isPreparing{ ^playState == \preparing }
+	isPrepared{ ^playState == \prepared }
+	playState_{ |newState, changed = true|
+
+	    if(changed){
+	        this.changed(\playState,newState,playState);  //send newState oldState
+	    };
+	    playState = newState;
 	}
 
     duplicate { ^UScore( *events.collect( _.duplicate ) ).name_( name ); }
@@ -138,13 +167,13 @@ UScore : UEvent {
 
 	eventsToPrepareNow{ |startPos|
 	    ^events.sort({ |a,b| a.startTime <= b.startTime })
-			.select({ |evt| (evt.startTime >= startPos) && { evt.prepareTime < startPos } })
+			.select({ |evt| (evt.startTime >= startPos) && { evt.prepareTime < startPos } && evt.muted.not })
 	}
 
     eventsForPlay{ |startPos, assumePrepared = false|
         var evs, prepareEvents, startEvents, releaseEvents;
 
-        evs = events.select({ |evt| evt.startTime >= startPos }).sort;
+        evs = events.select({ |evt| (evt.startTime >= startPos) && evt.muted.not }).sort;
 		prepareEvents = if(assumePrepared){evs.select({ |item| item.prepareTime >= startPos })}{evs};
 		startEvents = evs.sort({ |a,b| a.startTime <= b.startTime });
 		releaseEvents = events
@@ -159,9 +188,12 @@ UScore : UEvent {
 	    var eventsToPrepareNow, multiAction;
 	    eventsToPrepareNow = this.eventsToPrepareNow(startPos);
 	    if( eventsToPrepareNow.size > 0 ) {
-			multiAction = MultiActionFunc( { isPreparing = false; action.value; } );
+			multiAction = MultiActionFunc( {
+			    this.playState_(\prepared);
+			    action.value;
+			} );
 			// targets = targets.asCollection.collect(_.asTarget); // leave this to UChain:prepare
-			isPreparing = true;
+			this.playState_(\preparing);
 			this.eventsToPrepareNow(startPos).do({ |item|
 			    item.prepare( targets, action: multiAction.getAction );
 			});
@@ -185,9 +217,15 @@ UScore : UEvent {
 	    playStatus = prepStartRelEvents.flat.size > 0;
 
 	    if( playStatus ){
-            this.prepare(targets, startPos, {
+	        if(this.isPrepared) {
+                this.playState_(\playing);
                 this.prStartTasks( targets, startPos, prepStartRelEvents, updatePosition )
-            });
+            } {
+                this.prepare(targets, startPos, {
+                    this.playState_(\playing);
+                    this.prStartTasks( targets, startPos, prepStartRelEvents, updatePosition )
+                });
+            }
         }
         ^playStatus
 
@@ -195,6 +233,7 @@ UScore : UEvent {
 
     //prepare during waitTime and start after that, no matter if the prepare succeeded
     prepareWaitAndStart{ |targets, startPos = 0, updatePosition = true|
+        this.playState_(\preparing);
         ^this.prStart(targets, startPos, false, true, updatePosition)
     }
 
@@ -206,6 +245,7 @@ UScore : UEvent {
 	    playStatus = prepStartRelEvents.flat.size > 0;
 
         if( playStatus ){
+            this.playState_(\playing);
             this.prStartTasks( targets, startPos, prepStartRelEvents, updatePosition );
         };
         ^playStatus
@@ -250,16 +290,9 @@ UScore : UEvent {
         deltaToStart = startPos - preparePos;
         if(deltaToStart !=0){
             fork{
-                this.changed(\preparing);
-                isPreparing = true;
                 deltaToStart.wait;
-                this.changed(\playing);
-                isPlaying = true;
-                isPreparing = false;
+                this.playState_(\playing)
             }
-        }{
-            this.changed(\playing);
-            isPlaying = true;
         };
 
         if( allEvents.size > 0) {
@@ -276,9 +309,8 @@ UScore : UEvent {
                     (this.duration - pos).wait;
                     // the score has stopped playing i.e. all events are finished
                     startedAt = nil;
-                    this.pos = releaseEvents.last.endTime;
-                    isPlaying = false;
-                    this.changed( \stop );
+                    this.pos = this.duration;
+                    this.playState_(\stopped);
                 }
             }).start;
         };
@@ -313,41 +345,36 @@ UScore : UEvent {
 
 	//stop everything
 	stop{ |releaseTime, changed = true|
-	    //no nil allowed
-	    releaseTime = releaseTime ? 0.1;
-	    pos = this.pos;
-	    startedAt = nil;
-	    this.stopScore;
-	    this.stopChains(releaseTime);
-	    events.select(_.isFolder).do(_.stop);
-	    //events.do{ _.disposeIfNotPlaying };
-	    isPlaying = false;
-	    isPaused = false;
-	    if( changed) {
-	        this.changed(\stop)
+	    if([\playing,\paused].includes(playState) ) {
+            //no nil allowed
+            releaseTime = releaseTime ? 0.1;
+            pos = this.pos;
+            startedAt = nil;
+            this.stopScore;
+            this.stopChains(releaseTime);
+            events.select(_.isFolder).do(_.stop);
+            //events.do{ _.disposeIfNotPlaying };
+            this.playState_(\stopped,changed);
 	    }
 	}
 	
 	pause {
-	    if(isPlaying && isPaused.not){
+	    if(playState == \playing){
 		    this.stopScore;
 		    events.select(_.isFolder).do(_.pause);
-		    isPaused = true;
 		    pos = this.pos;
 		    pausedAt = pos;
 		    startedAt = nil;
-		    this.changed(\paused);
+		    this.playState_(\paused);
 		    //events.select(_.isFolder).do(_.pause);
 		}
 	}
 	
 	resume { |targets|
-	    if(isPlaying && isPaused){
+	    if(playState == \paused){
 		    this.prStart( targets, pausedAt, true, false );
 		    events.select(_.isFolder).do(_.resume);
-		    isPaused = false;
 		    pausedAt = nil;
-		    this.changed(\resumed);
 		}
 	}
 
@@ -356,7 +383,7 @@ UScore : UEvent {
 	is given by the ammount of time elapsed since the score started playing;
 	*/
 	pos {
-		^if( startedAt.notNil && isPlaying ) {
+		^if( startedAt.notNil && this.isPlaying ) {
 			((SystemClock.seconds - startedAt[1]) + startedAt[0]);
 		} {
 			pos ? 0;
