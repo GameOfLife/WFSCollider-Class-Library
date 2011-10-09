@@ -8,7 +8,7 @@ UScore : UEvent {
 	var <>events, <>name = "untitled";
 	var pos = 0, <isPlaying = false, <isPaused = false;
 	//private
-	var <prepareTask, <startTask, <releaseTask, <updatePosTask, <startedAt, <pausedAt;
+	var <playTask, <updatePosTask, <startedAt, <pausedAt;
 
 	*new { |... events| 
 		^super.new.init( events );
@@ -211,70 +211,71 @@ UScore : UEvent {
 	}
 	
 	prStartTasks { |targets, startPos = 0, prepStartRelEvents, updatePosition = true|
-        var prepareEvents, startEvents, releaseEvents, preparePos;
+        var prepareEvents, startEvents, releaseEvents, preparePos, allEvents, deltaToStart;
         var dur;
+        var actions;
+
+        actions = [
+            { |event| event.prepare( targets ) },
+            { |event| event.start },
+            { |event| event.release }
+        ];
 
         #prepareEvents, startEvents, releaseEvents = prepStartRelEvents;
-
-        preparePos = if(prepareEvents.size == 0){ startPos }{ prepareEvents[0].prepareTime.min(startPos) };
-
-		startedAt = [ startPos, SystemClock.seconds ];
-
-		//("prepareEvents :"++prepareEvents).postln;
+        //("prepareEvents :"++prepareEvents).postln;
 		//("startEvents :"++startEvents).postln;
 		//("releaseEvents :"++releaseEvents).postln;
 
-        if( prepareEvents.size > 0 ) {
-            prepareTask = Task({
+		allEvents = prepareEvents.collect{ |x| [x.prepareTime, 0, x]}
+         ++ startEvents.collect{ |x| [x.startTime, 1, x]}
+         ++ releaseEvents.collect{ |x| [x.eventEndTime, 2, x]};
+
+        //if the time for the event to happen is different order them as usual
+        //if they happen at the same time then the order is prepare < start < release
+        allEvents = allEvents.sort{ |a,b|
+            if(a[0] != b[0]) {
+                a[0] <= b[0]
+            } {
+                a[1] <= b[1]
+            }
+        };
+
+
+        //this allows to be able to get the current pos when the update task is not running
+		startedAt = [ startPos, SystemClock.seconds ];
+
+        //this is for prepareWaitAndStart
+        preparePos = if(prepareEvents.size == 0){ startPos }{ prepareEvents[0].prepareTime.min(startPos) };
+        deltaToStart = startPos - preparePos;
+        if(deltaToStart !=0){
+            fork{
+                this.changed(\preparing);
+                deltaToStart.wait;
+                this.changed(\playing);
+            }
+        }{
+            this.changed(\playing)
+        };
+
+        if( allEvents.size > 0) {
+            playTask = Task({
                 var pos = preparePos;
-                prepareEvents.do({ |item|
-                    (item.prepareTime - pos).wait;
-                    pos = item.prepareTime;
+                allEvents.do({ |item|
+                    (item[0] - pos).wait;
+                    pos = item[0];
                     //"prepare % at %, %".format( events.indexOf(item),
                     //	pos, thisThread.seconds ).postln;
-                    item.prepare( targets );
+                    actions[item[1]].value(item[2]);
                 });
-            }).start;
-        };
-
-        if( startEvents.size > 0 ) {
-            startTask = Task({
-                var pos = startPos;
-                (startPos - preparePos).wait;
-                isPlaying = true;
-                this.changed(\playing);
-                startEvents.do({ |item,i|
-                    (item.startTime - pos).wait;
-                    pos = item.startTime;
-                    //"start % at %, %".format(  events.indexOf(item),
-                    //	pos, thisThread.seconds ).postln;
-                    item.start;
-                });
-            }).start;
-        };
-
-		if( releaseEvents.size > 0 ) {
-			releaseTask = Task({
-				var pos = startPos;
-				releaseEvents.do({ |item|
-					(item.eventEndTime - pos).wait;
-					pos = item.eventEndTime;
-					//"release % at %, %".format( events.indexOf(item),
-					//	pos, thisThread.seconds ).postln;
-					item.release;
-				});
-				releaseEvents.last.fadeOut.wait;
-				//if the score has finite duration, then the score is finished after the last event is released.
-				if( this.isFinite ) {
+                if( this.isFinite ) {
                     // the score has stopped playing i.e. all events are finished
                     startedAt = nil;
                     this.pos = releaseEvents.last.endTime;
                     isPlaying = false;
                     this.changed( \stop );
                 }
-			}).start;
-
-		};
+            }).start;
+        };
 
         if( updatePosition ) {
             dur = this.duration;
@@ -296,7 +297,7 @@ UScore : UEvent {
 
 	//stop just the spawning and releasing of events
 	stopScore {
-		[ prepareTask, startTask, releaseTask, updatePosTask ].do(_.stop);
+		[playTask, updatePosTask ].do(_.stop);
 	}
 
     //stop synths
