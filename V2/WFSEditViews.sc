@@ -350,7 +350,7 @@ WFSBasicEditView {
 	}
 
 	
-	isClosed { ^view.isClosed }
+	isClosed { ^view.view.isClosed }
 		
 	undoManager_ { |um, addFirstState = true|
 		undoManager = um;

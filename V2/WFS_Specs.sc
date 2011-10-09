@@ -399,3 +399,235 @@ WFSMultiPointSpec : PointSpec {
 	}
 	
 }
+
+WFSRectSpec : RectSpec {
+	
+	viewNumLines { ^2 }
+	
+	makeView { |parent, bounds, label, action, resize|
+		var vws, view, labelWidth, val, wh;
+		var localStep, setCenter, setWH, editAction, setEditor;
+		var font, subView;
+		vws = ();
+		
+		font = Font( Font.defaultSansFace, 10 );
+		
+		localStep = 0.01@0.01;
+		
+		vws[ \rect ] = this.default;
+		
+		setCenter = { |center|
+			vws[ \rect ] = vws[ \rect ].center_( center );
+		};
+		
+		setWH = { |whx|
+			vws[ \rect ].centeredExtent_( whx );
+		};
+		
+		setEditor = { |val|
+			vws[ \editor ] !? {
+				vws[ \editor ].object = val ? vws[ \rect ];
+				vws[ \editor ].refresh;
+			};
+		};
+		
+		bounds.isNil.if{bounds= 320@40};
+		
+		#view, bounds = EZGui().prMakeMarginGap.prMakeView( parent, bounds );
+		 vws[ \view ] = view;
+		 
+		view.addFlowLayout( 0@0, 4@4 );
+		
+		bounds.height = (bounds.height / 2) - 2;
+		 		
+		if( label.notNil ) {
+			labelWidth = (RoundView.skin ? ()).labelWidth ? 80;
+			vws[ \labelView ] = StaticText( vws[ \view ], labelWidth @ bounds.height )
+				.string_( label.asString ++ " " )
+				.align_( \right )
+				.resize_( 4 )
+				.applySkin( RoundView.skin );
+		} {
+			labelWidth = 0;
+		};
+		
+		/////// center
+		
+		vws[ \centerLabel ] = StaticText( vws[ \view ], 36 @ bounds.height )
+			.string_( "center " )
+			.align_( \right )
+			.font_( font )
+			.applySkin( RoundView.skin );
+		
+		
+		vws[ \x ] = SmoothNumberBox( vws[ \view ], 40 @ bounds.height )
+			.action_({ |nb|
+				setCenter.value( nb.value @ vws[ \y ].value );
+				val = vws[ \rect ].center;
+				setEditor.value;
+				action.value( vws, vws[ \rect ]);
+			})
+			//.step_( localStep.x )
+			.scroll_step_( localStep.x )
+			.clipLo_( rect.left )
+			.clipHi_( rect.right )
+			.value_(0);
+			
+		vws[ \xy ] = XYView( vws[ \view ],  bounds.height @ bounds.height )
+			.action_({ |xy|
+				val = val ?? { vws[ \rect ].center };
+				vws[ \x ].value = (val.x + (xy.x * localStep.x))
+					.clip( rect.left, rect.right );
+				vws[ \y ].value = (val.y + (xy.y * localStep.y.neg))
+					.clip( rect.top, rect.bottom );
+				setCenter.value( val + (xy.value * localStep * (1 @ -1) ) );
+				setEditor.value;
+				action.value( vws, vws[ \rect ] );
+			})
+			.mouseUpAction_({
+				val = vws[ \x ].value @ vws[ \y ].value;
+			});
+			
+		vws[ \y ] = SmoothNumberBox( vws[ \view ], 40 @ bounds.height )
+			.action_({ |nb|
+				setCenter.value( vws[ \x ].value @ nb.value );
+				setEditor.value;
+				val = vws[ \rect ].center;
+				action.value( vws, vws[ \rect ] );
+			})
+			//.step_( localStep.y )
+			.scroll_step_( localStep.y )
+			.clipLo_( rect.top )
+			.clipHi_( rect.bottom )
+			.value_(0);
+			
+		////// edit button
+		
+		editAction = { |vw|
+			this.setView( vws, vw.object.copy, includeEditor: false );
+			val = vws[ \rect ].center;
+			wh = vws[ \rect ].extent;
+			action.value( vws, vws[ \rect ]  );
+		};
+			
+		vws[ \edit ] = SmoothButton( view, 40 @ (bounds.height) )
+			.label_( "edit" )
+			.border_( 1 )
+			.radius_( 2 )
+			.font_( font )
+			.action_({
+				var editor;
+				if( vws[ \editor ].isNil or: { vws[ \editor ].isClosed } ) {
+					editor = WFSRectView( object: vws[ \rect ] )
+						.action_( editAction )
+						.onClose_({ 
+							if( vws[ \editor ] == editor ) {
+								vws[ \editor ] = nil;
+							};
+						});
+					vws[ \editor ] = editor;
+				} {
+					vws[ \editor ].front;
+				};
+				
+			});
+			
+		view.onClose_({
+			if( vws[ \editor ].notNil ) {
+				vws[ \editor ].close;
+			};
+		});
+		
+		///////// width/height
+		
+		vws[ \view ].decorator.nextLine;
+		
+		if( labelWidth > 0 ) {
+			vws[ \view ].decorator.shift( labelWidth + 4, 0 );
+		};
+		
+		vws[ \whLabel ] = StaticText( vws[ \view ], 36 @ bounds.height )
+			.string_( "w / h " )
+			.align_( \right )
+			.font_( font )
+			.applySkin( RoundView.skin );
+			
+		vws[ \width ] = 
+			SmoothNumberBox( vws[ \view ], 40 @ bounds.height )
+			.action_({ |nb|
+				setWH.value( nb.value @ vws[ \height ].value );
+				wh = vws[ \rect ].extent;
+				setEditor.value;
+				action.value( vws, vws[ \rect ]);
+			})
+			//.step_( localStep.x )
+			.scroll_step_( localStep.x )
+			.clipLo_( 0)
+			.clipHi_( rect.right )
+			.value_(10);
+				
+		vws[ \wh ] = XYView( vws[ \view ], bounds.height @ bounds.height )
+			.action_({ |xy|
+				wh = wh ?? { vws[ \rect ].extent };
+				vws[ \width ].value = (wh.x + (xy.x * localStep.x))
+					.clip( 0, rect.width );
+				vws[ \height ].value = (wh.y + (xy.y * localStep.y.neg))
+					.clip( 0, rect.height );
+				setWH.value( (wh + (xy.value * localStep * (1 @ -1) )).clip(0@0, rect.extent) );
+				setEditor.value;
+				action.value( vws, vws[ \rect ] );
+			})
+			.mouseUpAction_({
+				wh = vws[ \width ].value @ vws[ \height ].value;
+			});
+
+		vws[ \height ] = 
+			SmoothNumberBox( vws[ \view ], Rect( labelWidth + 2, 0, 40, bounds.height ) )
+			.action_({ |nb|
+				setWH.value( vws[ \width ].value @ nb.value );
+				setEditor.value;
+				wh = vws[ \rect ].extent;
+				action.value( vws, vws[ \rect ]);
+			})
+			//.step_( localStep.x )
+			.scroll_step_( localStep.x )
+			.clipLo_( 0 )
+			.clipHi_( rect.right )
+			.value_(10);
+							
+		^vws;
+	}
+	
+	setView { |view, value, active = false, includeEditor = true|
+		var constrained;
+		constrained = this.constrain( value );
+		view[ \rect ] = constrained.copy;
+		view[ \x ].value = constrained.center.x;
+		view[ \y ].value = constrained.center.y;
+		view[ \width ].value = constrained.width;
+		view[ \height ].value = constrained.height;
+		view[ \editor ] !? {
+			if( includeEditor == true ) {
+				view[ \editor ].object = constrained;
+				view[ \editor ].refresh;
+			};
+		};
+		if( active ) { view[ \x ].doAction };
+	}
+	
+	mapSetView { |view, value, active = false|
+		var mapped;
+		mapped = this.map( value );
+		view[ \rect ] = mapped.copy;
+		view[ \x ].value = mapped.center.x;
+		view[ \y ].value = mapped.center.y;
+		view[ \width ].value = mapped.width;
+		view[ \height ].value = mapped.height;
+		view[ \editor ] !? {
+			view[ \editor ].object = mapped;
+			view[ \editor ].refresh;
+		};
+		if( active ) { view[ \x ].doAction };
+	}
+	
+}

@@ -238,7 +238,7 @@ PolarSpec : Spec {
 	}	
 }
 
-RectSpec {
+RectSpec : Spec {
 	
 	var <rect, >default, <>units; // constrains inside rect
 	var clipRect;
@@ -291,7 +291,8 @@ RectSpec {
 	rect_ { |newRect| rect = newRect; this.init }
 	
 	clip { |value|
-		^value.clip( clipRect.leftTop, clipRect.rightBottom );
+		//^value.clip( clipRect.leftTop, clipRect.rightBottom );
+		^value
 	}
 	
 	constrain { |value|

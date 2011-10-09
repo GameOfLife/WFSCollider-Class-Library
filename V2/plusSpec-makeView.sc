@@ -233,9 +233,12 @@
 + RectSpec {
 	
 	makeView { |parent, bounds, label, action, resize|
-		var vws, view, labelWidth, val = 0@0;
+		var vws, view, labelWidth, val = 0@0, wh = 0@0;
 		var localStep, setCenter, setWH;
+		var font;
 		vws = ();
+		
+		font = Font( Font.defaultSansFace, 10 );
 		
 		localStep = 0.01@0.01;
 		
@@ -245,8 +248,8 @@
 			vws[ \rect ] = vws[ \rect ].center_( center );
 		};
 		
-		setWH = { |wh|
-			vws[ \rect ].centeredExtent_( wh );
+		setWH = { |whx|
+			vws[ \rect ].centeredExtent_( whx );
 		};
 		
 		bounds.isNil.if{bounds= 320@20};
@@ -254,7 +257,7 @@
 		#view, bounds = EZGui().prMakeMarginGap.prMakeView( parent, bounds );
 		 vws[ \view ] = view;
 		 
-		view.addFlowLayout;
+		view.addFlowLayout( 0@0, 2@2 );
 		 		
 		if( label.notNil ) {
 			labelWidth = (RoundView.skin ? ()).labelWidth ? 80;
@@ -267,9 +270,16 @@
 			labelWidth = 0;
 		};
 		
-		vws[ \x ] = SmoothNumberBox( vws[ \view ], Rect( labelWidth + 2, 0, 40, bounds.height ) )
+		vws[ \centerLabel ] = StaticText( vws[ \view ], 12 @ bounds.height )
+			.string_( "c" )
+			.align_( \right )
+			.font_( font )
+			.applySkin( RoundView.skin );
+		
+		vws[ \x ] = SmoothNumberBox( vws[ \view ], 40 @ bounds.height )
 			.action_({ |nb|
 				setCenter.value( nb.value @ vws[ \y ].value );
+				val = vws[ \rect ].center;
 				action.value( vws, vws[ \rect ]);
 			})
 			//.step_( localStep.x )
@@ -278,8 +288,7 @@
 			.clipHi_( rect.right )
 			.value_(0);
 			
-		vws[ \xy ] = XYView( vws[ \view ], 
-			Rect( labelWidth + 2 + 42, 0, bounds.height, bounds.height ) )
+		vws[ \xy ] = XYView( vws[ \view ],  bounds.height @ bounds.height )
 			.action_({ |xy|
 				vws[ \x ].value = (val.x + (xy.x * localStep.x))
 					.clip( rect.left, rect.right );
@@ -292,10 +301,10 @@
 				val = vws[ \x ].value @ vws[ \y ].value;
 			});
 			
-		vws[ \y ] = SmoothNumberBox( vws[ \view ], 
-				Rect( labelWidth + 2 + 42 + bounds.height + 2, 0, 40, bounds.height ) )
+		vws[ \y ] = SmoothNumberBox( vws[ \view ], 40 @ bounds.height )
 			.action_({ |nb|
 				setCenter.value( vws[ \x ].value @ nb.value );
+				val = vws[ \rect ].center;
 				action.value( vws, vws[ \rect ] );
 			})
 			//.step_( localStep.y )
@@ -304,27 +313,48 @@
 			.clipHi_( rect.bottom )
 			.value_(0);
 			
+		vws[ \whLabel ] = StaticText( vws[ \view ], 20 @ bounds.height )
+			.string_( "w/h" )
+			.align_( \right )
+			.font_( font )
+			.applySkin( RoundView.skin );
+			
 		vws[ \width ] = 
-			SmoothNumberBox( vws[ \view ], Rect( labelWidth + 2, 0, 40, bounds.height ) )
+			SmoothNumberBox( vws[ \view ], 40 @ bounds.height )
 			.action_({ |nb|
 				setWH.value( nb.value @ vws[ \height ].value );
+				wh = vws[ \rect ].extent;
 				action.value( vws, vws[ \rect ]);
 			})
 			//.step_( localStep.x )
 			.scroll_step_( localStep.x )
-			.clipLo_( rect.left )
+			.clipLo_( 0)
 			.clipHi_( rect.right )
 			.value_(0);
+				
+		vws[ \wh ] = XYView( vws[ \view ], bounds.height @ bounds.height )
+			.action_({ |xy|
+				vws[ \width ].value = (wh.x + (xy.x * localStep.x))
+					.clip( 0, rect.width );
+				vws[ \height ].value = (wh.y + (xy.y * localStep.y.neg))
+					.clip( 0, rect.height );
+				setWH.value( wh + (xy.value * localStep * (1 @ -1) ) );
+				action.value( vws, vws[ \rect ] );
+			})
+			.mouseUpAction_({
+				wh = vws[ \width ].value @ vws[ \height ].value;
+			});
 
 		vws[ \height ] = 
 			SmoothNumberBox( vws[ \view ], Rect( labelWidth + 2, 0, 40, bounds.height ) )
 			.action_({ |nb|
 				setWH.value( vws[ \width ].value @ nb.value );
+				wh = vws[ \rect ].extent;
 				action.value( vws, vws[ \rect ]);
 			})
 			//.step_( localStep.x )
 			.scroll_step_( localStep.x )
-			.clipLo_( rect.left )
+			.clipLo_( 0 )
 			.clipHi_( rect.right )
 			.value_(0);
 				
