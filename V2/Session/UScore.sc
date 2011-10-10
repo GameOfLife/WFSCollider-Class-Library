@@ -1,4 +1,6 @@
 UScore : UEvent {
+	
+	classvar <>activeScores;
 
 	/*
 	*   events: Array[UEvent]
@@ -26,6 +28,10 @@ UScore : UEvent {
 
 	//private
 	var <playTask, <updatePosTask, <startedAt, <pausedAt;
+	
+	*initClass {
+		activeScores = Set();
+	}
 
 	*new { |... events| 
 		^super.new.init( events );
@@ -62,6 +68,12 @@ UScore : UEvent {
 	        this.changed(\playState,newState,playState);  //send newState oldState
 	    };
 	    playState = newState;
+	    
+	    if( playState === \stopped ) {
+		    activeScores.remove( this );
+	    } {
+		    activeScores.add( this );
+	    };
 	}
 
     duplicate { ^UScore( *events.collect( _.duplicate ) ).name_( name ); }
