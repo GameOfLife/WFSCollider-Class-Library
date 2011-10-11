@@ -146,7 +146,9 @@ UScoreEditorGuiMouseEventsManager {
 							state = \selecting;
 							selectionRect = Rect.fromPoints(mousePos,mousePos);
 							if(clickCount == 2) {
-                                scoreEditor.score.pos = mouseDownPos.x;
+							    if( scoreView.currentScore.isStopped ) {
+                                    scoreEditor.score.pos = mouseDownPos.x;
+                                }
                             };
 						}
 					}
@@ -164,7 +166,6 @@ UScoreEditorGuiMouseEventsManager {
 			};
 			if(clickCount == 2) {
                 if(theEventView.event.isFolder){
-
                     fork{ 0.2.wait; {
                         scoreView.addtoScoreList(theEventView.event);
                     }.defer }
@@ -173,10 +174,16 @@ UScoreEditorGuiMouseEventsManager {
                 }
             }
 		};
-		
+
 		//for making sure groups of events being moved are not sent off screen
 		xLimit = this.selectedEventViews.collect({ |ev| ev.event.startTime }).minItem;
 		yLimit = this.selectedEventViews.collect({ |ev| ev.event.track }).minItem;
+
+        if( scoreView.currentScore.playState != \stopped) {
+            if([\nothing, \selecting].includes(state).not) {
+                state = \nothing;
+            }
+        };
 
 		("Current state is "++state);
 	}
