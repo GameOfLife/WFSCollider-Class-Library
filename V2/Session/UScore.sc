@@ -62,6 +62,7 @@ UScore : UEvent {
 	isPaused{ ^playState == \paused }
 	isPreparing{ ^playState == \preparing }
 	isPrepared{ ^playState == \prepared }
+	isStopped{ ^playState == \stopped }
 	playState_{ |newState, changed = true|
 
 	    if(changed){
