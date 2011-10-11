@@ -28,45 +28,48 @@ UScoreEditorGui_TransportBar {
 		scoreController.put(\playState,{ |a,b,newState,oldState|
 		    //[newState,oldState].postln;
 		    if( newState == \playing )  {
-		        { views[\prepare].stop }.defer;
+		        views[\play].value = 1;
+		        { views[\prepare].stop }.defer
 		    };
 		    if(newState == \stopped ) {
-		        {views[\prepare].stop;
+		        { views[\prepare].stop; }.defer;
                 views[\pause].value = 0;
-                views[\play].value = 0; }.defer;
+                views[\play].value = 0;
 		    };
 		    if( newState == \preparing ) {
-		        { views[\prepare].start }.defer;
+		        { views[\prepare].start }.defer
 		    };
 		    //resuming
 		    if( (newState == \playing) && (oldState == \paused) ) {
-		        {views[\pause].value = 0;}.defer;
+		        views[\pause].value = 0;
 		    };
 		    if( newState == \prepared ) {
 
+                { views[\prepare].stop }.defer;
+                views[\play].value = 2;
+
 		    };
+
 		});
 
 		scoreController.put(\paused, {
-            {views[\pause].value = 1;}.defer;
+            views[\pause].value = 1;
 		});
 
 		scoreController.put(\start, {
-            {views[\play].value = 1;}.defer;
+            views[\play].value = 1;
 		});
 
 		scoreController.put(\pos, { |who,what,pos|
-            {
             views[\counter].value = pos;
-            }.defer;
 		});
 
 		views[\play].value = this.score.isPlaying.binaryValue;
 		views[\pause].value = this.score.isPaused.binaryValue;
 		if(this.score.isPreparing) {
-		    views[\prepare].start
+		    { views[\prepare].start }.defer
 		} {
-		    views[\prepare].stop
+		    { views[\prepare].stop }.defer
 		}
 
 
@@ -95,7 +98,8 @@ UScoreEditorGui_TransportBar {
 		views[\play] = SmoothButton( view, 40@size  )
 			.states_( [
 			    [ \play, Color.black, Color.clear ],
-			    [ \stop, Color.black, Color(0.40298507462687, 0.73134328358209, 0.44776119402985) ]] )
+			    [ \stop, Color.black, Color(0.40298507462687, 0.73134328358209, 0.44776119402985) ],
+			    [ \play, Color.blue, Color.red ]] )
 			.canFocus_(false)
 			.font_( font )
 			.border_(1).background_(Color.grey(0.8))
@@ -103,35 +107,48 @@ UScoreEditorGui_TransportBar {
 			.action_({  |v,c,d,e|
 
 			    var startedPlaying;
-			    if( v.value == 1) {
+			    switch( v.value ) {1} {
                     startedPlaying = this.score.prepareAndStart( UServerCenter.servers, this.score.pos);
 			        if( startedPlaying.not ){ v.value = 0 };
-			    } {
+			    }{2} {
                     this.score.stop;
                     views[\pause].value = 0;
-                    views[\prepare].stop;
+                    { views[\prepare].stop }.defer;
+                    v.value = 0;
+			    } {
+			        views[\pause].value = 0;
+			        startedPlaying = this.score.start( UServerCenter.servers, this.score.pos);
+			        if( startedPlaying.not ){ v.value = 0 }{v.value = 1};
 			    }
+
 
 			});
 			
 		views[\pause] = SmoothButton( view, 50@size  )
 			.states_( [
 			    [ \pause, Color.black, Color.clear ],
-			    [ \pause, Color.red,Color(0.40298507462687, 0.73134328358209, 0.44776119402985) ]] )
+			    [ \pause, Color.red,Color(0.40298507462687, 0.73134328358209, 0.44776119402985) ],
+			    [ \pause, Color.blue,Color.red ]] )
 			.canFocus_(false)
 			.font_( font )
 			.border_(1)
 			.background_(Color.grey(0.8))
 			.action_({ |v|
-			    if( v.value == 1) {
+			    switch( v.value)
+			    {1}{
 			        if(this.score.isPlaying) {
-			         this.score.pause;
+			        this.score.pause;
 			       } {
-			        //v.value = 0;
+			        v.value = 2;
 			         this.score.prepare;
 			       }
-			    } {
-                    this.score.resume(UServerCenter.servers)
+			    }{2} {
+			        v.value = 0;
+			        this.score.resume(UServerCenter.servers);
+			    }{
+			        this.score.stop;
+			        views[\play].value = 0;
+
 			    }
 			});
 
@@ -154,7 +171,11 @@ UScoreEditorGui_TransportBar {
 			.background_( Color.clear )
 			.charSelectColor_( Color.white.alpha_(0.5) )
 			.autoScale_( true )
-            .action_({ |v| this.score.pos = v.value });
+            .action_({ |v|
+                if(this.score.isStopped) {
+                    this.score.pos = v.value
+                }
+            });
 
     }
 
