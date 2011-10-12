@@ -18,10 +18,22 @@ UScoreEditorGUI {
 	//*initClass { UI.registerForShutdown({ scoreEditor.askForSave = false }); }
 
 	*new { |scoreEditor|
-		^super.newCopyArgs( scoreEditor)
+		^super.new.init( scoreEditor)
 			.addToAll
 			.newWindow
 	}
+
+	*currentSelectedEvents{
+	    ^current.selectedEvents
+	}
+
+    init { |inScoreEditor|
+        scoreEditor = if(inScoreEditor.class == UScore) {
+            UScoreEditor(inScoreEditor)
+        } {
+            inScoreEditor;
+        };
+    }
 
 	toFront {
 	    if( window.isClosed.not ) {
@@ -35,12 +47,24 @@ UScoreEditorGUI {
 
 	removeFromAll { if( all.notNil ) { all.remove( this ); }; }
 
+	score { ^scoreEditor.score }
+	editor { ^scoreEditor }
+	selectedEvents{ ^scoreView.selectedEvents }
+
+
 	newWindow {
 
 		var font = Font( Font.defaultSansFace, 11 ), header, windowTitle, margin, gap, topBarH, tranBarH, view, centerView, centerBounds;
         var bounds = Rect(230 + 20.rand2, 230 + 20.rand2, 680, 300);
 
         window = Window("Score Editor", bounds).front;
+        window.onClose_({
+            if(UScoreEditorGUI.current == this) {
+                UScoreEditorGUI.current = nil
+            }
+        });
+        //for 3.5 this has to be changed.
+        window.drawHook_({ current = this });
 
         margin = 4;
         gap = 2;

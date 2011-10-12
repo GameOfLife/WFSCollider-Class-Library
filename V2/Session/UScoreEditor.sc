@@ -1,6 +1,7 @@
 UScoreEditor {
 
 	classvar <>current, <all;
+    classvar <clipboard;
 
 	var <score;
 	var <undoStates, <redoStates, maxUndoStates = 40;
@@ -29,12 +30,34 @@ UScoreEditor {
 
 	events { ^score.events }
 
+	events_ { |events|
+	    this.changeScore{score.events = events}
+	}
+
 	changeScore{ |action|
 	    this.changed(\preparingToChangeScore);
 	    this.storeUndoState;
 	    action.value;
 		this.changed(\score);
 	}
+
+	//--COPY/PASTE--
+
+	*copy{ |events|
+	    clipboard = events.collect( _.deepCopy ).postln;
+	}
+
+	paste { |pos|
+	    var evsToPaste = clipboard.collect( _.deepCopy );
+	    var minTime = evsToPaste.collect(_.startTime).minItem;
+        score.addEventsToEmptyRegion(evsToPaste.collect{ |ev| ev.startTime = ev.startTime - minTime + pos});
+        this.changed(\numEventsChanged);
+
+    }
+
+    pasteAtCurrentPos {
+        this.paste(score.pos)
+    }
 
 	//--UNDO/REDO--
 	storeUndoState {
@@ -96,9 +119,17 @@ UScoreEditor {
 		})
 	}
 
+	importScorePlaceAtStart { |score|
+	    this.importScorePlaceAtPos(0)
+	}
+
+	importScorePlaceAtEnd { |score|
+	    this.importScorePlaceAtPos(this.score.duration)
+	}
+
 	importScoreAsFolder { |score|
 	    this.changeScore({
-	        score <| Event(score, 0 );
+	        score <| score;
 		    score.cleanOverlaps;
 		})
 	}
@@ -108,6 +139,12 @@ UScoreEditor {
     <| { |events|
         this.changeScore({
             score <| events;
+        })
+    }
+
+    addEvent{
+        this.changeScore({
+            score.addEventToEmptyTrack( UChain(\sine,\output).duration_(10).fadeIn_(1).fadeOut_(1).startTime_(score.pos) )
         })
     }
 

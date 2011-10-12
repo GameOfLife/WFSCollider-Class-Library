@@ -10,6 +10,8 @@ UScore : UEvent {
 	var <>events, <>name = "untitled";
 	var pos = 0;
 	var <playState = \stopped;
+	var <>filePath;
+
 	/* playState is a finite state machine. The transitions graph:
                                        stop
         |---------------------------------------paused ----|
@@ -91,7 +93,7 @@ UScore : UEvent {
     /*
     * newEvents -> UEvent or Array[UEvent]
     */
-	add { |newEvents| events = events ++ newEvents.asCollection.collect( _.asUEvent ) }
+	add { |newEvents| events = events ++ newEvents.asCollection }
 	<| { |newEvents| this.add(newEvents) }
 
 	<< { |score|
@@ -142,6 +144,14 @@ UScore : UEvent {
 		});
 	}
 
+	findEmptyRegion { |startTime, endTime, startTrack, endTrack|
+		^events.select({ |item|
+			( (item.startTime <= endTime) and: (item.startTime >= startTime ) ) or:
+			( (item.endTime <= endTime) and: (item.endTime >= startTime ) )
+		}).collect(_.track).maxItem !? (_+1) ?? {events.collect(_.track).maxItem};
+
+	}
+
 	checkIfInEmptyTrack { |evt|
 		var evts, tracks;
 
@@ -154,12 +164,24 @@ UScore : UEvent {
 		^evts.isNil;
 	}
 
-	addEventToEmptyTrack { |evt|
-		if( this.checkIfInEmptyTrack( evt ).not ) {
+    moveEventToEmptyTrack { |evt|
+        if( this.checkIfInEmptyTrack( evt ).not ) {
 			evt.track = this.findEmptyTrack( evt.startTime, evt.endTime );
-		};
-		events = events.add( evt );
+		}
+    }
 
+	addEventToEmptyTrack { |evt|
+		this.moveEventToEmptyTrack(evt);
+		events = events.add( evt );
+	}
+
+	addEventsToEmptyRegion { |events|
+	    var startTime = events.collect(_.startTime).minItem;
+	    var endTime = events.collect(_.endTime).maxItem;
+	    var startTrack = events.collect(_.track).minItem;
+	    var endTrack = events.collect(_.track).maxItem;
+	    var startRegion =  this.findEmptyRegion(startTime, endTime, startTrack, endTrack);
+	    this <| events.collect{ |x| x.track = x.track + startRegion - startTrack }
 	}
 
 	findCompletelyEmptyTrack {
@@ -172,9 +194,10 @@ UScore : UEvent {
 
 	}
 
+    //need to add a
 	cleanOverlaps {
-
-	}
+		events.do{ |x| this.moveEventToEmptyTrack(x) }
+    }
 
 	//SCORE PLAYING
 
@@ -299,7 +322,7 @@ UScore : UEvent {
 		startedAt = [ startPos, SystemClock.seconds ];
 
         //this is for prepareWaitAndStart
-        preparePos = if(prepareEvents.size == 0){ startPos }{ prepareEvents[0].prepareTime.min(startPos) };
+        preparePos = if(prepareEvents.size == 0){ startPos }{ prepareEvents[0].prepareTime.min(startPos)�};
         deltaToStart = startPos - preparePos;
         if(deltaToStart !=0){
             fork{
@@ -322,7 +345,7 @@ UScore : UEvent {
                     (this.duration - pos).wait;
                     // the score has stopped playing i.e. all events are finished
                     startedAt = nil;
-                    this.pos = this.duration;
+                    this.pos = 0;
                     this.playState_(\stopped);
                 }
             }).start;
@@ -404,13 +427,39 @@ UScore : UEvent {
 	}
 
 	pos_ { |x|
-	    pos = if(x>=this.duration){0}{x};
-	    this.changed(\pos, pos);
+	    pos = x;
+	    this.changed(\pos, x);
 	}
-	
+
+	edit{ ^UScoreEditorGUI(this) }
+
 	printOn { arg stream;
 		stream << "a " << this.class.name << "( " << events.size <<" events )"
 	}
+
+	save {
+	    filePath !? { |x| this.write(x,true, { |x| filePath = x}) } ?? {
+	        this.saveAs
+	    }
+	}
+
+	saveAs { |path|
+	    this.write(path, true, { |x| filePath = x})
+	}
+
+	readTextArchive { |pathname|
+	    super.readTextArchive(pathname);
+	    filePath = pathname;
+    }
+
+    *readTextArchive { |pathname|
+        var res = super.readTextArchive(pathname);
+        ^if(res.notNil) {
+            res.filePath_(pathname)
+        } {
+            res
+        }
+    }
 	
 	getInitArgs {
 		var numPreArgs = -1;

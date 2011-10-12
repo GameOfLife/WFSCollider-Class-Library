@@ -62,22 +62,11 @@ UScoreEditorGui_TopBar {
     }
 
     selectedEvents{
-        ^scoreView.usessionMouseEventsManager.selectedEvents;
+        ^scoreView.selectedEvents;
     }
 
     selectedEventsOrAll{
-        ^scoreView.usessionMouseEventsManager.selectedEventsOrAll
-    }
-
-    doToSelectedEvents{ |action|
-        var events = this.selectedEvents;
-        if(events.size > 0){
-            action.value(events)
-        }
-    }
-
-    doToSelectedEventsOrAll{ |action|
-        action.value(this.selectedEventsOrAll)
+        ^scoreView.selectedEventsOrAll
     }
 
     makeGui{ |parent, bounds|
@@ -98,19 +87,7 @@ UScoreEditorGui_TopBar {
 			.canFocus_(false)
 			.border_(1).background_(Color.grey(0.8))
 			.action_({ |b|
-				var event, events = this.selectedEvents;
-				switch(events.size)
-				    {0}{}
-				    {1}{
-				        event = events[0];
-				        if(event.isFolder){
-				            MassEditUChain(event.getAllUChains).gui
-				        } {
-				            event.gui
-				        }
-				    }
-				    { MassEditUChain(events.collect(_.getAllUChains).flat).gui }
-
+				scoreView.editSelectedEvents;
 			});
 
 		header.decorator.shift(10);
@@ -120,7 +97,7 @@ UScoreEditorGui_TopBar {
 			.canFocus_(false)
 			.border_(1).background_(Color.grey(0.8))
 			.action_({
-				this.doToSelectedEvents{ |x| this.scoreEditor.deleteEvents(x) }
+				scoreView.deleteSelected;
 			});
 
 		SmoothButton( header, size@size )
@@ -128,7 +105,11 @@ UScoreEditorGui_TopBar {
 			.canFocus_(false)
 			.border_(1).background_(Color.grey(0.8))
 			.action_({
-				this.doToSelectedEvents{ |x|  this.scoreEditor.duplicateEvents(x) }
+			    if(scoreView.selectedEvents.notNil) {
+				    scoreView.duplicateSelected;
+				} {
+				    scoreView.currentEditor.addEvent
+				}
 			});
 
 		header.decorator.shift(10);
@@ -141,7 +122,7 @@ UScoreEditorGui_TopBar {
 			.font_( Font( font.name, 10 ).boldVariant )
 			.radius_([8,0,0,8])
 			.action_({
-				this.doToSelectedEventsOrAll{ |x| this.scoreEditor.trimEventsStartAtPos( x ) }
+				this.selectedEventsOrAll !? { |x| this.scoreEditor.trimEventsStartAtPos( x ) }
 			});
 
 		SmoothButton( header, size@size  )
@@ -150,7 +131,7 @@ UScoreEditorGui_TopBar {
 			.radius_(0)
 			.border_(1).background_(Color.grey(0.8))
 			.action_({
-				this.doToSelectedEventsOrAll{ |x| this.scoreEditor.splitEventsAtPos( x ) }
+				this.selectedEventsOrAll !? { |x| this.scoreEditor.splitEventsAtPos( x ) }
 			});
 
 		SmoothButton( header, size@size  )
@@ -159,7 +140,7 @@ UScoreEditorGui_TopBar {
 			.radius_([0,8,8,0])
 			.border_(1).background_(Color.grey(0.8))
 			.action_({
-			    this.doToSelectedEventsOrAll{ |x| this.scoreEditor.trimEventsEndAtPos( x ) }
+			    this.selectedEventsOrAll !? { |x| this.scoreEditor.trimEventsEndAtPos( x ) }
 		    });
 
 		header.decorator.shift(10);
@@ -189,7 +170,7 @@ UScoreEditorGui_TopBar {
 			.canFocus_(false)
 			.border_(1).background_(Color.grey(0.8))
 			.action_({ |b|
-				this.doToSelectedEvents{ |x|  this.scoreEditor.toggleMuteEvents( x ) }
+				this.selectedEvents !? { |x|  this.scoreEditor.toggleMuteEvents( x ) }
 			});
 
 		SmoothButton( header, size@size  )
@@ -197,7 +178,7 @@ UScoreEditorGui_TopBar {
 			.canFocus_(false)
 			.border_(1).background_(Color.grey(0.8))
 			.action_({
-			    this.doToSelectedEvents{ |x|
+			    this.selectedEvents !? { |x|
                     if( x.every(_.isFolder) ) {
                         this.scoreEditor.unpackSelectedFolders(x)
                     }{

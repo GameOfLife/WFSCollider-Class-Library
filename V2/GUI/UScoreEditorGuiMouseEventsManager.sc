@@ -61,9 +61,10 @@ UScoreEditorGuiMouseEventsManager {
 	}
 	
 	selectedEventViews {	
-		^this.eventViews.select{ |eventView|
+		var events = this.eventViews.select{ |eventView|
 			eventView.selected
-		}
+		};
+		^if(events.size > 0){events}{nil}
 	}
 
 	selectedEvents {
@@ -75,7 +76,12 @@ UScoreEditorGuiMouseEventsManager {
 	    if(v.size > 0){
 	        ^v.collect( _.event )
 	    } {
-	        ^scoreEditor.score.events
+	        v = scoreEditor.score.events;
+	        if(v.size > 0) {
+	            ^v
+	        } {
+	            nil
+	        }
 	    }
 	}
 		
@@ -176,8 +182,8 @@ UScoreEditorGuiMouseEventsManager {
 		};
 
 		//for making sure groups of events being moved are not sent off screen
-		xLimit = this.selectedEventViews.collect({ |ev| ev.event.startTime }).minItem;
-		yLimit = this.selectedEventViews.collect({ |ev| ev.event.track }).minItem;
+		xLimit = this.selectedEventViews.collect({ |ev| ev.event.startTime }) !? _.minItem;
+		yLimit = this.selectedEventViews.collect({ |ev| ev.event.track }) !? _.minItem;
 
         if( scoreView.currentScore.playState != \stopped) {
             if([\nothing, \selecting].includes(state).not) {

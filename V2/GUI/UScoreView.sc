@@ -9,6 +9,7 @@ UScoreView {
      var <scoreEditorsList;
      var <usessionMouseEventsManager;
      var <>snapActive, <>snapH;
+     var <>numTracks = 16;
      var <scoreView, <scoreListView, <mainComposite, font, <parent, <bounds;
      var <>scoreList;
      var <baseScoreEditorController, <currentScoreEditorController, <scoreController;
@@ -41,6 +42,12 @@ UScoreView {
 		    }
 		});
 
+		currentScoreEditorController.put(\numEventsChanged, {
+		    this.makeScoreView;
+		    this.update;
+
+		});
+
         if(this.isInnerScore){
             currentScoreEditorController.put(\preparingToChangeScore, {
                     this.baseEditor.storeUndoState;
@@ -62,27 +69,93 @@ UScoreView {
 	    scoreView.refresh;
 	}
 
-     currentEditor{
+    currentEditor{
         ^scoreEditorsList.last
-     }
+    }
 
-     baseEditor{
+    baseEditor{
         ^scoreEditorsList[0]
-     }
+    }
 
-     currentScore{
+    currentScore{
         ^scoreEditorsList.last.score
-     }
+    }
 
-     isInnerScore{
+    isInnerScore{
         ^(scoreEditorsList.size > 1)
-     }
+    }
+
+    selectedEvents{ ^usessionMouseEventsManager.selectedEvents }
+    selectedEventsOrAll { ^usessionMouseEventsManager.selectedEventsOrAll }
+
+    editSelectedEvents{
+        var event, events = this.selectedEvents;
+        switch(events.size)
+            {0}{}
+            {1}{
+                event = events[0];
+                if(event.isFolder){
+                    MassEditUChain(event.getAllUChains).gui
+                } {
+                    event.gui
+                }
+            }
+            { MassEditUChain(events.collect(_.getAllUChains).flat).gui }
+
+    }
+
+	deleteSelectedEvents{
+	    ^this.currentEditor.deleteEvents(this.selectedEvents)
+	}
+
+	selectAll {
+	    usessionMouseEventsManager.eventViews.do(_.selected = true);
+	    this.update;
+	}
+
+    selectSimilar {
+        var selectedTypes = this.selectedEvents.collect{ |x| x.units.collect(_.defName) };
+        usessionMouseEventsManager.eventViews.do{ |evView|
+            if( selectedTypes.includesEqual(evView.event.units.collect(_.defName)) ) {
+                evView.selected = true
+            }
+        };
+        this.update
+    }
+
+    muteSelected {
+        this.currentEditor.muteEvents(this.selectedEvents)
+    }
+
+    unmuteSelected {
+        this.currentEditor.unmuteEvents(this.selectedEvents)
+    }
+
+    soloSelected {
+        this.currentEditor.soloEvents(this.selectedEvents)
+    }
+
+    duplicateSelected {
+        this.currentEditor.duplicateEvents(this.selectedEvents)
+    }
+
+    addTrack {
+        numTracks = numTracks + 1;
+        this.update;
+    }
+
+    removeUnusedTracks {
+        numTracks = ((this.currentScore.events.collect( _.track )
+            .maxItem ? 14) + 2).max( 16 );
+        this.update;
+    }
+
 
      //call to initialize and draw view. This is needed to be able to pass an instance of this class to the topbar object.
-     makeView{
+    makeView{
         mainComposite = CompositeView(parent,bounds).resize_(5);
         this.makeScoreView
-     }
+    }
 
      remake{
         scoreView.remove;
@@ -132,12 +205,12 @@ UScoreView {
 
      makeScoreView{
         var scoreEditor = scoreEditorsList.last;
-        var numTracks = ((scoreEditor.score.events.collect( _.track ).maxItem ? 14) + 2).max(16);
         var scoreBounds = if(scoreList.size > 1) {
             mainComposite.bounds.copy.height_(mainComposite.bounds.height - 24).moveTo(0,24);
         }  {
             mainComposite.bounds.copy.moveTo(0,0)
         };
+        numTracks = ((scoreEditor.score.events.collect( _.track ).maxItem ? 14) + 2).max(16);
 
         scoreView = ScaledUserViewContainer(mainComposite,
         			scoreBounds,
@@ -182,7 +255,7 @@ UScoreView {
 			} )
 			.keyDownAction_( { |v, a,b,c|
 				if( c == 127 ) {
-					scoreEditor.deleteEvents( usessionMouseEventsManager.selectedEvents )
+					this.deleteSelectedEvents
 				}
 			})
 			.beforeDrawFunc_( {

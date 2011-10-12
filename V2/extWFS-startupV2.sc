@@ -31,6 +31,8 @@
 			"starting offline".postln;
 			WFS.startupOfflineV2;
 		};
+		WFSMenuBar();
+
 	}
 		
 		*startupOfflineV2 {
