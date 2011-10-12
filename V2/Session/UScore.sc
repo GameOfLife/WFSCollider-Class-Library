@@ -148,7 +148,7 @@ UScore : UEvent {
 		^events.select({ |item|
 			( (item.startTime <= endTime) and: (item.startTime >= startTime ) ) or:
 			( (item.endTime <= endTime) and: (item.endTime >= startTime ) )
-		}).collect(_.track).maxItem !? (_+1) ?? {events.collect(_.track).maxItem};
+		}).collect(_.track).maxItem !? (_+1) ?? {events.collect(_.track).maxItem} ? 0;
 
 	}
 
