@@ -311,7 +311,7 @@ UChainGUI {
 						}).resize_(3);
 				} {
 					io = SmoothButton( comp, 
-							Rect( comp.bounds.right - (36 + 4 + 36 + 4 + 12), 1, 36, 12 ) )
+							Rect( comp.bounds.right - (36 + 4 + 12), 1, 36, 12 ) )
 						.label_( "i/o" )
 						.border_( 1 )
 						.radius_( 2 )
@@ -326,7 +326,7 @@ UChainGUI {
 						}).resize_(3);
 						
 					defs = SmoothButton( comp, 
-							Rect( comp.bounds.right - (36 + 4 + 12), 1, 36, 12 ) )
+							Rect( comp.bounds.right - (36 + 4 + 36 + 4 + 12), 1, 36, 12 ) )
 						.label_( "defs" )
 						.border_( 1 )
 						.radius_( 2 )
