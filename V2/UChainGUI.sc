@@ -55,7 +55,7 @@ UChainGUI {
 	prMakeViews { |bounds|
 		var margin = 0@0, gap = 4@4;
 		var heights, units;
-		var labelWidth;
+		var labelWidth, releaseTask;
 		// var unitInitFunc;
 		
 		labelWidth = 80;
@@ -86,7 +86,27 @@ UChainGUI {
 		views[ \startButton ] = SmoothButton( composite, 14@14 )
 			.label_( ['power', 'power'] )
 			.hiliteColor_( Color.green.alpha_(0.5) )
-			.action_( [ { chain.prepareAndStart }, { chain.release } ] );
+			.action_( [ { 
+					var startAction;
+					releaseTask.stop;
+					if( chain.releaseSelf or: (chain.dur == inf) ) {
+						chain.prepareAndStart;
+					} {
+						startAction = { 
+							chain.start;
+							releaseTask = {
+								(chain.dur - chain.fadeOut).wait;
+								chain.release;
+							}.fork;
+						};
+						chain.prepare( action: startAction );
+							
+					};
+				}, { 
+					releaseTask.stop;
+					chain.release 
+				} ]
+		 	);
 			
 		if( chain.groups.size > 0 ) {
 			views[ \startButton ].value = 1;
@@ -129,7 +149,6 @@ UChainGUI {
 			});
 			
 		views[ \infDur ] = SmoothButton( composite, 25@14 )
-			.applySkin( RoundView.skin )
 			.border_( 1 )
 			.radius_( 3 )
 			.label_( [ "inf", "inf" ] )
@@ -146,11 +165,10 @@ UChainGUI {
 				);
 		});
 			
-		views[ \fromSoundFile ] = SmoothButton( composite, 60@14 )
-			.applySkin( RoundView.skin )
+		views[ \fromSoundFile ] = SmoothButton( composite, 90@14 )
 			.border_( 1 )
 			.radius_( 3 )
-			.label_( "soundFile" )
+			.label_( "from soundFile" )
 			.action_({ chain.useSndFileDur });
 			
 		composite.decorator.nextLine;
@@ -175,6 +193,15 @@ UChainGUI {
 				chain.fadeOut_( nb.value );
 			});
 			
+		views[ \releaseSelf ] = SmoothButton( composite, 70@14 )
+			.border_( 1 )
+			.radius_( 3 )
+			.label_( [ "releaseSelf", "releaseSelf" ] )
+			.hiliteColor_( Color.green )
+			.action_({ |bt|
+				chain.releaseSelf = bt.value.booleanValue;
+			});
+			
 		composite.decorator.nextLine;
 		
 		// gain
@@ -189,28 +216,48 @@ UChainGUI {
 				chain.setGain( nb.value );
 			});
 			
+		views[ \muted ] = SmoothButton( composite, 40@14 )
+			.border_( 1 )
+			.radius_( 3 )
+			.label_( [ "mute", "mute" ] )
+			.hiliteColor_( Color.red )
+			.action_({ |bt|
+				switch( bt.value, 
+					0, { chain.muted = false },
+					1, { chain.muted = true }
+				);
+			});
+			
 		controller
 			.put( \start, { views[ \startButton ].value = 1 } )
 			.put( \end, { 
 				if( units.every({ |unit| unit.synths.size == 0 }) ) {
 					views[ \startButton ].value = 0;
+					releaseTask.stop;
 				};
 			} )
 			.put( \gain, { views[ \gain ].value = chain.getGain } )
-			.put( \startTime, { views[ \startTime ].value = chain.startTime ? 0; })
+			.put( \muted, { views[ \muted ].value = chain.muted.binaryValue } )			.put( \startTime, { views[ \startTime ].value = chain.startTime ? 0; })
 			.put( \dur, { var dur;
 				dur = chain.dur;
 				if( dur == inf ) {
 					views[ \dur ].enabled = false; // don't set value
 					views[ \infDur ].value = 1;
+					views[ \releaseSelf ].hiliteColor = Color.green.alpha_(0.25);
+					views[ \releaseSelf ].stringColor = Color.black.alpha_(0.5);
 				} {
 					views[ \dur ].enabled = true;
 					views[ \dur ].value = dur;
 					views[ \infDur ].value = 0;
+					views[ \releaseSelf ].hiliteColor = Color.green.alpha_(1);
+					views[ \releaseSelf ].stringColor = Color.black.alpha_(1);
 				};
 			})
 			.put( \fadeIn, { views[ \fadeIn ].value = chain.fadeIn })
 			.put( \fadeOut, { views[ \fadeOut ].value = chain.fadeOut })
+			.put( \releaseSelf, {  
+				views[ \releaseSelf ].value = chain.releaseSelf.binaryValue;
+			})
 			.put( \units, { 
 				if( composite.isClosed.not ) {
 					{
@@ -229,13 +276,16 @@ UChainGUI {
 			});
 		
 		chain.changed( \gain );
+		chain.changed( \mute );
 		chain.changed( \startTime );
 		chain.changed( \dur );
 		chain.changed( \fadeIn );
 		chain.changed( \fadeOut );
+		chain.changed( \releaseSelf );
 		
 		uguis = this.makeUnitViews(units, margin, gap );
 		
+		composite.bounds = composite.bounds.height_( composite.children.last.bounds.bottom );
 	}
 	
 	makeUnitViews { |units, margin, gap|
