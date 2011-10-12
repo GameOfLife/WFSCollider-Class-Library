@@ -335,30 +335,34 @@ U : ObjectWithArgs {
 		}).flatten(1);
 	}
 	
-	setAudioIn { |id = 0, bus = 0|
-		this.set( this.def.prGetIOKey( \in, \audio, id, "bus" ).asSymbol, bus );
-	}
-	setControlIn { |id = 0, bus = 0|
-		this.set( this.def.prGetIOKey( \in, \control, id, "bus" ).asSymbol, bus );
-	}
-	setAudioOut { |id = 0, bus = 0|
-		this.set( this.def.prGetIOKey( \out, \audio, id, "bus" ).asSymbol, bus );
-	}
-	setControlOut { |id = 0, bus = 0|
-		this.set( this.def.prGetIOKey( \out, \control, id, "bus" ).asSymbol, bus );
+	getIOKey { |mode = \in, rate = \audio, id = 0, what = "bus"|
+		^this.def.prGetIOKey( mode, rate, id, what ).asSymbol;
 	}
 	
-	getAudioIn { |id = 0, bus = 0|
-		^this.get( this.def.prGetIOKey( \in, \audio, id, "bus" ).asSymbol );
+	setAudioIn { |id = 0, bus = 0|
+		this.set( this.getIOKey( \in, \audio, id ), bus );
 	}
-	getControlIn { |id = 0, bus = 0|
-		^this.get( this.def.prGetIOKey( \in, \control, id, "bus" ).asSymbol );
+	setControlIn { |id = 0, bus = 0|
+		this.set( this.getIOKey( \in, \control, id ), bus );
 	}
-	getAudioOut { |id = 0, bus = 0|
-		^this.get( this.def.prGetIOKey( \out, \audio, id, "bus" ).asSymbol );
+	setAudioOut { |id = 0, bus = 0|
+		this.set( this.getIOKey( \out, \audio, id ), bus );
 	}
-	getControlOut { |id = 0, bus = 0|
-		^this.get( this.def.prGetIOKey( \out, \control, id, "bus" ).asSymbol );
+	setControlOut { |id = 0, bus = 0|
+		this.set( this.getIOKey( \out, \control, id ), bus );
+	}
+	
+	getAudioIn { |id = 0|
+		^this.get( this.getIOKey( \in, \audio, id ) );
+	}
+	getControlIn { |id = 0|
+		^this.get( this.getIOKey( \in, \control, id ) );
+	}
+	getAudioOut { |id = 0|
+		^this.get( this.getIOKey( \out, \audio, id ) );
+	}
+	getControlOut { |id = 0|
+		^this.get( this.getIOKey( \out, \control, id ) );
 	}
 	
 	shouldPlayOn { |target| // this may prevent a unit or chain to play on a specific server 

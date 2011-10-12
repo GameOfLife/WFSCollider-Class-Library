@@ -6,6 +6,7 @@ UChainGUI {
 	
 	var <parent, <composite, <views, <startButton, <uguis, <controller;
 	var <>action;
+	var originalBounds;
 	
 	*initClass {
 		StartUp.defer({
@@ -45,12 +46,17 @@ UChainGUI {
 		});
 	}
 	
+	getHeight { |units, margin, gap|
+		^units.collect({ |unit|
+			UGUI.getHeight( unit, 14, margin, gap ) + 14 + gap.y + gap.y;
+		}).sum + (4 * (14 + gap.y));
+	}
+	
 	prMakeViews { |bounds|
 		var margin = 0@0, gap = 4@4;
 		var heights, units;
 		var labelWidth;
-		var unitInitFunc;
-		var originalBounds;
+		// var unitInitFunc;
 		
 		labelWidth = 80;
 		
@@ -67,10 +73,9 @@ UChainGUI {
 		units = chain.units.collect({ |u| 
 			if( u.class == MetaU ) { u.unit; } { u; }
 		});
-		bounds.height = units.collect({ |unit|
-			UGUI.getHeight( unit, 14, margin, gap ) + 14 + gap.y + gap.y;
-		}).sum + (4 * (14 + gap.y));
 		
+		this.getHeight( units, margin, gap );
+				
 		controller = SimpleController( chain );
 		
 		composite = CompositeView( parent, bounds ).resize_(2);
@@ -82,6 +87,10 @@ UChainGUI {
 			.label_( ['power', 'power'] )
 			.hiliteColor_( Color.green.alpha_(0.5) )
 			.action_( [ { chain.prepareAndStart }, { chain.release } ] );
+			
+		if( chain.groups.size > 0 ) {
+			views[ \startButton ].value = 1;
+		};
 			
 		composite.decorator.nextLine;
 		
@@ -225,6 +234,13 @@ UChainGUI {
 		chain.changed( \fadeIn );
 		chain.changed( \fadeOut );
 		
+		uguis = this.makeUnitViews(units, margin, gap );
+		
+	}
+	
+	makeUnitViews { |units, margin, gap|
+		
+		var unitInitFunc;
 		
 		unitInitFunc = { |unit, what ...args|
 			if( what === \init ) { // close all views and create new
@@ -232,9 +248,8 @@ UChainGUI {
 			};
 		};
 		
-		
-		uguis = units.collect({ |unit, i|
-			var header, comp, uview, plus, min;
+		^units.collect({ |unit, i|
+			var header, comp, uview, plus, min, defs, io;
 			
 			comp = CompositeView( composite, (composite.bounds.width - (margin.x * 2))@14 );
 			
@@ -295,7 +310,22 @@ UChainGUI {
 							chain.units = chain.units.select(_ != unit);
 						}).resize_(3);
 				} {
-					min = SmoothButton( comp, 
+					io = SmoothButton( comp, 
+							Rect( comp.bounds.right - (36 + 4 + 36 + 4 + 12), 1, 36, 12 ) )
+						.label_( "i/o" )
+						.border_( 1 )
+						.radius_( 2 )
+						.action_({
+							var parent;
+							parent = composite.parent;
+							{
+								composite.remove;
+								UChainIOGUI( parent, originalBounds, chain );
+							}.defer(0.01);
+
+						}).resize_(3);
+						
+					defs = SmoothButton( comp, 
 							Rect( comp.bounds.right - (36 + 4 + 12), 1, 36, 12 ) )
 						.label_( "defs" )
 						.border_( 1 )
