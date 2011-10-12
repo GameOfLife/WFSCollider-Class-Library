@@ -56,8 +56,10 @@ UEvent {
     getInitArgs { this.subclassResponsibility(thisMethod) }
     
     *readTextArchive { |pathname|
-	    var res;
+	    var res, sub;
 	    res = pathname.load;
+	    sub = this.subclasses;
+	    sub = sub ? [];
 	    if( res.class == this or: { this.subclasses.includes( res.class ) } ) {
 		   ^res;
 	    } {
@@ -76,30 +78,54 @@ UEvent {
     
     write { |path, overwrite=false, ask=true|
 	    var writeFunc;
-	    writeFunc = { 
+	    writeFunc = { |overwrite, ask|
 		    var text;
 		    text = this.asTextArchive;
-		    File.checkDo( path, { |f| 
-				f.write( text );  
-			}, overwrite, ask); 
+		    File.checkDo( path, { |f|
+				f.write( text );
+			}, overwrite, ask);
 	    };
-	    
+
 	    if( path.isNil ) {
 		    Dialog.savePanel( { |pth|
 			    path = pth;
-			    writeFunc.value;
+			    writeFunc.value(true,false);
 		    } );
 	    } {
-		    writeFunc.value;
+		    writeFunc.value(overwrite,ask);
 	    };
     }
     
-    read { |path|
-	    this.readTextArchive( path.standardizePath );
+    read { |path, action|
+         var score;
+
+        if( path.isNil ) {
+		    Dialog.getPaths( { |paths|
+	             this.readTextArchive( paths[0] );
+	             action.value(score);
+	        });
+	    } {
+	            path = path.standardizePath;
+	            this.readTextArchive( path );
+	            action.value(score);
+	    };
     }
     
-    *read { |path| 
-	    ^this.readTextArchive( path.standardizePath );
+    *read { |path, action|
+        var score;
+
+        if( path.isNil ) {
+		    Dialog.getPaths( { |paths|
+	             score = this.readTextArchive( paths[0] );
+	             action.value(score);
+	             score
+	        });
+	    } {
+	            path = path.standardizePath;
+	            score = this.readTextArchive( path );
+	            action.value(score);
+	            ^score
+	    };
     }
 
 }
