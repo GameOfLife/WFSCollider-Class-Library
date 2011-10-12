@@ -215,6 +215,20 @@ UChain : UEvent {
 	dur { ^this.duration }
 	dur_ { |x| this.duration_(x)}
 	
+	gain { ^this.getGain }
+	gain_ { |gain = 0| ^this.setGain }
+	
+	muted_ { |bool|
+		muted = bool.booleanValue;
+		this.prGetCanFreeSynths.do({ |unit|
+			unit.set( \u_mute, muted );
+		});
+		this.changed( \muted );
+	}
+	
+	mute { this.muted = true; }
+	unmute { this.muted = false; }
+	
 	setGain { |gain = 0| // set the average gain of all units that have a u_gain arg
 		var mean, add;
 		mean = this.getGain;

@@ -28,6 +28,7 @@ UEnv : UIn {
 			\u_dur -> ControlSpec(0, inf),
 			\u_doneAction -> ControlSpec(0, 14, \lin, 1),
 			\u_gain -> ControlSpec( -inf, 24, \db ),
+			\u_mute -> BoolSpec( false ),
 			\u_fadeIn -> ControlSpec( 0, inf ),
 			\u_fadeOut -> ControlSpec( 0, inf )
 			
@@ -37,6 +38,7 @@ UEnv : UIn {
 	*kr { |gain = 0, fadeIn = 0, fadeOut = 0, extraSilence = 0|
 		var name = this.getControlName( );
 		var gate = this.getControl( \kr, name, 'gate', 1 );
+		var mute = this.getControl( \kr, name, 'mute', 0 );
 		var dur = this.getControl( \kr, name, 'dur', inf );
 		var doneAction = this.getControl( \kr, name, 'doneAction', 0 );
 		
@@ -50,7 +52,8 @@ UEnv : UIn {
 				doneAction: doneAction ) *
 			Env([ 1, 0, 0 ],[ fadeOut, extraSilence ], \lin, 0 )
 				.kr( doneAction, RunningMin.kr( gate + Impulse.kr(0) ) ) *
-			gain.dbamp;
+			gain.dbamp *
+			(1-mute);
 	}
 	
 	*ar { ^this.shouldNotImplement }
