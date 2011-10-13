@@ -73,11 +73,11 @@ WFSMenuBar {
 
 	    SCMenuItem.new(events, "Copy").action_({
 	        UScoreEditorGUI.currentSelectedEvents !? UScoreEditor.copy(_)
-		}).setShortCut("c",true);
+		}).setShortCut("C",true);
 
 		SCMenuItem.new(events, "Paste").action_({
 			UScoreEditorGUI.current !? { |x| x.editor.pasteAtCurrentPos }
-		}).setShortCut("v",true);
+		}).setShortCut("P",true);
 		
 		SCMenuSeparator.new(events);
 				
