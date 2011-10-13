@@ -12,7 +12,7 @@ UScoreView {
      var <>numTracks = 16;
      var <scoreView, <scoreListView, <mainComposite, font, <parent, <bounds;
      var <>scoreList;
-     var <baseScoreEditorController, <currentScoreEditorController, <scoreController;
+     var <currentScoreEditorController, <scoreController;
 
      *new{ |parent, bounds, scoreEditor| ^super.new.init(scoreEditor, parent,bounds) }
 
@@ -30,29 +30,17 @@ UScoreView {
      }
 
      addCurrentScoreControllers {
-	    if( currentScoreEditorController.notNil ) {
-	        currentScoreEditorController.remove;
-	    };
-	    currentScoreEditorController = SimpleController( scoreEditorsList.last );
 
-		currentScoreEditorController.put(\score, {
-		    this.update;
-		    if(this.isInnerScore){
-		        this.baseEditor.changed(\score);
-		    }
-		});
-
-		currentScoreEditorController.put(\numEventsChanged, {
-		    this.makeScoreView;
-		    this.update;
-
-		});
-
-        if(this.isInnerScore){
+         if(this.isInnerScore){
+            if( currentScoreEditorController.notNil ) {
+                currentScoreEditorController.remove;
+            };
+            currentScoreEditorController = SimpleController( scoreEditorsList.last );
             currentScoreEditorController.put(\preparingToChangeScore, {
                     this.baseEditor.storeUndoState;
             });
         };
+
 
         if( scoreController.notNil ) {
 	        scoreController.remove;
@@ -63,7 +51,17 @@ UScoreView {
 		    { this.update }.defer;
 		});
 
+		scoreController.put(\something, {
+		    this.update;
+		    if(this.isInnerScore){
+		        this.baseEditor.changed(\score);
+		    }
+		});
 	}
+
+	remove {
+        [currentScoreEditorController, scoreController, usessionMouseEventsManager].do(_.remove)
+    }
 
 	update {
 	    scoreView.refresh;
@@ -88,7 +86,7 @@ UScoreView {
     selectedEvents{ ^usessionMouseEventsManager.selectedEvents }
     selectedEventsOrAll { ^usessionMouseEventsManager.selectedEventsOrAll }
 
-    editSelectedEvents{
+    editSelected{
         var event, events = this.selectedEvents;
         switch(events.size)
             {0}{}
@@ -104,7 +102,7 @@ UScoreView {
 
     }
 
-	deleteSelectedEvents{
+	deleteSelected{
 	    ^this.currentEditor.deleteEvents(this.selectedEvents)
 	}
 
@@ -150,15 +148,26 @@ UScoreView {
         this.update;
     }
 
+    openSelectedSubScoreInNewWindow{
+        this.selectedEvents !? { |x|
+            var y = x.at(0);
+            if(y.isFolder) {
+                UScoreEditorGUI(UScoreEditor(y))
+            }
+        }
 
-     //call to initialize and draw view. This is needed to be able to pass an instance of this class to the topbar object.
+    }
+
+
+     // call to initialize and draw view. this mean the views are only actually drawn when this method is called after creating this instance.
+     // This is needed to be able to pass an instance of this class to the topbar object.
     makeView{
         mainComposite = CompositeView(parent,bounds).resize_(5);
         this.makeScoreView
     }
 
      remake{
-        scoreView.remove;
+
         if(scoreListView.notNil){
             scoreListView.remove;
             scoreListView = nil
@@ -175,14 +184,14 @@ UScoreView {
         scoreEditorsList = scoreEditorsList.add(UScoreEditor(score));
         this.addCurrentScoreControllers;
         this.remake;
-        this.changed(\scoreChanged);
+        this.changed(\activeScoreChanged);
      }
 
      goToHigherScore{ |i|
         scoreList = scoreList[..i];
         scoreEditorsList = scoreEditorsList[..i];
         this.addCurrentScoreControllers;
-        this.changed(\scoreChanged);
+        this.changed(\activeScoreChanged);
         fork{ { this.remake; }.defer }
      }
 
@@ -200,7 +209,17 @@ UScoreView {
 			    .action_({
                     this.goToHigherScore(i);
 			    })
-            }
+        };
+        SmoothButton(scoreListView,16@16)
+                .states_([[\up, Color.black, Color.clear]])
+                .font_( font )
+			    .border_(1).background_(Color.grey(0.8))
+			    .radius_(5)
+			    .canFocus_(false)
+			    .action_({
+                    UScoreEditorGUI( UScoreEditor( this.currentScore ) )
+			    })
+
      }
 
      makeScoreView{
@@ -210,6 +229,13 @@ UScoreView {
         }  {
             mainComposite.bounds.copy.moveTo(0,0)
         };
+
+        if(scoreView.notNil) {
+            scoreView.view.visible_(false);
+            scoreView.view.focus(false);
+            scoreView.remove;
+        };
+
         numTracks = ((scoreEditor.score.events.collect( _.track ).maxItem ? 14) + 2).max(16);
 
         scoreView = ScaledUserViewContainer(mainComposite,
@@ -255,7 +281,7 @@ UScoreView {
 			} )
 			.keyDownAction_( { |v, a,b,c|
 				if( c == 127 ) {
-					this.deleteSelectedEvents
+					this.deleteSelected
 				}
 			})
 			.beforeDrawFunc_( {

@@ -1,13 +1,13 @@
 UScoreEditorGuiMouseEventsManager {
 	classvar minimumMov = 3;
 	var <scoreView;
-	var <scoreEditor, <eventViews, <scoreEditorGUI, <>state = \nothing;
+	var <score, <scoreEditor, <eventViews, <scoreEditorGUI, <>state = \nothing;
 	var <mouseMoved = false, <mouseDownPos, <unscaledMouseDownPos, <clickCount;
 	var <selectionRect, theEventView;
 	var <xLimit, <yLimit;
 	var <isCopying = false, copyed = false;
 	var <>mode = \all;
-	var scoreEditorController;
+	var scoreController;
 
 	//state is \nothing, \moving, \resizingFront, \resizingBack, \selecting, \fadeIn, \fadeOut;
 	//mode is \all, \move, \resize, \fades
@@ -33,17 +33,18 @@ UScoreEditorGuiMouseEventsManager {
 	init {
 	    var maxWidth = scoreView.scoreView.fromBounds.width;
         scoreEditor = scoreView.currentEditor;
+        score = scoreView.currentScore;
         this.makeEventViews(maxWidth);
-	    scoreEditorController = SimpleController( scoreEditor );
+        scoreController = SimpleController( score );
 
-		scoreEditorController.put(\score, {
+		scoreController.put(\numEventsChanged, {
 		    //"rebuilding views".postln;
 		    this.makeEventViews(maxWidth)
 		});
 	}
 
 	remove{
-	    scoreEditorController.remove;
+	    scoreController.remove;
 	}
 
 	makeEventViews{ |maxWidth|
@@ -76,7 +77,7 @@ UScoreEditorGuiMouseEventsManager {
 	    if(v.size > 0){
 	        ^v.collect( _.event )
 	    } {
-	        v = scoreEditor.score.events;
+	        v = score.events;
 	        if(v.size > 0) {
 	            ^v
 	        } {
@@ -153,7 +154,7 @@ UScoreEditorGuiMouseEventsManager {
 							selectionRect = Rect.fromPoints(mousePos,mousePos);
 							if(clickCount == 2) {
 							    if( scoreView.currentScore.isStopped ) {
-                                    scoreEditor.score.pos = mouseDownPos.x;
+                                    score.pos = mouseDownPos.x;
                                 }
                             };
 						}
@@ -227,10 +228,10 @@ UScoreEditorGuiMouseEventsManager {
 				
 				eventViews.do{ |ev| ev.selected_(false).clearState };
 
-                scoreEditor.score.events = scoreEditor.score.events ++ newEventViews.collect( _.event );
+                score.events = score.events ++ newEventViews.collect( _.event );
                 eventViews = eventViews ++ newEventViews;
 
-				//("scoreEvents "++scoreEditor.score.events.size).postln;
+				//("scoreEvents "++score.events.size).postln;
 				//("selected events"++this.selectedEventViews).postln;
 				copyed = true;				
 			};
@@ -313,7 +314,7 @@ UScoreEditorGuiMouseEventsManager {
 
         //score was changed, warn others !
         if( (mouseMoved == true) && [\nothing, \selecting].includes(state).not){
-            scoreEditor.changed(\score);
+            score.changed(\something);
 		};
 
 		//go back to start state

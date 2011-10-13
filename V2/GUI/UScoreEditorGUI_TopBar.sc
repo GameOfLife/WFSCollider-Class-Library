@@ -1,7 +1,7 @@
 UScoreEditorGui_TopBar {
 
     var <>scoreView;
-    var <header, <>views, <>scoreEditorController;
+    var <header, <>views, <scoreEditorController, <scoreController;
 
     *new{ |parent, bounds, scoreView|
         ^super.newCopyArgs(scoreView).init(parent, bounds)
@@ -16,6 +16,9 @@ UScoreEditorGui_TopBar {
         if(scoreEditorController.notNil) {
                 scoreEditorController.remove;
         };
+        if( scoreController.notNil ) {
+	        scoreController.remove;
+	    };
         header.remove;
     }
 
@@ -27,12 +30,7 @@ UScoreEditorGui_TopBar {
         if(scoreEditorController.notNil) {
                 scoreEditorController.remove;
         };
-        scoreEditorController = SimpleController( scoreView.scoreEditorsList[0] );
-
-		scoreEditorController.put(\score, {
-		    views[\undo].enabled_(true);
-		    views[\redo].enabled_(false);
-		});
+        scoreEditorController = SimpleController( scoreView.currentEditor );
 
 		scoreEditorController.put(\undo, {
 
@@ -53,6 +51,16 @@ UScoreEditorGui_TopBar {
                 views[\redo].enabled_(false)
             }
         });
+
+        if( scoreController.notNil ) {
+	        scoreController.remove;
+	    };
+        scoreController = SimpleController( scoreView.currentScore );
+
+        scoreController.put(\something, {
+		    views[\undo].enabled_(true);
+		    views[\redo].enabled_(false);
+		});
 
     }
 
@@ -87,7 +95,7 @@ UScoreEditorGui_TopBar {
 			.canFocus_(false)
 			.border_(1).background_(Color.grey(0.8))
 			.action_({ |b|
-				scoreView.editSelectedEvents;
+				scoreView.editSelected;
 			});
 
 		header.decorator.shift(10);
@@ -189,6 +197,7 @@ UScoreEditorGui_TopBar {
 
 		header.decorator.shift(10);
 
+		/* No mixer yet...
 		SmoothButton( header, 40@size  )
 			.states_( [[ "mixer", Color.black, Color.clear ]] )
 			.canFocus_(false)
@@ -198,6 +207,7 @@ UScoreEditorGui_TopBar {
 				// UMixer doesn't exist yet
 				//UMixer(this.selectedEventsOrAll,List.new);
 			});
+        */
 
 		header.decorator.shift(100);
 

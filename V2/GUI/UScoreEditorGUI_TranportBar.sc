@@ -9,7 +9,7 @@ UScoreEditorGui_TransportBar {
     init{ |parent, bounds|
         this.makeGui(parent, bounds);
         scoreViewController = SimpleController( scoreView );
-        scoreViewController.put(\scoreChanged, {
+        scoreViewController.put(\activeScoreChanged, {
 		    this.addControllers;
 		});
         this.addControllers;
@@ -73,6 +73,10 @@ UScoreEditorGui_TransportBar {
 		}
 
 
+    }
+
+    remove {
+        [scoreController,scoreViewController].do(_.remove)
     }
 
     makeGui{ |parent, bounds|

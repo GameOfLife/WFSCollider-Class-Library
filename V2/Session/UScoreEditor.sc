@@ -38,20 +38,21 @@ UScoreEditor {
 	    this.changed(\preparingToChangeScore);
 	    this.storeUndoState;
 	    action.value;
-		this.changed(\score);
+		score.changed(\something);
 	}
 
 	//--COPY/PASTE--
 
 	*copy{ |events|
-	    clipboard = events.collect( _.deepCopy ).postln;
+	    clipboard = events.collect( _.deepCopy );
 	}
 
 	paste { |pos|
 	    var evsToPaste = clipboard.collect( _.deepCopy );
 	    var minTime = evsToPaste.collect(_.startTime).minItem;
         score.addEventsToEmptyRegion(evsToPaste.collect{ |ev| ev.startTime = ev.startTime - minTime + pos});
-        this.changed(\numEventsChanged);
+        score.changed(\numEventsChanged);
+        score.changed(\something);
 
     }
 
@@ -64,7 +65,7 @@ UScoreEditor {
 
 		dirty = true;
 		redoStates = List.new;
-		undoStates.add( score.duplicate );
+		undoStates.add( score.duplicate.events );
 		if(undoStates.size > maxUndoStates) {
 			undoStates.removeAt(0);
 		}
@@ -74,10 +75,11 @@ UScoreEditor {
 	undo {
 
 		if(undoStates.size > 0) {
-			redoStates.add(score);
-			score = undoStates.pop;
+			redoStates.add(score.events);
+			score.events = undoStates.pop;
 		};
-		this.changed(\score);
+		score.changed(\numEventsChanged);
+		score.changed(\something);
 		this.changed(\undo);
 
 	}
@@ -85,10 +87,11 @@ UScoreEditor {
 	redo {
 
 		if( redoStates.size > 0 ) {
-			undoStates.add(score);
-			score = redoStates.pop;
+			undoStates.add(score.events);
+			score.events = redoStates.pop;
 		};
-		this.changed(\score);
+		score.changed(\numEventsChanged);
+		score.changed(\something);
 		this.changed(\redo);
 
 	}
@@ -108,6 +111,7 @@ UScoreEditor {
 		score.filePath = path;
 	}
 
+    /* Not needed with copy/paste ?
     //--SCORE IMPORTING--
 
 	importScorePlaceAtPos { |score, pos = 0|
@@ -116,7 +120,8 @@ UScoreEditor {
 	        event.startTime = pos + event.startTime;
 		});
 		    score.cleanOverlaps;
-		})
+		});
+		score.changed(\numEventsChanged);
 	}
 
 	importScorePlaceAtStart { |score|
@@ -131,33 +136,38 @@ UScoreEditor {
 	    this.changeScore({
 	        score <| score;
 		    score.cleanOverlaps;
-		})
+		});
+		score.changed(\numEventsChanged);
 	}
-
+    */
     //--EVENT MANAGEMENT--
 
     <| { |events|
         this.changeScore({
             score <| events;
-        })
+        });
+        score.changed(\numEventsChanged);
     }
 
     addEvent{
         this.changeScore({
             score.addEventToEmptyTrack( UChain(\sine,\output).duration_(10).fadeIn_(1).fadeOut_(1).startTime_(score.pos) )
-        })
+        });
+        score.changed(\numEventsChanged);
     }
 
 	duplicateEvents{ |events|
 		this.changeScore({
 	        events.do({ |ev| score.addEventToCompletelyEmptyTrack( ev.duplicate ) } );
-		})
+		});
+		score.changed(\numEventsChanged);
 	}
 
 	deleteEvents { |events|
 		this.changeScore({
 		    events.do( score.events.remove(_) );
-		})
+		});
+		score.changed(\numEventsChanged);
 	}
 
 	muteEvents { |events|
@@ -216,6 +226,7 @@ UScoreEditor {
                 );
             })
 		};
+		score.changed(\numEventsChanged);
 	}
 
 	unpackSelectedFolders{ |events|
@@ -240,7 +251,8 @@ UScoreEditor {
                         score.addEventToEmptyTrack( evt );
                 });
 
-			})
+			});
+			score.changed(\numEventsChanged);
 		}
 	}
 
@@ -264,20 +276,21 @@ UScoreEditor {
 		var frontEvents, backEvents;
 
 		this.changeScore({
-		frontEvents = events.select(_.isFolder.not).select({ |event|
-			var dur = event.dur;
-			var start = event.startTime;
- 			(start < pos) && ((start + dur) > pos)
+            frontEvents = events.select(_.isFolder.not).select({ |event|
+                var dur = event.dur;
+                var start = event.startTime;
+                (start < pos) && ((start + dur) > pos)
+            });
+            backEvents = frontEvents.collect(_.duplicate);
+            score.events = score.events ++ backEvents;
+            backEvents.do{ |ev|
+                    ev.cutStart(pos, false, true)
+                };
+            frontEvents.do{ |ev|
+                    ev.cutEnd(pos, true)
+                };
 		});
-		backEvents = frontEvents.collect(_.duplicate);
-		score.events = score.events ++ backEvents;
-		backEvents.do{ |ev|
-                ev.cutStart(pos, false, true)
-            };
-		frontEvents.do{ |ev|
-                ev.cutEnd(pos, true)
-            };
-		})
+		score.changed(\numEventsChanged);
 	}
 
     //perform editing operations at the current transport position

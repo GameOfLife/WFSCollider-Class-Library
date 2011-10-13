@@ -12,7 +12,7 @@ UScoreEditorGUI {
 
 	var <scoreEditor;
 
-	var <>scoreView, <>window;
+	var <>scoreView, <>window, <tranportBar, topBar;
 	var <usessionMouseEventsManager;
 
 	//*initClass { UI.registerForShutdown({ scoreEditor.askForSave = false }); }
@@ -49,6 +49,8 @@ UScoreEditorGUI {
 
 	score { ^scoreEditor.score }
 	editor { ^scoreEditor }
+	currentScore { ^scoreEditor.currentScore }
+	currentEditor { ^scoreEditor.currentEditor }
 	selectedEvents{ ^scoreView.selectedEvents }
 
 
@@ -61,7 +63,10 @@ UScoreEditorGUI {
         window.onClose_({
             if(UScoreEditorGUI.current == this) {
                 UScoreEditorGUI.current = nil
-            }
+            };
+            topBar.remove;
+            scoreView.remove;
+            tranportBar.remove;
         });
         //for 3.5 this has to be changed.
         window.drawHook_({ current = this });
@@ -80,7 +85,7 @@ UScoreEditorGUI {
         scoreView = UScoreView(view, centerBounds, scoreEditor );
         
         //TOP
-        UScoreEditorGui_TopBar(view,Rect(0,0, bounds.width-(2*margin), topBarH ),scoreView);
+        topBar = UScoreEditorGui_TopBar(view,Rect(0,0, bounds.width-(2*margin), topBarH ),scoreView);
         view.decorator.nextLine;
         
         //CENTER
@@ -88,7 +93,7 @@ UScoreEditorGUI {
         view.decorator.nextLine;
         
         //BOTTOM
-        UScoreEditorGui_TransportBar(view,  Rect(0,0, bounds.width - (2*margin), tranBarH ), scoreView);
+        tranportBar = UScoreEditorGui_TransportBar(view,  Rect(0,0, bounds.width - (2*margin), tranBarH ), scoreView);
 	}
 }	
 
