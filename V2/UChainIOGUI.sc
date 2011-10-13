@@ -27,9 +27,43 @@ UChainIOGUI : UChainGUI {
 		}).sum + (4 * (14 + gap.y));
 	}
 	
+	makeUnitHeader { |units, margin, gap|
+		var comp, header,params;
+		
+		comp = CompositeView( composite, (composite.bounds.width - (margin.x * 2))@16 )
+			.resize_(2);
+		
+		header = StaticText( comp, comp.bounds.moveTo(0,0) )
+				.applySkin( RoundView.skin )
+				.string_( " units" )
+				.align_( \left )
+				.resize_(2);
+		
+				
+		params = SmoothButton( comp, Rect( comp.bounds.right - (60+2), 1, 60, 12 ) )
+			.label_( "params" )
+			.border_( 1 )
+			.radius_( 2 )
+			.action_({
+				var parent;
+				parent = composite.parent;
+				{
+					composite.remove;
+					UChainGUI( parent, originalBounds, chain );
+				}.defer(0.01);
+			}).resize_(3);
+						
+		CompositeView( comp, Rect( 0, 14, (composite.bounds.width - (margin.x * 2)), 2 ) )
+			.background_( Color.black.alpha_(0.25) )
+			.resize_(2)
+
+	}
+	
 	makeUnitViews { |units, margin, gap|
 		var unitInitFunc;
 		var labelWidth;
+		
+		this.makeUnitHeader( units, margin, gap );
 		
 		labelWidth = 80;
 		
@@ -42,13 +76,14 @@ UChainIOGUI : UChainGUI {
 		};
 		
 		unitColors = units.collect({ |item, i|
-			Color.hsv( i.linlin( 0, units.size, 0, 1 ), 0.1, 0.85 );
+			Color.hsv( i.linlin( 0, units.size, 0, 1 ), 0.1, 0.9 );
 		});
 		
 		^units.collect({ |unit, i|
 			var header, comp, views, params;
 			
-			comp = CompositeView( composite, (composite.bounds.width - (margin.x * 2))@14 );
+			comp = CompositeView( composite, (composite.bounds.width - (margin.x * 2))@14 )
+				.resize_(2);
 			
 			header = StaticText( comp, comp.bounds.moveTo(0,0) )
 				.applySkin( RoundView.skin )
@@ -59,21 +94,6 @@ UChainIOGUI : UChainGUI {
 					(RoundView.skin.tryPerform( \at, \font ) ?? 
 						{ Font( Font.defaultSansFace, 12) }).boldVariant 
 				);
-			if( i == 0 ) {		
-				params = SmoothButton( comp, Rect( comp.bounds.right - (60+2), 1, 60, 12 ) )
-					.label_( "params" )
-					.border_( 1 )
-					.radius_( 2 )
-					.action_({
-						var parent;
-						parent = composite.parent;
-						{
-							composite.remove;
-							UChainGUI( parent, originalBounds, chain );
-						}.defer(0.01);
-	
-					}).resize_(3);
-			};
 			
 			views = this.makeUnitView( unit, i, labelWidth );
 			
@@ -137,8 +157,7 @@ UChainIOGUI : UChainGUI {
 						.align_( \right )
 						.string_( "% %".format( 
 							if( ii == 0 ) { "% %".format( rate, mode ) } { "" }, item ) 
-						)
-						.resize_(2);
+						);
 						
 					nb = SmoothNumberBox( composite, 20@14 )
 						.clipLo_( 0 )
@@ -146,8 +165,9 @@ UChainIOGUI : UChainGUI {
 						.action_( { |nb|
 							unit.perform( setter, ii, nb.value ); 					} );
 						
-					pu = PopUpMenu( composite, 180@14 )
+					pu = PopUpMenu( composite, (composite.bounds.width - labelWidth - 28)@14 )
 						.applySkin( RoundView.skin )
+						.resize_(2)
 						.action_({ |pu| 
 							unit.perform( setter, ii, pu.value );
 						});

@@ -288,9 +288,55 @@ UChainGUI {
 		composite.bounds = composite.bounds.height_( composite.children.last.bounds.bottom );
 	}
 	
+	makeUnitHeader { |units, margin, gap|
+		var comp, header, min, io, defs;
+		
+		comp = CompositeView( composite, (composite.bounds.width - (margin.x * 2))@16 )
+			.resize_(2);
+		
+		header = StaticText( comp, comp.bounds.moveTo(0,0) )
+				.applySkin( RoundView.skin )
+				.string_( " units" )
+				.align_( \left )
+				.resize_(2);
+		
+		io = SmoothButton( comp, Rect( comp.bounds.right - (36), 1, 36, 12 ) )
+			.label_( "i/o" )
+			.border_( 1 )
+			.radius_( 2 )
+			.action_({
+				var parent;
+				parent = composite.parent;
+				{
+					composite.remove;
+					UChainIOGUI( parent, originalBounds, chain );
+				}.defer(0.01);
+
+			}).resize_(3);
+				
+		defs = SmoothButton( comp, 
+				Rect( comp.bounds.right - (36 + 4 + 36), 1, 36, 12 ) )
+			.label_( "defs" )
+			.border_( 1 )
+			.radius_( 2 )
+			.action_({
+				UdefListView();
+			}).resize_(3);
+			
+		CompositeView( comp, Rect( 0, 14, (composite.bounds.width - (margin.x * 2)), 2 ) )
+			.background_( Color.black.alpha_(0.25) )
+			.resize_(2);
+
+	}
+	
 	makeUnitViews { |units, margin, gap|
 		
 		var unitInitFunc;
+		var comp, header, uview;
+		var addLast;
+		var ug;
+		
+		this.makeUnitHeader( units, margin, gap );
 		
 		unitInitFunc = { |unit, what ...args|
 			if( what === \init ) { // close all views and create new
@@ -298,10 +344,49 @@ UChainGUI {
 			};
 		};
 		
-		^units.collect({ |unit, i|
+		if( units.size == 0 ) {
+			comp = CompositeView( composite, (composite.bounds.width - (margin.x * 2))@14 )
+				.resize_(2);
+			
+			header = StaticText( comp, comp.bounds.moveTo(0,0) )
+				.applySkin( RoundView.skin )
+				.string_( " empty: drag unit or Udef here" )
+				.background_( Color.yellow.alpha_(0.25) )
+				.resize_(2)
+				.font_( 
+					(RoundView.skin.tryPerform( \at, \font ) ?? 
+						{ Font( Font.defaultSansFace, 12) }).boldVariant 
+				);
+				
+			uview = UserView( comp, comp.bounds.moveTo(0,0) );
+				
+			uview.canReceiveDragHandler_({ |sink|
+				var drg;
+				drg = View.currentDrag;
+				case { drg.isKindOf( Udef ) } 
+					{ true }
+					{ [ Symbol, String ].includes( drg.class ) }
+					{ Udef.all.keys.includes( drg.asSymbol ) }
+					{ drg.isKindOf( U ) }
+					{ true }
+					{ false }
+			})
+			.receiveDragHandler_({ |sink, x, y|
+					case { View.currentDrag.isKindOf( U ) } {
+						chain.units = [ View.currentDrag.deepCopy ];
+					} { View.currentDrag.isKindOf( Udef ) } {
+						chain.units = [ U( View.currentDrag ) ];
+					} {   [ Symbol, String ].includes( View.currentDrag.class )  } {
+						chain.units = [ U( View.currentDrag.asSymbol ) ];
+					};
+			})
+		};
+		
+		ug = units.collect({ |unit, i|
 			var header, comp, uview, plus, min, defs, io;
 			
-			comp = CompositeView( composite, (composite.bounds.width - (margin.x * 2))@14 );
+			comp = CompositeView( composite, (composite.bounds.width - (margin.x * 2))@14 )
+				.resize_(2);
 			
 			header = StaticText( comp, comp.bounds.moveTo(0,0) )
 				.applySkin( RoundView.skin )
@@ -351,38 +436,16 @@ UChainGUI {
 					unit;
 				});
 				
-				if( i != 0 ) {	
-					min = SmoothButton( comp, 
+				min = SmoothButton( comp, 
 							Rect( comp.bounds.right - (12 + 4 + 12), 1, 12, 12 ) )
 						.label_( '-' )
 						.border_( 1 )
 						.action_({
 							chain.units = chain.units.select(_ != unit);
 						}).resize_(3);
-				} {
-					io = SmoothButton( comp, 
-							Rect( comp.bounds.right - (36 + 4 + 12), 1, 36, 12 ) )
-						.label_( "i/o" )
-						.border_( 1 )
-						.radius_( 2 )
-						.action_({
-							var parent;
-							parent = composite.parent;
-							{
-								composite.remove;
-								UChainIOGUI( parent, originalBounds, chain );
-							}.defer(0.01);
-
-						}).resize_(3);
-						
-					defs = SmoothButton( comp, 
-							Rect( comp.bounds.right - (36 + 4 + 36 + 4 + 12), 1, 36, 12 ) )
-						.label_( "defs" )
-						.border_( 1 )
-						.radius_( 2 )
-						.action_({
-							UdefListView();
-						}).resize_(3);
+				
+				if( units.size == 1 ) {
+					min.enabled = false;
 				};
 				
 				plus = SmoothButton( comp, 
@@ -399,6 +462,34 @@ UChainGUI {
 			header.onClose_({ unit.removeDependant( unitInitFunc ) });
 			unit.gui( composite, composite.bounds  );
 		});
+		
+		if( units.size > 0 ) {
+			addLast = UserView( composite, (composite.bounds.width - (margin.x * 2))@14 )
+				.resize_(2);
+					
+			addLast.canReceiveDragHandler_({ |sink|
+					var drg;
+					drg = View.currentDrag;
+					case { drg.isKindOf( Udef ) } 
+						{ true }
+						{ [ Symbol, String ].includes( drg.class ) }
+						{ Udef.all.keys.includes( drg.asSymbol ) }
+						{ drg.isKindOf( U ) }
+						{ true }
+						{ false }
+				})
+				.receiveDragHandler_({ |sink, x, y|
+						case { View.currentDrag.isKindOf( U ) } {
+							chain.units = chain.units ++ [ View.currentDrag.deepCopy ];
+						} { View.currentDrag.isKindOf( Udef ) } {
+							chain.units = chain.units ++ [ U( View.currentDrag ) ];
+						} {   [ Symbol, String ].includes( View.currentDrag.class )  } {
+							chain.units = chain.units ++ [ U( View.currentDrag.asSymbol ) ];
+						};
+				});
+		};
+		^ug;
+
 	}
 	
 	remove {
