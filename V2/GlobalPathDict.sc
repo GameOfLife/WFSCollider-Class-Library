@@ -31,7 +31,7 @@ GlobalPathDict {
 		};
 	}
 	
-	*makePath { |path|
+	*formatPath { |path|
 		var stPath, array = [], key, i = 0;
 		
 		dict.keysValuesDo({ |key, value|
@@ -42,7 +42,7 @@ GlobalPathDict {
 			a[0].size <= b[0].size;
 		}).reverse;
 		
-		stPath = path.standardizePath.getPath;
+		stPath = this.getPath( path );
 		
 		while { key.isNil && (i < array.size) } {
 			if( stPath.find( array[i][0] ) == 0 ) {
@@ -61,17 +61,29 @@ GlobalPathDict {
 }
 
 + String {
-	getPath {
+	
+	getGPath {
 		^GlobalPathDict.getPath( this );
 	}
 	
-	setGlobalPath { |key|
+	formatGPath {
+		^GlobalPathDict.formatPath( this );
+	}
+	
+	putGPath { |key = \default|
 		GlobalPathDict.put( key, this );
 	}
+	
 }
 
 + Nil {
-	setGlobalPath { |key|
-		GlobalPathDict.put( key, nil );
+	
+	putGPath { |key = \default|
+		GlobalPathDict.put( key, this );
 	}
+	
+	getGPath { ^this }
+	
+	formatGPath { ^this }
+
 }

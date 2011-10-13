@@ -274,7 +274,7 @@ AbstractSndFile : AbstractRichBuffer {
 		var test = true;
 		if( soundfile.isNil or: { soundfile.isOpen.not } ) {
 			soundfile = soundfile ?? { SoundFile.new }; 
-			test = soundfile.openRead( path.asPathFromServer.standardizePath );
+			test = soundfile.openRead( path.getGPath.asPathFromServer );
 			soundfile.close; // close if it wasn't open
 		};
 		if( test ) {	
@@ -288,7 +288,7 @@ AbstractSndFile : AbstractRichBuffer {
 	}
 	
 	asSoundFile { // convert to normal soundfile
-		^SoundFile( path.asPathFromServer )
+		^SoundFile( path.getGPath.asPathFromServer )
 			//.numFrames_( numFrames ? 0 )
 			.instVarPut( \numFrames,  numFrames ? 0 )
 			.numChannels_( numChannels ? 1 )
@@ -298,7 +298,7 @@ AbstractSndFile : AbstractRichBuffer {
 	// mvc aware setters
 	
 	path_ { |new, update = false|
-		path = new ? path;
+		path = (new ? path).formatGPath;
 		this.changed( \path, path );
 		if( update == true ) { this.prReadFromFile; };
 	}
@@ -515,10 +515,10 @@ BufSndFile : AbstractSndFile {
 		};
 		
 		if( useChannels.notNil ) {
-			buf = Buffer.readChannel( server, path.standardizePath,
+			buf = Buffer.readChannel( server, path.getGPath,
 					startFrame + addStartFrame, localUsedFrames, useChannels, action, bufnum );
 		} {
-			buf = Buffer.read( server, path.standardizePath,
+			buf = Buffer.read( server, path.getGPath,
 					startFrame + addStartFrame, localUsedFrames, action, bufnum );
 		};
 		this.addBuffer( buf );
@@ -576,7 +576,7 @@ DiskSndFile : AbstractSndFile {
 		if( test ) {
 			if( startPos != 0 ) { addStartFrame = this.secondsToFrames( startPos ) };
 			buf = Buffer.alloc(server, diskBufferSize, numChannels, { arg buffer;
-				buffer.readMsg(path, startFrame + addStartFrame, 
+				buffer.readMsg(path.getGPath, startFrame + addStartFrame, 
 					diskBufferSize, 0, true, {|buf|
 						["/b_query", buf.bufnum]
 					}

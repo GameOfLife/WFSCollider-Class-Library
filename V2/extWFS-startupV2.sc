@@ -5,6 +5,8 @@
 		
 		WFSSpeakerConf.rect( 48, 48, 5, 5 ).makeDefault;
 		
+		GlobalPathDict.put( \wfs, "/WFSSoundFiles" );
+		
 		if( File.exists( "/Library/Application Support/WFSCollider/WFSCollider_configuration.txt" ) ) {
 			file = File("/Library/Application Support/WFSCollider/WFSCollider_configuration.txt","r");
 			dict = file.readAllString.interpret;
