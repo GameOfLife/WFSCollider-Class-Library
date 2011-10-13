@@ -62,11 +62,11 @@ WFSMenuBar {
 		}).setShortCut("A",true);
 
 		SCMenuItem.new(events, "Edit").action_({
-			UScoreEditorGUI.current !? { |x| x.scoreView.editSelectedEvents }
+			UScoreEditorGUI.current !? { |x| x.scoreView.editSelected }
 		}).setShortCut("i",true);
 
 		SCMenuItem.new(events, "Delete").action_({
-			UScoreEditorGUI.current !? { |x| x.scoreView.deleteSelectedEvents }
+			UScoreEditorGUI.current !? { |x| x.scoreView.deleteSelected }
 		}).setShortCut("r",true);
 
 		SCMenuSeparator.new(events);
@@ -76,7 +76,7 @@ WFSMenuBar {
 		}).setShortCut("C",true);
 
 		SCMenuItem.new(events, "Paste").action_({
-			UScoreEditorGUI.current !? { |x| x.editor.pasteAtCurrentPos }
+			UScoreEditorGUI.current !? { |x| x.scoreView.currentEditor.pasteAtCurrentPos }
 		}).setShortCut("P",true);
 		
 		SCMenuSeparator.new(events);
