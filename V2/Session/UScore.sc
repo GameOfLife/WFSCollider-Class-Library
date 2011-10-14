@@ -201,8 +201,12 @@ UScore : UEvent {
 
 	//SCORE PLAYING
 
-    eventsThatWillPlay { |startPos|
-        ^events.select({ |evt| (evt.eventEndTime >= startPos) && evt.disabled.not })
+    eventsThatWillPlay { |startPos, startEventsActiveAtStartPos = true|
+        ^if(startEventsActiveAtStartPos){
+            events.select({ |evt| (evt.eventEndTime >= startPos) && evt.disabled.not })
+        } {
+            events.select({ |evt| (evt.startTime >= startPos) && evt.disabled.not })
+        }
 
     }
 
@@ -211,10 +215,10 @@ UScore : UEvent {
 	        .sort({ |a,b| a.startTime <= b.startTime })
 	}
 
-    prepStartRelEvents{ |startPos, assumePrepared = false|
+    prepStartRelEvents{ |startPos, assumePrepared = false, startEventsActiveAtStartPos = true|
         var evs, prepareEvents, startEvents, releaseEvents;
 
-        evs = this.eventsThatWillPlay(startPos).sort;
+        evs = this.eventsThatWillPlay(startPos,startEventsActiveAtStartPos).sort;
 		prepareEvents = if(assumePrepared){evs.select({ |item| item.prepareTime >= startPos })}{evs};
 		startEvents = evs.sort({ |a,b| a.startTime <= b.startTime });
 		releaseEvents = events
@@ -278,38 +282,44 @@ UScore : UEvent {
         ^this.prStart(targets, startPos, false, true, updatePosition)
     }
 
-	prStart { |targets, startPos = 0, assumePrepared = false, callStopFirst = true, updatePosition = true|
+	prStart { |targets, startPos = 0, assumePrepared = false, callStopFirst = true, updatePosition = true, startEventsActiveAtStartPos = true|
 		var prepStartRelEvents, playStatus;
 		if( callStopFirst ) { this.stop(nil,false); }; // in case it was still running
 
-		prepStartRelEvents = this.prepStartRelEvents(startPos, assumePrepared);
+		prepStartRelEvents = this.prepStartRelEvents(startPos, assumePrepared, startEventsActiveAtStartPos);
 	    playStatus = prepStartRelEvents.flat.size > 0;
 
         if( playStatus ){
             this.playState_(\playing);
-            this.prStartTasks( targets, startPos, prepStartRelEvents, updatePosition );
+            this.prStartTasks( targets, startPos, prepStartRelEvents, updatePosition, startEventsActiveAtStartPos );
         };
         ^playStatus
 	}
 	
-	prStartTasks { |targets, startPos = 0, prepStartRelEvents, updatePosition = true|
+	prStartTasks { |targets, startPos = 0, prepStartRelEvents, updatePosition = true, startEventsActiveAtStartPos = true|
         var prepareEvents, startEvents, releaseEvents, preparePos, allEvents, deltaToStart;
         var dur;
         var actions;
-
-        actions = [
-            { |event,startOffset| event.prepare( targets, startOffset ) },
-            { |event, startOffset| event.start(targets, startOffset) },
-            { |event| event.release }
-        ];
-
+        if(startEventsActiveAtStartPos) {
+            actions = [
+                { |event,startOffset| event.prepare( targets, startOffset ) },
+                { |event, startOffset| event.start(targets, startOffset) },
+                { |event| event.release }
+            ];
+        } {
+            actions = [
+                { |event| event.prepare( targets ) },
+                { |event| event.start(targets) },
+                { |event| event.release }
+            ];
+        };
         #prepareEvents, startEvents, releaseEvents = prepStartRelEvents;
         //("prepareEvents :"++prepareEvents).postln;
 		//("startEvents :"++startEvents).postln;
 		//("releaseEvents :"++releaseEvents).postln;
 
 		allEvents = prepareEvents.collect{ |x| [x.prepareTime, 0, x]}
-         ++ startEvents.collect{ |x| [x.startTime.max(startPos), 1, x]}
+         ++ startEvents.collect{ |x| [ if(startEventsActiveAtStartPos) {x.startTime.max(startPos)}{ x.startTime }, 1, x]}
          ++ releaseEvents.collect{ |x| [x.eventEndTime, 2, x]};
 
         //if the time for the event to happen is different order them as usual
@@ -413,7 +423,7 @@ UScore : UEvent {
 	
 	resume { |targets|
 	    if(playState == \paused){
-		    this.prStart( targets, pausedAt, true, false );
+		    this.prStart( targets, pausedAt, true, false, true, false );
 		    events.select(_.isFolder).do(_.resume);
 		    pausedAt = nil;
 		}
