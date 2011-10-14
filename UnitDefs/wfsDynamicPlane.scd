@@ -36,9 +36,7 @@ FreeUdef( \wfsDynamicPlane, [
 	.envPut( \set_wfsp, [ 
 		\pointFromBus, \point, \pointLag, \dbRollOff, 
 		\maxAmpRadius, \crossfadeLag, \dontPause,
-		\u_i_ar_0_bus, \u_o_ar_0_bus, 
-		\u_i_kr_0_bus, \u_i_kr_1_bus, 
-		\u_o_kr_0_bus, \u_o_kr_1_bus, 
+		\u_i_ar_0_bus, \u_i_kr_0_bus, \u_i_kr_1_bus, 
 		\u_doneAction, \u_gain, \u_gate,
 		\u_fadeIn, \u_fadeOut
 	] )
@@ -62,7 +60,7 @@ FreeUdef( \wfsDynamicPlane, [
 		
 		arrayGroup = Group(target, addAction: \addToTail);
 		
-		defName =  "wfsa_pd" ++ switch( unit.get( \quality ), \normal, \l_, \better, \c_, \l_ );		
+		defName =  "wfsa_pd" ++ switch( unit.get( \quality ), \good, \l_, \better, \c_, \l_ );		
 		// make the panner synths, but don't send yet
 		planeSynths = arrayConfs.collect({ |item| 
 			Synth.basicNew( defName ++ item.n, server ); 
@@ -113,7 +111,5 @@ FreeUdef( \wfsDynamicPlane, [
 	})
 	.addUEnv
 	.addUIO( UIn, \ar, 0, 1 )
-	.addUIO( UOut, \ar, 0, { Silent.ar } )
-	.addUIO( UIn, \kr, 0, 2 )
-	.addUIO( UOut, \kr, 0, [0,0] );
+	.addUIO( UIn, \kr, 0, 2 );
 );

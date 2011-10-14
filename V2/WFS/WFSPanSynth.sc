@@ -78,7 +78,7 @@ WFSArrayPanSynthDefs {
 				};
 			};
 			
-			input = UIn.ar(0, 1) * gain;
+			input = UIn.ar(0, 1) * gain * amp;
 			
 			if( type === \p ) {
 				panner = WFSArrayPanPlane( size, *arrayConf[1..] ).addDelay_( addDelay );
@@ -90,7 +90,7 @@ WFSArrayPanSynthDefs {
 					.focus_( switch( type, \f, { true }, \n, { false }, { nil } ) );
 			};
 			
-			Out.ar( outOffset, panner.ar( input, point, int, amp ) ); 
+			Out.ar( outOffset, panner.ar( input, point, int, 1 ) ); 
 			
 			
 		});
@@ -187,16 +187,27 @@ WFSPrePanSynthDefs {
 			var point = 0@0, pointFromBus = 0;
 			var dbRollOff = -6, limit = 2, latencyComp = 0, pointLag = 0;
 			var arrayConfs, cornerPoints, crossfadeLag = 0.2, pauseLag = 0.2;
+			var pauseSigs;
 			
 			// local variables
-			var input, panner, crossfader;
+			var input, output, panner, crossfader, cornerfades;
 			var normalLevels, normalShouldRun, focusShouldRun;
 			
-			pointFromBus = \pointFromBus.kr( pointFromBus );
-			point = (\point.kr( point.asArray ) * (1-pointFromBus)) + ( UIn.kr(0,2) * pointFromBus );
-			pointLag = \pointLag.kr( pointLag );
-			point = LPFLag.kr( point, pointLag );
-			UOut.kr( 0, point );
+			if( crossfadeMode != \n ) {	
+				
+				pointFromBus = \pointFromBus.kr( pointFromBus );
+				point = (\point.kr( point.asArray ) * (1-pointFromBus)) 
+					+ ( UIn.kr(0,2) * pointFromBus );
+				pointLag = \pointLag.kr( pointLag );
+				point = LPFLag.kr( point, pointLag );
+				
+				// pass the point on to the panners
+				ReplaceOut.kr( UIn.firstBusFor( \kr ) + \u_i_kr_0_bus.kr, point[0] );
+				ReplaceOut.kr( UIn.firstBusFor( \kr ) + \u_i_kr_1_bus.kr, point[1] );
+			} {
+				point = \point.kr( point.asArray );
+			};
+			
 			point = point.asPoint;
 			
 			if( crossfadeMode == \p ) { dbRollOff = 0 };
@@ -211,7 +222,9 @@ WFSPrePanSynthDefs {
 			
 			input = UIn.ar( 0, 1 );
 			
-			UOut.ar( 0, panner.ar( input, point, WFSLevelBus.kr ) * UEnv.kr( extraSilence: 0.2 ) );
+			output = panner.ar( input, point, WFSLevelBus.kr ) * UEnv.kr( extraSilence: 0.2 );
+			
+			ReplaceOut.ar( UIn.firstBusFor( \ar )+ \u_i_ar_0_bus.kr, output );
 			
 			// crossfading: manage the array panners
 			case { [ \d, \u ].includes(crossfadeMode) } { 
@@ -226,14 +239,36 @@ WFSPrePanSynthDefs {
 				
 				
 				crossfadeLag = \crossfadeLag.kr( crossfadeLag );
+				crossfadeLag = (1-Impulse.kr(0)) * crossfadeLag; // first value is not lagged
+				
 				pauseLag = \pauseLag.kr( pauseLag ); // extra time to wait before pause (not unpause)
 				
+				// this part has become a bit complex
+				// once we know if it sounds correctly it should be
+				// made less verbose
+				
 				crossfader = WFSCrossfader( point, arrayConfs, cornerPoints );
-							
-				normalShouldRun = Slew.kr( crossfader.arraysShouldRun( false ), 
-					1/crossfadeLag, 1/crossfadeLag );
-				focusShouldRun = Slew.kr( crossfader.arraysShouldRun( true ), 
-					1/crossfadeLag, 1/crossfadeLag );
+						
+				cornerfades = crossfader.cornerfades;
+				
+				focusShouldRun = crossfader.arraysShouldRun( true );
+				focusShouldRun = Slew.kr( focusShouldRun, *(1/crossfadeLag).dup ).sqrt;
+
+				normalShouldRun = crossfader.arraysShouldRun( false );
+				
+				// crossfadelag is variable for normal sources, depending on:
+				// - if it is in a corner (should have no lag there)
+				// - if it is or just came from the focused area (should have lag then)
+				
+				crossfadeLag = crossfadeLag * max( 
+					cornerfades >= 1, // only if really behind array
+					Slew.kr( crossfader.focused, inf, 1/crossfadeLag ) > 0
+				);
+				
+				// crossfadeLag = crossfadeLag.max( pauseLag );
+				
+				normalShouldRun = Slew.kr( normalShouldRun, *(1/crossfadeLag).dup ).sqrt;
+					
 				normalLevels = crossfader.cornerfades * normalShouldRun;
 				 
 				switch( crossfadeMode,
@@ -254,23 +289,24 @@ WFSPrePanSynthDefs {
 							focusLevelBuses = \focusLevelBuses.kr( -1.dup(numArrays) ).asCollection;
 							
 							// output levels to appropriate buses (replace existing)
-							normalLevelBuses.collect({ |bus, i|
+							normalLevelBuses.do({ |bus, i|
 								ReplaceOut.kr( bus, normalLevels[i] );
 							});
 							
-							focusLevelBuses.collect({ |bus, i|
+							focusLevelBuses.do({ |bus, i|
 								ReplaceOut.kr( bus, focusShouldRun[i] );
 							});
 							
 							// pause non-sounding panners
-							normalIDs.collect({ |id, i|
+							normalIDs.do({ |id, i|
 								var pause;
 								pause = (normalLevels[i] > 0);
 								pause = Slew.kr( pause, inf, 1/pauseLag ) > 0;
-								Pause.kr( pause.max(dontPause), id );
+								pause = pause.max(dontPause);
+								Pause.kr( pause, id );
 							});
 							
-							focusIDs.collect({ |id, i|
+							focusIDs.do({ |id, i|
 								var pause;
 								pause = (focusShouldRun[i] > 0);
 								pause = Slew.kr( pause, inf, 1/pauseLag ) > 0;

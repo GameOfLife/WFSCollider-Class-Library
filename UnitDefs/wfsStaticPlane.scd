@@ -39,7 +39,7 @@ FreeUdef( \wfsStaticPlane, [
 	.envPut( \init_wfsp, [ \latencyComp, \u_dur ] ) // controls only set at init
 	.envPut( \set_wfsp, [ // controls that can always be set
 		\point, \dbRollOff, \maxAmpRadius,
-		\u_i_ar_0_bus, \u_o_ar_0_bus, 
+		\u_i_ar_0_bus, 
 		\u_doneAction, \u_gain, \u_gate,
 		\u_fadeIn, \u_fadeOut
 	] )
@@ -113,6 +113,5 @@ FreeUdef( \wfsStaticPlane, [
 		};
 	})
 	.addUEnv
-	.addUIO( UIn, \ar, 0, 1 )
-	.addUIO( UOut, \ar, 0, { Silent.ar } );
+	.addUIO( UIn, \ar, 0, 1 );
 );
