@@ -282,7 +282,7 @@ UScore : UEvent {
 		var prepStartRelEvents, playStatus;
 		if( callStopFirst ) { this.stop(nil,false); }; // in case it was still running
 
-		prepStartRelEvents = this.eventsForPlay(startPos, assumePrepared);
+		prepStartRelEvents = this.prepStartRelEvents(startPos, assumePrepared);
 	    playStatus = prepStartRelEvents.flat.size > 0;
 
         if( playStatus ){
@@ -298,8 +298,8 @@ UScore : UEvent {
         var actions;
 
         actions = [
-            { |event, startOffset| event.prepare( targets, startOffset ) },
-            { |event| event.start },
+            { |event,startOffset| event.prepare( targets, startOffset ) },
+            { |event, startOffset| event.start(targets, startOffset) },
             { |event| event.release }
         ];
 
@@ -327,7 +327,7 @@ UScore : UEvent {
 		startedAt = [ startPos, SystemClock.seconds ];
 
         //this is for prepareWaitAndStart
-        preparePos = if(prepareEvents.size == 0){ startPos }{ prepareEvents[0].prepareTime.min(startPos)�};
+        preparePos = if(prepareEvents.size == 0){ startPos }{ prepareEvents[0].prepareTime.min(startPos) };
         deltaToStart = startPos - preparePos;
         if(deltaToStart !=0){
             fork{
@@ -344,7 +344,7 @@ UScore : UEvent {
                     pos = item[0];
                     //"prepare % at %, %".format( events.indexOf(item),
                     //	pos, thisThread.seconds ).postln;
-                    actions[item[1]].value(item[2], pos - item[2].startTime);
+                    actions[item[1]].value(item[2], (startPos - item[2].startTime).max(0) );
                 });
                 if( this.isFinite ) {
                     (this.duration - pos).wait;
