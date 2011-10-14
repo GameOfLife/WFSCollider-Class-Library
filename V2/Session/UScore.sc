@@ -55,7 +55,7 @@ UScore : UEvent {
 			track = args[0]; 
 			args = args[1..] 
 		};
-	    events = args;
+	    events = if(args.size >0){args}{Array.new};
 	    
 	    this.changed( \init );
 	}
