@@ -197,17 +197,15 @@ UScoreEditorGui_TopBar {
 
 		header.decorator.shift(10);
 
-		/* No mixer yet...
 		SmoothButton( header, 40@size  )
 			.states_( [[ "mixer", Color.black, Color.clear ]] )
 			.canFocus_(false)
 			.font_( font )
 			.border_(1).background_(Color.grey(0.8))
 			.action_({ |b|
-				// UMixer doesn't exist yet
-				//UMixer(this.selectedEventsOrAll,List.new);
+				this.selectedEventsOrAll !? UMixer(_);
 			});
-        */
+
 
 		header.decorator.shift(100);
 
