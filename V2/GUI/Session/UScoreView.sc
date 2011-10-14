@@ -224,6 +224,7 @@ UScoreView {
 
      makeScoreView{
         var scoreEditor = scoreEditorsList.last;
+        var score = scoreEditor.score;
         var scoreBounds = if(scoreList.size > 1) {
             mainComposite.bounds.copy.height_(mainComposite.bounds.height - 24).moveTo(0,24);
         }  {
@@ -236,17 +237,17 @@ UScoreView {
             scoreView.remove;
         };
 
-        numTracks = ((scoreEditor.score.events.collect( _.track ).maxItem ? 14) + 2).max(16);
+        numTracks = ((score.events.collect( _.track ).maxItem ? 14) + 2).max(16);
 
         scoreView = ScaledUserViewContainer(mainComposite,
         			scoreBounds,
-        			Rect( 0, 0, scoreEditor.score.duration.ceil.max(1), numTracks ),
+        			Rect( 0, 0, score.duration.ceil.max(1), numTracks ),
         			5);
 
         //CONFIGURE scoreView
         scoreView.background = Color.gray(0.8);
         scoreView.composite.resize = 5;
-	    scoreView.gridLines = [scoreEditor.score.finiteDuration.ceil.max(1), numTracks];
+	    scoreView.gridLines = [score.finiteDuration.ceil.max(1), numTracks];
 		scoreView.gridMode = ['blocks','lines'];
 		scoreView.sliderWidth = 8;
 		//scoreView.maxZoom = [16,5];
@@ -282,11 +283,19 @@ UScoreView {
 			.keyDownAction_( { |v, a,b,c|
 				if( c == 127 ) {
 					this.deleteSelected
+				};
+				if( c == 32 ) {
+				    if(score.isStopped) {
+				        score.prepareAndStart( UServerCenter.servers, score.pos);
+				    } {
+				        score.stop;
+				    }
+
 				}
 			})
 			.beforeDrawFunc_( {
-			    var dur = scoreEditor.score.finiteDuration.ceil.max(1);
-				numTracks = ((scoreEditor.score.events.collect( _.track ).maxItem ? ( numTracks - 2)) + 2)
+			    var dur = score.finiteDuration.ceil.max(1);
+				numTracks = ((score.events.collect( _.track ).maxItem ? ( numTracks - 2)) + 2)
 					.max( numTracks );
 				scoreView.fromBounds = Rect( 0, 0, dur, numTracks );
 				scoreView.gridLines = [dur, numTracks];
@@ -323,7 +332,7 @@ UScoreView {
 				//draw Transport line
 				Pen.width = 2;
 				Pen.color = Color.black.alpha_(0.5);
-				scPos = v.translateScale( scoreEditor.score.pos@0 );
+				scPos = v.translateScale( score.pos@0 );
 				Pen.line( (scPos.x)@0, (scPos.x)@v.bounds.height);
 				Pen.stroke;
 
