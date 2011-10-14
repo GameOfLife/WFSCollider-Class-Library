@@ -201,15 +201,20 @@ UScore : UEvent {
 
 	//SCORE PLAYING
 
+    eventsThatWillPlay { |startPos|
+        ^events.select({ |evt| (evt.eventEndTime >= startPos) && evt.disabled.not })
+
+    }
+
 	eventsToPrepareNow{ |startPos|
-	    ^events.sort({ |a,b| a.startTime <= b.startTime })
-			.select({ |evt| (evt.startTime >= startPos) && { evt.prepareTime < startPos } && evt.muted.not })
+	    ^this.eventsThatWillPlay(startPos).select(_.prepareTime < startPos)
+	        .sort({ |a,b| a.startTime <= b.startTime })
 	}
 
-    eventsForPlay{ |startPos, assumePrepared = false|
+    prepStartRelEvents{ |startPos, assumePrepared = false|
         var evs, prepareEvents, startEvents, releaseEvents;
 
-        evs = events.select({ |evt| (evt.startTime >= startPos) && evt.muted.not }).sort;
+        evs = this.eventsThatWillPlay(startPos).sort;
 		prepareEvents = if(assumePrepared){evs.select({ |item| item.prepareTime >= startPos })}{evs};
 		startEvents = evs.sort({ |a,b| a.startTime <= b.startTime });
 		releaseEvents = events
@@ -249,7 +254,7 @@ UScore : UEvent {
 
 	    this.stop(nil,false);
 
-        prepStartRelEvents = this.eventsForPlay(startPos, true);
+        prepStartRelEvents = this.prepStartRelEvents(startPos, true);
 	    playStatus = prepStartRelEvents.flat.size > 0;
 
 	    if( playStatus ){
@@ -293,7 +298,7 @@ UScore : UEvent {
         var actions;
 
         actions = [
-            { |event| event.prepare( targets ) },
+            { |event, startOffset| event.prepare( targets, startOffset ) },
             { |event| event.start },
             { |event| event.release }
         ];
@@ -304,7 +309,7 @@ UScore : UEvent {
 		//("releaseEvents :"++releaseEvents).postln;
 
 		allEvents = prepareEvents.collect{ |x| [x.prepareTime, 0, x]}
-         ++ startEvents.collect{ |x| [x.startTime, 1, x]}
+         ++ startEvents.collect{ |x| [x.startTime.max(startPos), 1, x]}
          ++ releaseEvents.collect{ |x| [x.eventEndTime, 2, x]};
 
         //if the time for the event to happen is different order them as usual
@@ -339,7 +344,7 @@ UScore : UEvent {
                     pos = item[0];
                     //"prepare % at %, %".format( events.indexOf(item),
                     //	pos, thisThread.seconds ).postln;
-                    actions[item[1]].value(item[2]);
+                    actions[item[1]].value(item[2], pos - item[2].startTime);
                 });
                 if( this.isFinite ) {
                     (this.duration - pos).wait;
