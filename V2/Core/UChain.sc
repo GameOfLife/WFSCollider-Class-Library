@@ -15,6 +15,7 @@ UChain : UEvent {
 	var <units; //, <>groups;
 	var <prepareTasks;
 	var <>preparedServers;
+	var <muted = false;
 	
 	*initClass { groupDict = IdentityDictionary( ) }
 	
@@ -68,6 +69,8 @@ UChain : UEvent {
 	prGetCanFreeSynths { // returns the units that can free synths (they will free the whole group)
 		^units.select({ |unit| unit.def.canFreeSynth });
 	}
+
+	canFreeSynth{ ^this.prGetCanFreeSynths.size != 0 }
 	
 	prSetCanFreeSynths { |...args|
 		units.do({ |unit|

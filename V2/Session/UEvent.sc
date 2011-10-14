@@ -3,7 +3,7 @@ UEvent {
     var <startTime=0;
     var <>track=0;  //track number (horizontal segment) on the score editor
     var <duration = inf;
-    var <>muted = false;
+    var <>disabled = false;
     var <releaseSelf = true;
 
     /*
@@ -30,9 +30,9 @@ UEvent {
     endTime { ^startTime + this.duration; } // may be inf
     eventEndTime { ^startTime + this.eventSustain }
 
-	mute { this.muted_(true) }
-	unMute { this.muted_(false) }
-	toggleMute { this.muted_(muted.not) }
+	disable { this.disabled_(true) }
+	enable { this.disabled_(false) }
+	toggleDisabled { this.disabled_(disabled.not) }
 
     /*
     *   server: Server or Array[Server]

@@ -286,8 +286,8 @@ UChainEventView : UEventView {
 
 	draw { |scaledUserView, maxWidth|
 		var textrect;
-		var muted = event.muted;
-		var lineAlpha =  if( muted ) { 0.5  } { 1.0  };
+		var disabled = event.disabled;
+		var lineAlpha =  if( disabled ) { 0.5  } { 1.0  };
 		var selectedAlpha = if( selected ) { 0.8 } { 1 };
 		var scaledRect, innerRect, clipRect;
 		var px10Scaled = scaledUserView.doReverseScale(Point(10,0)).x;
