@@ -178,7 +178,7 @@ UScoreEditorGui_TopBar {
 			.canFocus_(false)
 			.border_(1).background_(Color.grey(0.8))
 			.action_({ |b|
-				this.selectedEvents !? { |x|  this.scoreEditor.toggleMuteEvents( x ) }
+				this.selectedEvents !? { |x|  this.scoreEditor.toggleDisableEvents( x ) }
 			});
 
 		SmoothButton( header, size@size  )

@@ -32,7 +32,7 @@ UEvent {
 
 	disable { this.disabled_(true) }
 	enable { this.disabled_(false) }
-	toggleDisabled { this.disabled_(disabled.not) }
+	toggleDisable { this.disabled_(disabled.not) }
 
     /*
     *   server: Server or Array[Server]

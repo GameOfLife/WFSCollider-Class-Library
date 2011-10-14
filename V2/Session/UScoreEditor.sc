@@ -182,9 +182,9 @@ UScoreEditor {
 		})
 	}
 
-	toggleMuteEvents { |events|
+	toggleDisableEvents { |events|
 	    this.changeScore({
-	        events.do( _.toggleMute );
+	        events.do( _.toggleDisable );
 	    })
 	}
 
