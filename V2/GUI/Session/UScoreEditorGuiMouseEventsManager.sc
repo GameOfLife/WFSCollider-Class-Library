@@ -81,7 +81,7 @@ UScoreEditorGuiMouseEventsManager {
 	        if(v.size > 0) {
 	            ^v
 	        } {
-	            nil
+	            ^nil
 	        }
 	    }
 	}
