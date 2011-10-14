@@ -69,7 +69,7 @@ Udef : GenericDef {
 	var <>apxCPU = 1; // indicator for the amount of cpu this unit uses (for load balancing)
 
 	*initClass{
-		defsFolder = this.filenameSymbol.asString.dirname.dirname +/+ "UnitDefs";
+		defsFolder = this.filenameSymbol.asString.dirname.dirname.dirname +/+ "UnitDefs";
 	}
 
 	*basicNew { |name, args, category|
