@@ -175,6 +175,7 @@ BufSndFileView {
 			.resize_( 2 )
 			.action_({ |fv|
 				this.performSndFile( \path_ , fv.value );
+				this.performSndFile( \fromFile );
 				action.value( this );
 			});
 					
