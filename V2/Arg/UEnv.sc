@@ -35,7 +35,7 @@ UEnv : UIn {
 		]);
 	}
 	
-	*kr { |gain = 0, fadeIn = 0, fadeOut = 0, extraSilence = 0|
+	*kr { |gain = 0, fadeIn = 0, fadeOut = 0, extraSilence = 0, useGlobalGain = 1|
 		var name = this.getControlName( );
 		var gate = this.getControl( \kr, name, 'gate', 1 );
 		var mute = this.getControl( \kr, name, 'mute', 0 );
@@ -52,8 +52,7 @@ UEnv : UIn {
 				doneAction: doneAction ) *
 			Env([ 1, 0, 0 ],[ fadeOut, extraSilence ], \lin, 0 )
 				.kr( doneAction, RunningMin.kr( gate + Impulse.kr(0) ) ) *
-			gain.dbamp *
-			(1-mute);
+			UGlobalGain.kr( useGlobalGain ) * gain.dbamp * (1-mute);
 	}
 	
 	*ar { ^this.shouldNotImplement }
