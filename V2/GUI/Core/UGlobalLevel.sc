@@ -43,11 +43,13 @@ UGlobalGain {
 					Window.screenBounds.height - 150 
 			); };
 			view = EZSmoothSlider( nil, bounds,
-				controlSpec: [ -60, 36, \lin, 1, -12, "db" ],
+				controlSpec: [ -60, 36, \lin, 0, -12, "db" ],
 				labelHeight: 50
 			).value_( gain ).action_({ |vw| this.gain = vw.value });
 			view.view.resize_(5);
-			view.numberView.autoScale_( true ).scroll_step_( 1 );
+			view.numberView.autoScale_( true )
+				.scroll_step_( 1 )
+				.formatFunc_({ |value| value.round(1) });
 			view.sliderView.mode_( \move );
 		} {
 			^view.front;

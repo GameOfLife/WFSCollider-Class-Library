@@ -15,7 +15,7 @@ EQdef {
 		
 		specDict = (
 			\freq: [ 20, 20000, \exp, 0, 440 ].asSpec,
-			\rq: [ 0.001, 2, \exp, 0.001, 0.707 ].asSpec,
+			\rq: [ 0.001, 10, \exp, 0.01, 0.707 ].asSpec,
 			\rs: [ 0.6, 10, \lin, 0.1, 1 ].asSpec,
 			\bw: [ 0.01, 10, \exp, 0.1, 1 ].asSpec,
 			\db: [ -36, 36, \lin, 0.25, 0 ].asSpec,
