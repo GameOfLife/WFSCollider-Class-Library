@@ -203,7 +203,7 @@ UScoreEditorGui_TopBar {
 			.font_( font )
 			.border_(1).background_(Color.grey(0.8))
 			.action_({ |b|
-				this.selectedEventsOrAll !? UMixer(_);
+				UMixer(scoreView.currentScore);
 			});
 
 

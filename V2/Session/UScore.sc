@@ -101,6 +101,20 @@ UScore : UEvent {
 	}
 
 	size { ^events.size }
+
+	allEvents {
+		var list = [];
+
+		this.events.do({ |item|
+				if( item.isFolder )
+					{ list = list.addAll( item.allEvents ); }
+					{ list = list.add( item ); }
+				});
+
+		^list;
+
+	}
+
 	getAllUChains{
 	    ^events.collect(_.getAllUChains).flat
 	}
@@ -115,6 +129,7 @@ UScore : UEvent {
     //mimic a UChain
     eventSustain{ ^inf }
     release{ ^this.stop }
+    canFreeSynth{ ^events.collect(_.canFreeSynth).reduce('||') }
 
     cutStart{}
 
