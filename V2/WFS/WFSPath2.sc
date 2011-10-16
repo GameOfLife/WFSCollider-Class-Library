@@ -1,9 +1,16 @@
 WFSPath2 {
+	
+	classvar <filePathDict;
+	
 	var <positions, >times;
 	var <type = \cubic; // \cubic, \bspline, \linear (future; add \quad, \step?)
 	var <>curve = 1; // curve = 1: hermite
 	var <clipMode = 'clip'; // 'clip', 'wrap', 'fold' // TODO for bspline
 	var <>name;	
+	
+	var <>savedCopy;
+	
+	*initClass { filePathDict = IdentityDictionary() }
 	
 	*new { |positions, times, type, curve, clipMode|
 		^super.newCopyArgs( positions, times )
@@ -13,8 +20,21 @@ WFSPath2 {
 			.clipMode_( clipMode );
 	}
 	
+	*newFromFile { |path|
+		var out;
+		path = path !? { path.formatGPath; };
+		filePathDict.keysValuesDo({ arg key, val, i;
+			if (path == val, { ^key })
+		});
+		if( out.isNil ) {
+			out = this.read( path );
+		};
+		^out ? path; // return path if not found
+	}
+	
 	init {
 		times = times ?? {[1]};
+		this.changed( \init );
 	}
 	
 /// TYPES ////////////////////////////////////////
@@ -252,6 +272,21 @@ WFSPath2 {
 		^index + (..points.size-1); // return indices of selection
 	}
 	
+//// TESTING ////////////////////////////////////////
+
+	== { |that|
+		if (that.class != this.class) { ^false };
+		^(positions == that.positions) && {
+			(this.times == that.times) && {
+				(clipMode == that.clipMode) && {
+					(curve == that.curve) && {
+						type == that.type;
+					};
+				};
+			};
+		};
+	}
+	
 //// COMPAT WITH OLD WFSPATH VERSION ////////////////////////////////////////
 
 	forceTimes { |timesArray| times = timesArray.asCollection; }
@@ -273,6 +308,20 @@ WFSPath2 {
 //// STORING AND POSTING ////////////////////////////////////////
 
 	archiveAsCompileString { ^true }
+	
+	storeOn { arg stream;
+		var pth;
+		pth = this.filePath;
+		if( this.filePath.notNil ) {
+			if( this.dirty ) {
+				stream << this.class.name << "(" <<<* this.storeArgs << 
+					").filePath_( " <<< pth << " )";
+			} {
+				stream <<< pth << ".asWFSPath2";
+			};
+		} {
+			stream << this.class.name << "(" <<<* this.storeArgs << ")";		};
+	}
 	
 	storeArgs { ^[ positions, times, type, curve, clipMode ] }
 	
@@ -312,10 +361,9 @@ WFSPath2 {
 		};
 	}
 	
-	*fromBufferArray { |bufferArray, name|
-		var times, positions, p2, c1, c2, controls;
+	fromBufferArray { |bufferArray, name|
+		var p2, c1, c2, controls;
 		var settingsArray;
-		var path, type, curve = 1, clipMode;
 		
 		bufferArray = bufferArray.clump(9);
 		
@@ -323,9 +371,9 @@ WFSPath2 {
 			
 			settingsArray = bufferArray[0];
 			
-			type = settingsArray[1];
+			type = this.class.types[ settingsArray[1].asInt ] ? this.class.types[0];
 			curve = settingsArray[2];
-			clipMode = settingsArray[3];
+			clipMode = this.class.clipModes[ settingsArray[3].asInt ] ? this.class.clipModes[0];
 			
 			#times, positions = bufferArray[1..].collect({ |vals|
 				var time, point;
@@ -333,8 +381,6 @@ WFSPath2 {
 				point = vals[1] @ vals[5];
 				[ time, point ]
 			}).flop;
-			
-			path = this.new( positions, times, type, curve, clipMode );
 			
 		} {
 			// try to guess the settings
@@ -349,8 +395,6 @@ WFSPath2 {
 				
 				[ time, y1, y2, x1, x2 ];
 			}).flop;
-			
-			path = this.new( positions, times );
 	
 			switch ( positions.last.round(1e-12),
 				positions.last.round(1e-12), { clipMode = 'clip' },
@@ -363,7 +407,7 @@ WFSPath2 {
 			block { |break|
 				([ clipMode ] ++ (#[ clip, wrap, fold ].select(_ != clipMode))).do({ |cm|
 					#[ cubic, bspline, linear ].do({ |it|
-						if( path.generateAutoControls( it, cm ).round(1e-12) == controls ) {
+						if( this.generateAutoControls( it, cm ).round(1e-12) == controls ) {
 							clipMode = cm;
 							type = it;
 							break.value;
@@ -373,12 +417,12 @@ WFSPath2 {
 				"WFSPath2.fromBufferArray: could not guess type and/or clipMode from array"
 					.warn;
 			};
-			
-			path.type = type;
-			path.clipMode = clipMode;
 		};
-		path.name = name;
-		^path;	
+		this.name = name ? this.name;
+	}
+	
+	*fromBufferArray { |bufferArray, name|
+		^this.new.fromBufferArray( bufferArray, name );
 	}
 	
 	*reverseSplineIntPart1 { |y1, c1, c2, c3|
@@ -400,16 +444,37 @@ WFSPath2 {
 		};
 	}
 	
-	write { |path|
+	filePath { ^filePathDict[ this ] }
+	filePath_ { |path|
+		if( path.notNil ) {
+		 	filePathDict[ this ] = path.formatGPath;
+		} {
+			filePathDict[ this ] = nil;
+		}; 
+		this.changed( \filePath );
+	} 
+	
+	dirty { ^this != savedCopy }
+	
+	write { |path, action|
 	    var writeFunc;
+	    
 	    writeFunc = { 
-		    var array, sf;
+		    var array, sf, success;
 		    array = this.asBufferArray( true ).as( Signal );
 		    sf = SoundFile.new.headerFormat_("AIFF").sampleFormat_("float").numChannels_(9);
-		    sf.openWrite( path.standardizePath );
-		    sf.writeData( array );
-		    sf.close;
-		    "%:write - written to file:\n%\n".postf( this.class, path.quote );
+		    success = sf.openWrite( path.getGPath );
+		    if( success ) {
+			    sf.writeData( array );
+			    sf.close;
+			    this.filePath = path;
+			    savedCopy = this.deepCopy;
+			    action.value( this );
+
+		    		"%:write - written to file:\n%\n".postf( this.class, this.filePath.quote );
+		    } {
+			    "%:write - could not write file:\n%\n".postf( this.class, path.quote );
+		    };
 	    };
 	    
 	    if( path.isNil ) {
@@ -422,37 +487,71 @@ WFSPath2 {
 	    };
     }
     
-    *read { |path|
-	    var sf, array;
-	    sf = SoundFile.new;
-	    if( sf.openRead( path.standardizePath ) ) {
-		    if( sf.numChannels != 9 ) {
-			     "%:read - numChannels (%) != 9\n% is not a valid % file\n"
-			     	.format( this.class, sf.numChannels, path, this )
-			     	.warn;
-			     sf.close;
-			     ^nil;
+    read { |path, action| // returns nil if no success
+	    var sf, array, readFunc;
+	    
+	    readFunc = {	
+		    sf = SoundFile.new;
+		    path = path.getGPath;
+		    if( sf.openRead( path ) ) {
+			    if( sf.numChannels != 9 ) {
+				     "%:read - numChannels (%) != 9\n% is not a valid % file\n"
+				     	.format( this.class, sf.numChannels, path, this )
+				     	.warn;
+				     sf.close;
+				     ^nil;
+			    } {
+				    if( sf.sampleFormat != "float" ) {
+					    "%:read - sampleFormat (%) != float \n% may not be a valid % file\n"
+				     		.format( this.class, sf.sampleFormat, path, this )
+				     		.warn;
+				    }; // read it anyway
+				    array = FloatArray.newClear( sf.numFrames * 9 );
+				    sf.readData( array );
+				    sf.close;
+				    this.fromBufferArray( array, path.basename.removeExtension );
+				    this.filePath = path;
+				    savedCopy = this.deepCopy;
+				    action.value( this );
+			    }
 		    } {
-			    if( sf.sampleFormat != "float" ) {
-				    "%:read - sampleFormat (%) != float \n% may not be a valid % file\n"
-			     		.format( this.class, sf.sampleFormat, path, this )
-			     		.warn;
-			    }; // read it anyway
-			    array = FloatArray.newClear( sf.numFrames * 9 );
-			    sf.readData( array );
-			    sf.close;
-			    ^this.fromBufferArray( array, path.basename.removeExtension )
-		    }
+			   "%:read - could not open file %\n"
+			   	.format( this.class, path )
+			   	.warn;
+			   ^nil;
+		    };
+		};
+		
+		if( path.isNil ) {
+		    Dialog.getPaths( { |pth|
+			    path = pth[0];
+			    readFunc.value;
+		    } );
 	    } {
-		   "%:read - could not open file %\n"
-		   	.format( this.class, path )
-		   	.warn;
-		   ^nil;
+		    readFunc.value;
 	    };
     }
-
-
+    
+    revert { |action| 
+	    if( this.filePath.notNil ) {
+	    		this.read( this.filePath, action ) 
+	    } {
+		    "%:revert - can't revert: no filePath is known"
+		    		.format( this.class )
+			   	.warn;
+	    };
+	}
+    
+    *read { |path|
+		^this.new.read( path );
+    }
+    
+    isWFSPath2 { ^true }
 	
+}
+
++ Object { 
+	isWFSPath2 { ^false }
 }
 
 + WFSPath {
@@ -460,5 +559,16 @@ WFSPath2 {
 		^WFSPath2( this.positions.collect(_.asPoint), this.times, this.name )
 			.intType_( \cubic );
 	}
-	
+}
+
++ String {
+	asWFSPath2 {
+		^WFSPath2.newFromFile( this );
+	}
+}
+
++ Nil {
+	asWFSPath2 { 
+		^WFSPath2( { |i| Polar( 10, i.linlin(0,7,0,2pi) ).asPoint  } ! 7, [0.5] )
+	}
 }

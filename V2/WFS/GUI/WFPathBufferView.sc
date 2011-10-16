@@ -62,8 +62,11 @@ WFSPathBufferView {
 		// views[ \name ].value = inWFSPathBuffer.name ? "";
 		views[ \filePath ].value = inWFSPathBuffer.filePath;
 		views[ \loop ].value = inWFSPathBuffer.loop.binaryValue;
-		views[ \miniPlot ].fromBounds = inWFSPathBuffer.wfsPath.asRect.scale(1@ -1).insetBy(-2,-2);
-		views[ \startSecond ].value = inWFSPathBuffer.startSecond;
+		if( inWFSPathBuffer.wfsPath.isWFSPath2 ) {
+			views[ \miniPlot ].fromBounds = 
+				inWFSPathBuffer.wfsPath.asRect.scale(1@ -1).insetBy(-2,-2);
+			views[ \startSecond ].value = inWFSPathBuffer.startSecond;
+		};
 		views[ \startFrame ].value = inWFSPathBuffer.startFrame;
 
 	}
@@ -132,7 +135,7 @@ WFSPathBufferView {
 			.drawFunc_({ |vw|
 				var path;
 				path = this.performWFSPathBuffer( \wfsPath );
-				if( path.notNil ) {
+				if( path.isWFSPath2 ) {
 					
 					Pen.width = 0.164;
 					Pen.color = Color.red(0.5, 0.5);
@@ -165,17 +168,11 @@ WFSPathBufferView {
 			.border_( 1 )
 			.label_( "write data" )
 			.action_({ |bt|
-				var writeFunc;
-				writeFunc = { this.performWFSPathBuffer( \writeFile ); };
 				
-				if( this.performWFSPathBuffer( \filePath ).isNil ) {
-						Dialog.savePanel( { |path|
-				  			this.performWFSPathBuffer( \filePath_ , path );
-				  			writeFunc.value;
-						});
-				} {
-					writeFunc.value;
-				};
+				Dialog.savePanel({ |path|
+				  	this.performWFSPathBuffer( \writeFile, nil, path );
+				  	this.performWFSPathBuffer( \changed, \filePath );
+				});
 			});
 			
 		views[ \loop ] = SmoothButton( view, 40 @ viewHeight )
@@ -216,6 +213,10 @@ WFSPathBufferView {
 							wfspath.name = pth.basename.removeExtension;
 							this.performWFSPathBuffer( \filePath_ , pth );
 							this.performWFSPathBuffer( \wfsPath_ , wfspath );
+							if( wfsPathBuffer.notNil ) {
+								this.setViews( wfsPathBuffer );
+							};
+							action.value( this );
 						} {
 							"wrong number of channels (% instead of 9)\n"
 								.postf( sf.numChannels );
