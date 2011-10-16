@@ -55,6 +55,9 @@ FreeUdef : Udef {
 	
 	addUEnv { this.addUIO( UEnv, \kr ); }
 	removeUEnv {  this.removeUIO( UEnv, \kr ); }
+	
+	addUGlobalEQ { this.addUIO( UGlobalEQ, \ar, { Silent.ar } ); }
+	removeUGlobalEQ {  this.removeUIO( UGlobalEQ, \ar, { Silent.ar } ); }
 		
 	envPut { |key, value|
 		env.put( key, value );
