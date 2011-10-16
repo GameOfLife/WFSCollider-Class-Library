@@ -2,6 +2,13 @@ WFSPathBuffer : AbstractRichBuffer {
 	
 	classvar <>writeServers;
 	
+	// if a filepath is specified, the path is read from there
+	// at playback. Otherwise wfsPath is used by sending it.
+	// Using a filePath is safer, but of course it needs to
+	// be saved and taken separately.
+	
+	// file frame 0 is used for format settings and should not be read for playback
+	
 	var <wfsPath, <filePath;
 	var <>fileStartFrame = 1, <>fileEndFrame;
 	var <startFrame = 0, endFrame;
@@ -32,7 +39,7 @@ WFSPathBuffer : AbstractRichBuffer {
 	}
 	 
 	filePath_ { |new|
-		filePath = new;
+		filePath = new.formatGPath;
 		this.changed( \filePath, filePath );
 	}
 
@@ -94,7 +101,7 @@ WFSPathBuffer : AbstractRichBuffer {
 	readBuffer { |server, action, bufnum, path|
 		path = path ? filePath;
 		if( path.notNil ) {
-			^Buffer.read( server, path.standardizePath,
+			^Buffer.read( server, path.getGPath,
 					fileStartFrame ? 1, fileEndFrame ? -1, action, bufnum );
 		} {
 			"WFSPathBuffer:readBuffer - no filePath specified".postln;
@@ -108,7 +115,7 @@ WFSPathBuffer : AbstractRichBuffer {
 		sendFunc = { |buf|
 			// use 0.02 wait time to remain sending at high traffic 
 			// (only relevant for > 180 point wfsPaths)
-			buf.sendCollection( array, 0, 0.02, action ); 
+			{ buf.sendCollection( array, 0, 0.02, action ); }.fork;
 		};
 		buf = Buffer.alloc( server, wfsPath.positions.size, 9, nil, bufnum );
 		OSCresponderNode( server.addr, '/done', { |time, resp, msg, addr|
@@ -122,9 +129,11 @@ WFSPathBuffer : AbstractRichBuffer {
 	
 	writeFile { |servers, path|
 		servers = (servers ? writeServers).asCollection;
-		filePath = path ? filePath;
+		if( path.notNil ) {
+			filePath = path.formatGPath;
+		};
 		servers.do({ |srv|
-			this.writeBuffer( srv, path );
+			this.writeBuffer( srv, filePath.getGPath );
 		});
 	}
 	
@@ -134,7 +143,7 @@ WFSPathBuffer : AbstractRichBuffer {
 		path = path ? filePath;
 		
 		writeFunc = { |buf|
-			buf.write( path.standardizePath, "aiff", "float32", -1, 0, false );
+			buf.write( path.getGPath, "aiff", "float32", -1, 0, false );
 		};
 		
 		buf = this.sendBuffer( server, writeFunc );
