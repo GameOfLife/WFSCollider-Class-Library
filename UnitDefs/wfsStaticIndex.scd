@@ -22,7 +22,7 @@ def = FreeUdef( \wfsStaticIndex, [
 			
 			gain = gain * InRange.kr(index, 0, maxIndex); // mute when out of range
 			
-			input = UIn.ar(0, 1) * gain * WFSLevelBus.kr * UEnv.kr;
+			input = UGlobalEQ.ar( UIn.ar(0, 1) ) * gain * UEnv.kr;
 			
 			Out.ar( index.clip(0, maxIndex), input );
 		})

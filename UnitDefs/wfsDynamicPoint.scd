@@ -38,7 +38,9 @@ FreeUdef( \wfsDynamicPoint, [
 		\maxAmpRadius, \crossfadeLag, \dontPause,
 		\u_i_ar_0_bus, \u_i_kr_0_bus, \u_i_kr_1_bus, 
 		\u_doneAction, \u_gain, \u_gate,
-		\u_fadeIn, \u_fadeOut
+		\u_fadeIn, \u_fadeOut,
+		\u_globalGain,
+		\u_globalEQ_setting, \u_globalEQ_bypass,  
 	] )
 	.envPut( \set_wfsa, [ \arrayLimit, \arrayDbRollOff, \u_i_ar_0_bus, 
 		\u_i_kr_0_bus, \u_i_kr_1_bus,  
@@ -133,6 +135,7 @@ FreeUdef( \wfsDynamicPoint, [
 		WFSSpeakerConf.default.getArraysFor( target.asTarget.server ).size > 0;
 	})
 	.addUEnv
+	.addUGlobalEQ
 	.addUIO( UIn, \ar, 0, 1 )
 	.addUIO( UIn, \kr, 0, 2 );
 );

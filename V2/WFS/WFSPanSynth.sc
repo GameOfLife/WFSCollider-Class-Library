@@ -222,7 +222,7 @@ WFSPrePanSynthDefs {
 			
 			input = UIn.ar( 0, 1 );
 			
-			output = panner.ar( input, point, WFSLevelBus.kr ) * UEnv.kr( extraSilence: 0.2 );
+			output = UGlobalEQ.ar( panner.ar( input, point ) ) * UEnv.kr( extraSilence: 0.2 );
 			
 			ReplaceOut.ar( UIn.firstBusFor( \ar )+ \u_i_ar_0_bus.kr, output );
 			

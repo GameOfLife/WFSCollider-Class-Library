@@ -45,7 +45,9 @@ FreeUdef( \wfsStaticPoint, [
 		\point, \dbRollOff, \maxAmpRadius,
 		\u_i_ar_0_bus, 
 		\u_doneAction, \u_gain, \u_gate,
-		\u_fadeIn, \u_fadeOut
+		\u_fadeIn, \u_fadeOut,
+		\u_globalGain,
+		\u_globalEQ_setting, \u_globalEQ_bypass, 
 	] )
 	.envPut( \init_wfsa, [ \arrayLimit, \arrayDbRollOff, \u_i_ar_0_bus, \point ] )
 	.createSynthFunc_({ |unit, target|
@@ -133,5 +135,6 @@ FreeUdef( \wfsStaticPoint, [
 		};
 	})
 	.addUEnv
+	.addUGlobalEQ
 	.addUIO( UIn, \ar, 0, 1 );
 );
