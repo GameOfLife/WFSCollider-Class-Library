@@ -11,7 +11,7 @@ Udef( \stereoOutput, { |bus = 0, point = #[0,0], lag = 2, rollOff = (-6)|
 	
 	pankr = Pan2.kr( 1, angle ).max(amp);
 
-	Out.ar( bus, panned * pankr * UEnv.kr  );
+	Out.ar( bus, UGlobalEQ.ar( panned ) * pankr * UEnv.kr  );
 } )
 	.category_( \io )
 	.setSpec( \bus, PositiveIntegerSpec( 0 ) )
