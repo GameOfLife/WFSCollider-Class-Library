@@ -65,13 +65,18 @@
 	              });
 	
 				SyncCenter.loadMasterDefs;
-				WFSLevelBus.makeWindow;
+				// WFSLevelBus.makeWindow;
 				
 				"\n\tWelcome to the WFS Offline System V2".postln	
 			});
 			
 			Server.default = WFSServers.default.m;
 			UServerCenter.servers = [ Server.default ];
+			UChain.defaultServers = UServerCenter.servers;
+			WFSPathBuffer.writeServers = [ Server.default ];
+			
+			UGlobalGain.gui;
+			UGlobalEQ.gui;
 	
 			^server
 		}
@@ -121,7 +126,7 @@
 	            });
 	            */
 	            
-	            WFSLevelBus.makeWindow;
+	            // WFSLevelBus.makeWindow;
 				"\n\tWelcome to the WFS System".postln; 
 			});	
 			
@@ -131,8 +136,11 @@
 				WFSServers.default.multiServers.collect({ |ms|
 					LoadBalancer( *ms.servers )
 				});
-				
 			UChain.defaultServers = UServerCenter.servers;
+			WFSPathBuffer.writeServers = UServerCenter.servers.collect(_.asTarget.server);
+			
+			UGlobalGain.gui;
+			UGlobalEQ.gui;
 			
 			^server	
 		}
