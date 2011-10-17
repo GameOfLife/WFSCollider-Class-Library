@@ -91,12 +91,21 @@ Udef : GenericDef {
 		
 		argSpecs = ArgSpec.fromSynthDef( synthDef, argSpecs );
 		
+		this.initArgs;
+		this.changed( \init );
+	}
+	
+	initArgs {
 		argSpecs.do({ |item|
 			if( item.name.asString[..1].asSymbol == 'u_' ) {
 				item.private = true;
 			};
+			if( item.spec.notNil ) {
+				if( item.default.class != item.spec.default.class ) {
+					item.default = item.spec.constrain( item.default );
+				};
+			};
 		});
-		this.changed( \init );
 	}
 	
 	// this may change 
@@ -465,7 +474,9 @@ U : ObjectWithArgs {
 	getInitArgs {
 		var defArgs;
 		defArgs = (this.def.args ? []).clump(2);
-		^args.clump(2).select({ |item, i| item != defArgs[i] }).flatten(1);
+		^args.clump(2).select({ |item, i| 
+			item != defArgs[i]
+		 }).flatten(1);
 	}
 	
 	storeArgs { 

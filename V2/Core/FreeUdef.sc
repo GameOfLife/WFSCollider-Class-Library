@@ -25,12 +25,6 @@ FreeUdef : Udef {
 		this.initArgs;
 	}
 	
-	initArgs {
-		argSpecs.do({ |item|
-			if( item.name.asString[..1].asSymbol == 'u_' ) { item.private = true; };
-		});
-	}
-	
 	addSynthDefControls { |def|
 		def = def ? synthDef;
 		ArgSpec.fromSynthDef( def ).do({ |argSpec| this.addArgSpec( argSpec ); });

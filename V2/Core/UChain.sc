@@ -585,7 +585,15 @@ UChain : UEvent {
 			}
 		};
 		
-		^([ startTime, track, duration, releaseSelf ][..numPreArgs]) ++ units;
+		^([ startTime, track, duration, releaseSelf ][..numPreArgs]) ++ 
+			units.collect({ |item| 
+				item = item.storeArgs;
+				if( item.size == 1 ) {
+					item[0] 
+				} {
+					item
+				};
+			});
 	}
 	
 	storeArgs { ^this.getInitArgs }
