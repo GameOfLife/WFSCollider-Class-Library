@@ -148,6 +148,13 @@ MassEditUChain {
 		})
 	}
 	
+	groups { ^uchains.collect(_.groups).flatten(1); } // don't know any groups
+	
+	releaseSelf { ^uchains.collect(_.releaseSelf).every(_==true); }
+	releaseSelf_ { |bool|
+		uchains.do(_.releaseSelf_(bool));
+	}
+	
 	fadeIn_ { |fadeIn = 0|
 		var maxFadeIn, mul;
 		maxFadeIn = this.fadeIn.max(1.0e-11);
