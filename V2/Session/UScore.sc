@@ -258,6 +258,7 @@ UScore : UEvent {
 			    item.prepare( targets, action: multiAction.getAction );
 			});
 	    } {
+	        this.playState_(\prepared);
 		    action.value; // fire immediately if nothing to prepare
 	    };
 	}
