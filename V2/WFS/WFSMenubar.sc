@@ -34,12 +34,12 @@ WFSMenuBar {
 		});
 		
 		SCMenuItem.new(scoreMenu, "Save").action_({	
-			UScoreEditorGUI.current !? { |x| x.score.save }
+			UScoreEditorGUI.current !! { |x| x.score.save }
 		})
 		.setShortCut("s",true);			
 			
 		SCMenuItem.new(scoreMenu, "Save as").action_({	
-			UScoreEditorGUI.current !? { |x| x.score.saveAs }
+			UScoreEditorGUI.current !! { |x| x.score.saveAs }
 		})
 		.setShortCut("S",true);	
 		/*
@@ -58,73 +58,73 @@ WFSMenuBar {
 		//events
 		events = SCMenuGroup.new(nil, "Events", index + 1);
 		SCMenuItem.new(events, "Add").action_({
-			UScoreEditorGUI.current !? { |x| x.editor.addEvent }
+			UScoreEditorGUI.current !! { |x| x.editor.addEvent }
 		}).setShortCut("A",true);
 
 		SCMenuItem.new(events, "Edit").action_({
-			UScoreEditorGUI.current !? { |x| x.scoreView.editSelected }
+			UScoreEditorGUI.current !! { |x| x.scoreView.editSelected }
 		}).setShortCut("i",true);
 
 		SCMenuItem.new(events, "Delete").action_({
-			UScoreEditorGUI.current !? { |x| x.scoreView.deleteSelected }
+			UScoreEditorGUI.current !! { |x| x.scoreView.deleteSelected }
 		}).setShortCut("r",true);
 
 		SCMenuSeparator.new(events);
 
 	    SCMenuItem.new(events, "Copy").action_({
-	        UScoreEditorGUI.currentSelectedEvents !? UScoreEditor.copy(_)
+	        UScoreEditorGUI.currentSelectedEvents !! UScoreEditor.copy(_)
 		}).setShortCut("C",true);
 
 		SCMenuItem.new(events, "Paste").action_({
-			UScoreEditorGUI.current !? { |x| x.scoreView.currentEditor.pasteAtCurrentPos }
+			UScoreEditorGUI.current !! { |x| x.scoreView.currentEditor.pasteAtCurrentPos }
 		}).setShortCut("P",true);
 		
 		SCMenuSeparator.new(events);
 				
 		SCMenuItem.new(events, "Select All").action_({
-			UScoreEditorGUI.current !? { |x| x.scoreView.selectAll }
+			UScoreEditorGUI.current !! { |x| x.scoreView.selectAll }
 
 		}).setShortCut("a",true);	
 		
 		SCMenuItem.new(events, "Select Similar").action_({
-			UScoreEditorGUI.current !? { |x| x.scoreView.selectSimilar }
+			UScoreEditorGUI.current !! { |x| x.scoreView.selectSimilar }
 		});		
 		
 		//sort
 		SCMenuSeparator.new(events);
 		
 		SCMenuItem.new(events, "Overlapping events to new tracks").action_({
-			UScoreEditorGUI.current !? { |x| x.score.cleanOverlaps }
+			UScoreEditorGUI.current !! { |x| x.score.cleanOverlaps }
 		});
 		
 		//mute, solo
 		SCMenuSeparator.new(events);
 		
 		SCMenuItem.new(events, "Mute selected").action_({
-			UScoreEditorGUI.current !? { |x| x.scoreView.muteSelected }
+			UScoreEditorGUI.current !! { |x| x.scoreView.muteSelected }
 		}).setShortCut("m",true);
 		
 		SCMenuItem.new(events, "Unmute selected").action_({
-			UScoreEditorGUI.current !? { |x| x.scoreView.unmuteSelected }
+			UScoreEditorGUI.current !! { |x| x.scoreView.unmuteSelected }
 		}).setShortCut("u",true);
 		
 		SCMenuItem.new(events, "Unmute all").action_({
-			UScoreEditorGUI.current !? { |x| x.editor.unmuteAll }
+			UScoreEditorGUI.current !! { |x| x.editor.unmuteAll }
 		});
 		
 		SCMenuItem.new(events, "Solo selected").action_({
-			UScoreEditorGUI.current !? { |x| x.scoreView.soloSelected }
+			UScoreEditorGUI.current !! { |x| x.scoreView.soloSelected }
 		}).setShortCut("p",true);
 
 		//tracks
 		SCMenuSeparator.new(events);
 		
 		SCMenuItem.new(events, "Add Track").action_({
-			UScoreEditorGUI.current !? { |x| x.scoreView.addTrack }
+			UScoreEditorGUI.current !! { |x| x.scoreView.addTrack }
 		});
 		
 		SCMenuItem.new(events, "Remove Unused Tracks").action_({
-			UScoreEditorGUI.current !? { |x| x.scoreView.removeUnusedTracks }
+			UScoreEditorGUI.current !! { |x| x.scoreView.removeUnusedTracks }
 		});
 		
 		/*//paths

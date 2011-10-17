@@ -1,3 +1,7 @@
 + Object {
-    !? { arg obj; ^obj.value(this) }
+    !! { arg obj; ^obj.value(this) }
+}
+
++ Nil {
+    !! { }
 }

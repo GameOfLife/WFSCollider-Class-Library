@@ -149,7 +149,7 @@ UScoreView {
     }
 
     openSelectedSubScoreInNewWindow{
-        this.selectedEvents !? { |x|
+        this.selectedEvents !! { |x|
             var y = x.at(0);
             if(y.isFolder) {
                 UScoreEditorGUI(UScoreEditor(y))

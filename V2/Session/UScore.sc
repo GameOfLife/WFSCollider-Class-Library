@@ -163,7 +163,7 @@ UScore : UEvent {
 		^events.select({ |item|
 			( (item.startTime <= endTime) and: (item.startTime >= startTime ) ) or:
 			( (item.endTime <= endTime) and: (item.endTime >= startTime ) )
-		}).collect(_.track).maxItem !? (_+1) ?? {events.collect(_.track).maxItem} ? 0;
+		}).collect(_.track).maxItem !! (_+1) ?? {events.collect(_.track).maxItem} ? 0;
 
 	}
 
@@ -468,7 +468,7 @@ UScore : UEvent {
 	}
 
 	save {
-	    filePath !? { |x| this.write(x,true, { |x| filePath = x}) } ?? {
+	    filePath !! { |x| this.write(x,true, { |x| filePath = x}) } ?? {
 	        this.saveAs
 	    }
 	}

@@ -183,8 +183,8 @@ UScoreEditorGuiMouseEventsManager {
 		};
 
 		//for making sure groups of events being moved are not sent off screen
-		xLimit = this.selectedEventViews.collect({ |ev| ev.event.startTime }) !? _.minItem;
-		yLimit = this.selectedEventViews.collect({ |ev| ev.event.track }) !? _.minItem;
+		xLimit = this.selectedEventViews.collect({ |ev| ev.event.startTime }) !! _.minItem;
+		yLimit = this.selectedEventViews.collect({ |ev| ev.event.track }) !! _.minItem;
 
         if( scoreView.currentScore.playState != \stopped) {
             if([\nothing, \selecting].includes(state).not) {

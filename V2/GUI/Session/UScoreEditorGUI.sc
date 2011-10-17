@@ -69,7 +69,11 @@ UScoreEditorGUI {
             tranportBar.remove;
         });
         //for 3.5 this has to be changed.
-        window.drawHook_({ current = this });
+        if(window.respondsTo(\drawFunc_)) {
+            window.drawFunc_({ current = this });
+        } {
+            window.drawHook_({ current = this });
+        };
 
         margin = 4;
         gap = 2;
