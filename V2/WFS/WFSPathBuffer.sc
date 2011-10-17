@@ -94,7 +94,7 @@ WFSPathBuffer : AbstractRichBuffer {
 	}
 	
 	startSecond {
-		if( wfsPath.isWFSPath2 ) {
+		if( wfsPath.isWFSPath2 && { wfsPath.exists } ) {
 			^wfsPath.timeAtIndex( startFrame );
 		} {
 			"%-startSecond : can't get startSecond because path % is unknown"

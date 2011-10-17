@@ -1,7 +1,5 @@
 WFSPath2 {
 	
-	classvar <filePathDict;
-	
 	var <positions, >times;
 	var <type = \cubic; // \cubic, \bspline, \linear (future; add \quad, \step?)
 	var <>curve = 1; // curve = 1: hermite
@@ -9,8 +7,6 @@ WFSPath2 {
 	var <>name;	
 	
 	var <>savedCopy;
-	
-	*initClass { filePathDict = IdentityDictionary() }
 	
 	*new { |positions, times, type, curve, clipMode|
 		^super.newCopyArgs( positions, times )
@@ -23,13 +19,11 @@ WFSPath2 {
 	*newFromFile { |path|
 		var out;
 		path = path !? { path.formatGPath; };
-		filePathDict.keysValuesDo({ arg key, val, i;
-			if (path == val, { ^key })
-		});
+		out = WFSPathURL.getWFSPath( path );
 		if( out.isNil ) {
 			out = this.read( path );
 		};
-		^out ? path; // return path if not found
+		^out ?? { WFSPathURL( path ); }; // return WFSPathURL if not found
 	}
 	
 	init {
@@ -444,13 +438,9 @@ WFSPath2 {
 		};
 	}
 	
-	filePath { ^filePathDict[ this ] }
-	filePath_ { |path|
-		if( path.notNil ) {
-		 	filePathDict[ this ] = path.formatGPath;
-		} {
-			filePathDict[ this ] = nil;
-		}; 
+	filePath { ^WFSPathURL.getURL( this ) }
+	filePath_ { |path, keepOld = true|
+		WFSPathURL.putWFSPath( path, this, keepOld );
 		this.changed( \filePath );
 	} 
 	
@@ -546,7 +536,13 @@ WFSPath2 {
 		^this.new.read( path );
     }
     
+    //// VARIOUS //////////////////////////////////////
+    
     isWFSPath2 { ^true }
+    
+    exists { ^true }
+	
+	gui { |parent, bounds| ^WFSPathView( parent, bounds, this ); }
 	
 }
 
