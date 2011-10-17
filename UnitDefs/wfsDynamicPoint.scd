@@ -37,7 +37,7 @@ FreeUdef( \wfsDynamicPoint, [
 		\pointFromBus, \point, \pointLag, \dbRollOff, 
 		\maxAmpRadius, \crossfadeLag, \dontPause,
 		\u_i_ar_0_bus, \u_i_kr_0_bus, \u_i_kr_1_bus, 
-		\u_doneAction, \u_gain, \u_gate,
+		\u_doneAction, \u_gain, \u_gate, \u_mute,
 		\u_fadeIn, \u_fadeOut,
 		\u_globalGain,
 		\u_globalEQ_setting, \u_globalEQ_bypass,  

@@ -40,7 +40,7 @@ FreeUdef( \wfsStaticPlane, [
 	.envPut( \set_wfsp, [ // controls that can always be set
 		\point, \dbRollOff, \maxAmpRadius,
 		\u_i_ar_0_bus, 
-		\u_doneAction, \u_gain, \u_gate,
+		\u_doneAction, \u_gain, \u_gate, \u_mute,
 		\u_fadeIn, \u_fadeOut,
 		\u_globalGain,
 		\u_globalEQ_setting, \u_globalEQ_bypass,  

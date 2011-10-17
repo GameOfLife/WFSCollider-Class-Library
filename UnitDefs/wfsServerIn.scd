@@ -7,5 +7,5 @@ Udef( \wfsServerIn, { |bus = 0| // same as soundIn, but only plays on servers
 	.category_( \wfs_io )
 	.setSpec( \bus, PositiveIntegerSpec( 0 ) )
 	.shouldPlayOnFunc_({ |unit, target|
-		WFSSpeakerConf.allServers.includes( target.asTarget.server );
+		WFSSpeakerConf.includesServer( target.asTarget.server );
 	});
