@@ -237,7 +237,8 @@ UChainGUI {
 				};
 			} )
 			.put( \gain, { views[ \gain ].value = chain.getGain } )
-			.put( \muted, { views[ \muted ].value = chain.muted.binaryValue } )			.put( \startTime, { views[ \startTime ].value = chain.startTime ? 0; })
+			.put( \muted, { views[ \muted ].value = chain.muted.binaryValue } )
+			.put( \startTime, { views[ \startTime ].value = chain.startTime ? 0; })
 			.put( \dur, { var dur;
 				dur = chain.dur;
 				if( dur == inf ) {
@@ -299,23 +300,23 @@ UChainGUI {
 				.string_( " units" )
 				.align_( \left )
 				.resize_(2);
-		
-		io = SmoothButton( comp, Rect( comp.bounds.right - (36), 1, 36, 12 ) )
-			.label_( "i/o" )
-			.border_( 1 )
-			.radius_( 2 )
-			.action_({
-				var parent;
-				parent = composite.parent;
-				{
-					composite.remove;
-					UChainIOGUI( parent, originalBounds, chain );
-				}.defer(0.01);
+		if( chain.class != MassEditUChain ) {
+            io = SmoothButton( comp, Rect( comp.bounds.right - (36), 1, 36, 12 ) )
+                .label_( "i/o" )
+                .border_( 1 )
+                .radius_( 2 )
+                .action_({
+                    var parent;
+                    parent = composite.parent;
+                    {
+                        composite.remove;
+                        UChainIOGUI( parent, originalBounds, chain );
+                    }.defer(0.01);
 
-			}).resize_(3);
-				
+                }).resize_(3);
+		};
 		defs = SmoothButton( comp, 
-				Rect( comp.bounds.right - (36 + 4 + 36), 1, 36, 12 ) )
+				Rect( comp.bounds.right - (36 + if( chain.class != MassEditUChain ) {4 + 36}{0}), 1, 36, 12 ) )
 			.label_( "defs" )
 			.border_( 1 )
 			.radius_( 2 )
