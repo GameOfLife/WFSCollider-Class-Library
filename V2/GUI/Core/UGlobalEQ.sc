@@ -92,6 +92,10 @@ UGlobalEQSpec : Spec {
 	*default {  ^UGlobalEQ }
 	
 	*massEditSpec { ^nil }
+	
+	*findKey {
+		^Spec.specs.findKeyForValue(this);
+	}
 }
 
 

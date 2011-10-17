@@ -94,4 +94,8 @@ UGlobalGainSpec : Spec {
 	*default {  ^UGlobalGain }
 	
 	*massEditSpec { ^nil }
+	
+	*findKey {
+		^Spec.specs.findKeyForValue(this);
+	}
 }
