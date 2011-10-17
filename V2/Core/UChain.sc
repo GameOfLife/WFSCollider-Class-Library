@@ -387,9 +387,7 @@ UChain : UEvent {
 	
 	start { |target, startPos = 0, latency|
 		var targets, bundles;
-		if( target.isNil ) {
-			target = preparedServers ? this.class.defaultServers ? Server.default;
-		};
+		target = preparedServers ? target ? this.class.defaultServers ? Server.default;
 		preparedServers = nil;
 		targets = target.asCollection;
 		 if( verbose ) { "% starting on %".format( this, targets ).postln; };
