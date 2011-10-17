@@ -2,7 +2,7 @@ UMixer {
 
      var <mainComposite, <mixerView, <scoreListView, font, <parent, <bounds;
      var <>scoreList;
-     var <scoreController;
+     var <scoreController, <unitControllers;
 
      *new{ |score, parent, bounds| ^super.new.init(score, parent,bounds) }
 
@@ -107,7 +107,7 @@ UMixer {
         }  {
             mainComposite.bounds.copy.moveTo(0,0)
         };
-
+        unitControllers.do(_.remove);
         maxTrack = events.collect{ |event| event.track }.maxItem + 1;
 		count = 0;
 		spec = [-90,12,\db].asSpec;
@@ -123,7 +123,7 @@ UMixer {
 
         maxTrack.do{ |j|
 			events.select(_.canFreeSynth).do{ |event,i|
-				var cview,faders, eventsFromFolder;
+				var cview,faders, eventsFromFolder, ctl, sl, bt;
 				if(event.track == j){
 				color = Color.rand;
 				if(event.isFolder.not){
@@ -131,12 +131,12 @@ UMixer {
 					cview.decorator = FlowLayout(cview.bounds);
 					cview.background_(Color(0.58208955223881, 0.70149253731343, 0.83582089552239, 1.0););
 					cview.decorator.shift(0,24);
-					EZSmoothSlider.new(cview, Rect(0,0,32,240), events.indexOf(event), spec, layout:\vert)
+					sl = EZSmoothSlider.new(cview, Rect(0,0,32,240), events.indexOf(event), spec, layout:\vert)
 						.value_(event.getGain)
 						.action_({ |v|
 								event.setGain(v.value);
 						});
-					SmoothButton(cview,32@20)
+					bt = SmoothButton(cview,32@20)
 					    .states_(
 					        [[ \speaker, Color.black, Color.clear ],
 					        [  \speaker, Color.red, Color.clear ]] )
@@ -146,6 +146,10 @@ UMixer {
                         .action_({ |v|
                             event.muted_(v.value.booleanValue)
                         });
+                    ctl = SimpleController(event)
+                        .put(\gain,{ sl.value = event.getGain; })
+                        .put( \muted, { bt.value = event.muted.binaryValue } );
+                    unitControllers.add(ctl);
 				}{
 					eventsFromFolder = event.allEvents.collect{ |event| (\event: event,\oldLevel: event.getGain) };
 					cview = CompositeView(mixerView,40@300);
