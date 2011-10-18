@@ -21,7 +21,9 @@ GenericDef {
 
 	*getFromFile{ arg name;
 		var path;
-		^if( name.notNil and: {path = this.getDefFilePath(name); File.exists(path)} ) {
+		^if( name.notNil and:
+		    { path = this.getDefFilePath(name); File.exists(path)} or:
+		    { path = this.getUserDefFilePath(name); File.exists(path) } ) {
 			path.load
 		} {
 			"//" + this.class ++ ": - no Udef found for % in %\n"
@@ -41,6 +43,11 @@ GenericDef {
 	*getDefFilePath{ |defName|
 		var cleanDefName = this.cleanDefName(defName);
 		^this.defsFolder +/+ cleanDefName ++ ".scd";
+	}
+
+	*getUserDefFilePath{ |defName|
+		var cleanDefName = this.cleanDefName(defName);
+		^this.userDefsFolder +/+ cleanDefName ++ ".scd";
 	}
 
 	initArgSpecs { |args|

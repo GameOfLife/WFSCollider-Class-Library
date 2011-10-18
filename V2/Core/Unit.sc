@@ -61,7 +61,7 @@ RoundView.useWithSkin( (
 
 Udef : GenericDef {
 	
-	classvar <>all, <>defsFolder;
+	classvar <>all, <>defsFolder, <>userDefsFolder;
 	
 	var <>func, <>category;
 	var <>synthDef;
@@ -70,6 +70,7 @@ Udef : GenericDef {
 
 	*initClass{
 		defsFolder = this.filenameSymbol.asString.dirname.dirname.dirname +/+ "UnitDefs";
+		userDefsFolder = Platform.systemAppSupportDir++"/UnitDefs/";
 	}
 
 	*basicNew { |name, args, category|
