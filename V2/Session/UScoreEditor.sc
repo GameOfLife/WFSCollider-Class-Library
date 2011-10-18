@@ -18,6 +18,10 @@ UScoreEditor {
 		redoStates = List.new;
 	}
 
+	*initClass {
+	    clipboard = [];
+	}
+
 	addToAll {
 		all = all.asCollection.add( this );
 	}
