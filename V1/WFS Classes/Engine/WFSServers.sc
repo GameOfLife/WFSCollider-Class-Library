@@ -42,9 +42,6 @@ WFSServers {
 	var <activityIndex;
 	var <activityFromCPU = false;
 	var <syncDelays;
-	var <pulsesRunning = false;
-	var <counterRunning = false;
-	var pulsesRunningView;
 	var delayViews;
 	var <>singleWFSConfiguration;
 	var <>debugWatchers;
@@ -126,7 +123,7 @@ WFSServers {
 		multiServers.do( _.boot(10) );
 		}
 	
-	cmdPeriod { pulsesRunning = false; counterRunning = false; Server.freeAllRemote( false ); }
+	cmdPeriod { Server.freeAllRemote( false ); }
 	
 	isMaster { ^( masterServer.notNil && { multiServers.size != 0 }) }
 	isClient { ^( masterServer.isNil && { multiServers.size == 1 }) }
@@ -181,11 +178,10 @@ WFSServers {
 				.string_( "master (" ++ ( NetAddr.myIP ? "127.0.0.1" ) ++ ")" )
 				.font_( Font( "Monaco", 9 ) );
 
-			pulsesRunningView = SCStaticText( window, Rect( 0, 0, 100, 16 ) )
-				.stringColor_( Color.red )
-				.font_( Font( "Monaco", 9 ) )
-				.string_( "" );
-				
+			EZSmoothSlider(window, Rect(0,0,200,15),"Latency", [0.02,1,\exp,0,0.02].asSpec)
+			    .value_(masterServer.latency)
+			    .action_({ |v| masterServer.latency = v.value});
+
 			window.view.decorator.nextLine;
 			masterServer.makeView( window ); 
 			if( this.isMaster ) {
@@ -291,7 +287,7 @@ WFSServers {
 				.font_( Font( "Monaco", 9 ) )
 				.action_( {
 					// kill synths and press cmd-k on remote
-					"killing scsynths on server % and recompiling, please wait ± 5s plus another few for lifesign\n"
+					"killing scsynths on server % and recompiling, please wait ï¿½ 5s plus another few for lifesign\n"
 						.postf( ips[i].asString );
 					("killall -9 scsynth; sleep 2; killall -9 scsynth; sleep 2;" +  // kills twice with wait in between
 					 "k".asKeyStrokeCmd( "command" ) )
@@ -303,7 +299,7 @@ WFSServers {
 				.font_( Font( "Monaco", 9 ) )
 				.action_( {
 					// kill synths and restart sc on remote
-					"killing scsynths on server % and rebooting sc, please wait ± 10s plus another few for lifesign\n"
+					"killing scsynths on server % and rebooting sc, please wait ï¿½ 10s plus another few for lifesign\n"
 							.postf( ips[i].asString );
 					("killall -9 scsynth; sleep 2; killall -9 scsynth; sleep 2;" +
 				 	 "open 'Stop_SC.app'; sleep 3;" +
@@ -402,25 +398,6 @@ WFSServers {
 				{ ms.openHost( login, pwd );  }
 				{ "WFSServers-openHosts: MultiServer %: hostname not specified\n".postf( i ) };
 			});
-		}
-		
-	loadWFSSynthDefs {
-		case { this.isSingle }
-			{ WFSSynthDef.allTypes( singleWFSConfiguration )
-				.do({ |def| def.load( masterServer ) }); }
-			{ this.isClient }
-			{
-			multiServers.do({ |ms, i|
-				var defs;
-				defs = WFSSynthDef.allTypes( wfsConfigurations.wrapAt[i] );
-				defs.do({ |def| def.load(ms[0]);
-						ms.servers[1..].do({ |server| def.send( server ); });
-					});
-				});
-			}
-			{ this.isMaster }
-			{ "please load synthdefs locally on your server machines".postln };
-			 
 		}
 
 	startDebugWatcher {
