@@ -421,7 +421,7 @@ BufferSpec : Spec {
 	constrain { |value|
 		if( value.class == RichBuffer ) {
 			value.numFrames = numFrames.constrain( value.numFrames );
-			value.numChannels = numChannels;
+			value.numChannels = numChannels.asCollection.first;
 			^value;
 		} {
 			^RichBuffer( numChannels, numFrames.default );
@@ -438,10 +438,12 @@ BufSndFileSpec : BufferSpec {
 	
 	constrain { |value|
 		value = value.asBufSndFile;
-		
-		if( value.numChannels != numChannels ) {
-			if( value.useChannels.size != numChannels ) {
-				value.useChannels = (..numChannels-1).wrap( 0, value.numChannels );
+		if( numChannels.notNil ) {
+			if( numChannels.asCollection.includes( value.numChannels ).not ) {
+				if( numChannels.asCollection.includes( value.useChannels.size ).not ) {
+					value.useChannels = (..numChannels.asCollection[0]-1)
+						.wrap( 0, value.numChannels );
+				};
 			};
 		};
 		^value;
@@ -465,10 +467,11 @@ DiskSndFileSpec : BufSndFileSpec {
 	
 	constrain { |value|
 		value = value.asDiskSndFile;
-		
-		if( value.numChannels != numChannels ) {
-			"DiskSndFileSpec - soundfile '%' should have % channels but has %.\nIt might not playback"
-				.format( value.path.basename, numChannels, value.numChannels );
+		if( numChannels.notNil ) {
+			if(  numChannels.asCollection.includes( value.numChannels ).not ) {
+				"DiskSndFileSpec - soundfile '%' has an unsupported number of channels (%)"				.format( value.path.basename, value.numChannels )
+					.warn;
+			};
 		};
 		^value;
 	}

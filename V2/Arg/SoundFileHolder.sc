@@ -491,6 +491,10 @@ BufSndFile : AbstractSndFile {
         this.changed( \useChannels, useChannels );
     }
     
+    numChannelsForPlayBuf {
+	    ^if( useChannels.isNil ) { ^numChannels } { ^useChannels.size };
+    }
+    
     asControlInputFor { |server, startPos = 0| 
 	    ^[ this.currentBuffer(server, startPos), rate, loop.binaryValue ] 
 	   }

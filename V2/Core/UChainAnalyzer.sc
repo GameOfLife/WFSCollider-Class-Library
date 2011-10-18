@@ -11,15 +11,15 @@ UChainAudioAnalyzer {
 	
 	*inGetter { ^\getAudioIn }
 	*outGetter { ^\getAudioOut }
-	*defInGetter { ^\audioIns }
-	*defOutGetter { ^\audioOuts }
+	*allInGetter { ^\audioIns }
+	*allOutGetter { ^\audioOuts }
 	
 	*getterFor { |mode = \in|
 		^switch( mode, \in, this.inGetter, \out, this.outGetter );
 	}
 	
-	*defGetterFor { |mode = \in|
-		^switch( mode, \in, this.defInGetter, \out, this.defOutGetter );
+	*allGetterFor { |mode = \in|
+		^switch( mode, \in, this.allInGetter, \out, this.allOutGetter );
 	}
 	
 	init { 
@@ -37,7 +37,7 @@ UChainAudioAnalyzer {
 		// [  unit, index-of-unit, [indices], [buses] ]
 		
 		ins = units.collect({ |unit, i| 
-			[ unit, i, unit.def.perform( this.class.defInGetter ) ]; 
+			[ unit, i, unit.perform( this.class.allInGetter ) ]; 
 		})			
 			.select({ |item| item[2].size > 0 })
 			.collect({ |item|
@@ -49,7 +49,7 @@ UChainAudioAnalyzer {
 			});
 		
 		outs = units.collect({ |unit, i| 
-			[ unit, i, unit.def.perform( this.class.defOutGetter ) ]; 
+			[ unit, i, unit.perform( this.class.allOutGetter ) ]; 
 		})			
 			.select({ |item| item[2].size > 0 })
 			.collect({ |item|
@@ -126,8 +126,8 @@ UChainControlAnalyzer : UChainAudioAnalyzer {
 	
 	*inGetter { ^\getControlIn }
 	*outGetter { ^\getControlOut }
-	*defInGetter { ^\controlIns }
-	*defOutGetter { ^\controlOuts }
+	*allInGetter { ^\controlIns }
+	*allOutGetter { ^\controlOuts }
 	
 	
 	/*

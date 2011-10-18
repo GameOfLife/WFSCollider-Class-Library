@@ -67,14 +67,14 @@ UChain : UEvent {
 	// global setters (acces specific units inside the chain)
 	
 	prGetCanFreeSynths { // returns the units that can free synths (they will free the whole group)
-		^units.select({ |unit| unit.def.canFreeSynth });
+		^units.select({ |unit| unit.canFreeSynth });
 	}
 
 	canFreeSynth{ ^this.prGetCanFreeSynths.size != 0 }
 	
 	prSetCanFreeSynths { |...args|
 		units.do({ |unit|
-			if( unit.def.canFreeSynth ) {
+			if( unit.canFreeSynth ) {
 				unit.set( *args );
 			};
 		});
@@ -115,7 +115,7 @@ UChain : UEvent {
 		units.do({ |unit|
 		    var unitDur, unitFadeOut, unitFadeIn;
 		    //each unit might have a different dur and fadeIn
-			if( unit.def.canFreeSynth ) {
+			if( unit.canFreeSynth ) {
 				unitDur = unit.get( \u_dur );
 				if( unitDur != inf ) {
 			        unitFadeIn = unit.get( \u_fadeIn );
@@ -157,7 +157,7 @@ UChain : UEvent {
 		var dur, out;
 		units.do({ |unit|
 			var u_dur;
-			if( unit.def.canFreeSynth ) {
+			if( unit.canFreeSynth ) {
 				u_dur = unit.get( \u_dur );
 				if( (u_dur > (dur ? 0)) && { u_dur != inf } ) {
 					dur = u_dur;

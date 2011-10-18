@@ -113,14 +113,14 @@ Udef : GenericDef {
 	loadSynthDef { |server|
 		server = server ? Server.default;
 		server.asCollection.do{ |s|
-		    synthDef.send(s)
+		    synthDef.asCollection.do(_.send(s));
 		}
 	}
 	
 	sendSynthDef { |server|
 		server = server ? Server.default;
 		server.asCollection.do{ |s|
-			synthDef.send(s)
+			synthDef.asCollection.do(_.send(s));
 		}
 	}
 	
@@ -181,7 +181,7 @@ Udef : GenericDef {
 		});
 	}
 	
-	prIOids { |mode = \in, rate = \audio|
+	prIOids { |mode = \in, rate = \audio, unit|
 		var key;
 		key = this.prGetIOKey( mode, rate );
 		^this.prIOspecs( mode, rate, key ).collect({ |item|
@@ -189,12 +189,13 @@ Udef : GenericDef {
 		});
 	}
 	
-	audioIns { ^this.prIOids( \in, \audio ); }
-	controlIns { ^this.prIOids( \in, \control ); }
-	audioOuts { ^this.prIOids( \out, \audio ); }
-	controlOuts { ^this.prIOids( \out, \control ); }
+	audioIns { |unit| ^this.prIOids( \in, \audio, unit ); }
+	controlIns { |unit| ^this.prIOids( \in, \control, unit ); }
+	audioOuts { |unit| ^this.prIOids( \out, \audio, unit ); }
+	controlOuts { |unit| ^this.prIOids( \out, \control, unit ); }
 	
-	canFreeSynth { ^this.keys.includes( \u_doneAction ) } // assumes the Udef contains a UEnv
+	canFreeSynth { |unit| ^this.keys.includes( \u_doneAction ) } 
+		// assumes the Udef contains a UEnv
 	
 	// these may differ in subclasses of Udef
 	createSynth { |unit, target, startPos = 0| // create A single synth based on server
@@ -228,6 +229,8 @@ Udef : GenericDef {
 	}
 	
 	asUdef { ^this }
+	
+	asUnit { ^U( this ) }
 		
 }
 
@@ -238,6 +241,7 @@ U : ObjectWithArgs {
 	
 	// var <def;
 	var defName;
+	var defClass;
 	//var <>synths;
 	var <>disposeOnFree = true;
 	var <>preparedServers;
@@ -258,6 +262,7 @@ U : ObjectWithArgs {
 			def = inName;
 			defName = def.name;
 			if( defName.isNil ) { defName = def };
+			defClass = def.class;
 		} {
 			def = inName.asSymbol.asUdef;
 			
@@ -374,6 +379,13 @@ U : ObjectWithArgs {
 		^this.get( this.getIOKey( \out, \control, id ) );
 	}
 	
+	audioIns { ^this.def.audioIns( this ); }
+	controlIns { ^this.def.controlIns( this ); }
+	audioOuts { ^this.def.audioOuts( this ); }
+	controlOuts { |unit| ^this.def.controlOuts( this ); }
+	
+	canFreeSynth { ^this.def.canFreeSynth( this ) }
+	
 	shouldPlayOn { |target| // this may prevent a unit or chain to play on a specific server 
 		^this.def.shouldPlayOn( this, target );
 	}
@@ -393,7 +405,7 @@ U : ObjectWithArgs {
 	loop { ^this.get( \loop ) }
 	loop_ { |new| this.set( \loop, new ) }
 	
-	def { ^defName.asUdef }
+	def { ^defName.asUdef( defClass ) }
 	defName { ^if( defName.class == Symbol ) { defName } { defName.name } }
 	
 	def_ { |newDef, keepArgs = true|
@@ -462,8 +474,8 @@ U : ObjectWithArgs {
 		this.def.setSynth( this, *args );
 	}
 	
-	argSpecs { ^this.def.argSpecs }
-	getSpec { |key| ^this.def.getSpec( key ); }
+	argSpecs { ^this.def.argSpecs( this ) }
+	getSpec { |key| ^this.def.getSpec( key, this ); }
 
 	isPlaying { ^(this.synths.size != 0) }
 		
@@ -473,7 +485,7 @@ U : ObjectWithArgs {
 	
 	getInitArgs {
 		var defArgs;
-		defArgs = (this.def.args ? []).clump(2);
+		defArgs = (this.def.args( this ) ? []).clump(2);
 		^args.clump(2).select({ |item, i| 
 			item != defArgs[i]
 		 }).flatten(1);
