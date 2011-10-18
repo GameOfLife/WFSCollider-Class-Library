@@ -29,6 +29,7 @@ UScoreEditorGui_TransportBar {
 		    //[newState,oldState].postln;
 		    if( newState == \playing )  {
 		        views[\play].value = 1;
+		        views[\pause].value = 0;
 		        { views[\prepare].stop }.defer
 		    };
 		    if(newState == \stopped ) {
@@ -36,8 +37,9 @@ UScoreEditorGui_TransportBar {
                 views[\pause].value = 0;
                 views[\play].value = 0;
 		    };
-		    if( newState == \preparing ) {
-		        { views[\prepare].start }.defer
+		    if( newState == \preparing  ) {
+		        { views[\prepare].start }.defer;
+                views[\pause].value = 2;
 		    };
 		    //resuming
 		    if( (newState == \playing) && (oldState == \paused) ) {
@@ -47,7 +49,9 @@ UScoreEditorGui_TransportBar {
 
                 { views[\prepare].stop }.defer;
                 views[\play].value = 2;
-
+		    };
+		    if( newState == \paused ) {
+                views[\pause].value = 1;
 		    };
 
 		});
@@ -99,7 +103,7 @@ UScoreEditorGui_TransportBar {
 					.alphaWhenStopped_( 0 )
 					.canFocus_(false);
 
-		views[\play] = SmoothButton( view, 40@size  )
+		views[\play] = SmoothSimpleButton( view, 40@size  )
 			.states_( [
 			    [ \play, Color.black, Color.clear ],
 			    [ \stop, Color.black, Color(0.40298507462687, 0.73134328358209, 0.44776119402985) ],
@@ -111,24 +115,18 @@ UScoreEditorGui_TransportBar {
 			.action_({  |v,c,d,e|
 
 			    var startedPlaying;
-			    switch( v.value ) {1} {
-                    startedPlaying = this.score.prepareAndStart( UServerCenter.servers, this.score.pos);
-			        if( startedPlaying.not ){ v.value = 0 };
-			    }{2} {
-                    this.score.stop;
-                    views[\pause].value = 0;
-                    { views[\prepare].stop }.defer;
-                    v.value = 0;
-			    } {
-			        views[\pause].value = 0;
-			        startedPlaying = this.score.start( UServerCenter.servers, this.score.pos);
-			        if( startedPlaying.not ){ v.value = 0 }{v.value = 1};
-			    }
-
+			    switch( v.value )
+			        {0} {
+                        this.score.prepareAndStart( UServerCenter.servers, this.score.pos, true);
+			        }{1} {
+                        this.score.stop;
+                    }{2} {
+                        this.score.start( UServerCenter.servers, this.score.pos, true);
+                    }
 
 			});
 			
-		views[\pause] = SmoothButton( view, 50@size  )
+		views[\pause] = SmoothSimpleButton( view, 50@size  )
 			.states_( [
 			    [ \pause, Color.black, Color.clear ],
 			    [ \pause, Color.red,Color(0.40298507462687, 0.73134328358209, 0.44776119402985) ],
@@ -139,20 +137,16 @@ UScoreEditorGui_TransportBar {
 			.background_(Color.grey(0.8))
 			.action_({ |v|
 			    switch( v.value)
-			    {1}{
+			    {0}{
 			        if(this.score.isPlaying) {
-			        this.score.pause;
+			            this.score.pause;
 			       } {
-			        v.value = 2;
-			         this.score.prepare;
+			            this.score.prepare;
 			       }
-			    }{2} {
-			        v.value = 0;
+			    }{1} {
 			        this.score.resume(UServerCenter.servers);
-			    }{
+			    }{2}{
 			        this.score.stop;
-			        views[\play].value = 0;
-
 			    }
 			});
 
