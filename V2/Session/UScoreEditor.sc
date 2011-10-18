@@ -5,7 +5,6 @@ UScoreEditor {
 
 	var <score;
 	var <undoStates, <redoStates, maxUndoStates = 40;
-	var <dirty = false;
 
 	*new { |score|
 		^super.newCopyArgs( score)
@@ -67,7 +66,6 @@ UScoreEditor {
 	//--UNDO/REDO--
 	storeUndoState {
 
-		dirty = true;
 		redoStates = List.new;
 		undoStates.add( score.duplicate.events );
 		if(undoStates.size > maxUndoStates) {
@@ -100,51 +98,7 @@ UScoreEditor {
 
 	}
 
-	save{
-		if(score.filePath.notNil){
-			score.writeUFile( score.filePath ,true, false);
-			dirty = false;
-		}{
-			this.saveAs
-		}
-	}
-
-	saveAs{ |path|
-		score.writeUFile( path );
-		dirty = false;
-		score.filePath = path;
-	}
-
-    /* Not needed with copy/paste ?
-    //--SCORE IMPORTING--
-
-	importScorePlaceAtPos { |score, pos = 0|
-	    this.changeScore({
-		score <| score.events.collect({ |event|
-	        event.startTime = pos + event.startTime;
-		});
-		    score.cleanOverlaps;
-		});
-		score.changed(\numEventsChanged);
-	}
-
-	importScorePlaceAtStart { |score|
-	    this.importScorePlaceAtPos(0)
-	}
-
-	importScorePlaceAtEnd { |score|
-	    this.importScorePlaceAtPos(this.score.duration)
-	}
-
-	importScoreAsFolder { |score|
-	    this.changeScore({
-	        score <| score;
-		    score.cleanOverlaps;
-		});
-		score.changed(\numEventsChanged);
-	}
-    */
-    //--EVENT MANAGEMENT--
+	//--EVENT MANAGEMENT--
 
     <| { |events|
         this.changeScore({

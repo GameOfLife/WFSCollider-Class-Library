@@ -17,10 +17,10 @@ UScoreEditorGUI {
 
 	//*initClass { UI.registerForShutdown({ scoreEditor.askForSave = false }); }
 
-	*new { |scoreEditor|
+	*new { |scoreEditor, bounds|
 		^super.new.init( scoreEditor)
 			.addToAll
-			.newWindow
+			.newWindow(bounds)
 	}
 
 	*currentSelectedEvents{
@@ -54,19 +54,31 @@ UScoreEditorGUI {
 	selectedEvents{ ^scoreView.selectedEvents }
 
 
-	newWindow {
+	newWindow { |bounds|
 
 		var font = Font( Font.defaultSansFace, 11 ), header, windowTitle, margin, gap, topBarH, tranBarH, view, centerView, centerBounds;
-        var bounds = Rect(230 + 20.rand2, 230 + 20.rand2, 680, 300);
+        bounds = bounds ? Rect(230 + 20.rand2, 230 + 20.rand2, 680, 300);
 
         window = Window("Score Editor", bounds).front;
         window.onClose_({
+
             if(UScoreEditorGUI.current == this) {
                 UScoreEditorGUI.current = nil
             };
             topBar.remove;
             scoreView.remove;
             tranportBar.remove;
+            {
+                if( (this.score.events.size != 0) && (this.score.isDirty) ) {
+                    SCAlert( "Do you want to save your score? (" ++ this.score.name ++ ")" ,
+                        [ [ "Don't save" ], [ "Cancel" ], [ "Save" ],[ "Save as"] ],
+                        [ 	nil,
+                            { UScoreEditorGUI(scoreEditor) },
+                            { this.score.save(nil, {UScoreEditorGUI(scoreEditor)} ) },
+                            { this.score.saveAs(nil,nil, {UScoreEditorGUI(scoreEditor)} ) }
+                        ] );
+                };
+            }.defer(0.1)
         });
         //for 3.5 this has to be changed.
         if(window.respondsTo(\drawFunc_)) {

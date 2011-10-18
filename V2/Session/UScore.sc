@@ -10,7 +10,8 @@ UScore : UEvent {
 	var <>events, <>name = "untitled";
 	var pos = 0, <>loop = false;
 	var <playState = \stopped;
-	var <>filePath;
+	var <>filePath, <lastVersionSaved;
+
 
 	/* playState is a finite state machine. The transitions graph:
                                        stop
@@ -58,6 +59,10 @@ UScore : UEvent {
 	    events = if(args.size >0){args}{Array.new};
 	    
 	    this.changed( \init );
+	}
+
+	isDirty{
+	    ^lastVersionSaved !! { |x| this.asTextArchive !=  x} ? true
 	}
 
 	isPlaying{ ^playState == \playing }
@@ -508,14 +513,18 @@ UScore : UEvent {
 		stream << "a " << this.class.name << "( " << events.size <<" events )"
 	}
 
-	save {
-	    filePath !! { |x| this.write(x,true, { |x| filePath = x}) } ?? {
-	        this.saveAs
-	    }
+	save { |successAction, cancelAction|
+	    if(this.isDirty){
+            filePath !! { |x| this.write(x,true, true,
+                { |x| filePath = x; lastVersionSaved = this.asTextArchive; successAction.value}, cancelAction) } ?? {
+                this.saveAs(nil,successAction, cancelAction)
+            }
+        }
 	}
 
-	saveAs { |path|
-	    this.write(path, true, { |x| filePath = x})
+	saveAs { |path, successAction, cancelAction|
+	    this.write(path, true, true,
+	        { |x| filePath = x; lastVersionSaved = this.asTextArchive;successAction.value}, cancelAction)
 	}
 
 	readTextArchive { |pathname|

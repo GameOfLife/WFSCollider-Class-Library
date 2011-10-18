@@ -76,23 +76,24 @@ UEvent {
 	    };
     }
     
-    write { |path, overwrite=false, ask=true|
+    write { |path, overwrite=false, ask=true, successAction, cancelAction|
 	    var writeFunc;
-	    writeFunc = { |overwrite, ask|
+	    writeFunc = { |overwrite, ask, path|
 		    var text;
 		    text = this.asTextArchive;
 		    File.checkDo( path, { |f|
 				f.write( text );
 			}, overwrite, ask);
+			successAction.value(path);
 	    };
 
 	    if( path.isNil ) {
 		    Dialog.savePanel( { |pth|
 			    path = pth;
-			    writeFunc.value(true,false);
-		    } );
+			    writeFunc.value(true,false,path);
+		    }, cancelAction );
 	    } {
-		    writeFunc.value(overwrite,ask);
+		    writeFunc.value(overwrite,ask,path);
 	    };
     }
     
