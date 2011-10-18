@@ -6,7 +6,7 @@ WFSPathView {
 	
 	*new { |parent, bounds, object, addUndoManager = true|
 		^super.new.init( parent, bounds, object )
-			.addUndoManager;
+			.addUndoManager( addUndoManager );
 	}
 	
 	init { |parent, bounds, object|
