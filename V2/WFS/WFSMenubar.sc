@@ -30,7 +30,9 @@ WFSMenuBar {
 		}).setShortCut("n",true);
 		
 		SCMenuItem.new(scoreMenu, "Open").action_({
-			UScore.read(nil, UScoreEditorGUI(_) )
+
+			UScore.openWFS(nil, UScoreEditorGUI(_) )
+
 		});
 		
 		SCMenuItem.new(scoreMenu, "Save").action_({	
