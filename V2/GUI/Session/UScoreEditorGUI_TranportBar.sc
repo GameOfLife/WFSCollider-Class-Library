@@ -159,6 +159,15 @@ UScoreEditorGui_TransportBar {
 			    this.score.pos = 0;
 			});
 
+        views[\loop] = SmoothButton( view, 50@size  )
+        			.states_( [[\roundArrow, Color.black, Color.clear ],
+        			[\roundArrow, Color.black, Color(0.40298507462687, 0.73134328358209, 0.44776119402985) ]])
+        			.canFocus_(false)
+        			.font_( font )
+        			.border_(1)
+        			.background_(Color.grey(0.8))
+        			.action_({ |v| this.score.loop = v.value.booleanValue;  });
+
         view.decorator.shift(20,0);
 
 	    views[\counter] = SMPTEBox( view, 150@size )

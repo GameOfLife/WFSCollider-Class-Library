@@ -81,5 +81,13 @@ x = UScoreEditor(z);
 y = UScoreEditorGUI(x);
 )
 
+//this score should not be loopable, it's too small
+(
+x = BufSndFile("sounds/a11wlk01-44_1.aiff", 
+				rate: (1).midiratio, loop: true );
+y = x.makeUChain.releaseSelf_(true).startTime_(0).track_(0).fadeOut_(1).fadeIn_(1).duration_(4);
+z = UScore(y);
+z.edit;
+)
 
 
