@@ -247,7 +247,7 @@ UScore : UEvent {
 		prepareEvents = if(assumePrepared){evs.select({ |item| item.prepareTime >= startPos })}{evs};
 		startEvents = evs.sort({ |a,b| a.startTime <= b.startTime });
 		releaseEvents = events
-			.select({ |item| (item.duration < inf) && { item.eventEndTime >= startPos } && item.isFolder.not })
+			.select({ |item| (item.releaseSelf != true) && { (item.duration < inf) && { item.eventEndTime >= startPos } && item.isFolder.not } })
 			.sort({ |a,b| a.eventEndTime <= b.eventEndTime });
 
 		allEvents = prepareEvents.collect{ |x| [x.prepareTime, 0, x]}
