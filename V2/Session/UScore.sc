@@ -35,6 +35,8 @@ UScore : UEvent {
 		activeScores = Set();
 	}
 
+	*current { ^UScoreEditorGUI.current !! { |x| x.score } }
+
 	*new { |... events| 
 		^super.new.init( events );
 	}
@@ -511,7 +513,7 @@ UScore : UEvent {
 	    this.changed(\pos, x);
 	}
 
-	edit{ ^UScoreEditorGUI(UScoreEditor(this)) }
+	gui { ^UScoreEditorGUI(UScoreEditor(this)) }
 
 	printOn { arg stream;
 		stream << "a " << this.class.name << "( " << events.size <<" events )"
