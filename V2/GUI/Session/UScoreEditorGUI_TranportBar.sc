@@ -106,7 +106,7 @@ UScoreEditorGui_TransportBar {
 		views[\play] = SmoothSimpleButton( view, 40@size  )
 			.states_( [
 			    [ \play, Color.black, Color.clear ],
-			    [ \stop, Color.black, Color(0.40298507462687, 0.73134328358209, 0.44776119402985) ],
+			    [ \stop, Color.black, Color.green.alpha_(0.5) ],
 			    [ \play, Color.blue, Color.red ]] )
 			.canFocus_(false)
 			.font_( font )
@@ -129,7 +129,7 @@ UScoreEditorGui_TransportBar {
 		views[\pause] = SmoothSimpleButton( view, 50@size  )
 			.states_( [
 			    [ \pause, Color.black, Color.clear ],
-			    [ \pause, Color.red,Color(0.40298507462687, 0.73134328358209, 0.44776119402985) ],
+			    [ \pause, Color.red,Color.green.alpha_(0.5) ],
 			    [ \pause, Color.blue,Color.red ]] )
 			.canFocus_(false)
 			.font_( font )
@@ -161,7 +161,7 @@ UScoreEditorGui_TransportBar {
 
         views[\loop] = SmoothButton( view, 50@size  )
         			.states_( [[\roundArrow, Color.black, Color.clear ],
-        			[\roundArrow, Color.black, Color(0.40298507462687, 0.73134328358209, 0.44776119402985) ]])
+        			[\roundArrow, Color.black, Color.green.alpha_(0.5) ]])
         			.canFocus_(false)
         			.font_( font )
         			.border_(1)
