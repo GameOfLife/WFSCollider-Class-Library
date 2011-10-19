@@ -21,45 +21,60 @@ WFSMenuBar {
 
     *new { |index = 3|
 		
-		var wfsMenu, scoreMenu, pathMenu, helpMenu, viewMenu, defaultMenu, addEvent, events;
-		
+		var wfsMenu, scoreMenu, pathMenu, helpMenu, viewMenu, defaultMenu, addEvent, events, menus, sessionMenu;
+
+		menus = ();
 		//score	
-		scoreMenu = SCMenuGroup.new(nil, "Score", index);
-		SCMenuItem.new(scoreMenu,  "New").action_({
-			UScore.new.edit 
+		sessionMenu = SCMenuGroup.new(nil, "Session", index);
+		SCMenuItem.new(sessionMenu,  "New").action_({
+			USession.new.gui
 		}).setShortCut("n",true);
 		
-		SCMenuItem.new(scoreMenu, "Open").action_({
-
-			UScore.openWFS(nil, UScoreEditorGUI(_) )
-
+		SCMenuItem.new(sessionMenu, "Open").action_({
+			USession.read(nil, USessionGUI(_) )
 		});
 		
-		SCMenuItem.new(scoreMenu, "Save").action_({	
-			UScoreEditorGUI.current !! { |x| x.score.save }
+		SCMenuItem.new(sessionMenu, "Save").action_({
+			USession.current !! _.save
 		})
 		.setShortCut("s",true);			
 			
-		SCMenuItem.new(scoreMenu, "Save as").action_({	
-			UScoreEditorGUI.current !! { |x| x.score.saveAs }
+		SCMenuItem.new(sessionMenu, "Save as").action_({
+			USession.current !! _.saveAs
 		})
-		.setShortCut("S",true);	
-		/*
-		SCMenuSeparator.new(scoreMenu);
-		
-		SCMenuItem.new(scoreMenu, "Check sound files").action_({
-			var scoreEditor = WFSScoreEditor.current;
-			if(scoreEditor.notNil){	 WFSScoreEditor.current.checkSoundFiles }
+		.setShortCut("S",true);
+		SCMenuSeparator.new(sessionMenu);
+
+		SCMenuItem.new(sessionMenu, "add UChain").action_({
+			USession.current !! _.add(UChain(\sine,\output))
 		});
-		
-		SCMenuItem.new(scoreMenu, "Copy all sound files").action_({
-			var scoreEditor = WFSScoreEditor.current;
-			if(scoreEditor.notNil){	 WFSScoreEditor.current.copySoundFiles }
-		});
-		*/
+
 		//events
-		events = SCMenuGroup.new(nil, "Events", index + 1);
-		SCMenuItem.new(events, "Add").action_({
+
+/* EVENTS */
+		events = SCMenuGroup.new(nil, "Scores", index + 1);
+
+/* USCORE */
+		menus[\uscore] = SCMenuGroup.new(events, "File");
+		SCMenuItem.new(menus[\uscore],  "New").action_({
+			var score = UScore.new;
+			USession.current.add(score);
+			score.gui;
+		});
+
+		SCMenuItem.new(menus[\uscore], "Open").action_({
+			UScore.openWFS(nil, UScoreEditorGUI(_) )
+		});
+
+		SCMenuItem.new(menus[\uscore], "Save").action_({
+			UScore.current !! _.save
+		});
+
+		SCMenuItem.new(menus[\uscore], "Save as").action_({
+			UScore.current !! _.saveAs
+		});
+
+		SCMenuItem.new(events, "Add Event").action_({
 			UScoreEditorGUI.current !! { |x| x.editor.addEvent }
 		}).setShortCut("A",true);
 
