@@ -423,20 +423,17 @@ AbstractSndFile : AbstractRichBuffer {
 	}
 	
 	makeUnit { // to do: remove fadeInTime / fadeOutTime : they are now covered elsewhere
-		^MetaU( this.unitNamePrefix++"Player", 
-			[\numChannels, numChannels], 
-			[\soundFile, this ] 
-		);
+		^U( this.unitNamePrefix++"SoundFile", [\soundFile, this ] );
 	}
 	
 	asUnit {
 		^this.makeUnit;
 	}
 
-	makeUChain {
+	makeUChain { |outputUnit = \output|
 		var chain;
 		this.unit = nil; // forget old unit
-		chain = UChain( this.makeUnit, \output);
+		chain = UChain( this.makeUnit, outputUnit);
 		if( loop.not ) { chain.dur_( this.eventDuration ) };
 		^chain;
 	}
@@ -529,7 +526,7 @@ BufSndFile : AbstractSndFile {
 		^buf;
 	}
 
-    unitNamePrefix{ ^"buffer" }
+    unitNamePrefix{ ^"buf" }
     
     u_waitTime { ^5 }
     
