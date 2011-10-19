@@ -232,7 +232,7 @@ WFSPath2 {
 		indices = indices ?? { (..positions.size-1) };
 		pos = positions[ indices ].collect(_.copy);
 		tim = this.times[ indices[ 0..indices.size-2 ] ];
-		^this.class.new( pos, tim, newName );
+		^this.class.new( pos, tim, type, curve, clipMode ).name_( newName );
 	}
 	
 	putSelection { |indices, selectionPath| // in place operation !!
@@ -552,8 +552,8 @@ WFSPath2 {
 
 + WFSPath {
 	asWFSPath2 {
-		^WFSPath2( this.positions.collect(_.asPoint), this.times, this.name )
-			.intType_( \cubic );
+		^WFSPath2( this.positions.collect(_.asPoint), this.times, \cubic )
+			.name_( this.name );
 	}
 }
 
