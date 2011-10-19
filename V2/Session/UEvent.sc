@@ -1,4 +1,4 @@
-UEvent {
+UEvent : UArchivable {
 
     var <startTime=0;
     var <>track=0;  //track number (horizontal segment) on the score editor
@@ -49,84 +49,6 @@ UEvent {
 	           this.release;
             };
         }
-    }
-    
-    archiveAsCompileString { ^true }
-    
-    getInitArgs { this.subclassResponsibility(thisMethod) }
-    
-    *readTextArchive { |pathname|
-	    var res, sub;
-	    res = pathname.load;
-	    sub = this.subclasses;
-	    sub = sub ? [];
-	    if( res.class == this or: { this.subclasses.includes( res.class ) } ) {
-		   ^res;
-	    } {
-		    "%:readTextArchive - wrong type (%)\n".postf( this, res );
-		    ^nil;
-	    }
-    }
-    
-    readTextArchive { |pathname|
-	    var res;
-	    res = this.class.readTextArchive( pathname );
-	    if( res.notNil ) {
-		    this.init( res.getInitArgs );
-	    };
-    }
-    
-    write { |path, overwrite=false, ask=true, successAction, cancelAction|
-	    var writeFunc;
-	    writeFunc = { |overwrite, ask, path|
-		    var text;
-		    text = this.asTextArchive;
-		    File.checkDo( path, { |f|
-				f.write( text );
-			}, overwrite, ask);
-			successAction.value(path);
-	    };
-
-	    if( path.isNil ) {
-		    Dialog.savePanel( { |pth|
-			    path = pth;
-			    writeFunc.value(true,false,path);
-		    }, cancelAction );
-	    } {
-		    writeFunc.value(overwrite,ask,path);
-	    };
-    }
-    
-    read { |path, action|
-         var score;
-
-        if( path.isNil ) {
-		    Dialog.getPaths( { |paths|
-	             this.readTextArchive( paths[0] );
-	             action.value(score);
-	        });
-	    } {
-	            path = path.standardizePath;
-	            this.readTextArchive( path );
-	            action.value(score);
-	    };
-    }
-    
-    *read { |path, action|
-        var score;
-
-        if( path.isNil ) {
-		    Dialog.getPaths( { |paths|
-	             score = this.readTextArchive( paths[0] );
-	             action.value(score);
-	             score
-	        });
-	    } {
-	            path = path.standardizePath;
-	            score = this.readTextArchive( path );
-	            action.value(score);
-	            ^score
-	    };
     }
 
 }

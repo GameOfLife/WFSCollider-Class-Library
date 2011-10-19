@@ -7,10 +7,9 @@ UScore : UEvent {
 	*/
 
 	//public
-	var <>events, <>name = "untitled";
+	var <>events, <name = "untitled";
 	var pos = 0, <>loop = false;
 	var <playState = \stopped;
-	var <>filePath, <lastVersionSaved;
 
 
 	/* playState is a finite state machine. The transitions graph:
@@ -59,10 +58,6 @@ UScore : UEvent {
 	    events = if(args.size >0){args}{Array.new};
 	    
 	    this.changed( \init );
-	}
-
-	isDirty{
-	    ^lastVersionSaved !! { |x| this.asTextArchive !=  x} ? true
 	}
 
 	isPlaying{ ^playState == \playing }
@@ -521,34 +516,6 @@ UScore : UEvent {
 	printOn { arg stream;
 		stream << "a " << this.class.name << "( " << events.size <<" events )"
 	}
-
-	save { |successAction, cancelAction|
-	    if(this.isDirty){
-            filePath !! { |x| this.write(x,true, true,
-                { |x| filePath = x; lastVersionSaved = this.asTextArchive; successAction.value}, cancelAction) } ?? {
-                this.saveAs(nil,successAction, cancelAction)
-            }
-        }
-	}
-
-	saveAs { |path, successAction, cancelAction|
-	    this.write(path, true, true,
-	        { |x| filePath = x; lastVersionSaved = this.asTextArchive;successAction.value}, cancelAction)
-	}
-
-	readTextArchive { |pathname|
-	    super.readTextArchive(pathname);
-	    filePath = pathname;
-    }
-
-    *readTextArchive { |pathname|
-        var res = super.readTextArchive(pathname);
-        ^if(res.notNil) {
-            res.filePath_(pathname)
-        } {
-            res
-        }
-    }
 	
 	getInitArgs {
 		var numPreArgs = -1;
@@ -565,5 +532,8 @@ UScore : UEvent {
 	}
 	
 	storeArgs { ^this.getInitArgs }
-	
+
+	onSaveAction { this.name = filePath.basename.removeExtension }
+
+	name_ { |x| name = x; this.changed(\name) }
 }

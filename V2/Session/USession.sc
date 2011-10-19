@@ -1,50 +1,62 @@
-USession{
+USession : UArchivable{
 
-	classvar <>all, <>current;
-	
     /*
-    *   tracks -> Array[UChain]
-    *   scores -> Array[UScore]
+    *   objects -> Array[UChain,UChainGroup,UScore or UScoreList]
     */
-    var <>objects;
-    
-    *initClass { all = [] }
+    var <objects, <name = "untitled";
 
-    *new{ |tracks|
-        ^super.newCopyArgs(tracks).addToAll;
+    *new{ |...objects|
+        ^super.new.init(objects);
     }
-    
-    addToAll { if( all.includes( this ).not ) { all = all.add( this ) }; }
-    
-    makeCurrent { current = this  }
-     
+
+    init { |inObjects|
+        objects = if(inObjects.size > 0){ inObjects }{ [] };
+    }
+
+    *current { ^USessionGUI.current !! _.session }
+
     at { |index| ^objects[ index ] }
 
-    startAll {
-		objects.do(_.start);
+    add { |item|
+        objects = objects.add(item);
+        this.changed(\objectsChanged)
     }
 
-    /*
-    *   server: Server or Array[Server]
-    */
-    startChains { |server|
-        var chains = objects.select({ |obj| obj.class == UChain });
-        fork{
-            chains.do( _.prepare(server) );
-            server.sync;
-            chains.do( _.start(server) );
-        };
+    remove { |item|
+        objects.remove(item);
+        this.changed(\objectsChanged)
+    }
+
+    startAll { |targets|
+		objects.do(_.prepareAndStart);
+    }
+
+    startChains { |targets|
+        var chains = objects.select(_.isUChainLike);
+        chains.do(_.prepareAndStart(targets))
         ^chains
     }
     
-     startScores { |server|
-        var scores = objects.select({ |obj| obj.class == UScore });
-        fork{
-            scores.do( _.prepare(server) );
-            server.sync;
-            scores.do( _.start(server) );
-        };
+    startScores { |targets|
+        var scores = objects.select(_.isUScoreLike);
+        scores.do(_.prepareAndStart(targets))
         ^scores
     }
+
+    stopAll {
+        objects.do(_.release)
+    }
+
+    gui { ^USessionGUI(this) }
+
+    getInitArgs {
+		^objects;
+	}
+
+	storeArgs { ^this.getInitArgs }
+
+	onSaveAction { this.name = filePath.basename.removeExtension }
+
+	name_ { |x| name = x; this.changed(\name) }
 
 }
