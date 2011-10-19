@@ -22,8 +22,6 @@ UChainEventView : UEventView {
 		^color;
 	}
 
-	getName { ^i.asString ++": "++event.units.collect(_.defName) }
-
 	ifIsInsideRect{ |mousePos, yesAction, noAction|
 
 	    if(rect.containsPoint(mousePos)) {

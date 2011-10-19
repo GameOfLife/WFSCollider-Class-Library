@@ -35,7 +35,7 @@ UEventView {
 
 	getTypeColor { }
 
-	getName { }
+	getName { ^i.asString ++": "++event.name }
 
 	getFullName{
 	    ^if( event.muted )

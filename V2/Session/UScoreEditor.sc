@@ -1,6 +1,5 @@
 UScoreEditor {
 
-	classvar <>current, <all;
     classvar <clipboard;
 
 	var <score;
@@ -9,7 +8,6 @@ UScoreEditor {
 	*new { |score|
 		^super.newCopyArgs( score)
 			.init
-			.addToAll
 	}
 
 	init {
@@ -21,15 +19,7 @@ UScoreEditor {
 	    clipboard = [];
 	}
 
-	addToAll {
-		all = all.asCollection.add( this );
-	}
-
-	removeFromAll {
-	    if( all.notNil ) {
-	        all.remove( this )
-	    };
-	}
+	*current { ^UScoreEditorGUI !! { |x| x.editor } }
 
 	events { ^score.events }
 

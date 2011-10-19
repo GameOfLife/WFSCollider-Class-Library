@@ -11,6 +11,7 @@ UMixer {
         scoreList = [score];
         font = Font( Font.defaultSansFace, 11 );
         parent = inParent ? Window("UMixer",Rect(100,1000,800,342)).front;
+        if(parent.respondsTo(\onClose_)){ parent.onClose_({this.remove}) };
         bounds = inBounds ? Rect(0,0,800,342);
         this.addCurrentScoreControllers;
         mainComposite = CompositeView(parent,bounds).resize_(5)
@@ -32,7 +33,7 @@ UMixer {
 	}
 
 	remove {
-        scoreController.remove
+        (unitControllers++[scoreController]).do(_.remove)
     }
 
 	update {

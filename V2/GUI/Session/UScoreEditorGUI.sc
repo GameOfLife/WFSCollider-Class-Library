@@ -1,30 +1,21 @@
-UServerCenter{
-    classvar <>servers;
-
-    *initClass {
-        servers = [Server.default]
-    }
-}
-
-UScoreEditorGUI {
-	
-	classvar <>current, <all;
+UScoreEditorGUI : UAbstractWindow {
 
 	var <scoreEditor;
 
-	var <>scoreView, <>window, <tranportBar, topBar;
+	var <>scoreView, <tranportBar, topBar;
 	var <usessionMouseEventsManager;
+	var <scoreController;
 
 	//*initClass { UI.registerForShutdown({ scoreEditor.askForSave = false }); }
 
 	*new { |scoreEditor, bounds|
 		^super.new.init( scoreEditor)
 			.addToAll
-			.newWindow(bounds)
+			.makeGui(bounds)
 	}
 
 	*currentSelectedEvents{
-	    ^current.selectedEvents
+	    ^this.current.selectedEvents
 	}
 
     init { |inScoreEditor|
@@ -33,19 +24,11 @@ UScoreEditorGUI {
         } {
             inScoreEditor;
         };
+        scoreController = SimpleController(scoreEditor.score);
+        scoreController.put(\name,{
+            window.name = this.windowTitle
+        })
     }
-
-	toFront {
-	    if( window.isClosed.not ) {
-	     window.front;
-	    };
-	}
-
-	addToAll {
-		all = all.asCollection.add( this );
-	}
-
-	removeFromAll { if( all.notNil ) { all.remove( this ); }; }
 
 	score { ^scoreEditor.score }
 	editor { ^scoreEditor }
@@ -53,18 +36,26 @@ UScoreEditorGUI {
 	currentEditor { ^scoreEditor.currentEditor }
 	selectedEvents{ ^scoreView.selectedEvents }
 
+    windowTitle {
+        ^("Score Editor : "++this.score.name)
+    }
 
-	newWindow { |bounds|
+    remove {
+        scoreController.remove;
+    }
+	makeGui { |bounds|
 
-		var font = Font( Font.defaultSansFace, 11 ), header, windowTitle, margin, gap, topBarH, tranBarH, view, centerView, centerBounds;
-        bounds = bounds ? Rect(230 + 20.rand2, 230 + 20.rand2, 680, 300);
+		var font = Font( Font.defaultSansFace, 11 ), header, windowTitle, margin, gap, topBarH, tranBarH, centerView, centerBounds;
 
-        window = Window("Score Editor", bounds).front;
-        window.onClose_({
+        margin = 4;
+        gap = 2;
+
+        this.newWindow(bounds, this.windowTitle,{
 
             if(UScoreEditorGUI.current == this) {
                 UScoreEditorGUI.current = nil
             };
+            this.remove;
             topBar.remove;
             scoreView.remove;
             tranportBar.remove;
@@ -79,22 +70,13 @@ UScoreEditorGUI {
                         ] );
                 };
             }.defer(0.1)
-        });
-        //for 3.5 this has to be changed.
-        if(window.respondsTo(\drawFunc_)) {
-            window.drawFunc_({ current = this });
-        } {
-            window.drawHook_({ current = this });
-        };
-
+        }, margin:margin, gap:gap);
+        view.addFlowLayout(margin@margin,gap@gap);
+        bounds = window.bounds;
         margin = 4;
         gap = 2;
         topBarH = 22;
         tranBarH = 22;
-        view = window.view;
-        view.background_( Color.grey(0.5) );
-        view.addFlowLayout(margin@margin,gap@gap);
-        view.resize_(5);
 
         centerBounds = Rect(0,0, 680-8, 300-( topBarH + tranBarH + (2*margin) + (2*gap) ));
         //centerView = CompositeView(view, centerBounds).resize_(5);
