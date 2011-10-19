@@ -344,6 +344,7 @@ UChain : UEvent {
 	
 	addGroup { |group|
 		 groupDict.put( this, groupDict.at( this ).add( group ) ); 
+		 this.class.changed( \groupDict ); 
 	}
 	
 	removeGroup { |group|
@@ -355,6 +356,7 @@ UChain : UEvent {
 		} {
 			groupDict.put( this, groups );  // not needed?
 		};
+		this.class.changed( \groupDict); 
 	}
 
 	makeGroupAndSynth { |target, startPos = 0|

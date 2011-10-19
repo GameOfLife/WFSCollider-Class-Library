@@ -319,6 +319,7 @@ UScore : UEvent {
 
 	prStart { |targets, startPos = 0, assumePrepared = false, callStopFirst = true, updatePosition = true,
 	    startEventsActiveAtStartPos = true, loop = false|
+	    CmdPeriod.add( this );
 		if( callStopFirst ) { this.stop(nil,false); }; // in case it was still running
         this.prStartTasks( targets, startPos, assumePrepared, updatePosition, startEventsActiveAtStartPos, loop );
 	}
@@ -459,6 +460,7 @@ UScore : UEvent {
              events.select({ |evt| evt.isFolder.not && { evt.preparedServers.size > 0 } })
             	.do(_.dispose);
             this.playState_(\stopped,changed);
+            CmdPeriod.remove( this );
 	    };
 	    if([\preparing,\prepared].includes(playState)) {
 	        this.playState_(\stopped,changed);
@@ -490,6 +492,11 @@ UScore : UEvent {
 		    events.select(_.isFolder).do( _.prSubScoreResume(targets) );
 		    pausedAt = nil;
 		}
+	}
+	
+	cmdPeriod {
+		this.stop;
+		CmdPeriod.remove( this ); // always remove;
 	}
 
 	/*
