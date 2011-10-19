@@ -59,6 +59,8 @@ UChain : UEvent {
 		this.changed( \init );
 	}
 
+    name { ^units.collect(_.defName).asString }
+
     //will this work ? Yes
 	duplicate{
 	    ^this.deepCopy;
@@ -389,6 +391,7 @@ UChain : UEvent {
 	
 	start { |target, startPos = 0, latency|
 		var targets, bundles;
+		startPos = startPos ? 0;		
 		target = preparedServers ? target ? this.class.defaultServers ? Server.default;
 		preparedServers = nil;
 		targets = target.asCollection;
