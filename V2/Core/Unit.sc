@@ -141,10 +141,10 @@ Udef : GenericDef {
 			};
 			*/
 			synth = this.createSynth( unit, target, startPos );
-			synth.startAction2_({ |synth|
+			synth.startAction_({ |synth|
 				unit.changed( \go, synth );
 			});
-			synth.freeAction2_({ |synth|
+			synth.freeAction_({ |synth|
 				unit.removeSynth( synth );
 				synth.server.loadBalancerAddLoad( this.apxCPU.neg );
 				unit.changed( \end, synth );
