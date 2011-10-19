@@ -136,7 +136,7 @@ WFSServers {
 		
 		if( window.notNil && { window.isClosed.not }) { window.front; ^this };
 		
-		window = SCWindow("WFSServers", Rect(10, 10, 440, 8 +
+		window = Window("WFSServers", Rect(10, 10, 440, 8 +
 			( (ips.size * serversPerSystem)  * (22)) + (ips.size * 16 ) ), false).front;
 		
 		window.onClose_({ widgets.do(_.remove) });
@@ -149,7 +149,7 @@ WFSServers {
 			//delayViews = syncDelays.copy;
 			window.bounds = window.bounds + Rect( 0, 0, 0, 45 + 20 );
 			
-			SCButton( window, Rect( 0, 0, 16, 16 ) )
+			Button( window, Rect( 0, 0, 16, 16 ) )
 				.states_([["K", Color.black, Color.clear]])
 				.font_( Font( "Monaco", 9 ) )
 				.action_( { Server.killAll;
@@ -159,22 +159,22 @@ WFSServers {
 					}
 				} );
 			
-			SCButton(window, Rect(0,0, 16, 16))
+			Button(window, Rect(0,0, 16, 16))
 				.states_([["F", Color.black, Color.clear]])
 				.font_( Font( "Monaco", 9 ) )
 				.action_( { Server.freeAllRemote; } );
 				
-			SCButton(window, Rect(0,0, 16, 16))
+			Button(window, Rect(0,0, 16, 16))
 				.states_([["R", Color.black, Color.clear]])
 				.font_( Font( "Monaco", 9 ) )
 				.action_( { ServerRecordWindow( masterServer, 999 ); } );
 			
-			SCButton(window, Rect(0,0, 16, 16))
+			Button(window, Rect(0,0, 16, 16))
 				.states_([["?", Color.black, Color.clear]])
 				.font_( Font( "Monaco", 9 ) )
 				.action_( { WFS.openHelpFile } );
 			
-			SCStaticText( window, Rect( 0, 0, 140, 15 ) )
+			StaticText( window, Rect( 0, 0, 140, 15 ) )
 				.string_( "master (" ++ ( NetAddr.myIP ? "127.0.0.1" ) ++ ")" )
 				.font_( Font( "Monaco", 9 ) );
 
@@ -188,7 +188,7 @@ WFSServers {
 			
 				window.bounds = window.bounds + Rect( 0, 0, 0, 45 + 20 + 20 );
 				
-				SCButton( window, Rect( 0, 0, 110, 16 ) )
+				Button( window, Rect( 0, 0, 110, 16 ) )
 					.states_( [["sync"]] )
 					.font_( Font( "Monaco", 9 ) )
 					.action_( {
@@ -197,12 +197,12 @@ WFSServers {
 				
 				widgets.add(SyncCenterStatusWidget(window,17));		
 						
-				SCButton( window, Rect( 0, 0, 90, 16 ) )
+				Button( window, Rect( 0, 0, 90, 16 ) )
 					.states_( [["open hosts"]] )
 					.font_( Font( "Monaco", 9 ) )
 					.action_( { this.openHosts; } ); 
 					
-				SCButton( window, Rect( 0, 0, 110, 16 ) )
+				Button( window, Rect( 0, 0, 110, 16 ) )
 					.states_( [["shut down hosts"]] )
 					.font_( Font( "Monaco", 9 ) )
 					.action_( { SCAlert( "Do you really want to shut down\nboth host servers?",
@@ -229,9 +229,9 @@ WFSServers {
 							  
 							{	var win, views;
 								
-								win = SCWindow( "", 
+								win = Window( "", 
 									Rect( *(Rect(0,0,800,250)
-										.centerIn( SCWindow.screenBounds).asArray 
+										.centerIn( Window.screenBounds).asArray 
 											++ [800,250]) ) ).front;
 								win.view.background_( Color.white
 									.blend( Color.red(0.6), 0.25 ) );
@@ -246,17 +246,17 @@ WFSServers {
 									
 								views = ();
 								
-								SCStaticText( win, win.view.bounds.copy.height_( 150 ) )
+								StaticText( win, win.view.bounds.copy.height_( 150 ) )
 									.string_( "WARNING:\nAre the AMPLIFIERS switched OFF?" )
 									.font_( Font( "Helvetica-Bold", 40 ) )
 									.align_( \center );
 								
-								SCButton( win, Rect(80,150,180,50) )
+								Button( win, Rect(80,150,180,50) )
 									.states_( [[ "cancel", Color.black, Color.white ]] )
 									.action_({ |bt| win.close; })
 									.font_( Font( "Helvetica-Bold", 30 ) );
 								
-								SCButton( win, Rect(320,150,400,50) )
+								Button( win, Rect(320,150,400,50) )
 									.states_( [[ "yes, shut down now", 
 												Color.black, Color.white ]] )
 									.font_( Font( "Helvetica-Bold", 30 ) )
@@ -282,7 +282,7 @@ WFSServers {
 		serverLabels = nil!multiServers.size;
 		multiServers.do({ |multiServer, i| 
 		
-			SCButton( window, Rect( 0, 0, 12, 12 ) )
+			Button( window, Rect( 0, 0, 12, 12 ) )
 				.states_([["k", Color.red, Color.red.alpha_(0.1)]])
 				.font_( Font( "Monaco", 9 ) )
 				.action_( {
@@ -294,7 +294,7 @@ WFSServers {
 						.sshCmd( "gameoflife", ips[i].asString );
 			} );
 			
-			SCButton( window, Rect( 0, 0, 12, 12 ) )
+			Button( window, Rect( 0, 0, 12, 12 ) )
 				.states_([["x", Color.red, Color.red.alpha_(0.1)]])
 				.font_( Font( "Monaco", 9 ) )
 				.action_( {
@@ -307,7 +307,7 @@ WFSServers {
 						.sshCmd( "gameoflife", ips[i].asString );
 			} );
 					 
-			serverLabels[i] = SCStaticText( window, Rect( 0, 0, 300, 12 ) )
+			serverLabels[i] = StaticText( window, Rect( 0, 0, 300, 12 ) )
 				.string_("multi" ++ (i+1) ++ " (" ++ 
 					if( ips[i] == "127.0.0.1",
 						{ NetAddr.myIP ? "127.0.0.1" }, { ips[i] } )
