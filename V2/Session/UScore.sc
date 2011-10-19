@@ -456,6 +456,8 @@ UScore : UEvent {
             this.stopChains(releaseTime);
             events.select(_.isFolder).do(_.stop);
             //events.do{ _.disposeIfNotPlaying };
+             events.select({ |evt| evt.isFolder.not && { evt.preparedServers.size > 0 } })
+            	.do(_.dispose);
             this.playState_(\stopped,changed);
 	    };
 	    if([\preparing,\prepared].includes(playState)) {
