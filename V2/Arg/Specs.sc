@@ -53,6 +53,26 @@ ListSpec : Spec {
 	
 }
 
+StringSpec : Spec {
+	
+	var <>default = "";
+	
+	constrain { |value| ^(value ? default).asString }
+	
+	*testObject { |obj|
+		^obj.isString
+	}
+	
+}
+
+SMPTESpec : Spec {
+	
+	var <>minval = 0, maxval = inf;
+	var <>fps = 1000;
+	
+	constrain { |value| ^value.clip( minval, maxval ); }
+}
+
 BoolSpec : Spec {
 	
 	var <default = true;
@@ -560,9 +580,11 @@ IntegerSpec : Spec {
 
 	var <default = 0;
 	var <step = 1;
+	var <>minval = -inf;
+	var <>maxval = inf;
 
-    *new{ |default = 0|
-        ^super.new.default_(default)
+    *new{ |default = 0, minval = -inf, maxval = inf|
+        ^super.new.minval_( minval ).maxval_( maxval ).default_(default);
     }
 
     *testObject { |obj|
@@ -570,7 +592,7 @@ IntegerSpec : Spec {
     }
 
 	constrain { |value|
-		^value.asInteger;
+		^value.clip(minval, maxval).asInteger;
 	}
 
 	default_ { |value|
@@ -579,10 +601,12 @@ IntegerSpec : Spec {
 }
 
 PositiveIntegerSpec : IntegerSpec {
-
-	constrain { |value|
-		^value.asInteger.max(0);
+	
+	 constrain { |value|
+		^value.clip(minval.max(0), maxval).asInteger;
 	}
+	
+	minval { ^minval.max(0) }
 
 }
 

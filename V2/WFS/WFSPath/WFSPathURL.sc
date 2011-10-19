@@ -28,7 +28,7 @@ WFSPathURL {
 		var wfsPath;
 		wfsPath = this.class.getWFSPath( url );
 		if( wfsPath.isNil ) {
-			WFSPath2.read( url ); // can return nil if file not available
+			WFSPath2.read( url.asString ); // can return nil if file not available
 		};
 		this.changed( \init );
 	}
@@ -93,9 +93,11 @@ WFSPathURL {
 		};
 	}
 	
-	exists { this.wfsPath.notNil }
+	exists { ^this.wfsPath.notNil }
 	
 	isWFSPath2 { ^true }
+
+	asWFSPath2 { ^this.wfsPath }
 	
 	storeArgs { ^[ url.asString ] }
 	

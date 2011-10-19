@@ -14,7 +14,7 @@ WFSPathView {
 		if( parent.isNil ) { 
 			bounds = bounds ?? { 420 @ 516 }; 
 		} {
-			bounds = parent.asView.bounds;
+			bounds = bounds ? parent.asView.bounds;
 		};
 		
 		view = EZCompositeView( parent, bounds, gap: 2@2, margin: 2@2 );
@@ -68,6 +68,11 @@ WFSPathView {
 		xyView.undo( *args );
 	}
 	
+	refresh { 
+		xyView.refresh;
+		timeView.refresh;
+	}
+	
 	object { ^xyView.object; }
 	
 	object_ { |new, update = true|
@@ -79,6 +84,10 @@ WFSPathView {
 	
 	path_ { |pth, update = true|
 		this.object_( pth, update );
+	}
+	
+	resize_ { |resize|
+		view.resize_(resize);
 	}
 	
 	mouseMode_ { |mode|

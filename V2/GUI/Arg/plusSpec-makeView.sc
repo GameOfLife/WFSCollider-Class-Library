@@ -15,6 +15,7 @@
 		var vw = EZSmoothSlider( parent, bounds, label !? { label.asString ++ " " }, 
 			this, { |vw| action.value( vw, vw.value ) },
 			labelWidth: (RoundView.skin ? ()).labelWidth ? 80 );
+		vw.sliderView.centered_( true ).centerPos_( this.unmap( default ) );
 		if( resize.notNil ) { vw.view.resize = resize };
 		^vw;	
 	}
@@ -89,6 +90,92 @@
 	}
 	
 	
+}
+
++ StringSpec {
+	
+	makeView { |parent, bounds, label, action, resize| 
+		var vws, view, labelWidth;
+		vws = ();
+		
+		// this is basically an EZButton
+		
+		bounds.isNil.if{bounds= 320@20};
+		
+		#view, bounds = EZGui().prMakeMarginGap.prMakeView( parent, bounds );
+		 vws[ \view ] = view;
+		 		
+		if( label.notNil ) {
+			labelWidth = (RoundView.skin ? ()).labelWidth ? 80;
+			vws[ \labelView ] = StaticText( vws[ \view ], labelWidth @ bounds.height )
+				.string_( label.asString ++ " " )
+				.align_( \right )
+				.resize_( 4 )
+				.applySkin( RoundView.skin );
+		} {
+			labelWidth = 0;
+		};
+		
+		vws[ \string ] = TextField( view, 
+			Rect( labelWidth + 2, 0, bounds.width-(labelWidth+2), bounds.height )
+		)	.resize_(2)
+			.applySkin( RoundView.skin ? () )
+			.action_({ |tf|
+				action.value( vws, tf.value );
+			});
+
+		if( resize.notNil ) { vws[ \view ].resize = resize };
+		^vws;
+	}
+	
+	setView { |view, value, active = false|
+		{ view[ \string ].value = this.constrain( value ); }.defer;
+		if( active ) { view[ \string ].doAction };
+	}
+
+}
+
++ SMPTESpec {
+
+	makeView { |parent, bounds, label, action, resize|
+		var vws, view, labelWidth;
+		
+		bounds.isNil.if{bounds= 160 @ 18 };
+		
+		vws = ();
+		#view, bounds = EZGui().prMakeMarginGap.prMakeView( parent, bounds );
+		vws[ \view ] = view;
+		
+		if( label.notNil ) {
+			labelWidth = (RoundView.skin ? ()).labelWidth ? 80;
+			vws[ \labelView ] = StaticText( vws[ \view ], labelWidth @ 14 )
+				.string_( label.asString ++ " " )
+				.align_( \right )
+				.resize_( 4 )
+				.applySkin( RoundView.skin );
+		} {
+			labelWidth = -4;
+		};
+		
+		vws[ \box ] = SMPTEBox( vws[ \view ], 
+				Rect(labelWidth + 4,0,bounds.width-(labelWidth + 4),bounds.height)
+			)
+		    .action_({ |vw|
+		        action.value( vw, vw.value );
+		    } ).resize_(5)
+		    .fps_( fps )
+			.clipLo_( minval )
+			.clipHi_( maxval );
+		    
+		if( resize.notNil ) { vws[ \view ].resize = resize };
+		^vws;
+	}
+
+	setView { |view, value, active = false|
+		view[ \box ].value = value;
+		if( active ) { view.doAction };
+	}
+
 }
 
 + BoolSpec {	
@@ -483,12 +570,16 @@
 			labelWidth = -4;
 		};
 		
-		vws[ \box ] = IntegerNumberBox( vws[ \view ], 
+		vws[ \box ] = SmoothNumberBox( vws[ \view ], 
 				Rect(labelWidth + 4,0,bounds.width-(labelWidth + 4),bounds.height)
 			)
 		    .action_({ |vw|
 		        action.value( vw, vw.value );
-		    } ).resize_(5);
+		    } ).resize_(5)
+		    .allowedChars_( "" )
+			.step_( 1 )
+			.clipLo_( this.minval )
+			.clipHi_( this.maxval );
 		    
 		if( resize.notNil ) { vws[ \view ].resize = resize };
 		^vws;
@@ -499,17 +590,6 @@
 		if( active ) { view.doAction };
 	}
 
-}
-
-+ EQSpec {
-
-    makeView { |parent, bounds, label, action, resize|
-        ^EQGui(parent, bounds, label, action, resize)
-    }
-
-    setView{ |view, value, active = false|
-        view.setValue(value)
-    }
 }
 
 

@@ -88,6 +88,8 @@ WFSBasicEditView {
 			
 			switch( mouseMode, 
 				\select, {
+					
+					this.changed( \mouse_hit );
 					if( cc == 2 ) { this.zoomToFit; };
 					if( mod.shift ) { 
 						if( hitIndex.notNil ) { 
@@ -574,8 +576,10 @@ WFSPathXYView : WFSBasicEditView {
 			selected.do({ |index|
 				var pt;
 				pt = object.positions[ index ];
-				pt.x = pt.x + x;
-				pt.y = pt.y + y;
+				if( pt.notNil ) {
+					pt.x = pt.x + x;
+					pt.y = pt.y + y;
+				};
 			});
 			this.refresh; 
 			this.edited( \edit, \move, *moreArgs );
@@ -588,8 +592,10 @@ WFSPathXYView : WFSBasicEditView {
 			selected.do({ |index|
 				var pt;
 				pt = object.positions[ index ];
-				pt.x = pt.x * x;
-				pt.y = pt.y * y;
+				if( pt.notNil ) {
+					pt.x = pt.x * x;
+					pt.y = pt.y * y;
+				};
 			});
 			this.refresh;
 			this.edited( \edit, \scale, *moreArgs );
@@ -601,9 +607,11 @@ WFSPathXYView : WFSBasicEditView {
 			selected.do({ |index|
 				var pt, rpt;
 				pt = object.positions[ index ];
-				rpt = pt.rotate( angle ) * scale;
-				pt.x = rpt.x;
-				pt.y = rpt.y;
+				if( pt.notNil ) {
+					rpt = pt.rotate( angle ) * scale;
+					pt.x = rpt.x;
+					pt.y = rpt.y;
+				};
 			});
 			this.refresh;
 			this.edited( \edit, \rotate, *moreArgs );
@@ -792,8 +800,10 @@ WFSPathTimeView : WFSPathXYView {
 			
 			Pen.color = selectColor; // selected points
 			selected.do({ |item| 
-				Pen.addOval( Rect.aboutPoint( times[item]@0, 
-					scale.x * 3.5, scale.y * 3.5 ) );
+				if( item < times.size ) {
+					Pen.addOval( Rect.aboutPoint( times[item]@0, 
+						scale.x * 3.5, scale.y * 3.5 ) );
+				};
 			});
 			Pen.fill;
 			

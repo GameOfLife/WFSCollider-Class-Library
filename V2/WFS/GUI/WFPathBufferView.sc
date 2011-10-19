@@ -68,6 +68,11 @@ WFSPathBufferView {
 			views[ \startSecond ].value = inWFSPathBuffer.startSecond;
 		};
 		views[ \startFrame ].value = inWFSPathBuffer.startFrame;
+		if( inWFSPathBuffer.wfsPath.dirty ) {
+			views[ \write ].background_( Color.red.alpha_(0.25) );
+		} {
+			views[ \write ].background_( Color.clear );
+		};
 
 	}
 	
@@ -135,7 +140,7 @@ WFSPathBufferView {
 			.drawFunc_({ |vw|
 				var path;
 				path = this.performWFSPathBuffer( \wfsPath );
-				if( path.isWFSPath2 ) {
+				if( path.isWFSPath2 && { path.exists } ) {
 					
 					Pen.width = 0.164;
 					Pen.color = Color.red(0.5, 0.5);
@@ -145,8 +150,33 @@ WFSPathBufferView {
 						WFSSpeakerConf.rect(48,48,5,5);
 					}).draw;
 					
-					path.draw( 1, pixelScale: vw.pixelScale * 1.5);
+					path.asWFSPath2.draw( 1, pixelScale: vw.pixelScale * 1.5);
 				};
+			});
+		
+		views[ \miniPlot ].view
+			.canReceiveDragHandler_({ |sink|
+				var drg;
+				drg = View.currentDrag;
+				case { drg.isKindOf( WFSPath2 ) } 
+					{ true }
+					{ drg.isKindOf( WFSPathURL ) }
+					{ true } /*
+					{ drg.isKindOf( WFSPathBuffer ) }
+					{ true } */
+					{ false }
+			})
+			.receiveDragHandler_({ |sink, x, y|
+					case { View.currentDrag.isKindOf( WFSPath2 ) } {
+						wfsPathBuffer.wfsPath = View.currentDrag;
+						action.value( this );
+					} { View.currentDrag.isKindOf( WFSPathURL ) } {
+						wfsPathBuffer.wfsPath = View.currentDrag;
+						action.value( this );
+					};
+			})
+			.beginDragAction_({ 
+					wfsPathBuffer.wfsPath;
 			});
 			
 		views[ \buttonComp ] = CompositeView( view, 104@ ((viewHeight * 2) + 4) );
@@ -192,7 +222,12 @@ WFSPathBufferView {
 			.border_( 1 )
 			.label_( "edit" )
 			.action_({ |bt|
-				WFSPathEditor2( wfsPathBuffer.wfsPath ); 
+				WFSPathEditor( object: wfsPathBuffer.wfsPath )
+					.action_({ |editor|
+						wfsPathBuffer.wfsPath = editor.object;
+						views[ \miniPlot ].refresh;
+						action.value( this );
+					}); 
 			});	
 		
 					
@@ -211,6 +246,8 @@ WFSPathBufferView {
 							sf.readData( fa );
 							wfspath = WFSPath2.fromBufferArray( fa );
 							wfspath.name = pth.basename.removeExtension;
+							wfspath.filePath = pth;
+							wfspath.savedCopy = wfspath.deepCopy;
 							this.performWFSPathBuffer( \filePath_ , pth );
 							this.performWFSPathBuffer( \wfsPath_ , wfspath );
 							if( wfsPathBuffer.notNil ) {

@@ -311,7 +311,7 @@ WFSPath2 {
 				stream << this.class.name << "(" <<<* this.storeArgs << 
 					").filePath_( " <<< pth << " )";
 			} {
-				stream <<< pth << ".asWFSPath2";
+				stream << "WFSPathURL(" <<< pth << ")";
 			};
 		} {
 			stream << this.class.name << "(" <<<* this.storeArgs << ")";		};
@@ -565,6 +565,6 @@ WFSPath2 {
 
 + Nil {
 	asWFSPath2 { 
-		^WFSPath2( { |i| Polar( 10, i.linlin(0,7,0,2pi) ).asPoint  } ! 7, [0.5] )
+		^WFSPath2( { |i| Polar( 8, i.linlin(0,15,0,2pi) ).asPoint  } ! 15, [0.5], \bspline )
 	}
 }

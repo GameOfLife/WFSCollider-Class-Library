@@ -22,8 +22,8 @@ WFSPathBuffer : AbstractRichBuffer {
 		writeServers = [ Server.default ];
 	}
 	
-	*new { |wfsPath|
-		^super.new( nil, 9 ).wfsPath_( wfsPath )
+	*new { |wfsPath, startFrame = 0, rate = 1|
+		^super.new( nil, 9 ).wfsPath_( wfsPath ).startFrame_( startFrame ).rate_( rate );
 	}
 	
 	shallowCopy{
@@ -200,7 +200,7 @@ WFSPathBuffer : AbstractRichBuffer {
 		}).add; 
 	}
 	
-	storeArgs { ^[ wfsPath ] }
+	storeArgs { ^[ wfsPath, startFrame, rate ] }
 	
 }
 

@@ -4,7 +4,7 @@ WFSPathEditFunc : SimpleEditFunc {
 	var <>selection;
 	
 	prValue { |obj|
-		if( useSelection && selection.notNil ) {
+		if( useSelection && { selection.size > 0 } ) {
 			this.prValueSelection( obj )
 		} {
 			^func.value( this, obj );

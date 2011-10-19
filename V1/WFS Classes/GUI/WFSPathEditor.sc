@@ -27,7 +27,7 @@
 // .add / .addAll will also replace existing data when window is closed
 
 
-WFSPathEditor {
+WFSPathEditor_OLD {
 
 	classvar <window = nil;
 	classvar <emptyWindow = nil;

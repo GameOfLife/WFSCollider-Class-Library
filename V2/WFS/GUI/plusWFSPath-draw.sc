@@ -94,8 +94,10 @@
 					Pen.width = scale * 2;
 					Pen.color = selectColor;
 					selected.do({ |item|
-						Pen.moveTo( curves[item][0] );
-						Pen.addArc( curves[item][0] , 4 * scale, 0, 2pi );
+						if( item < curves.size ) {
+							Pen.moveTo( curves[item][0] );
+							Pen.addArc( curves[item][0] , 4 * scale, 0, 2pi );
+						};
 					});
 					
 					Pen.fill;
