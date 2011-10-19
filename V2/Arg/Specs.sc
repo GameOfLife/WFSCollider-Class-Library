@@ -582,14 +582,14 @@ IntegerSpec : Spec {
 	var <step = 1;
 	var <>minval = -inf;
 	var <>maxval = inf;
-
-    *new{ |default = 0, minval = -inf, maxval = inf|
+	
+	*new{ |default = 0, minval = -inf, maxval = inf|
         ^super.new.minval_( minval ).maxval_( maxval ).default_(default);
-    }
+	}
 
-    *testObject { |obj|
-    		^obj.class == Integer;
-    }
+	*testObject { |obj|
+		^obj.class == Integer;
+	}
 
 	constrain { |value|
 		^value.clip(minval, maxval).asInteger;
