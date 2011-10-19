@@ -90,7 +90,8 @@ WFS {
 			.hardwareBufferSize_(512)
 			.blockSize_(128)
 			.sampleRate_( 44100 )
-			.blockAllocClass_( ContiguousBlockAllocator ); 
+			.blockAllocClass_( ContiguousBlockAllocator )
+			.maxNodes_( 2**16 ); 
 		
 	}
 	
