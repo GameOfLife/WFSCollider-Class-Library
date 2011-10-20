@@ -474,6 +474,7 @@ WFSPathXYView : WFSBasicEditView {
 	var <pos; 
 	var <recordLastTime;
 	var <animationTask, <>animationRate = 1;
+	var <showInfo = true;
 
 	defaultObject	{ ^WFSPath2( { (8.0@8.0).rand2 } ! 7, [0.5] ); }	
 	mouseEditSelected { |newPoint|
@@ -518,7 +519,7 @@ WFSPathXYView : WFSBasicEditView {
 	drawContents { |scale = 1|
 		var points, controls;
 		
-		scale = scale.asArray.mean;
+		scale = scale.asArray;
 		
 		Pen.use({	
 			
@@ -529,11 +530,66 @@ WFSPathXYView : WFSBasicEditView {
 			(WFSSpeakerConf.default ?? {
 				WFSSpeakerConf.rect(48,48,5,5);
 			}).draw;
+			
+			if( showInfo ) {	
+				Pen.use({
+					var posx, posy, leftTop;
+					Pen.font = Font( Font.defaultSansFace, 10 );
+					Pen.color = Color.black;
+					leftTop = this.view.viewRect.leftTop;
+					Pen.translate( leftTop.x, leftTop.y );
+					Pen.scale(scale.wrapAt(0),scale.wrapAt(1));
+					case { selected.size == 0 } {
+						posx = object.positions.collect(_.x);
+						posy = object.positions.collect(_.y);
+						Pen.stringAtPoint( 
+							"% points, ( % to % )@( % to %)"
+								.format( 
+									object.positions.size, 
+									posx.minItem.round(0.01),
+									posx.maxItem.round(0.01),
+									posy.minItem.round(0.01),
+									posy.maxItem.round(0.01)
+								),
+							5@2
+						);
+					} { selected.size == 1 } {
+						if( object.positions[ selected[0] ].notNil ) {
+							Pen.stringAtPoint( 
+								"point #% selected, % @ %"
+									.format( 
+										selected[0],
+										object.positions[ selected[0] ].x.round(0.001),
+										object.positions[ selected[0] ].y.round(0.001)
+									), 
+								5@2
+							);
+						};
+					} {
+						posx = object.positions[ selected ].select(_.notNil).collect(_.x);
+						posy = object.positions[ selected ].select(_.notNil).collect(_.y);
+						if( posx.size > 0 ) {
+							Pen.stringAtPoint( 
+								"% selected points, ( % to % ) @ ( % to % )"
+									.format( 
+										selected.size, 
+										posx.minItem.round(0.01),
+										posx.maxItem.round(0.01),
+										posy.minItem.round(0.01),
+										posy.maxItem.round(0.01)
+									),
+								5@2
+							);
+						};
+						
+					};
+				});
+			};
 				
 			// draw center
 			Pen.line( -0.25 @ 0, 0.25 @ 0 ).line( 0 @ -0.25, 0 @ 0.25).stroke;
 			
-			object.draw( drawMode, selected, pos, showControls, scale );
+			object.draw( drawMode, selected, pos, showControls, scale.asArray.mean );
 			
 		});
 		
@@ -757,6 +813,7 @@ WFSPathTimeView : WFSPathXYView {
 		var drawPoint;
 		var selectColor = Color.yellow;
 		var pospt;
+		var vlines;
 		
 		scale = scale.asPoint;
 		
@@ -770,6 +827,63 @@ WFSPathTimeView : WFSPathXYView {
 		if( object.times.size > 0 ) {	
 			timesSum = this.getTimesSum;
 			times = ([ 0 ] ++ object.times.integrate) / timesSum;
+			
+			if( timesSum <= 60 ) {
+				vlines = timesSum.ceil.asInt.collect({ |i| i / timesSum });
+				Pen.color = Color.white.alpha_(0.75);
+			} {
+				vlines = (timesSum / 60).ceil.asInt.collect({ |i| i / (timesSum / 60) });
+				Pen.color = Color.black.alpha_(0.25);
+			};
+			
+			Pen.width = scale.x;
+			vlines.do({ |item|
+				Pen.line( item @ -1, item @ 1 );
+			});
+			Pen.stroke;
+			
+			if( showInfo ) {	
+				Pen.use({
+					var tms, leftTop;
+					Pen.font = Font( Font.defaultSansFace, 10 );
+					Pen.color = Color.black;
+					leftTop = this.view.viewRect.leftTop;
+					Pen.translate( leftTop.x, leftTop.y );
+					Pen.scale(scale.x,scale.y);
+					case { selected.size == 0 } {
+						Pen.stringAtPoint( 
+							"% points, duration: %"
+								.format( 
+									object.positions.size, 
+									timesSum.asSMPTEString ),
+							5@2
+						);
+					} { selected.size == 1 } {
+						if( times[ selected[0] ].notNil ) {
+							Pen.stringAtPoint( 
+								"point #% selected, time: %"
+									.format( 
+										selected[0],
+										(times[selected[0]] * timesSum).asSMPTEString									), 
+								5@2
+							);
+						};
+					} {
+						tms = times[ selected ].select( _.notNil );
+						if( tms.size > 0 ) {
+							Pen.stringAtPoint( 
+								"% selected points, % to % "
+									.format( 
+										selected.size, 
+										(tms.minItem * timesSum).asSMPTEString,
+										(tms.maxItem * timesSum).asSMPTEString								),
+								5@2
+							); 
+						};
+						
+					};
+				});
+			};
 			
 			
 			speeds = object.speeds;
