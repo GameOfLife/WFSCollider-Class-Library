@@ -48,4 +48,6 @@ UScoreList : UEvent {
 
     release{ ^this.stop }
 
+    gui { }
+
 }

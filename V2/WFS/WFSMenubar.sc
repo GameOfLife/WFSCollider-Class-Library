@@ -24,7 +24,7 @@ WFSMenuBar {
 		var wfsMenu, scoreMenu, pathMenu, helpMenu, viewMenu, defaultMenu, addEvent, events, menus, sessionMenu;
 
 		menus = ();
-		//score	
+/* USession */
 		sessionMenu = SCMenuGroup.new(nil, "Session", index);
 		SCMenuItem.new(sessionMenu,  "New").action_({
 			USession.new.gui
@@ -57,9 +57,7 @@ WFSMenuBar {
 /* USCORE */
 		menus[\uscore] = SCMenuGroup.new(events, "File");
 		SCMenuItem.new(menus[\uscore],  "New").action_({
-			var score = UScore.new;
-			USession.current.add(score);
-			score.gui;
+			UScore.new.gui;
 		});
 
 		SCMenuItem.new(menus[\uscore], "Open").action_({
@@ -73,6 +71,12 @@ WFSMenuBar {
 		SCMenuItem.new(menus[\uscore], "Save as").action_({
 			UScore.current !! _.saveAs
 		});
+
+		SCMenuItem.new(events, "Add Score to current session").action_({
+			USession.current !! { |x| UScore.current !! { |y| x.add(y) } }
+		}).setShortCut("A",true);
+
+		SCMenuSeparator.new(events);
 
 		SCMenuItem.new(events, "Add Event").action_({
 			UScoreEditorGUI.current !! { |x| x.editor.addEvent }

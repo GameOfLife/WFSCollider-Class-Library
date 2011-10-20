@@ -2,7 +2,7 @@ USessionGUI : UAbstractWindow {
 
 	var <session;
     var <sessionView, bounds;
-    var <sessionController;
+    var <sessionController, objectControllers;
 
     *new { |session, bounds|
         ^super.new.init( session)
@@ -21,9 +21,14 @@ USessionGUI : UAbstractWindow {
         })
 	}
 
-     windowTitle {
+    windowTitle {
         ^("Session Editor : "++this.session.name)
     }
+
+    remove {
+        (objectControllers++[sessionController]).do(_.remove)
+    }
+
 	makeGui { |bounds|
         var topBarView;
 		var font = Font( Font.defaultSansFace, 11 );
@@ -33,7 +38,7 @@ USessionGUI : UAbstractWindow {
         var margin = 4;
         var gap = 2;
         bounds = bounds ? Rect(100,100,600,400);
-        this.newWindow(bounds, "USession - "++session.name,{}, margin:0, gap:0);
+        this.newWindow(bounds, "USession - "++session.name,{ this.remove }, margin:0, gap:0);
         topBarView =  CompositeView(view, Rect(0,0,bounds.width,topBarHeigth));
         topBarView.addFlowLayout;
 
@@ -73,7 +78,8 @@ USessionGUI : UAbstractWindow {
         sessionView = CompositeView(view, Rect(0,topBarHeigth,bounds.width,bounds.height - topBarHeigth));
         sessionView.addFlowLayout;
         session.objects.do { |object|
-            var releaseTask, but;
+            var releaseTask, but, ctl;
+
             StaticText(sessionView,100@16)
                 .string_(object.name);
 
@@ -133,6 +139,18 @@ USessionGUI : UAbstractWindow {
                 if( object.groups.size > 0 ) {
                     but.value = 1;
                 };
+           };
+           if( object.class == UChain) {
+                ctl = SimpleController(object);
+                objectControllers.add(ctl);
+                ctl
+                .put( \start, { but.value = 1 } )
+                .put( \end, {
+                    if( object.units.every({ |unit| unit.synths.size == 0 }) ) {
+                        but.value = 0;
+                    };
+                } )
+
 			};
 			if( object.class == UScoreList) {
 			    UTransportView(object.metaScore, sessionView, 16);
