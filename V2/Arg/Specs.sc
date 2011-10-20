@@ -67,8 +67,12 @@ StringSpec : Spec {
 
 SMPTESpec : Spec {
 	
-	var <>minval = 0, maxval = inf;
+	var <>minval = 0, <>maxval = inf;
 	var <>fps = 1000;
+	
+	*new { |minval = 0, maxval = inf, fps = 1000|
+		^super.newCopyArgs.minval_( minval ).maxval_( maxval ).fps_( fps );
+	}
 	
 	constrain { |value| ^value.clip( minval, maxval ); }
 }

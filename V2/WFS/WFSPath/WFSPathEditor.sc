@@ -14,6 +14,7 @@ WFSPathEditor {
 		var ctrl, ctrl2, ctrl3;
 		
 		if( parent.isNil ) { 
+			parent = this.class.asString;
 			bounds = bounds ?? { (420 + (editWidth + 4)) @ 516 }; 
 		} {
 			bounds = parent.asView.bounds;
@@ -41,6 +42,9 @@ WFSPathEditor {
 				editView.apply( true )
 			})
 			.put( \mouse_edit, { 
+				editView.object = pathView.object;
+			})
+			.put( \endRecord, {
 				editView.object = pathView.object;
 			});
 			

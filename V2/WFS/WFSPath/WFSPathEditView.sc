@@ -224,7 +224,7 @@ WFSPathEditView {
 					mode = f.get( \mode );
 					n = f.get( \size ).asInt;
 					switch( mode,
-						\stretch, {
+						\interpolate, {
 							newTimes = [0] ++ path.times.integrate;
 							newTimes = newTimes.resize( n, \linear, false );
 							newPos = newTimes.collect({ |item| path.atTime( item ) });
@@ -258,11 +258,11 @@ WFSPathEditView {
 					);
 					path.positions_( newPos ).times_( newTimes );
 				},
-				[ \size, 10, \mode, \stretch ],
+				[ \size, 10, \mode, \interpolate ],
 				{ |f, path| [ \size, path.positions.size, \mode, f.get( \mode ) ] }
 			)
 				.setSpec( \size, PositiveIntegerSpec(2, 2) )
-				.setSpec( \mode, ListSpec( [ \stretch, \wrap, \fold ] ) )
+				.setSpec( \mode, ListSpec( [ \interpolate, \wrap, \fold ] ) )
 				.useSelection_( false ),
 		
 			\duration, WFSPathEditFunc( 
@@ -272,7 +272,7 @@ WFSPathEditView {
 				[ \duration, 1 ],
 				{ |f, path| [ \duration, path.duration ] }
 			)
-				.setSpec( \duration, SMPTESpec() )
+				.setSpec( \duration, SMPTESpec(0.001) )
 				.useSelection_( false ),
 			
 			\equal, WFSPathEditFunc( 
@@ -323,7 +323,23 @@ WFSPathEditView {
 				.setSpec( \equal, ListSpec( [ \times, \speeds ] ))
 				.setSpec( ' ', ControlSpec(0,1,\lin,0,0) )
 				.setSpec( \resample, BoolSpec( false ) )
-				.useSelection_( false )
+				.useSelection_( false ),
+				
+			\reverse, WFSPathEditFunc( 
+				{ |f, path|
+					if( f.get( \reverse ) ) {
+						path.positions = path.positions.reverse;
+						path.times = path.times.reverse;
+						path;
+					} {
+						path;
+					};
+				},
+				[ \reverse, false ],
+				{ |f, path| [ \reverse, nil ] } // never bypass
+			)	
+				.setSpec( \reverse, BoolSpec(false ) )
+				
 		
 		];
 	}
