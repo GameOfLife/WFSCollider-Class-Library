@@ -17,10 +17,10 @@
 		
 		switch( this.audioType,
 			\buf, { 
-				units.add( U( \bufferPlayer_numChannels_1, [ \soundFile, this.asBufSndFile ] ) );
+				units.add( U( \bufSoundFile, [ \soundFile, this.asBufSndFile ] ) );
 			}, 
 			\disk, {
-				units.add( U( \diskPlayer_numChannels_1, [ \soundFile, this.asDiskSndFile ] ) );
+				units.add( U( \diskSoundFile, [ \soundFile, this.asDiskSndFile ] ) );
 			},
 			\blip, {
 				units.add( U( \blip, args ) );
@@ -85,7 +85,7 @@
 		if( clickTrackPath.notNil ) {
 			uevts = [ 
 				UChain( 0, maxTrack + 1, inf, false,
-					[ \diskPlayer_numChannels_1, [ \soundFile, clickTrackPath ] ],
+					[ \diskSoundFile, [ \soundFile, clickTrackPath ] ],
 					[ \wfsMasterOut, [ \toServers, false ] ]
 				)
 			] ++ uevts
