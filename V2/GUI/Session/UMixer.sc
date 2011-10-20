@@ -14,7 +14,7 @@ UMixer {
         if(parent.respondsTo(\onClose_)){ parent.onClose_({this.remove}) };
         bounds = inBounds ? Rect(0,0,800,342);
         this.addCurrentScoreControllers;
-        mainComposite = CompositeView(parent,bounds).resize_(5)
+        mainComposite = ScrollView(parent,bounds).resize_(5)
             .background_( Color.grey(0.5) );
         this.makeMixerView
 
@@ -74,7 +74,7 @@ UMixer {
 
     makeScoreListView{
         var listSize = scoreList.size;
-        scoreListView = CompositeView(mainComposite,Rect(0,0,mainComposite.bounds.width,24));
+        scoreListView = CompositeView(mainComposite,Rect(0,0,4 + ((60+4)*(listSize-1)) + 4,24));
         scoreListView.addFlowLayout;
         scoreList[..(listSize-2)].do{ |score,i|
             SmoothButton(scoreListView,60@16)
@@ -100,16 +100,13 @@ UMixer {
     }
 
      makeMixerView{
-        var spec, maxTrack,count, color, cview,w,level,bounds, width,top,main,scroll;
+        var spec, maxTrack,count, color, cview,w,level,bounds, width,top,main,scroll, evs;
 		var score = this.currentScore;
 		var events = score.events;
-        var viewBounds = if(scoreList.size > 1) {
-            mainComposite.bounds.copy.height_(mainComposite.bounds.height - 24).moveTo(0,24);
-        }  {
-            mainComposite.bounds.copy.moveTo(0,0)
-        };
+        var viewBounds;
         unitControllers.do(_.remove);
-        maxTrack = events.collect{ |event| event.track }.maxItem + 1;
+        evs = events.select(_.canFreeSynth);
+        maxTrack = evs.collect{ |event| event.track }.maxItem + 1;
 		count = 0;
 		spec = [-90,12,\db].asSpec;
 
@@ -119,11 +116,11 @@ UMixer {
             mixerView.remove;
         };
 
-        mixerView = CompositeView(mainComposite, viewBounds);
+        mixerView = CompositeView(mainComposite, Rect(0,24,44*evs.size+4,308));
         mixerView.addFlowLayout;
 
         maxTrack.do{ |j|
-			events.select(_.canFreeSynth).do{ |event,i|
+			evs.do{ |event,i|
 				var cview,faders, eventsFromFolder, ctl, sl, bt;
 				if(event.track == j){
 				color = Color.rand;
