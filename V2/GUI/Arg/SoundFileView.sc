@@ -159,7 +159,7 @@ BufSndFileView {
 		};
 	}
 	
-	*viewNumLines { ^5 }
+	*viewNumLines { ^6 }
 	
 	makeView { |parent, bounds, resize|
 		
@@ -178,9 +178,125 @@ BufSndFileView {
 				this.performSndFile( \fromFile );
 				action.value( this );
 			});
+			
+		views[ \operations ] = PopUpMenu( view, 80 @ viewHeight )
+			.applySkin( RoundView.skin ? () )
+			.items_( [
+				"operations",
+				"",
+				"reveal in Finder",
+				"move to..",
+				"copy to..",
+				"save as.."
+			] )
+			.action_({ |pu|
+				var pth, ext;
+				switch( pu.value.asInt,
+					2, {  // reveal in Finder
+						pth = this.performSndFile( \path );
+						if( pth.notNil ) {
+							pth.getGPath.asPathFromServer.revealInFinder;
+						};
+					},
+					3, { // move to..
+						pth = this.performSndFile( \path );
+						if( pth.notNil ) {
+							pth = pth.getGPath;
+							if( pth[..6] == "sounds/" ) {
+								"can't move %, try copying instead\n".postf( pth.quote );
+							};
+							Dialog.savePanel({ |path|
+								var res;
+								res = pth.asPathFromServer.moveTo( path.dirname ); 
+								if( res ) {
+									this.performSndFile( \path_ ,
+										path.dirname +/+ pth.basename 
+									);
+								};
+							});
+						};
+					},
+					4, { // copy to..
+						pth = this.performSndFile( \path );
+						if( pth.notNil ) {
+							Dialog.savePanel({ |path|
+								var res;
+								res = pth.getGPath.asPathFromServer.copyTo( path.dirname ); 
+								if( res ) {
+									this.performSndFile( \path_ ,
+										path.dirname +/+ pth.basename 
+									);
+								};
+							});
+						};
+					},
+					5, { // save as..
+						pth = this.performSndFile( \path );
+						if( pth.notNil ) {
+							ext = pth.extension;
+							Dialog.savePanel({ |path|
+								var res;
+								path =  path.replaceExtension( ext );
+								res = pth.getGPath.asPathFromServer.copyFile(  path ); 
+								if( res ) {
+									this.performSndFile( \path_ , path );
+								};
+							});
+						};
+					}
+				);
+				pu.value = 0;
+			});
+			
+		views[ \plot ] = SmoothButton( view, 40 @ viewHeight )
+			.radius_( 3 )
+			.border_( 1 )
+			.resize_( 3 )
+			.label_( "plot" )
+			.action_({ |bt|
+				
+				// this will have to go in a separate class
+				var w, a, f, b, x;
+				var closeFunc;
+				
+				x = sndFile;
+				f = this.performSndFile( \asSoundFile );
+				
+				w = Window(f.path, Rect(200, 200, 850, 400), scroll: false);
+				a = SCSoundFileView.new(w, w.view.bounds);
+				a.resize_(5);
+				a.soundfile = f;
+				a.read(0, f.numFrames);
+				a.elasticMode_(1);
+				a.gridOn = true;
+				a.gridColor_( Color.gray(0.5).alpha_(0.5) );
+				a.waveColors = Color.gray(0.2)!16;
+				w.front;
+				a.background = Gradient( Color.white, Color.gray(0.7), \v );
+				b = SmoothRangeSlider( w, a.bounds.insetAll(1,1,1,1) )
+					.knobSize_(0)
+					.resize_(5)
+					.background_( nil )
+					.hiliteColor_( Color.blue(0.2).alpha_(0.2) );
+				b.action = { |sl|
+					x.startFrame = (sl.lo * x.numFrames).round(1);
+					x.endFrame = (sl.hi * x.numFrames).round(1);
+				};
+				b.lo = x.startFrame / x.numFrames;
+				b.hi = x.endFrame / x.numFrames;
+				
+				closeFunc = { w.close; };
+				
+				w.onClose = { bt.onClose.removeFunc( closeFunc ) };
+				
+				bt.onClose = bt.onClose.addFunc( closeFunc );
+					
+			});
+			
+		view.view.decorator.nextLine;
 					
 		views[ \startLabel ] = StaticText( view, 30 @ viewHeight )
-			.applySkin( RoundView.skin )
+			.applySkin( RoundView.skin ? () )
 			.string_( "start" );
 		
 		views[ \startComp ] = CompositeView( view, (bounds.width - 78) @ viewHeight )
@@ -207,7 +323,7 @@ BufSndFileView {
 			.visible_( false );
 		
 		views[ \timeMode ] = PopUpMenu( view, 40 @ viewHeight )
-			.applySkin( RoundView.skin )
+			.applySkin( RoundView.skin ? ())
 			.items_( [ "s", "smp" ] )
 			.resize_( 3 )
 			.action_({ |pu|
@@ -253,7 +369,7 @@ BufSndFileView {
 			});
 			
 		views[ \rateLabel ] = StaticText( view, 30 @ viewHeight )
-			.applySkin( RoundView.skin )
+			.applySkin( RoundView.skin ? () )
 			.string_( "rate" );
 			
 		views[ \rateComp ] = CompositeView( view, (bounds.width - 118) @ viewHeight )
@@ -280,7 +396,7 @@ BufSndFileView {
 			.visible_( false );
 			
 		views[ \rateMode ] = PopUpMenu( view, 80 @ viewHeight )
-			.applySkin( RoundView.skin )
+			.applySkin( RoundView.skin ? () )
 			.items_( [ "ratio", "semitones" ] )
 			.resize_( 3 )
 			.action_({ |pu|
