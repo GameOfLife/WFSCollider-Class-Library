@@ -12,6 +12,7 @@ USessionGUI : UAbstractWindow {
 
 	init { |inSession|
 	    session = inSession;
+	    objectControllers = List.new;
 	    sessionController = SimpleController(session);
 	    sessionController.put(\objectsChanged,{
 	        { this.makeSessionView }.defer(0.05);
@@ -72,9 +73,15 @@ USessionGUI : UAbstractWindow {
         var gap = 2;
 		var font = Font( Font.defaultSansFace, 11 );
         var bounds = view.bounds.moveTo(0,0);
+
+        //first remove old view and controllers;
         if(sessionView.notNil) {
             sessionView.remove;
         };
+        objectControllers.do(_.remove);
+        objectControllers = List.new;
+
+
         sessionView = CompositeView(view, Rect(0,topBarHeigth,bounds.width,bounds.height - topBarHeigth));
         sessionView.addFlowLayout;
         session.objects.do { |object|

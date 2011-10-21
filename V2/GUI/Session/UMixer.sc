@@ -13,7 +13,9 @@ UMixer {
         parent = inParent ? Window("UMixer",Rect(100,1000,800,342)).front;
         if(parent.respondsTo(\onClose_)){ parent.onClose_({this.remove}) };
         bounds = inBounds ? Rect(0,0,800,342);
+
         this.addCurrentScoreControllers;
+        unitControllers = List.new;
         mainComposite = ScrollView(parent,bounds).resize_(5)
             .background_( Color.grey(0.5) );
         this.makeMixerView
