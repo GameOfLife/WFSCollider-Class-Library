@@ -4,13 +4,16 @@ WFSRectView : WFSBasicEditView {
 
 	defaultObject	{ ^Rect.aboutPoint( 0@0, 5, 5 ) }	
 	
-	mouseEditSelected { |newPoint|
+	mouseEditSelected { |newPoint, mod|
 		var pt;
 		// returns true if changed
+		if( mod.isKindOf( ModKey ).not ) {
+			mod = ModKey( mod ? 0);
+		};
 		switch( editMode,
 			\move,  { 
 				pt = (newPoint.round(round) - lastPoint.round(round)) * (1@(-1));
-				this.moveSelected( pt.x, pt.y, \no_undo );
+				this.moveSelected( pt.x, pt.y, mod, \no_undo );
 			},
 			\scale, { 
 				pt = [ lastPoint.round(round).abs.max(0.001) * 
@@ -23,12 +26,13 @@ WFSRectView : WFSBasicEditView {
 						}).asPoint
 				]; // prevent inf/nan
 				pt = pt[1] / pt[0];
-				this.scaleSelected( pt.x, pt.y, \no_undo ); 
+				this.scaleSelected( pt.x, pt.y, mod, \no_undo ); 
 			},
 			\rotate, { 
 				this.rotateSelected( 
 					lastPoint.angle - newPoint.angle, 
-					1, 
+					1,
+					mod, 
 					\no_undo
 				);
 			},
@@ -36,6 +40,7 @@ WFSRectView : WFSBasicEditView {
 				this.rotateSelected( 
 					lastPoint.theta - newPoint.theta, 
 					newPoint.rho.max(0.001) / lastPoint.rho.max(0.001), 
+					mod,
 					\no_undo
 				);
 			}
@@ -129,7 +134,7 @@ WFSRectView : WFSBasicEditView {
 	
 	// changing the object
 	
-	moveSelected { |x = 0,y = 0 ...moreArgs|
+	moveSelected { |x = 0,y = 0, mod ...moreArgs|
 		var points;
 		if( selected.size > 0 ) {
 			points = this.getPoints.deepCopy;
@@ -148,7 +153,7 @@ WFSRectView : WFSBasicEditView {
 		};
 	}
 	
-	scaleSelected { |x = 1, y ...moreArgs|
+	scaleSelected { |x = 1, y, mod ...moreArgs|
 		y = y ? x;
 		if( selected.size > 0 ) {
 			selected.do({ |index|
@@ -170,7 +175,7 @@ WFSRectView : WFSBasicEditView {
 		};
 	}
 	
-	rotateSelected { |angle = 0, scale = 1 ...moreArgs|
+	rotateSelected { |angle = 0, scale = 1, mod ...moreArgs|
 		if( selected.size > 0 ) {
 			selected.do({ |index|
 				var pt, rpt, which;

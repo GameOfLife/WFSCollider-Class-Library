@@ -1,5 +1,7 @@
 WFSPathEditor {
 	
+	classvar <>current;
+	
 	var <view, <pathView, <editView;
 	var <editWidth = 167;
 	var <>action;
@@ -15,7 +17,13 @@ WFSPathEditor {
 		
 		if( parent.isNil ) { 
 			parent = this.class.asString;
-			bounds = bounds ?? { (420 + (editWidth + 4)) @ 516 }; 
+			bounds = bounds ?? { Rect( 
+					190 rrand: 220, 
+					70 rrand: 100,
+				 	(420 + (editWidth + 4)), 
+				 	516 
+				 ) 
+			}; 
 		} {
 			bounds = parent.asView.bounds;
 		};
@@ -36,30 +44,42 @@ WFSPathEditor {
 		
 		editView.resize_(3);
 		
+		editView.duplicateAction_({ |ev| 
+			if( ev.object.isKindOf( WFSPathURL ) ) {
+				WFSPathEditor( object: ev.object.wfsPath.deepCopy ) 
+			} {
+				WFSPathEditor( object: ev.object.deepCopy ) 
+			};
+		});
+		
 		ctrl = SimpleController( pathView.xyView )
 			.put( \select, { editView.selected = pathView.selected })
 			.put( \mouse_hit, { 
 				editView.apply( true )
 			})
-			.put( \mouse_edit, { 
-				editView.object = pathView.object;
+			.put( \edited, { |obj, what ...moreArgs|
+				if( moreArgs.includes( \no_undo ).not ) {
+					editView.object = pathView.object;
+				};
 			})
-			.put( \endRecord, {
+			.put( \undo, {
 				editView.object = pathView.object;
 			});
 			
 		ctrl2 =  SimpleController( pathView.timeView )
-			.put( \mouse_hit, { 
-				editView.apply( true )
+			.put( \edited, { |obj, what ...moreArgs|
+				if( moreArgs.includes( \no_undo ).not ) {
+					editView.object = pathView.object;
+				};
 			})
-			.put( \mouse_edit, { 
-				editView.object = pathView.timeView.object;
+			.put( \undo, {
+				editView.object = pathView.object;
 			});
 			
 		ctrl3 = SimpleController( editView )
 			.put( \apply, { pathView.edited( \numerical_edit ); } );
 		
-		view.onClose_( { ctrl.remove; ctrl2.remove; } );
+		
 		
 		editView.action = { |ev, what|
 			pathView.refresh;
@@ -73,11 +93,37 @@ WFSPathEditor {
 		pathView.timeView.action = {
 			action.value( this );
 		};
+		
+		current = this;
+		this.class.changed( \current );
+		
+		view.findWindow.toFrontAction = { 
+			current = this;
+			this.class.changed( \current );
+		};
+		
+		view.onClose_( { 
+			ctrl.remove; ctrl2.remove; ctrl3.remove; 
+			if( current == this ) {
+				current = nil;
+				this.class.changed( \current );
+			};
+		} );
 	
 	}
 	
 	object { ^pathView.object }
 	
-	object_ { |obj| pathView.object = obj; editView.object = obj }
+	object_ { |obj| 
+		pathView.object = obj;
+		editView.object = obj; 
+		pathView.refresh;
+	 }
+	
+	doesNotUnderstand { |selector ...args|
+		var res;
+		res = pathView.perform( selector, *args );
+		if( res != pathView ) { ^res; }
+	}
 	
 }

@@ -210,7 +210,7 @@ WFSBasicEditView {
 							optionOn = true;
 						};
 						mouseEdit = true;
-						this.mouseEditSelected( newPoint );
+						this.mouseEditSelected( newPoint, mod );
 					} {
 						mouseEdit = false;
 					};	
@@ -227,18 +227,7 @@ WFSBasicEditView {
 					 if( hitPoint.notNil ) { 
 						 if( selectRect.notNil ) { 
 							 this.zoomToRect( selectRect );
-						} /* { 
-							mod = ModKey( mod );
-							case { 
-								mod.shift 
-							} { 
-								this.zoomIn; 
-							} { 
-								mod.ctrl 
-							} {
-								this.zoomOut;
-							};
-						}; */
+						};
 					}; 
 				};
 				
@@ -246,7 +235,6 @@ WFSBasicEditView {
 				
 				if( mouseMode == \record ) { 
 					this.endRecord;
-					this.mouseMode = \select; 
 				} {	
 					if( mouseEdit ) { 
 						mouseEdit = false;
@@ -268,6 +256,8 @@ WFSBasicEditView {
 		view.keyDownAction = { |vw, char, modifiers, unicode, keycode|
 			var dict;
 			
+			modifiers = ModKey( modifiers );
+			
 			if( editMode != \none ) {	
 				dict = (
 					127: \backspace, 
@@ -283,19 +273,19 @@ WFSBasicEditView {
 					},
 					\leftArrow, { 
 						if( selected.size == 0 ) { this.select(\all) };
-						this.moveSelected( stepSize.neg, 0 )
+						this.moveSelected( stepSize.neg, 0, modifiers )
 					},
 					\rightArrow, { 
 						if( selected.size == 0 ) { this.select(\all) };
-						this.moveSelected( stepSize, 0 )
+						this.moveSelected( stepSize, 0, modifiers )
 					},
 					\upArrow, { 
 						if( selected.size == 0 ) { this.select(\all) };
-						this.moveSelected( 0, stepSize )
+						this.moveSelected( 0, stepSize, modifiers )
 					},
 					\downArrow, { 
 						if( selected.size == 0 ) { this.select(\all) };
-						this.moveSelected( 0, stepSize.neg ) 
+						this.moveSelected( 0, stepSize.neg, modifiers ) 
 					}
 				);
 			};
@@ -334,7 +324,11 @@ WFSBasicEditView {
 				Pen.addRect( rect ).fillStroke;
 			};
 		};	
+		
+		this.setDragHandlers;
 	}
+	
+	setDragHandlers { }
 	
 	refresh {
 		if( view.view.isClosed.not ) { view.refresh };
@@ -382,6 +376,7 @@ WFSBasicEditView {
 			};
 		};
 		action.value( this );
+		this.changed( \edited, what, *moreArgs );
 		this.changed( what, *moreArgs );		
 	}
 	
@@ -426,7 +421,7 @@ WFSBasicEditView {
 	}
 	
 	object_ { |newPath, active = true| 
-			if( object != newPath ) {
+			if( object !== newPath ) {
 				object = newPath;
 				this.refresh;
 				if( active ) { 
@@ -477,13 +472,17 @@ WFSPathXYView : WFSBasicEditView {
 	var <showInfo = true;
 
 	defaultObject	{ ^WFSPath2( { (8.0@8.0).rand2 } ! 7, [0.5] ); }	
-	mouseEditSelected { |newPoint|
+	mouseEditSelected { |newPoint, mod|
 		var pt;
 		// returns true if changed
+		if( mod.isKindOf( ModKey ).not ) {
+			mod = ModKey( mod ? 0);
+		};
+		
 		switch( editMode,
 			\move,  { 
 				pt = (newPoint.round(round) - lastPoint.round(round)) * (1@(-1));
-				this.moveSelected( pt.x, pt.y, \no_undo );
+				this.moveSelected( pt.x, pt.y, mod, \no_undo );
 			},
 			\scale, { 
 				pt = [ lastPoint.round(round).abs.max(0.001) * 
@@ -496,12 +495,13 @@ WFSPathXYView : WFSBasicEditView {
 						}).asPoint
 				]; // prevent inf/nan
 				pt = pt[1] / pt[0];
-				this.scaleSelected( pt.x, pt.y, \no_undo ); 
+				this.scaleSelected( pt.x, pt.y, mod, \no_undo ); 
 			},
 			\rotate, { 
 				this.rotateSelected( 
 					lastPoint.angle - newPoint.angle, 
 					1, 
+					mod,
 					\no_undo
 				);
 			},
@@ -509,12 +509,12 @@ WFSPathXYView : WFSBasicEditView {
 				this.rotateSelected( 
 					lastPoint.theta - newPoint.theta, 
 					newPoint.rho.max(0.001) / lastPoint.rho.max(0.001), 
+					mod,
 					\no_undo
 				);
 			}
 		);
 	}
-	
 	
 	drawContents { |scale = 1|
 		var points, controls;
@@ -595,6 +595,22 @@ WFSPathXYView : WFSBasicEditView {
 		
 	}
 	
+	setDragHandlers {
+		view.view
+			.beginDragAction_({ object })
+			.canReceiveDragHandler_({ |vw|
+				var drg = View.currentDrag;
+				drg.isKindOf( WFSPath2 ) or: { 
+					drg.isKindOf( WFSPathURL ) or: {	
+						drg.isString && { WFSPathURL.all.keys.includes( drg.asSymbol ) };
+					};
+				};
+			})
+			.receiveDragHandler_({ |vw|
+				this.object = View.currentDrag.asWFSPath2;
+			});
+	 }
+	
 	getNearestIndex { |point, scaler| // returns nil if outside radius
 		var radius;
 		radius = scaler.asArray.mean * 5;
@@ -627,22 +643,33 @@ WFSPathXYView : WFSBasicEditView {
 	
 	// changing the object
 	
-	moveSelected { |x = 0,y = 0 ...moreArgs|
+	moveSelected { |x = 0,y = 0, mod ...moreArgs|
 		if( selected.size > 0 ) {
-			selected.do({ |index|
-				var pt;
-				pt = object.positions[ index ];
-				if( pt.notNil ) {
-					pt.x = pt.x + x;
-					pt.y = pt.y + y;
-				};
-			});
+			if( mod.ctrl && { selected.size == 1 } ) {
+				selected.do({ |index|
+					var pt;
+					pt = object.positions[ index ];
+					if( pt.notNil ) {
+						pt.x = (pt.x + x).round(0.1);
+						pt.y = (pt.y + y).round(0.1);
+					};
+				});
+			} {
+				selected.do({ |index|
+					var pt;
+					pt = object.positions[ index ];
+					if( pt.notNil ) {
+						pt.x = pt.x + x;
+						pt.y = pt.y + y;
+					};
+				});
+			};
 			this.refresh; 
 			this.edited( \edit, \move, *moreArgs );
 		};
 	}
 	
-	scaleSelected { |x = 1, y ...moreArgs|
+	scaleSelected { |x = 1, y, mod ...moreArgs|
 		y = y ? x;
 		if( selected.size > 0 ) {
 			selected.do({ |index|
@@ -658,7 +685,7 @@ WFSPathXYView : WFSBasicEditView {
 		};
 	}
 	
-	rotateSelected { |angle = 0, scale = 1 ...moreArgs|
+	rotateSelected { |angle = 0, scale = 1, mod ...moreArgs|
 		if( selected.size > 0 ) {
 			selected.do({ |index|
 				var pt, rpt;
@@ -788,6 +815,7 @@ WFSPathXYView : WFSBasicEditView {
 	endRecord {
 		recordLastTime = nil;
 		this.edited( \endRecord );
+		this.mouseMode = \select;
 	}
 }
 
@@ -864,7 +892,7 @@ WFSPathTimeView : WFSPathXYView {
 								"point #% selected, time: %"
 									.format( 
 										selected[0],
-										(times[selected[0]] * timesSum).asSMPTEString									), 
+										(times[selected[0]] * timesSum).asSMPTEString(1000)									), 
 								5@2
 							);
 						};
@@ -875,8 +903,8 @@ WFSPathTimeView : WFSPathXYView {
 								"% selected points, % to % "
 									.format( 
 										selected.size, 
-										(tms.minItem * timesSum).asSMPTEString,
-										(tms.maxItem * timesSum).asSMPTEString								),
+										(tms.minItem * timesSum).asSMPTEString(1000),
+										(tms.maxItem * timesSum).asSMPTEString(1000)								),
 								5@2
 							); 
 						};
@@ -1000,7 +1028,7 @@ WFSPathTimeView : WFSPathXYView {
 		);
 	}
 
-	moveSelected { |x = 0, y = 0 ...moreArgs|
+	moveSelected { |x = 0, y = 0, mod ...moreArgs|
 		var timesPositions;
 		var moveAmt;
 		if( (selected.size > 0) ) {
@@ -1025,7 +1053,7 @@ WFSPathTimeView : WFSPathXYView {
 		};
 	}
 	
-	scaleSelected { |x = 1, y ...moreArgs|
+	scaleSelected { |x = 1, y, mod ...moreArgs|
 		y = y ? x;
 		if( selected.size > 0 ) {
 			selected.do({ |index|
@@ -1039,6 +1067,13 @@ WFSPathTimeView : WFSPathXYView {
 	rotateSelected { |angle = 0, scale = 1, update = true|
 		// can't rotate times
 	}
+	
+	
+	startRecord { }
+	
+	recordPoint { }
+			
+	endRecord { }
 
 	
 }
@@ -1055,13 +1090,16 @@ WFSPointView : WFSBasicEditView {
 
 	defaultObject	{ ^[ Point(0,0) ]	 }	
 	
-	mouseEditSelected { |newPoint|
+	mouseEditSelected { |newPoint, mod|
 		var pt;
 		// returns true if edited
+		if( mod.isKindOf( ModKey ).not ) {
+			mod = ModKey( mod ? 0);
+		};
 		switch( editMode,
 			\move,  { 
 				pt = (newPoint.round(round) - lastPoint.round(round)) * (1@(-1));
-				this.moveSelected( pt.x, pt.y, false );
+				this.moveSelected( pt.x, pt.y, mod, false );
 			},
 			\scale, { 
 				pt = [ lastPoint.round(round).abs.max(0.001) * 
@@ -1074,19 +1112,21 @@ WFSPointView : WFSBasicEditView {
 						}).asPoint
 				]; // prevent inf/nan
 				pt = pt[1] / pt[0];
-				this.scaleSelected( pt.x, pt.y, false ); 
+				this.scaleSelected( pt.x, pt.y, mod, false ); 
 			},
 			\rotate, { 
 				this.rotateSelected( 
 					lastPoint.angle - newPoint.angle, 
 					1, 
+					mod,
 					false
 				);
 			},
 			\rotateS, { 
 				this.rotateSelected( 
 					lastPoint.theta - newPoint.theta, 
-					newPoint.rho.max(0.001) / lastPoint.rho.max(0.001), 
+					newPoint.rho.max(0.001) / lastPoint.rho.max(0.001),
+					mod, 
 					false
 				);
 			}
@@ -1222,20 +1262,29 @@ WFSPointView : WFSBasicEditView {
 		
 	// changing the object
 	
-	moveSelected { |x = 0,y = 0 ...moreArgs|
+	moveSelected { |x = 0,y = 0, mod ...moreArgs|
 		if( selected.size > 0 ) {
-			selected.do({ |index|
-				var pt;
-				pt = object.asCollection[ index ];
-				pt.x = pt.x + x;
-				pt.y = pt.y + y;
-			});
+			if( mod.ctrl && { selected.size == 1 } ) {
+				selected.do({ |index|
+					var pt;
+					pt = object.asCollection[ index ];
+					pt.x = (pt.x + x).round(0.1);
+					pt.y = (pt.y + y).round(0.1);
+				});
+			} {
+				selected.do({ |index|
+					var pt;
+					pt = object.asCollection[ index ];
+					pt.x = pt.x + x;
+					pt.y = pt.y + y;
+				});
+			};
 			this.refresh; 
 			this.edited( \edit, \move );
 		};
 	}
 	
-	scaleSelected { |x = 1, y ...moreArgs|
+	scaleSelected { |x = 1, y, mod ...moreArgs|
 		y = y ? x;
 		if( selected.size > 0 ) {
 			selected.do({ |index|
@@ -1249,7 +1298,7 @@ WFSPointView : WFSBasicEditView {
 		};
 	}
 	
-	rotateSelected { |angle = 0, scale = 1 ...moreArgs|
+	rotateSelected { |angle = 0, scale = 1, mod ...moreArgs|
 		if( selected.size > 0 ) {
 			selected.do({ |index|
 				var pt, rpt;

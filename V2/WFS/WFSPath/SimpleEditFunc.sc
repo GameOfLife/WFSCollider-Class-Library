@@ -1,67 +1,169 @@
-SimpleEditFunc : ObjectWithArgs {
+SimpleEditDef : GenericDef {
 	
-	// function format:
-	// { |this, objectToEdit|  ... }
+	classvar <>all;
 	
-	// defaults can be function:
-	// { |this, objectToGetDefaultsFrom| ... }
-	// should output an array in the same form of args:
-	// [ \argName, value, \argName, value ...etc ]
-
 	var <>func;	
 	var >defaults;
-	var <>specs;
-	var <>action;
 	var <>makeViewsFunc;
 	var <>postMakeViewsFunc;
-	var <>bypassFunc;
-	var <>makeCopy = false;
+	var >bypassFunc;
 	var <>viewHeight = 14;
 	
-	*new { |func, args, defaults|
-		^super.new.init( name, func, args, defaults );
+	*new { |name, func, args, defaults|
+		^super.new( name, args ).init( func, defaults );
 	}
 	
-	init { |inName, inFunc, inArgs, inDefaults|
-		var keys, values;
-		
-		defaults = inDefaults ?? { inArgs.deepCopy };
-		args = inArgs;
-		func = inFunc;
-		specs = args.clump(2).collect({ |item|
-			var spec;
-			spec = (spec ? item[0]).asSpec; 
+	*getFromFile { ^nil; } // file write/read not supported for now
+	
+	init { |inFunc, inDefaults|
+		defaults = inDefaults ? defaults;
+		func = inFunc ? func;
+	}
+	
+	defaultBypassFunc { ^{ |f, obj| f.defaults( obj ) == f.args }; }
+	
+	bypassFunc { ^bypassFunc ? this.defaultBypassFunc }
+	
+	checkBypass { |f, obj| ^this.bypassFunc.value( f, obj ) == true  }
+	
+	defaults { |f, obj|
+		^defaults !? { defaults.value( f, obj ) } ?? { this.args };
+	}
+	
+	makeViews { |parent, bounds, f|
+		var res;
+		RoundView.useWithSkin( ( 	
+				font: Font( Font.defaultSansFace, 10 ),
+				labelWidth: 55
+		) ++ (RoundView.skin ? ()), {
+				if( makeViewsFunc.notNil ) {
+					res = makeViewsFunc.value( parent, bounds, f )
+				} {
+					res = this.prMakeViews( parent, bounds, f );
+				};
+				postMakeViewsFunc.value( f, res );
+			 }
+		);
+		^res;
+	}
+	
+	viewNumLines {
+		^this.specs.collect({|spec|
 			if( spec.isNil ) {
-				spec = Spec.forObject( item[1] );
+				1
+			} {
+				spec.viewNumLines
 			};
-			spec;
+		}).sum;
+	}
+	
+	getHeight { |margin, gap|
+		viewHeight = viewHeight ? 14;
+		margin = margin ?? {0@0};
+		gap = gap ?? {4@4};
+		^(margin.y * 2) + ( this.viewNumLines * (viewHeight + gap.y) ) - gap.y;
+	}
+		
+	
+	prMakeViews { |parent, bounds, f|
+		var views, controller, composite;
+		var margin = 0@2, gap = 0@0;
+		
+		if( parent.isNil ) {
+			bounds = bounds ?? { 160 @ this.getHeight( margin, gap ) };
+		} {
+			bounds = bounds ?? { parent.asView.bounds.insetBy(4,4) };
+			bounds.height = this.getHeight( margin, gap );
+		};
+		
+		controller = SimpleController( f );
+		
+		composite = EZCompositeView( parent, bounds, true, margin, gap ).resize_(2);
+		bounds = composite.view.bounds;
+		composite.onClose = {
+			controller.remove
+		 };
+		
+		views = ();
+		
+		views[ \composite ] = composite;
+		
+		f.args.pairsDo({ |key, value, i|
+			var vw, spec;
+			
+			spec = this.specs[i/2];
+			
+			vw = ObjectView( composite, nil, f, key, spec, controller );
+				
+			vw.action = { f.action.value( f, key, value ); };
+				
+			views[ key ] = vw;
+		
 		});
-		bypassFunc = { |f, obj| f.defaults( obj ) == f.args };
+		
+		if( views.size == 0 ) {
+			controller.remove;
+		};
+		
+		^views;
 	}
 	
-	setSpec { |argName, spec|
-		var index;
-		index = this.keys.indexOf( argName );
-		if( index.notNil ) {
-			specs[ index ] = spec;
+}
+
+SimpleEdit : ObjectWithArgs {
+	
+	var <>action;
+	var <defName;
+	var <>makeCopy = false;
+	
+	*new { |defName, args|
+		^super.new.init( defName, args ? [] )
+	}
+	
+	*defClass { ^SimpleEditDef }
+	
+	init { |inName, inArgs|
+		var def;
+		if( inName.isKindOf( this.class.defClass ) ) {
+			def = inName;
+			defName = def.name;
+			if( defName.isNil ) { defName = def };
 		} {
-			"%:setSpec - argName % not found".format( this.class, argName ).warn;
+			defName = inName;
+			def = this.class.defClass.fromName( defName );
+		};
+		if( def.notNil ) {	
+			args = def.asArgsArray( inArgs ? [] );
+			// defName = def.name;
+		} { 
+			//defName = inName;
+			"% defName '%' not found".format(this.class.defClass, inName).warn; 
+		};
+		this.changed( \init );
+	}
+	
+	def { 
+		if( defName.isKindOf( this.class.defClass ) ) {
+			^defName
+		} {
+			^this.class.defClass.fromName( defName );
 		};
 	}
 	
-	getSpec { |argName|
-		var index;
-		index = this.keys.indexOf( argName );
-		if( index.notNil ) {
-			^specs[ index ];
-		} {
-			"%:setSpec - argName % not found".format( this.class, argName ).warn;
-			^nil;
+	defaults { |obj| ^this.def.defaults( this, obj ); }
+	
+	getSpec { |key| ^this.def.getSpec( key ) }
+	
+	set { |argName, value, constrain = false|
+		var spec;
+		if( constrain && { (spec = this.getSpec( argName )).notNil } ) { 
+			value = spec.constrain( value );
 		};
+		this.setArg( argName, value );
 	}
 	
-	reset { |obj| // can use an object to get the defaults from
-		this.args = defaults.value( this, obj );
+	get { |key|
+		^this.getArg( key );
 	}
 	
 	args_ { |newArgs, constrain = false|
@@ -70,23 +172,7 @@ SimpleEditFunc : ObjectWithArgs {
 		});
 	}
 	
-	defaults { |obj|
-		^defaults.value( this, obj );
-	}
-	
-	set { |argName, value, constrain = false|
-		var spec;
-		if( constrain && { (spec = this.getSpec( argName )).notNil } ) { 
-			value = spec.constrain( value );
-		};
-		this.setArg( argName, value );
-		this.changed( argName, value );
-	}
-	
-	get { |argName| ^this.getArg( argName ) }
-	
 	doesNotUnderstand { |selector ...args| 
-		// bypasses errors; warning if arg not found
 		if( selector.isSetter ) { 
 			this.set( selector.asGetter, *args ) 
 		} {
@@ -94,7 +180,11 @@ SimpleEditFunc : ObjectWithArgs {
 		};	
 	}
 	
-	checkBypass { |obj| ^this.bypassFunc.value( this, obj ) == true }
+	reset { |obj| // can use an object to get the defaults from
+		this.args = this.defaults( obj );
+	}
+	
+	checkBypass { |obj| ^this.def.checkBypass( this, obj ) }
 	
 	value { |obj, args|
 		this.args = args;
@@ -108,85 +198,12 @@ SimpleEditFunc : ObjectWithArgs {
 	}
 	
 	prValue { |obj|
-		^func.value( this, obj );
+		^this.def.func.value( this, obj );
 	}
+	
+	viewNumLines { ^this.def.viewNumLines }
 	
 	makeViews { |parent, bounds|
-		var res;
-		RoundView.useWithSkin( ( 	
-				font: Font( Font.defaultSansFace, 10 ),
-				labelWidth: 55
-		) ++ (RoundView.skin ? ()), {
-				if( makeViewsFunc.notNil ) {
-					res = makeViewsFunc.value( this, parent, bounds )
-				} {
-					res = this.prMakeViews( parent, bounds );
-				};
-				postMakeViewsFunc.value( this, res );
-			 }
-		);
-		^res;
+		^this.def.makeViews( parent, bounds, this );
 	}
-	
-	viewNumLines {
-		^this.specs.collect({|spec|
-					if( spec.isNil ) {
-						1
-					} {
-						spec.viewNumLines
-					};
-				}).sum;
-	}
-	
-	getHeight { |margin, gap|
-		viewHeight = viewHeight ? 14;
-		margin = margin ?? {0@0};
-		gap = gap ?? {4@4};
-		^(margin.y * 2) + ( this.viewNumLines * (viewHeight + gap.y) ) - gap.y;
-	}
-		
-	
-	prMakeViews { |parent, bounds|
-		var views, controller, composite;
-		var margin = 0@2, gap = 0@0;
-		
-		if( parent.isNil ) {
-			bounds = bounds ?? { 160 @ this.getHeight( margin, gap ) };
-		} {
-			bounds = bounds ?? { parent.asView.bounds.insetBy(4,4) };
-			bounds.height = this.getHeight( margin, gap );
-		};
-		
-		controller = SimpleController( this );
-		
-		composite = EZCompositeView( parent, bounds, true, margin, gap ).resize_(2);
-		bounds = composite.view.bounds;
-		composite.onClose = {
-			controller.remove
-		 };
-		
-		views = ();
-		
-		views[ \composite ] = composite;
-		
-		this.args.pairsDo({ |key, value, i|
-			var vw, spec;
-			
-			spec = this.specs[i/2];
-			
-			vw = ObjectView( composite, nil, this, key, spec, controller );
-				
-			vw.action = { action.value( this, key, value ); };
-				
-			views[ key ] = vw;
-		
-		});
-		
-		if( views.size == 0 ) {
-			controller.remove;
-		};
-		
-		^views;
-	}
-	
 }

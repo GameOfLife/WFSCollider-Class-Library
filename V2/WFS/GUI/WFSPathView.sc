@@ -28,8 +28,10 @@ WFSPathView {
 		view.view.decorator.nextLine;
 		view.view.decorator.shift( 0, 2 ); // needed for some reason
 		
+		
 		xyView = WFSPathXYView( view, bounds.copy.height_( bounds.height - 118 ), object );
 		
+		// xyView is the master view
 		topBar.object = xyView;
 		undoView.object = xyView;
 		
@@ -38,7 +40,15 @@ WFSPathView {
 		timeView = WFSPathTimeView( view, bounds.copy.height_( 92 ), object ? xyView.object );
 		timeView.resize_(8);
 		
-		xyView.addDependant({ this.updateTimeView });
+		xyView.addDependant({ 
+			this.updateTimeView;
+			if( xyView.mouseMode != \record ) {
+				timeView.mouseMode = xyView.mouseMode;
+			};
+			if( xyView.object != timeView.object ) {
+				timeView.object = xyView.object;
+			};
+		});
 		timeView.addDependant({ this.updateXYView });
 	}
 	
@@ -282,4 +292,13 @@ WFSPathView_TopBar {
 			
 		view.onClose_({ ctrl.remove });	
 	}
+}
+
+
++ WFSPath2 {
+	plot { |parent, bounds| ^WFSPathView( parent, bounds, this ).editMode_( \none ) }
+}
+
++ WFSPathURL {
+	plot { |parent, bounds| ^WFSPathView( parent, bounds, this.wfsPath ).editMode_( \none ) }
 }
