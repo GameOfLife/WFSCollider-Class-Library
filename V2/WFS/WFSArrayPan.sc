@@ -446,7 +446,7 @@ WFSArrayPanPlane : WFSBasicArrayPan {
 		distances = speakerArray.collect({ |item,i| (sinA * item) - dist2; });
 		
 		// calculate amplitudes
-		amplitudes = 1/n; // normalize sum
+		amplitudes = 1/48; // normalize sum for fixed average number of speakers
 		
 		// subtract large delay
 		delayOffset = preDelay;

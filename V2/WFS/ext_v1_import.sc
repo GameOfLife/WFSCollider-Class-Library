@@ -11,7 +11,7 @@
 + WFSSynth {
 	
 	asUEvent { 
-		var units;
+		var units, gain = 0;
 		
 		units = Array.new( 4 );
 		
@@ -48,7 +48,10 @@
 				units.add( U( \wfsStaticPoint, [ \point, wfsPath.asPoint ] ) );
 			},
 			\plane, {
-				units.add( U( \wfsStaticPlane, [ \point, wfsPath.asPoint ] ) );
+				units.add( U( \wfsStaticPlane, [ 
+					\point, wfsPath.asPoint,
+					\dbRolloff, -6 // this mimicks the old behaviour
+				] ) );
 			},
 			\index, {
 				units.add( U( \wfsStaticIndex, [ \index, wfsPath ] ) );
@@ -56,7 +59,7 @@
 		);
 		
 		^UChain( 0, 0, dur, true, *units )
-			.setGain( level.ampdb );
+			.setGain( level.ampdb + gain );
 	}
 	
 	asBufSndFile { 
