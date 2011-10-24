@@ -12,22 +12,60 @@
 + ControlSpec {
 	
 	makeView { |parent, bounds, label, action, resize|
-		var vw = EZSmoothSlider( parent, bounds, label !? { label.asString ++ " " }, 
-			this, { |vw| action.value( vw, vw.value ) },
-			labelWidth: (RoundView.skin ? ()).labelWidth ? 80 );
-		vw.sliderView.centered_( true ).centerPos_( this.unmap( default ) );
-		if( resize.notNil ) { vw.view.resize = resize };
-		^vw;	
+		var view, vws, stp, labelWidth;
+		vws = ();
+		
+		if( (minval != -inf) && { maxval != inf } ) {
+			vws[ \valueView ] = 
+				EZSmoothSlider( parent, bounds, label !? { label.asString ++ " " }, 
+					this, { |vw| action.value( vw, vw.value ) },
+					labelWidth: (RoundView.skin ? ()).labelWidth ? 80 );
+			
+			vws[ \view ] = vws[ \valueView ].view;
+			vws[ \sliderView ] = vws[ \valueView ].sliderView;
+			vws[ \sliderView ].centered_( true ).centerPos_( this.unmap( default ) );
+			
+		} {
+			view = EZCompositeView( parent, bounds );
+			vws[ \view ] = view.view;
+			bounds = view.view.bounds;
+			stp = this.step;
+			if( stp == 0 ) { stp = 1 };
+			
+			if( label.notNil ) {
+				labelWidth = (RoundView.skin ? ()).labelWidth ? 80;
+				vws[ \labelView ] = StaticText( view, labelWidth @ 14 )
+					.string_( label.asString ++ " " )
+					.align_( \right )
+					.resize_( 4 )
+					.applySkin( RoundView.skin );
+			} {
+				labelWidth = -4;
+			};
+		
+			vws[ \valueView ] = SmoothNumberBox( view, 
+					Rect(labelWidth + 4,0,bounds.width-(labelWidth + 4),bounds.height)
+				)
+			    .action_({ |vw|
+			        action.value( vw, vw.value );
+			    } ).resize_(5)
+				.step_( stp )
+				.scroll_step_( stp )
+				.clipLo_( this.minval )
+				.clipHi_( this.maxval );	
+		};
+		if( resize.notNil ) { vws.view.resize = resize };
+		^vws;	
 	}
 	
-	setView { |view, value, active = false|
-		view.value = value;
-		if( active ) { view.doAction };
+	setView { |vws, value, active = false|
+		vws[ \valueView ].value = value;
+		if( active ) { vws[ \valueView ].doAction };
 	}
 	
-	mapSetView { |view, value, active = false|
-		view.value = this.map(value);
-		if( active ) { view.doAction };
+	mapSetView { |vws, value, active = false|
+		vws[ \valueView ].value = this.map(value);
+		if( active ) { vws[ \valueView ].doAction };
 	}
 	
 	adaptFromObject { |object| // if object out of range; change range
