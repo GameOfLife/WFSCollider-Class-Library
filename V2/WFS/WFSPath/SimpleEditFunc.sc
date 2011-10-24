@@ -34,7 +34,7 @@ SimpleEditDef : GenericDef {
 		var res;
 		RoundView.useWithSkin( ( 	
 				font: Font( Font.defaultSansFace, 10 ),
-				labelWidth: 55
+				labelWidth: 65
 		) ++ (RoundView.skin ? ()), {
 				if( makeViewsFunc.notNil ) {
 					res = makeViewsFunc.value( parent, bounds, f )
@@ -84,9 +84,21 @@ SimpleEditDef : GenericDef {
 			controller.remove
 		 };
 		
-		views = ();
+		views = this.prMakeArgViews( f, composite, controller ); // returns a dict
+		
+		if( views.size == 0 ) {
+			controller.remove;
+		};
 		
 		views[ \composite ] = composite;
+		
+		^views;
+	}
+	
+	prMakeArgViews { |f, composite, controller|
+		var views;
+		
+		views = ();
 		
 		f.args.pairsDo({ |key, value, i|
 			var vw, spec;
@@ -100,10 +112,6 @@ SimpleEditDef : GenericDef {
 			views[ key ] = vw;
 		
 		});
-		
-		if( views.size == 0 ) {
-			controller.remove;
-		};
 		
 		^views;
 	}
@@ -133,7 +141,7 @@ SimpleEdit : ObjectWithArgs {
 			def = this.class.defClass.fromName( defName );
 		};
 		if( def.notNil ) {	
-			args = def.asArgsArray( inArgs ? [] );
+			args = def.asArgsArray( inArgs ? #[] );
 			// defName = def.name;
 		} { 
 			//defName = inName;
@@ -148,6 +156,14 @@ SimpleEdit : ObjectWithArgs {
 		} {
 			^this.class.defClass.fromName( defName );
 		};
+	}
+	
+	def_ { |newDef, keepArgs = true|
+		this.init( newDef, if( keepArgs ) { args } { nil } );
+	}
+	
+	defName_ { |newName, keepArgs = true|
+		this.init( newName, if( keepArgs ) { args } { nil } );
 	}
 	
 	defaults { |obj| ^this.def.defaults( this, obj ); }
