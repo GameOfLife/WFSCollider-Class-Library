@@ -58,10 +58,7 @@
 
             // todo: offline panner simulators
 
-            defs = (Udef.loadAllFromDefaultDirectory.collect(_.synthDef) ++
-                [ 'bufferPlayer','diskPlayer', ].collect{ |name|
-                    MetaUdef.fromName(name).synthDefs( [ [\numChannels,1] ] )
-              }).flat.select(_.notNil);
+            defs = Udef.loadAllFromDefaultDirectory.collect(_.synthDef).flat.select(_.notNil);
 
               defs.do({|def|
                     def.load( server.m );
@@ -109,10 +106,7 @@
             var defs;
             SyncCenter.loadMasterDefs;
 
-             defs = (Udef.loadAllFromDefaultDirectory.collect(_.synthDef) ++
-            [ 'bufferPlayer','diskPlayer', ].collect{ |name|
-                MetaUdef.fromName(name).synthDefs( [ [\numChannels,1] ] )
-            }).flat.select(_.notNil);
+             defs = Udef.loadAllFromDefaultDirectory.collect(_.synthDef).flat.select(_.notNil);
 
             defs.do({|def|
                     def.load( server.m );
@@ -171,10 +165,7 @@
             //allTypes.do({ |def| def.def.writeDefFile });
             // server.writeServerSyncSynthDefs;
 
-            defs = (Udef.loadAllFromDefaultDirectory.collect(_.synthDef) ++
-             [ 'bufferPlayer','diskPlayer', ].collect{ |name|
-                    MetaUdef.fromName(name).synthDefs( [ [\numChannels,1] ] )
-                }).flat.select(_.notNil);
+            defs = Udef.loadAllFromDefaultDirectory.collect(_.synthDef).flat.select(_.notNil);
 
             defs.do({|def| def.writeDefFile; });
             SyncCenter.writeDefs;
