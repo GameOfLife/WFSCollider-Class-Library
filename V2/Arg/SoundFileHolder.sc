@@ -330,6 +330,10 @@ AbstractSndFile : AbstractRichBuffer {
 		endFrame = new.min(numFrames);
 		this.changed( \endFrame, endFrame );
 	}
+	
+	cutStart { |time = 0|
+		this.startSecond = this.startSecond + time;
+	}
 
 	rate_ { |new|
 		rate = new ? 1;
@@ -422,7 +426,7 @@ AbstractSndFile : AbstractRichBuffer {
 		});
 	}
 	
-	makeUnit { // to do: remove fadeInTime / fadeOutTime : they are now covered elsewhere
+	makeUnit { 
 		^U( this.unitNamePrefix++"SoundFile", [\soundFile, this ] );
 	}
 	
@@ -535,6 +539,14 @@ BufSndFile : AbstractSndFile {
 		    path.quote, numFrames, numChannels, sampleRate,
              startFrame, endFrame, rate, loop
 		]  << ")" << if( useChannels.notNil ) { ".useChannels(%)".format( useChannels ) } { "" };
+	}
+	
+	cutStart { |time=0|
+		if( loop.not ) { 
+			if( time < this.endSecond ) {
+				this.startSecond = this.startSecond + time;
+			};
+		};
 	}
 
 }

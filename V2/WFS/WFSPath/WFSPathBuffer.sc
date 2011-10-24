@@ -104,6 +104,10 @@ WFSPathBuffer : AbstractRichBuffer {
 		};
 	}
 	
+	cutStart { |time = 0|
+		this.startSecond = this.startSecond + time;
+	}
+	
 	name_ { |new|
 		wfsPath.name = new.asString;
 	}

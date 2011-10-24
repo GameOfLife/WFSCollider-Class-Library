@@ -417,6 +417,14 @@ U : ObjectWithArgs {
 		this.init( newName, if( keepArgs ) { args } { [] }); // keep args
 	}
 	
+	cutStart { |amount = 0|
+		this.values.do({ |value|
+			if( value.respondsTo( \cutStart ) ) {
+				value.cutStart( amount );
+			};
+		});
+	}
+	
 	synths { ^synthDict[ this ] ? [] }
 	
 	synths_ { |synths| synthDict.put( this, synths ); }

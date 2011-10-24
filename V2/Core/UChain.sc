@@ -320,6 +320,7 @@ UChain : UEvent {
                 if( removeFade ){
                     this.fadeIn = 0
                 };
+                units.do( _.cutStart( delta1 ) );
             }
         } {
 
@@ -330,6 +331,7 @@ UChain : UEvent {
                 if(removeFade){
                     this.fadeIn = 0
                 };
+                 units.do( _.cutStart( delta1 ) );
             }
 
         }
