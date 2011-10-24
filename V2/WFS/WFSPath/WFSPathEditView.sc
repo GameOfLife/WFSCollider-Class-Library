@@ -7,11 +7,11 @@ WFSPathEditView {
 	var <>action;
 	var <>duplicateAction;
 	
-	*new { |parent, bounds, object|
-		^super.new.init( parent, bounds, object )
+	*new { |parent, bounds, object, editDefs|
+		^super.new.init( parent, bounds, object, editDefs )
 	}
 	
-	init { |parent, bounds, inObject|
+	init { |parent, bounds, inObject, editDefs|
 		
 		object = inObject ? object;
 		object = object.asWFSPath2;
@@ -19,11 +19,11 @@ WFSPathEditView {
 		
 		
 		if( parent.isNil ) {
-			bounds = bounds ?? { 167 @ 280 };
+			bounds = bounds ?? { 177 @ 280 };
 		};
 		
 		view = EZCompositeView( parent, bounds, true, 2@2, 2@2 );
-		editFuncs = this.makeEditFuncs;
+		editFuncs = this.makeEditFuncs( editDefs );
 		
 		this.makeViews;
 		
@@ -166,9 +166,34 @@ WFSPathEditView {
 		 
 	}
 	
-	makeEditFuncs {
-		^[ \name, \type, \move, \scale, \rotate, \smooth, \size, \duration, \equal, \reverse ]
+	makeEditFuncs { |editDefs|
+		^(editDefs ?? { [ 
+			\name, \type, \move, \scale, \rotate, \smooth, \size, \duration, \equal, \reverse 
+		] })	
+			.asCollection 
 			.collect(WFSPathEdit(_))
+	}
+	
+}
+
+WFSPathGeneratorView : WFSPathEditView {
+	
+	makeEditFuncs { |editDefs|
+		^[ WFSPathEdit( \simpleSize ),  WFSPathEdit( \duration ) ] ++
+			(editDefs ?? { [ 
+				\circle 
+			] })	
+				.asCollection 
+				.collect(WFSPathGenerator(_))
+	}
+	
+	resetFuncs {
+		editFuncs.do({ |func, i|
+			func.reset( object );
+			if( i >= 2 ) {
+				func.blend = 0;
+			};
+		});
 	}
 	
 }

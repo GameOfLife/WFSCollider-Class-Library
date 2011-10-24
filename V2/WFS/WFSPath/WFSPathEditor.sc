@@ -3,7 +3,7 @@ WFSPathEditor {
 	classvar <>current;
 	
 	var <view, <pathView, <editView;
-	var <editWidth = 167;
+	var <editWidth = 177;
 	var <>action;
 	
 	

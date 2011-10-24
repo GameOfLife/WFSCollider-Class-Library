@@ -24,11 +24,62 @@ WFSPathGeneratorDef : WFSPathEditDef {
 			};
 		};
 	}
+	
+	viewNumLines {
+		^super.viewNumLines + 2;
+	}
+	
+	prMakeArgViews { |f, composite, controller|
+		var views, header;
+		
+		views = ();
+		
+		views[ \blend ] = EZSmoothSlider( composite, composite.bounds.width @ viewHeight,
+			f.defName ++ "  ", [0,1,\lin], { |sl|
+				f.blend = sl.value;
+				f.action.value( f, \blend, sl.value ); 
+			}, f.blend );
+		
+		views[ \blend ].view.resize_(2);
+			
+		views[ \blend ].font = (RoundView.skin ?? { ( font: Font( Font.defaultSansFace, 10 ) ) })
+			.font.boldVariant;
+			
+		views[ \blend ].view.background_( Color.white.alpha_(0.25) );
+		views[ \blend ].sliderView.background_( Color.clear );
+			
+		controller.put( \blend, { views[ \blend ].value = f.blend } );
+		
+		composite.decorator.nextLine;
+		
+		[ \changeX, \changeY, \changeT ].do({ |item, i|
+			
+		});
+		
+		f.args.pairsDo({ |key, value, i|
+			var vw, spec;
+			
+			spec = this.specs[i/2];
+			
+			vw = ObjectView( composite, nil, f, key, spec, controller );
+				
+			vw.action = { f.action.value( f, key, value ); };
+				
+			views[ key ] = vw;
+		});
+		
+		views[ \composite ] = composite;
+		
+		^views;
+	}
+	
+	
+
 }
 
 WFSPathEdit : SimpleEdit {
 	
-	var <>selection;
+	var <selection;
 	
 	*defClass { ^WFSPathEditDef }
 	
@@ -54,19 +105,21 @@ WFSPathEdit : SimpleEdit {
 		^obj;
 	}
 	
+	selection_ { |newSelection| selection = newSelection; this.changed( \selection, selection ); }
+	
 }
 
 
 WFSPathGenerator : WFSPathEdit {
 	
 	// \bypass, \replace, \+, \-, \*, <any binary operator>
-	var <>modeX = \replace;
-	var <>modeY = \replace;
-	var <>modeT = \replace;
+	var <modeX = \replace;
+	var <modeY = \replace;
+	var <modeT = \replace;
 	
-	var <>blend = 1; // 0 to 1
+	var <blend = 1; // 0 to 1
 
-	var <>polar = false;
+	var <polar = false;
 	
 	*defClass { ^WFSPathGeneratorDef }
 	
@@ -128,5 +181,11 @@ WFSPathGenerator : WFSPathEdit {
 		
 		^obj;
 	}
+	
+	modeX_ { |newModeX| modeX = newModeX; this.changed( \modeX, modeX )  }
+	modeY_ { |newModeY| modeY = newModeY; this.changed( \modeY, modeY )  }
+	modeT_ { |newModeT| modeT = newModeT; this.changed( \modeT, modeT )  }
+	blend_ { |val = 1| blend = val; this.changed( \blend, blend )  }
+	polar_ { |bool = false| polar = bool; this.changed( \polar, polar )  }
 
 }
