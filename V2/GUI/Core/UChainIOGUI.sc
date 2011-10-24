@@ -59,11 +59,12 @@ UChainIOGUI : UChainGUI {
 
 	}
 	
-	makeUnitViews { |units, margin, gap|
+	makeUnitSubViews { |scrollView, units, margin, gap|
 		var unitInitFunc;
 		var labelWidth;
+		var width;
 		
-		this.makeUnitHeader( units, margin, gap );
+		width = scrollView.bounds.width - 12 - (margin.x * 2);
 		
 		labelWidth = 80;
 		
@@ -82,7 +83,7 @@ UChainIOGUI : UChainGUI {
 		^units.collect({ |unit, i|
 			var header, comp, views, params;
 			
-			comp = CompositeView( composite, (composite.bounds.width - (margin.x * 2))@14 )
+			comp = CompositeView( scrollView, width@14 )
 				.resize_(2);
 			
 			header = StaticText( comp, comp.bounds.moveTo(0,0) )
@@ -95,7 +96,7 @@ UChainIOGUI : UChainGUI {
 						{ Font( Font.defaultSansFace, 12) }).boldVariant 
 				);
 			
-			views = this.makeUnitView( unit, i, labelWidth );
+			views = this.makeUnitView( scrollView, unit, i, labelWidth, width );
 			
 			unit.addDependant( unitInitFunc );
 			
@@ -114,7 +115,7 @@ UChainIOGUI : UChainGUI {
 		^analyzers[ rate ].usedBuses.maxItem ? 0;
 	}
 	
-	makeUnitView { |unit, i, labelWidth|
+	makeUnitView { |scrollView, unit, i, labelWidth, width|
 		var ctrl;
 		var setPopUps;
 		var max;
@@ -152,20 +153,20 @@ UChainIOGUI : UChainGUI {
 				io[2].do({ |item, ii|
 					var nb, pu;
 					
-					StaticText( composite, labelWidth @ 14 )
+					StaticText( scrollView, labelWidth @ 14 )
 						.applySkin( RoundView.skin )
 						.align_( \right )
 						.string_( "% %".format( 
 							if( ii == 0 ) { "% %".format( rate, mode ) } { "" }, item ) 
 						);
 						
-					nb = SmoothNumberBox( composite, 20@14 )
+					nb = SmoothNumberBox( scrollView, 20@14 )
 						.clipLo_( 0 )
 						.value_(  io[3][ii] )
 						.action_( { |nb|
 							unit.perform( setter, ii, nb.value ); 					} );
 						
-					pu = PopUpMenu( composite, (composite.bounds.width - labelWidth - 28)@14 )
+					pu = PopUpMenu( scrollView, (width - labelWidth - 28)@14 )
 						.applySkin( RoundView.skin )
 						.resize_(2)
 						.action_({ |pu| 

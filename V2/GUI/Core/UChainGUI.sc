@@ -33,7 +33,7 @@ UChainGUI {
 			parent = Window(
 				parent, 
 				bounds ?? { Rect(128 rrand: 256, 64 rrand: 128, 342, 400) }, 
-				scroll: true
+				scroll: false
 			).front;
 		};
 		
@@ -78,7 +78,7 @@ UChainGUI {
 				
 		controller = SimpleController( chain );
 		
-		composite = CompositeView( parent, bounds ).resize_(2);
+		composite = CompositeView( parent, bounds ).resize_(5);
 		composite.addFlowLayout( margin, gap );
 		composite.onClose = { controller.remove; };
 		
@@ -285,8 +285,6 @@ UChainGUI {
 		chain.changed( \releaseSelf );
 		
 		uguis = this.makeUnitViews(units, margin, gap );
-		
-		composite.bounds = composite.bounds.height_( composite.children.last.bounds.bottom );
 	}
 	
 	makeUnitHeader { |units, margin, gap|
@@ -316,7 +314,8 @@ UChainGUI {
                 }).resize_(3);
 		};
 		defs = SmoothButton( comp, 
-				Rect( comp.bounds.right - (36 + if( chain.class != MassEditUChain ) {4 + 36}{0}), 1, 36, 12 ) )
+				Rect( comp.bounds.right - (36 + if( chain.class != MassEditUChain ) {4 + 36}{0}),
+					 1, 36, 12 ) )
 			.label_( "defs" )
 			.border_( 1 )
 			.radius_( 2 )
@@ -330,14 +329,13 @@ UChainGUI {
 
 	}
 	
-	makeUnitViews { |units, margin, gap|
-		
+	makeUnitSubViews { |scrollView, units, margin, gap|
 		var unitInitFunc;
-		var comp, header, uview;
-		var addLast;
-		var ug;
+		var comp, uview;
+		var addLast, ug, header;
+		var width;
 		
-		this.makeUnitHeader( units, margin, gap );
+		width = scrollView.bounds.width - 12 - (margin.x * 2);
 		
 		unitInitFunc = { |unit, what ...args|
 			if( what === \init ) { // close all views and create new
@@ -346,7 +344,7 @@ UChainGUI {
 		};
 		
 		if( units.size == 0 ) {
-			comp = CompositeView( composite, (composite.bounds.width - (margin.x * 2))@14 )
+			comp = CompositeView( scrollView, width@14 )
 				.resize_(2);
 			
 			header = StaticText( comp, comp.bounds.moveTo(0,0) )
@@ -386,7 +384,7 @@ UChainGUI {
 		ug = units.collect({ |unit, i|
 			var header, comp, uview, plus, min, defs, io;
 			
-			comp = CompositeView( composite, (composite.bounds.width - (margin.x * 2))@14 )
+			comp = CompositeView( scrollView, width@14 )
 				.resize_(2);
 			
 			header = StaticText( comp, comp.bounds.moveTo(0,0) )
@@ -461,11 +459,15 @@ UChainGUI {
 						
 			unit.addDependant( unitInitFunc );
 			header.onClose_({ unit.removeDependant( unitInitFunc ) });
-			unit.gui( composite, composite.bounds  );
+			unit.gui( scrollView, 
+				scrollView.bounds.copy.width_( 
+					scrollView.bounds.width - 12 - (margin.x * 2) 
+				)  
+			);
 		});
 		
 		if( units.size > 0 ) {
-			addLast = UserView( composite, (composite.bounds.width - (margin.x * 2))@14 )
+			addLast = UserView( scrollView, width@14 )
 				.resize_(2);
 					
 			addLast.canReceiveDragHandler_({ |sink|
@@ -490,7 +492,31 @@ UChainGUI {
 				});
 		};
 		^ug;
+		
+	}
 
+	makeUnitViews { |units, margin, gap|
+		
+		var scrollView;
+		
+		this.makeUnitHeader( units, margin, gap );
+		
+		composite.decorator.nextLine;
+		
+		scrollView = ScrollView( composite, 
+			(composite.bounds.width) 
+				@ (composite.bounds.height - 
+					( composite.decorator.top )
+				)
+		);
+		
+		scrollView
+			.hasHorizontalScroller_( false )
+			.autohidesScrollers_( false )
+			.resize_(5)
+			.addFlowLayout( margin, gap );
+			
+		^this.makeUnitSubViews( scrollView, units, margin, gap );
 	}
 	
 	remove {
