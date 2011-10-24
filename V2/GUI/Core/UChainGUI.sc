@@ -262,6 +262,7 @@ UChainGUI {
 			.put( \units, { 
 				if( composite.isClosed.not ) {
 					{
+						composite.children[0].focus; // this seems to prevent a crash..
 						composite.remove;
 						this.makeViews( originalBounds );
 					}.defer(0.01);
@@ -270,6 +271,7 @@ UChainGUI {
 			.put( \init, { 
 				if( composite.isClosed.not ) {
 					{
+						composite.children[0].focus; // this seems to prevent a crash..
 						composite.remove;
 						this.makeViews( originalBounds );
 					}.defer(0.01);
