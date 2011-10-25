@@ -56,12 +56,8 @@ UScoreEditorGui_TransportBar {
 
 		});
 
-		scoreController.put(\paused, {
-            views[\pause].value = 1;
-		});
-
-		scoreController.put(\start, {
-            views[\play].value = 1;
+		scoreController.put(\updatePos, { |who,what,updatePos|
+		    views[\update].value = updatePos.not.binaryValue;
 		});
 
 		scoreController.put(\pos, { |who,what,pos|
@@ -182,6 +178,18 @@ UScoreEditorGui_TransportBar {
                 if(this.score.isStopped) {
                     this.score.pos = v.value
                 }
+            });
+
+        views[\update] = SmoothSimpleButton( view, 40@size  )
+			.states_( [
+			    [ "update", Color.black, Color.green.alpha_(0.5) ],
+			    [ "update", Color.black, Color.clear ]] )
+			.canFocus_(false)
+			.font_( font )
+			.border_(1).background_(Color.grey(0.8))
+			//.changeStateWhenPressed_(false)
+			.action_({  |v,c,d,e|
+                this.score.updatePos = v.value.booleanValue;
             });
 
     }

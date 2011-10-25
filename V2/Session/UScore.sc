@@ -9,7 +9,7 @@ UScore : UEvent {
 	//public
 	var <>events, <name = "untitled";
 	var pos = 0, <>loop = false;
-	var <playState = \stopped;
+	var <playState = \stopped, <updatePos = true;
 
 
 	/* playState is a finite state machine. The transitions graph:
@@ -367,8 +367,10 @@ UScore : UEvent {
                     (startPos - preparePos).wait;
                     while({t <= dur}, {
                         waitTime.wait;
-                        t = t + waitTime;
-                        this.pos_(t);
+                        if(updatePos) {
+                            t = t + waitTime;
+                            this.pos_(t);
+                        }
                     });
 
                 }).start;
@@ -457,6 +459,7 @@ UScore : UEvent {
              events.select({ |evt| evt.isFolder.not && { evt.preparedServers.size > 0 } })
             	.do(_.dispose);
             this.playState_(\stopped,changed);
+            this.changed(\pos,this.pos);
             CmdPeriod.remove( this );
 	    };
 	    if([\preparing,\prepared].includes(playState)) {
@@ -511,6 +514,11 @@ UScore : UEvent {
 	pos_ { |x|
 	    pos = x;
 	    this.changed(\pos, x);
+	}
+
+	updatePos_ { |x|
+	    updatePos = x;
+	    this.changed(\updatePos,x)
 	}
 
 	gui { ^UScoreEditorGUI(UScoreEditor(this)) }
