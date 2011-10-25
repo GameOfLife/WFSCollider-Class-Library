@@ -1,5 +1,7 @@
 ObjectWithArgs {
 	
+	classvar <>verbose = false;
+	
 	var <args;
 	
 	// args are an array of key, value pairs: [ key, value, key, value ...etc ]
@@ -22,7 +24,9 @@ ObjectWithArgs {
 			args[ (index * 2) + 1 ] = value;
 			this.changed( key, value );
 		} {
-			"%:% arg % not found".format( this.class, thisMethod.name, key ).warn;
+			if( verbose ) {
+				"%:% arg % not found".format( this.class, thisMethod.name, key ).warn;
+			};
 		};	
 	}
 	
@@ -32,7 +36,9 @@ ObjectWithArgs {
 		if( index.notNil ) { 
 			^args[ (index * 2) + 1 ] 
 		} { 
-			"%:% arg % not found".format( this.class, thisMethod.name, key ).warn;
+			if( verbose ) {
+				"%:% arg % not found".format( this.class, thisMethod.name, key ).warn;
+			};
 			^nil 
 		};
 	}
