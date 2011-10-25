@@ -15,11 +15,19 @@ USession : UArchivable{
 
     *current { ^USessionGUI.current !! _.session }
 
+    *acceptedClasses{
+        ^[UChain,UChainGroup,UScore,UScoreList]
+    }
+
     at { |index| ^objects[ index ] }
 
     add { |item|
-        objects = objects.add(item);
-        this.changed(\objectsChanged)
+        if(USession.acceptedClasses.includes(item.class)) {
+            objects = objects.add(item);
+            this.changed(\objectsChanged)
+        } {
+            ("Session cannot accept object of type "+item.class).warn;
+        }
     }
 
     remove { |item|

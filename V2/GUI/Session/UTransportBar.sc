@@ -102,10 +102,6 @@ UTransportView {
 
         var font = Font( Font.defaultSansFace, 11 );
 		views = ();
-	    
-        views[\prepare] = WaitView( parent, height@height )
-					.alphaWhenStopped_( 0 )
-					.canFocus_(false);
 
 		views[\play] = SmoothSimpleButton( parent, 40@height  )
 			.states_( [
@@ -171,6 +167,10 @@ UTransportView {
         			.border_(1)
         			.background_(Color.grey(0.8))
         			.action_({ |v| score.loop = v.value.booleanValue;  });
+
+        views[\prepare] = WaitView( parent, height@height )
+					.alphaWhenStopped_( 0 )
+					.canFocus_(false);
 
         parent.decorator.shift(20,0);
 
