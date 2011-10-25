@@ -8,7 +8,6 @@
 
 UChain : UEvent {
 	
-	classvar <>defaultServers;
 	classvar <>verbose = false;
 	classvar <>groupDict;
 	
@@ -394,7 +393,7 @@ UChain : UEvent {
 	start { |target, startPos = 0, latency|
 		var targets, bundles;
 		startPos = startPos ? 0;		
-		target = preparedServers ? target ? this.class.defaultServers ? Server.default;
+		target = preparedServers ? target ? UServerCenter.servers ? Server.default;
 		preparedServers = nil;
 		targets = target.asCollection;
 		 if( verbose ) { "% starting on %".format( this, targets ).postln; };
@@ -460,7 +459,7 @@ UChain : UEvent {
 		var cpu;
 		action = MultiActionFunc( action );
 		if( target.isNil or: { target.size == 0 } ) {
-			target = this.class.defaultServers ? Server.default;
+			target = UServerCenter.servers ? Server.default;
 		};
 		
 		target = target.asCollection.select({ |tg|
@@ -482,7 +481,7 @@ UChain : UEvent {
 	prepareAndStart{ |target, startPos = 0|
 		var task, cond;
 		if( target.isNil ) {
-			target = this.class.defaultServers ? Server.default;
+			target = UServerCenter.servers ? Server.default;
 		};
 		cond = Condition(false);
 		task = fork { 
