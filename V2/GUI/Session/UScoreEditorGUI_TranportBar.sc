@@ -122,7 +122,7 @@ UScoreEditorGui_TransportBar {
 			.states_( [
 			    [ \play, Color.black, Color.clear ],
 			    [ \stop, Color.black, Color.green.alpha_(0.5) ],
-			    [ \play, Color.blue, Color.red ]] )
+			    [ \play, Color.blue, Color.red.alpha_(0.5) ]] )
 			.canFocus_(false)
 			.font_( font )
 			.border_(1).background_(Color.grey(0.8))
@@ -145,7 +145,7 @@ UScoreEditorGui_TransportBar {
 			.states_( [
 			    [ \pause, Color.black, Color.clear ],
 			    [ \pause, Color.red,Color.green.alpha_(0.5) ],
-			    [ \pause, Color.blue,Color.red ]] )
+			    [ \pause, Color.blue,Color.red.alpha_(0.5) ]] )
 			.canFocus_(false)
 			.font_( font )
 			.border_(1)
