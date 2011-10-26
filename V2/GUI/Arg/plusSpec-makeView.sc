@@ -524,6 +524,16 @@
 		^vw;		
 	}
 	
+	setView { |vws, value, active = false|
+		vws.value = value;
+		if( active ) { vws.doAction };
+	}
+	
+	mapSetView { |vws, value, active = false|
+		vws.value = this.map(value);
+		if( active ) { vws.doAction };
+	}
+	
 	adaptFromObject { |object|
 		if( object.isArray.not ) {
 			^this.asControlSpec.adaptFromObject( object );
