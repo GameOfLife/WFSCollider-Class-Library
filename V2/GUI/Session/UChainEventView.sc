@@ -22,23 +22,17 @@ UChainEventView : UEventView {
     var <fadeAreaHeight;
 
 	getTypeColor {
-
-		/*var color;
-		color = if( event.isFolder )
-			{ Color.white;  }
-			{ 	( ( 	'buf': Color.blue,
-					'disk': Color.magenta,
-					'blip': Color.red  )
-					[ event.wfsSynth.audioType ] ? Color.gray ).blend(
-				 ( ( 	'linear': Color(0.35,0.95,0.35),
-						'cubic': Color.cyan(0.75),
-						'static': Color.green(0.75),
-						'plane': Color.yellow(0.75) )
-					[ event.wfsSynth.intType ] ? Color.gray ), 0.5 )
-			};
-        */
-        var color = if(event.duration == inf){Color.blue}{Color.red};
-		^color;
+        ^case { 
+	        event.duration == inf 
+	   } {
+	        Color(0.33, 0.33, 0.665)
+        } {
+	        event.releaseSelf == true;
+        } {
+	        Color(0.6421568627451, 0.25, 0.6421568627451);
+        } {
+	        Color(0.33, 0.4975, 0.4975);
+        };
 	}
 
 	ifIsInsideRect{ |mousePos, yesAction, noAction|

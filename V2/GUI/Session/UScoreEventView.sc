@@ -20,7 +20,7 @@
 UScoreEventView : UEventView {
 
 	getTypeColor {
-        ^if(event.duration == inf){Color.blue}{Color.white};
+        ^if(event.duration == inf){ Color(0.33, 0.33, 0.665) }{Color.white};
 	}
 
 	ifIsInsideRect{ |mousePos, yesAction, noAction|
