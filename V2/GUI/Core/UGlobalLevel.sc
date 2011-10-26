@@ -1,18 +1,20 @@
 /*
-UGlobalLevel automatically creates an equaliser for U (unit), which is controlled via a global setting.
+UGlobalGain automatically creates a gain stage for U (unit), which is controlled via a global setting.
 
-It creates the following private controls automatically:
+UGlobalGain.kr It creates the following private controls automatically:
 
-	u_globalGain (-12) : the global level for all U's that have this in their path
+	u_globalGain (0) : the global level for all U's that have this in their path
+	
+UGlobalGain is also incorporated in UEnv.
 
-UGlobalEQ.gui creates a gui for the global EQ. It sends its values to the rootnode of each
+UGlobalGain.gui creates a gui for the global gain. It sends its values to the rootnode of each
 server in the UServerCenter, so that all currently active units get the correct settings.
  
 */
 
 UGlobalGain {
 	
-	classvar <gain = -12;
+	classvar <gain = 0;
 	classvar <>view;
 	
 	*initClass {
