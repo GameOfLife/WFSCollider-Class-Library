@@ -5,6 +5,10 @@
 
 		Udef.userDefsFolder = this.filenameSymbol.asString.dirname.dirname.dirname.dirname
 		    .dirname.dirname.dirname.dirname.dirname.dirname +/+ "UnitDefs";
+		   
+		Udef.defsFolders = Udef.defsFolders.add( 
+			WFSArrayPan.filenameSymbol.asString.dirname +/+ "UnitDefs"
+		);
 		
 		WFSSpeakerConf.rect( 48, 48, 5, 5 ).makeDefault;
 		
@@ -46,6 +50,8 @@
         this.setServerOptions(20);
 
         server = WFSServers.single.makeDefault;
+        
+        this.previewMode = \headphone;
 
         WFSSpeakerConf
             .numSystems_(1)
@@ -90,6 +96,8 @@
         server.hostNames_( *hostnames );
 
         server.makeWindow;
+        
+         this.previewMode = nil;
 
         WFSSpeakerConf.numSystems_( ips.size );
 

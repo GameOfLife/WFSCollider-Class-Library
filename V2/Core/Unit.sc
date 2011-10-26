@@ -61,7 +61,7 @@ RoundView.useWithSkin( (
 
 Udef : GenericDef {
 	
-	classvar <>all, <>defsFolder, <>userDefsFolder;
+	classvar <>all, <>defsFolders, <>userDefsFolder;
 	
 	var <>func, <>category;
 	var <>synthDef;
@@ -69,8 +69,10 @@ Udef : GenericDef {
 	var <>apxCPU = 1; // indicator for the amount of cpu this unit uses (for load balancing)
 
 	*initClass{
-		defsFolder = this.filenameSymbol.asString.dirname.dirname.dirname +/+ "UnitDefs";
-		userDefsFolder = Platform.systemAppSupportDir++"/UnitDefs/";
+		defsFolders = [ 
+			this.filenameSymbol.asString.dirname.dirname.dirname +/+ "UnitDefs"
+		];
+		userDefsFolder = Platform.systemAppSupportDir ++ "/UnitDefs/";
 	}
 
 	*basicNew { |name, args, category|

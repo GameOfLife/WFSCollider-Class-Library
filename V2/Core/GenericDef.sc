@@ -1,6 +1,7 @@
 GenericDef {
 	
 	classvar <>all; // overwrite in subclass to create class specific lib
+	classvar <>defsFolders, <>userDefsFolder;
 	
 	var <>argSpecs;
 
@@ -21,33 +22,58 @@ GenericDef {
 
 	*getFromFile{ arg name;
 		var path;
-		^if( name.notNil and:
-		    { path = this.getDefFilePath(name); File.exists(path)} or:
-		    { path = this.getUserDefFilePath(name); File.exists(path) } ) {
+		path = this.findDefFilePath( name );
+		^if( path.notNil ) {
 			path.load
 		} {
-			"//" + this.class ++ ": - no Udef found for % in %\n"
+			"//" + this.class ++ ": - no Udef found for %\n"
 			.postf( this.cleanDefName(name), path );
 			nil
 		}
 	}
+	
+	*findDefFilePath { arg name;
+		var path;
+		if( name.notNil ) {
+			this.defsFolders.do({ |item|
+				path = this.createDefFilePath( item, name );
+				if( File.exists( path ) ) { ^path };
+			});
+			path = this.createUserDefFilePath( name );
+			if( File.exists( path ) ) { ^path };
+			^nil;
+		} {
+			^nil;
+		};
+	}
 
 	*loadAllFromDefaultDirectory {
-	    ^(this.defsFolder++"/*.scd").pathMatch.collect({ |path| path.load })
+	    ^this.defsFolders.collect({ |path|
+		    (path ++ "/*.scd").pathMatch.collect({ |path| path.load })
+	    }).flatten(1);
 	}
 
 	*cleanDefName{ |name|
 		^name.asString.collect { |char| if (char.isAlphaNum, char, $_) };
 	}
-
-	*getDefFilePath{ |defName|
+	
+	*createDefFilePath { |folder, defName|
 		var cleanDefName = this.cleanDefName(defName);
-		^this.defsFolder +/+ cleanDefName ++ ".scd";
+		^folder +/+ cleanDefName ++ ".scd";
 	}
 
-	*getUserDefFilePath{ |defName|
-		var cleanDefName = this.cleanDefName(defName);
-		^this.userDefsFolder +/+ cleanDefName ++ ".scd";
+	*createUserDefFilePath{ |defName|
+		^this.createDefFilePath( this.userDefsFolder, defName );
+	}
+	
+	openDefFile {
+		var path;
+		path = this.class.findDefFilePath( this.name );
+		if( path.notNil ) {
+			^Document.open( path );
+		} {
+			^nil;
+		};
 	}
 
 	initArgSpecs { |args|
