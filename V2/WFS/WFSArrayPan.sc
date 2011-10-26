@@ -240,7 +240,7 @@ WFSPrePan : WFSBasicPan {
 		dist =  pos.dist( 0 @ 0 ); // distance to center
 		
 		limitAmp = limit.max(1).pow(dbRollOff/6); // limiting the limit to 1m to prevent large amp
-		amp = dist.pow(dbRollOff/6).min( limitAmp ); // limit to prevent blowup
+		amp = (dist.pow(dbRollOff/6) / limitAmp).min( 1 ); // limit to prevent blowup
 		
 		// all together
 		^this.delay( source * amp, 
