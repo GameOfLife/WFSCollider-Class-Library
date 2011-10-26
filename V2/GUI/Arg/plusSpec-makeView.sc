@@ -274,9 +274,12 @@
 + PointSpec {
 	
 	makeView { |parent, bounds, label, action, resize|
-		var vws, view, labelWidth, val = 0@0;
+		var vws, view, labelWidth;
 		var localStep;
+		var startVal;
 		vws = ();
+		
+		vws[ \val ] = 0@0;
 		
 		localStep = step.copy;
 		if( step.x == 0 ) { localStep.x = 1 };
@@ -300,8 +303,8 @@
 		
 		vws[ \x ] = SmoothNumberBox( vws[ \view ], Rect( labelWidth + 2, 0, 40, bounds.height ) )
 			.action_({ |nb|
-				val = nb.value @ vws[ \y ].value;
-				action.value( vws, val);
+				vws[ \val ] = nb.value @ vws[ \y ].value;
+				action.value( vws, vws[ \val ]);
 			})
 			//.step_( localStep.x )
 			.scroll_step_( localStep.x )
@@ -312,21 +315,23 @@
 		vws[ \xy ] = XYView( vws[ \view ], 
 			Rect( labelWidth + 2 + 42, 0, bounds.height, bounds.height ) )
 			.action_({ |xy|
-				vws[ \x ].value = (val.x + (xy.x * localStep.x))
+				startVal = startVal ?? { vws[ \val ].copy; };
+				vws[ \x ].value = (startVal.x + (xy.x * localStep.x))
 					.clip( rect.left, rect.right );
-				vws[ \y ].value = (val.y + (xy.y * localStep.y.neg))
+				vws[ \y ].value = (startVal.y + (xy.y * localStep.y.neg))
 					.clip( rect.top, rect.bottom );
-				action.value( vws, val + (xy.value * localStep * (1 @ -1) ) );
+				action.value( vws, vws[ \x ].value @ vws[ \y ].value );
 			})
 			.mouseUpAction_({
-				val = vws[ \x ].value @ vws[ \y ].value;
+				vws[ \val ] = vws[ \x ].value @ vws[ \y ].value;
+				startVal = nil;
 			});
 			
 		vws[ \y ] = SmoothNumberBox( vws[ \view ], 
 				Rect( labelWidth + 2 + 42 + bounds.height + 2, 0, 40, bounds.height ) )
 			.action_({ |nb|
-				val = vws[ \x ].value @ nb.value;
-				action.value( vws, vws[ \x ].value @ nb.value );
+				vws[ \val ] = vws[ \x ].value @ nb.value;
+				action.value( vws,  vws[ \val ] );
 			})
 			//.step_( localStep.y )
 			.scroll_step_( localStep.y )
@@ -342,6 +347,7 @@
 		constrained = this.constrain( value );
 		view[ \x ].value = constrained.x;
 		view[ \y ].value = constrained.y;
+		view[ \val ] = constrained;
 		if( active ) { view[ \x ].doAction };
 	}
 	
@@ -350,6 +356,7 @@
 		mapped = this.map( value );
 		view[ \x ].value = mapped.x;
 		view[ \y ].value = mapped.y;
+		view[ \val ] = mapped;
 		if( active ) { view[ \x ].doAction };
 	}
 	
