@@ -626,7 +626,7 @@
 		};
 		
 		vws[ \box ] = SmoothNumberBox( vws[ \view ], 
-				Rect(labelWidth + 4,0,bounds.width-(labelWidth + 4),bounds.height)
+				Rect(labelWidth + 2,0,bounds.width-(labelWidth + 2),bounds.height)
 			)
 		    .action_({ |vw|
 		        action.value( vw, vw.value );
