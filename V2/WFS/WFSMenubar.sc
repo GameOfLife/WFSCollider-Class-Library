@@ -17,11 +17,13 @@
     along with GameOfLife WFSCollider.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+
+
 WFSMenuBar {
 
     *new { |index = 3|
 		
-		var wfsMenu, scoreMenu, pathMenu, helpMenu, viewMenu, defaultMenu, addEvent, events, menus, sessionMenu;
+		var wfsMenu, scoreMenu, pathMenu, helpMenu, viewMenu, defaultMenu, addEvent, events, menus, sessionMenu, sessionAdd;
 
 		menus = ();
 /* USession */
@@ -44,10 +46,20 @@ WFSMenuBar {
 		})
 		.setShortCut("S",true);
 		SCMenuSeparator.new(sessionMenu);
-
-		SCMenuItem.new(sessionMenu, "add UChain").action_({
-			USession.current !! _.add(UChain(\sine,\output))
+/* USession - ADD OBJECTS */
+        sessionAdd = SCMenuGroup.new(sessionMenu, "Add");
+		SCMenuItem.new(sessionAdd, "UChain").action_({
+			USession.current !! _.add(UChain())
 		});
+		SCMenuItem.new(sessionAdd, "UChainGroup").action_({
+        	USession.current !! _.add(UChainGroup())
+        });
+        SCMenuItem.new(sessionAdd, "UScore").action_({
+            USession.current !! _.add(UScore())
+        });
+        SCMenuItem.new(sessionAdd, "UScoreList").action_({
+            USession.current !! _.add(UScoreList())
+        });
 
 		//events
 
