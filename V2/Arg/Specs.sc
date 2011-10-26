@@ -437,7 +437,7 @@ RangeSpec : ControlSpec {
 
 }
 
-BufferSpec : Spec {
+RichBufferSpec : Spec {
 	
 	var <>numChannels = 1; // fixed number of channels
 	var <numFrames;
@@ -448,7 +448,7 @@ BufferSpec : Spec {
 	}
 	
 	*testObject { |obj|
-		^obj.class == RichBuffer; // change to bufferholder later
+		^obj.class == RichBuffer;
 	}
 	
 	*newFromObject { |obj|
@@ -473,7 +473,7 @@ BufferSpec : Spec {
 	
 }
 
-BufSndFileSpec : BufferSpec {
+BufSndFileSpec : RichBufferSpec {
 	
 	*testObject { |obj|
 		^obj.isKindOf( BufSndFile );
