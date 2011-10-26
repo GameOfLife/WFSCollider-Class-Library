@@ -77,7 +77,7 @@ WFSPointSpec : PointSpec {
 		if( step.y == 0 ) { localStep.y = 1 };
 		bounds.isNil.if{bounds= 320@20};
 		
-		view = EZCompositeView( parent, bounds, gap: 4@4 );
+		view = EZCompositeView( parent, bounds, gap: 2@2 );
 		bounds = view.asView.bounds;
 				
 		vws[ \view ] = view;
