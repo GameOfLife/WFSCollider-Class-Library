@@ -3,9 +3,7 @@
 	*startupV2 {
 		var file, speakers,ip,name, dict, wfsConf;
 
-		Udef.userDefsFolder = this.filenameSymbol.asString.dirname.dirname.dirname.dirname
-		    .dirname.dirname.dirname.dirname.dirname.dirname +/+ "UnitDefs";
-		   
+		Udef.userDefsFolder = File.getcwd +/+ "UnitDefs";		   
 		Udef.defsFolders = Udef.defsFolders.add( 
 			WFSArrayPan.filenameSymbol.asString.dirname +/+ "UnitDefs"
 		);
