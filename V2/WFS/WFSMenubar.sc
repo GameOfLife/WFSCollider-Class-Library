@@ -1,7 +1,7 @@
 /*
     GameOfLife WFSCollider - Wave Field Synthesis spatialization for SuperCollider.
     The Game Of Life Foundation. http://gameoflife.nl
-    Copyright 2006-2011 Miguel Negrão.
+    Copyright 2006-2011 Miguel Negrao.
 
     GameOfLife WFSCollider software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
