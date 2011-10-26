@@ -48,7 +48,7 @@ GenericDef {
 	}
 
 	*loadAllFromDefaultDirectory {
-	    ^this.defsFolders.collect({ |path|
+	    ^this.defsFolders.reverse.collect({ |path|
 		    (path ++ "/*.scd").pathMatch.collect({ |path| path.load })
 	    }).flatten(1);
 	}
