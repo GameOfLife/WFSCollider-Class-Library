@@ -59,6 +59,8 @@ SimpleTransformer : ObjectWithArgs {
 	var <defName;
 	var <>makeCopy = false;
 	
+	var <>changeDefNameAction;
+	
 	*new { |defName, args|
 		^super.new.init( defName, args ? [] )
 	}
@@ -105,10 +107,12 @@ SimpleTransformer : ObjectWithArgs {
 	
 	def_ { |newDef, keepArgs = true|
 		this.init( newDef, if( keepArgs ) { args } { nil } );
+		changeDefNameAction.value;
 	}
 	
 	defName_ { |newName, keepArgs = true|
 		this.init( newName, if( keepArgs ) { args } { nil } );
+		changeDefNameAction.value;
 	}
 	
 	defaults { |obj| ^this.def.defaults( this, obj ); }

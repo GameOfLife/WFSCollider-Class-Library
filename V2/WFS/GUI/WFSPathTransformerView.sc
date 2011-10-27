@@ -95,7 +95,7 @@ WFSPathTransformerView {
 			});
 			
 			if( final ) {
-				this.resetFuncs;
+				this.resetFuncs( false );
 				this.makeObjectCopy;
 				this.changed( \apply );
 			};
@@ -104,9 +104,9 @@ WFSPathTransformerView {
 		^object;
 	}
 	
-	resetFuncs {
+	resetFuncs { |all = false|
 		editFuncs.do({ |func|
-			func.reset( object );
+			func.reset( object, all );
 		});
 	}
 	
@@ -122,7 +122,7 @@ WFSPathTransformerView {
 	
 	reset {
 		this.revertObject;
-		this.resetFuncs;
+		this.resetFuncs( true );
 		this.changed( \reset );
 	}
 	
@@ -193,6 +193,11 @@ WFSPathTransformerView {
 			func.action = { 
 				this.apply( false );
 				action.value( this, key );
+			};
+			func.changeDefNameAction = {
+				this.rebuildViews;
+				this.apply( false );
+				action.value( this, \changeDefName );
 			};
 			views[ key ] = func.makeViews( view, view.bounds );
 			view.view.decorator.nextLine;

@@ -25,21 +25,36 @@
 	
 	prMakeArgViews { |f, composite, controller|
 		var views, header, labelWidth = 65;
+		var font;
+		
+		font = (RoundView.skin ?? { ( font: Font( Font.defaultSansFace, 10 ) ) }).font;
 		
 		views = ();
 		
 		labelWidth =(RoundView.skin ? ()).labelWidth ? labelWidth;
 		
-		views[ \blend ] = EZSmoothSlider( composite, composite.bounds.width @ viewHeight,
-			f.defName ++ "  ", [0,1,\lin], { |sl|
-				f.blend = sl.value;
-				f.action.value( f, \blend, sl.value ); 
-			}, f.blend );
+		views[ \label ] = PopUpMenu( composite, labelWidth @ viewHeight )
+			.applySkin( RoundView.skin ? () )
+			.font_( font.boldVariant )
+			.items_( this.class.all.keys.as( Array ).select({ |key|
+					this.class.all[ key ].class == this.class;
+				})
+			)
+			.action_({ |pu|
+				f.defName = pu.item;
+			});
+		
+		views[ \label ].value = views[ \label ].items.indexOf( f.defName );
+			
+		views[ \blend ] = EZSmoothSlider( composite, (composite.bounds.width - labelWidth - 2) @ viewHeight,
+				nil, 
+				[0,1,\lin], { |sl|
+					f.blend = sl.value;
+					f.action.value( f, \blend, sl.value ); 
+				}, f.blend 
+			);
 		
 		views[ \blend ].view.resize_(2);
-			
-		views[ \blend ].font = (RoundView.skin ?? { ( font: Font( Font.defaultSansFace, 10 ) ) })
-			.font.boldVariant;
 			
 		views[ \blend ].view.background_( Color.white.alpha_(0.25) );
 		views[ \blend ].sliderView.background_( Color.clear );
