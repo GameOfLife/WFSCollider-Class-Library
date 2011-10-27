@@ -23,7 +23,8 @@ WFSMenuBar {
 
     *new { |index = 3|
 		
-		var wfsMenu, scoreMenu, pathMenu, helpMenu, viewMenu, defaultMenu, addEvent, events, menus, sessionMenu, sessionAdd;
+		var wfsMenu, scoreMenu, pathMenu, helpMenu, viewMenu, defaultMenu, addEvent,
+		 events, menus, sessionMenu, sessionAdd, sessionNewAdd;
 
 		menus = ();
 /* USession */
@@ -48,18 +49,49 @@ WFSMenuBar {
 		SCMenuSeparator.new(sessionMenu);
 /* USession - ADD OBJECTS */
         sessionAdd = SCMenuGroup.new(sessionMenu, "Add");
-		SCMenuItem.new(sessionAdd, "UChain").action_({
+        sessionNewAdd = SCMenuGroup.new(sessionAdd, "New");
+		SCMenuItem.new(sessionNewAdd, "UChain").action_({
 			USession.current !! _.add(UChain())
 		});
-		SCMenuItem.new(sessionAdd, "UChainGroup").action_({
+		SCMenuItem.new(sessionNewAdd, "UChainGroup").action_({
         	USession.current !! _.add(UChainGroup())
         });
-        SCMenuItem.new(sessionAdd, "UScore").action_({
+        SCMenuItem.new(sessionNewAdd, "UScore").action_({
             USession.current !! _.add(UScore())
         });
-        SCMenuItem.new(sessionAdd, "UScoreList").action_({
+        SCMenuItem.new(sessionNewAdd, "UScoreList").action_({
             USession.current !! _.add(UScoreList())
         });
+
+        SCMenuItem.new(sessionAdd, "Selected events").action_({
+            USession.current !! { |session|
+                UScoreEditorGUI.current !! { |editor|
+                    editor.selectedEvents !! { |events|
+                        session.add( events.collect(_.deepCopy) )
+                    }
+                }
+            }
+        }).setShortCut("A",true);
+
+        SCMenuItem.new(sessionAdd, "Selected events flattened").action_({
+            USession.current !! { |session|
+                UScoreEditorGUI.current !! { |editor|
+                    editor.selectedEvents !! { |events|
+                        session.add( events.collect{ |x| x.deepCopy.getAllUChains }.flat )
+                    }
+                }
+            }
+        }).setShortCut("A",true);
+
+        SCMenuItem.new(sessionAdd, "Selected events into a UChainGroup").action_({
+                    USession.current !! { |session|
+                        UScoreEditorGUI.current !! { |editor|
+                            editor.selectedEvents !! { |events|
+                                session.add( UChainGroup(* events.collect{ |x| x.deepCopy.getAllUChains }.flat ) )
+                            }
+                        }
+                    }
+                }).setShortCut("A",true);
 
 		//events
 
@@ -83,10 +115,6 @@ WFSMenuBar {
 		SCMenuItem.new(menus[\uscore], "Save as").action_({
 			UScore.current !! _.saveAs
 		});
-
-		SCMenuItem.new(events, "Add Score to current session").action_({
-			USession.current !! { |x| UScore.current !! { |y| x.add(y) } }
-		}).setShortCut("A",true);
 
 		SCMenuSeparator.new(events);
 

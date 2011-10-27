@@ -40,12 +40,13 @@ USession : UArchivable{
 
     at { |index| ^objects[ index ] }
 
-    add { |item|
-        if(USession.acceptedClasses.includes(item.class)) {
-            objects = objects.add(item);
+    add { |items|
+        var oldSize = objects.size;
+        objects = objects ++ items
+            .asCollection
+            .select{ |x|USession.acceptedClasses.includes(x.class) };
+        if(objects.size != oldSize) {
             this.changed(\objectsChanged)
-        } {
-            ("Session cannot accept object of type "+item.class).warn;
         }
     }
 

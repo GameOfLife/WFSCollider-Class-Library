@@ -58,7 +58,24 @@ USessionGUI : UAbstractWindow {
         var margin = 4;
         var gap = 2;
         bounds = bounds ? Rect(100,100,700,400);
-        this.newWindow(bounds, "USession - "++session.name,{ this.remove }, margin:0, gap:0);
+        this.newWindow(bounds, "USession - "++session.name, {
+
+            if(USessionGUI.current == this) {
+                USessionGUI.current = nil
+            };
+            this.remove;
+            {
+                if( (this.session.objects.size != 0) && (this.session.isDirty) ) {
+                    SCAlert( "Do you want to save your session? (" ++ this.session.name ++ ")" ,
+                        [ [ "Don't save" ], [ "Cancel" ], [ "Save" ],[ "Save as"] ],
+                        [ 	nil,
+                            { USessionGUI(session) },
+                            { this.session.save(nil, {USessionGUI(session)} ) },
+                            { this.session.saveAs(nil,nil, {USessionGUI(session)} ) }
+                        ] );
+                };
+            }.defer(0.1)
+        }, margin:0, gap:0);
         topBarView =  CompositeView(view, Rect(0,0,bounds.width,topBarHeigth)).resize_(2);
         topBarView.addFlowLayout;
 
@@ -267,6 +284,8 @@ UChainGroupSessionView {
             button.value = 1;
         };
     }
+    
+    remove{ }
 
 }
 
