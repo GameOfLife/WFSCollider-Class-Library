@@ -58,8 +58,8 @@ EZCompositeView : EZGui {
 	
 	decorator { ^view.decorator }
 	
-	
-	
+	parent { ^view.parent }
+
 	asView { ^view }
 	
 	add { |aView| view.add(aView) }

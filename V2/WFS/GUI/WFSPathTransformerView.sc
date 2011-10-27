@@ -17,7 +17,7 @@
     along with GameOfLife WFSCollider.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-WFSPathEditView {
+WFSPathTransformerView {
 	
 	var <object;
 	var <objectCopy;
@@ -41,14 +41,14 @@ WFSPathEditView {
 			bounds = bounds ?? { 177 @ 280 };
 		};
 		
-		view = EZCompositeView( parent, bounds, true, 2@2, 2@2 );
+		view = EZCompositeView( parent ? this.class.name.asString, bounds, true, 2@2, 2@2 );
 		editFuncs = this.makeEditFuncs( editDefs );
 		
 		this.makeViews;
 		
 		view.view.decorator.nextLine;
 		
-		view.decorator.shift( 55, 0 );
+		view.decorator.shift( 65, 0 );
 		
 		views[ \apply ] = SmoothButton( view, 40@14 )
 			.font_( Font( Font.defaultSansFace, 10 ) )
@@ -72,7 +72,7 @@ WFSPathEditView {
 			
 		view.decorator.nextLine;
 		
-		view.decorator.shift( 55, 0 );
+		view.decorator.shift( 65, 0 );
 			
 		views[ \duplicate ] = SmoothButton( view, 82@14 )
 			.font_( Font( Font.defaultSansFace, 10 ) )
@@ -83,7 +83,7 @@ WFSPathEditView {
 				if( duplicateAction.notNil ) {
 					duplicateAction.value( this );
 				} {
-					WFSPathEditView( object: object.deepCopy );
+					WFSPathTransformerView( object: object.deepCopy );
 				};
 			});
 			
@@ -190,38 +190,20 @@ WFSPathEditView {
 			\name, \type, \move, \scale, \rotate, \smooth, \size, \duration, \equal, \reverse 
 		] })	
 			.asCollection 
-			.collect(WFSPathEdit(_))
+			.collect(_.asWFSPathTransformer)
 	}
 	
 }
 
-WFSPathGeneratorView : WFSPathEditView {
+WFSPathGeneratorView : WFSPathTransformerView {
 	
 	makeEditFuncs { |editDefs|
-		^[ WFSPathEdit( \simpleSize ),  WFSPathEdit( \duration ) ] ++
+		^[ WFSPathTransformer( \simpleSize ), WFSPathTransformer( \duration ) ] ++
 			(editDefs ?? { [ 
 				\circle 
 			] })	
 				.asCollection 
-				.collect(WFSPathGenerator(_))
+				.collect(_.asWFSPathGenerator)
 	}
 	
-	resetFuncs {
-		editFuncs.do({ |func, i|
-			func.reset( object );
-			if( i >= 2 ) {
-				func.blend = 0;
-			};
-		});
-	}
-	
-}
-
-
-+ WFSPath2 {
-	edit { |parent, bounds| ^WFSPathEditor( parent, bounds, this ) }
-}
-
-+ WFSPathURL {
-	edit { |parent, bounds| ^WFSPathEditor( parent, bounds, this.wfsPath ) }
 }

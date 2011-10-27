@@ -17,7 +17,7 @@
     along with GameOfLife WFSCollider.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-SimpleEditDef : GenericDef {
+SimpleTransformerDef : GenericDef {
 	
 	classvar <>all;
 	
@@ -34,6 +34,8 @@ SimpleEditDef : GenericDef {
 	
 	*getFromFile { ^nil; } // file write/read not supported for now
 	
+	objectClass { ^SimpleTransformer }
+	
 	init { |inFunc, inDefaults|
 		defaults = inDefaults ? defaults;
 		func = inFunc ? func;
@@ -49,95 +51,9 @@ SimpleEditDef : GenericDef {
 		^defaults !? { defaults.value( f, obj ) } ?? { this.args };
 	}
 	
-	makeViews { |parent, bounds, f|
-		var res;
-		RoundView.useWithSkin( ( 	
-				font: Font( Font.defaultSansFace, 10 ),
-				labelWidth: 65
-		) ++ (RoundView.skin ? ()), {
-				if( makeViewsFunc.notNil ) {
-					res = makeViewsFunc.value( parent, bounds, f )
-				} {
-					res = this.prMakeViews( parent, bounds, f );
-				};
-				postMakeViewsFunc.value( f, res );
-			 }
-		);
-		^res;
-	}
-	
-	viewNumLines {
-		^this.specs.collect({|spec|
-			if( spec.isNil ) {
-				1
-			} {
-				spec.viewNumLines
-			};
-		}).sum;
-	}
-	
-	getHeight { |margin, gap|
-		viewHeight = viewHeight ? 14;
-		margin = margin ?? {0@0};
-		gap = gap ?? {4@4};
-		^(margin.y * 2) + ( this.viewNumLines * (viewHeight + gap.y) ) - gap.y;
-	}
-		
-	
-	prMakeViews { |parent, bounds, f|
-		var views, controller, composite;
-		var margin = 0@2, gap = 0@0;
-		
-		if( parent.isNil ) {
-			bounds = bounds ?? { 160 @ this.getHeight( margin, gap ) };
-		} {
-			bounds = bounds ?? { parent.asView.bounds.insetBy(4,4) };
-			bounds.height = this.getHeight( margin, gap );
-		};
-		
-		controller = SimpleController( f );
-		
-		composite = EZCompositeView( parent, bounds, true, margin, gap ).resize_(2);
-		bounds = composite.view.bounds;
-		composite.onClose = {
-			controller.remove
-		 };
-		
-		views = this.prMakeArgViews( f, composite, controller ); // returns a dict
-		
-		if( views.size == 0 ) {
-			controller.remove;
-		};
-		
-		views[ \composite ] = composite;
-		
-		^views;
-	}
-	
-	prMakeArgViews { |f, composite, controller|
-		var views;
-		
-		views = ();
-		
-		f.args.pairsDo({ |key, value, i|
-			var vw, spec;
-			
-			spec = this.specs[i/2];
-			
-			vw = ObjectView( composite, nil, f, key, spec, controller );
-				
-			vw.action = { f.action.value( f, key, value ); };
-				
-			views[ key ] = vw;
-		
-		});
-		
-		^views;
-	}
-	
 }
 
-SimpleEdit : ObjectWithArgs {
+SimpleTransformer : ObjectWithArgs {
 	
 	var <>action;
 	var <defName;
@@ -147,7 +63,17 @@ SimpleEdit : ObjectWithArgs {
 		^super.new.init( defName, args ? [] )
 	}
 	
-	*defClass { ^SimpleEditDef }
+	*defClass { ^SimpleTransformerDef }
+	
+	*fromDefName { |name, args|
+		var def;
+		def = this.defClass.all[ name ];
+		if( def.notNil ) {
+			^def.objectClass.new( name, args );
+		} {
+			^nil;
+		};
+	}
 	
 	init { |inName, inArgs|
 		var def;
@@ -235,10 +161,5 @@ SimpleEdit : ObjectWithArgs {
 	prValue { |obj|
 		^this.def.func.value( this, obj );
 	}
-	
-	viewNumLines { ^this.def.viewNumLines }
-	
-	makeViews { |parent, bounds|
-		^this.def.makeViews( parent, bounds, this );
-	}
+
 }

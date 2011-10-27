@@ -17,16 +17,16 @@
     along with GameOfLife WFSCollider.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-WFSPathEditDef : SimpleEditDef {
+WFSPathTransformerDef : SimpleTransformerDef {
 	
 	classvar <>all;
 	
 	var <>useSelection = true;
+	
+	objectClass { ^WFSPathTransformer }
 }
 
-WFSPathGeneratorDef : WFSPathEditDef {
-	
-	classvar <>all;
+WFSPathGeneratorDef : WFSPathTransformerDef {
 	
 	var <>changesX = true;
 	var <>changesY = true;
@@ -34,7 +34,7 @@ WFSPathGeneratorDef : WFSPathEditDef {
 	
 	defaultBypassFunc { 
 		^{ |f, obj|
-			(f.blend > 0) and: {
+			(f.blend == 0) or: {
 				(f.modeT === \bypass) and: {
 					(f.modeX === \bypass) and:  {
 						(f.modeY === \bypass)
@@ -44,63 +44,15 @@ WFSPathGeneratorDef : WFSPathEditDef {
 		};
 	}
 	
-	viewNumLines {
-		^super.viewNumLines + 2;
-	}
-	
-	prMakeArgViews { |f, composite, controller|
-		var views, header;
-		
-		views = ();
-		
-		views[ \blend ] = EZSmoothSlider( composite, composite.bounds.width @ viewHeight,
-			f.defName ++ "  ", [0,1,\lin], { |sl|
-				f.blend = sl.value;
-				f.action.value( f, \blend, sl.value ); 
-			}, f.blend );
-		
-		views[ \blend ].view.resize_(2);
-			
-		views[ \blend ].font = (RoundView.skin ?? { ( font: Font( Font.defaultSansFace, 10 ) ) })
-			.font.boldVariant;
-			
-		views[ \blend ].view.background_( Color.white.alpha_(0.25) );
-		views[ \blend ].sliderView.background_( Color.clear );
-			
-		controller.put( \blend, { views[ \blend ].value = f.blend } );
-		
-		composite.decorator.nextLine;
-		
-		[ \changeX, \changeY, \changeT ].do({ |item, i|
-			
-		});
-		
-		f.args.pairsDo({ |key, value, i|
-			var vw, spec;
-			
-			spec = this.specs[i/2];
-			
-			vw = ObjectView( composite, nil, f, key, spec, controller );
-				
-			vw.action = { f.action.value( f, key, value ); };
-				
-			views[ key ] = vw;
-		});
-		
-		views[ \composite ] = composite;
-		
-		^views;
-	}
-	
-	
+	objectClass { ^WFSPathGenerator }	
 
 }
 
-WFSPathEdit : SimpleEdit {
+WFSPathTransformer : SimpleTransformer {
 	
 	var <selection;
 	
-	*defClass { ^WFSPathEditDef }
+	*defClass { ^WFSPathTransformerDef }
 	
 	prValue { |obj|
 		var def;
@@ -126,10 +78,28 @@ WFSPathEdit : SimpleEdit {
 	
 	selection_ { |newSelection| selection = newSelection; this.changed( \selection, selection ); }
 	
+	getInitArgs {
+		var defArgs;
+		defArgs = (this.def.args( this ) ? []).clump(2);
+		^args.clump(2).select({ |item, i| 
+			item != defArgs[i]
+		 }).flatten(1);
+	}
+	
+	storeArgs { 
+		var initArgs;
+		initArgs = this.getInitArgs;
+		if( initArgs.size > 0 ) {
+			^[ this.defName, initArgs ];
+		} {
+			^[ this.defName ];
+		};
+	}
+	
 }
 
 
-WFSPathGenerator : WFSPathEdit {
+WFSPathGenerator : WFSPathTransformer {
 	
 	// \bypass, \replace, \+, \-, \*, <any binary operator>
 	var <modeX = \replace;
@@ -163,12 +133,18 @@ WFSPathGenerator : WFSPathEdit {
 			newX = result.positions.collect(_.x);
 			obj.positions.do({ |item, i|
 				var x;
-				if( modeX === \replace ) {
-					x = newX[i];
-				} {
-					x = item.x.perform( modeX, newX[i] );
-				};
-				item.x = item.x.blend( x, blend );
+				switch( modeX,
+					\replace, { 
+						x = newX[i]; 
+						item.x = item.x.blend( x, blend );
+					},
+					\bypass, { },
+					{
+						x = item.x.perform( modeX, newX[i] );
+						item.x = item.x.blend( x, blend );
+					}
+				);
+				
 			});
 		};
 		
@@ -176,12 +152,17 @@ WFSPathGenerator : WFSPathEdit {
 			newY = result.positions.collect(_.y);
 			obj.positions.do({ |item, i|
 				var y;
-				if( modeY === \replace ) {
-					y = newY[i];
-				} {
-					y = item.y.perform( modeY, newY[i] );
-				};
-				item.y = item.y.blend( y, blend );
+				switch( modeY,
+					\replace, { 
+						y = newY[i]; 
+						item.y = item.y.blend( y, blend );
+					},
+					\bypass, { },
+					{
+						y = item.y.perform( modeY, newY[i] );
+						item.y = item.y.blend( y, blend );
+					}
+				);
 			});
 		};
 		
@@ -189,16 +170,28 @@ WFSPathGenerator : WFSPathEdit {
 			newT = result.times;
 			obj.times = obj.times.collect({ |item, i|
 				var t;
-				if( modeT === \replace ) {
-					t = newT[i];
-				} {
-					t = item.perform( modeT, newT[i] );
-				};
-				item.blend( t, blend );
+				switch( modeT,
+					\replace, { 
+						t = newT[i]; 
+						item.blend( t, blend );
+					},
+					\bypass, { item },
+					{
+						t = item.perform( modeT, newT[i] );
+						item.blend( t, blend );
+					}
+				);
 			});
 		};
 		
 		^obj;
+	}
+	
+	reset { |obj, all = false| // can use an object to get the defaults from
+		this.blend = 0;
+		if( all == true ) {
+			this.args = this.defaults( obj );
+		};
 	}
 	
 	modeX_ { |newModeX| modeX = newModeX; this.changed( \modeX, modeX )  }
@@ -208,3 +201,14 @@ WFSPathGenerator : WFSPathEdit {
 	polar_ { |bool = false| polar = bool; this.changed( \polar, polar )  }
 
 }
+
++ Symbol {
+	asWFSPathTransformer { |args| ^WFSPathTransformer.fromDefName( this, args ) }
+	asWFSPathGenerator { |args| ^WFSPathGenerator.fromDefName( this, args ) }
+}
+
++ Collection {
+	asWFSPathTransformer { ^WFSPathTransformer.fromDefName( this[0], this[1] ) }
+	asWFSPathGenerator { ^WFSPathGenerator.fromDefName( this[0], this[1] ) }
+}
+

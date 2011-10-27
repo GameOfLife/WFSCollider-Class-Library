@@ -55,7 +55,7 @@
 				});
 				path;
 			},
-			[ \periods, 1, \startAngle, 0, \clockwise, true, \center, 0@0, \radius, 10@10 ]
+			[ \periods, 1, \startAngle, 0, \clockwise, true, \center, 0@0, \radius, 8@8 ]
 		)
 			.changesT_( false )
 			.setSpec( \periods, [0, inf, \lin, 0.125, 1].asSpec )
@@ -75,7 +75,7 @@
 				});
 				path;
 			},
-			[ \center, 0@0, \radius, 10@10, \seed, 12345 ]
+			[ \center, 0@0, \radius, 8@8, \seed, 12345 ]
 		)
 			.changesT_( false )
 			.setSpec( \seed, PositiveIntegerSpec(12345) )

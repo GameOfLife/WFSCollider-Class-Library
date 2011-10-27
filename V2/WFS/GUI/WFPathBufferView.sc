@@ -241,7 +241,7 @@ WFSPathBufferView {
 			.border_( 1 )
 			.label_( "edit" )
 			.action_({ |bt|
-				WFSPathEditor( object: wfsPathBuffer.wfsPath )
+				WFSPathGUI( object: wfsPathBuffer.wfsPath )
 					.action_({ |editor|
 						wfsPathBuffer.wfsPath = editor.object;
 						views[ \miniPlot ].refresh;

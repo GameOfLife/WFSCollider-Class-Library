@@ -17,13 +17,13 @@
     along with GameOfLife WFSCollider.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-+ WFSPathEditDef {
++ WFSPathTransformerDef {
 	
-	// define a bunch of default WFSPathEditDefs
+	// define a bunch of default WFSPathTransformerDefs
 	
 	*initClass {
 		
-		WFSPathEditDef( \name,
+		WFSPathTransformerDef( \name,
 			 { |f, obj| obj.name_( f.get( \name ) ) }, 
 		 	[ \name, "" ], 
 		 	{ |f, obj| [ \name, obj.name ] } 
@@ -31,7 +31,7 @@
 		 	.setSpec( \name, StringSpec() )
 			.useSelection_( false );
 				
-		WFSPathEditDef( \type, 
+		WFSPathTransformerDef( \type, 
 			 { |f, obj| obj
 			 	.type_( f.get( \type ) )
 			 	.curve_( f.get( \curve ) )
@@ -46,21 +46,21 @@
 		 	.useSelection_( false );
 		 
 			 	
-		WFSPathEditDef( \move, 
+		WFSPathTransformerDef( \move, 
 			{ |f, path| path.positions_( path.positions + [f.get( \move )] ); }, 
 			[ \move, 0@0 ] 
 		)	
 			.setSpec( \move, PointSpec( 200, 0.1 ) )
 			.useSelection_( true );
 			
-		WFSPathEditDef( \scale, 
+		WFSPathTransformerDef( \scale, 
 			{ |f, path| path.positions_( path.positions * [f.get( \scale ) ] ); }, 
 			[ \scale, 1@1 ] 
 		)	
 			.setSpec( \scale, PointSpec( 10, 0.1 ) )
 			.useSelection_( true );
 				
-		WFSPathEditDef( \rotate,  
+		WFSPathTransformerDef( \rotate,  
 			{ |f, path| 
 				var rotate;
 				rotate = (f.get( \rotate ).neg / 360) * 2pi;
@@ -71,7 +71,7 @@
 			.setSpec( \rotate, ControlSpec( -180, 180, \lin, 0, 1 ) )
 			.useSelection_( true );
 			
-		WFSPathEditDef( \smooth, 
+		WFSPathTransformerDef( \smooth, 
 			{ |f, path| 
 				var newPos, win, n, amt;
 				n = (f.get( \order ) * path.positions.size).max(3);
@@ -99,7 +99,7 @@
 			.setSpec( \order, ControlSpec( 0, 1, \lin, 0.1, 0.3 ) )
 			.useSelection_( false );
 			
-		WFSPathEditDef( \size, 
+		WFSPathTransformerDef( \size, 
 			{ |f, path|
 				var oldTimes;
 				var newPos, newTimes;
@@ -148,7 +148,7 @@
 			.setSpec( \mode, ListSpec( [ \interpolate, \wrap, \fold ] ) )
 			.useSelection_( false );
 		
-		WFSPathEditDef( \duration, 
+		WFSPathTransformerDef( \duration, 
 			{ |f, path|
 				path.times = path.times.normalizeSum * f.get( \duration );
 			},
@@ -158,7 +158,7 @@
 			.setSpec( \duration, SMPTESpec(0.001) )
 			.useSelection_( false );
 			
-		WFSPathEditDef( \equal,
+		WFSPathTransformerDef( \equal,
 			{ |f, path|
 				var oldTimes, deltas;
 				var newPos, equalTimes, newTimes;
@@ -208,7 +208,7 @@
 			.setSpec( \resample, BoolSpec( false ) )
 			.useSelection_( false );
 				
-		WFSPathEditDef( \reverse, 
+		WFSPathTransformerDef( \reverse, 
 				{ |f, path|
 				if( f.get( \reverse ) ) {
 					path.positions = path.positions.reverse;
@@ -224,7 +224,7 @@
 			.setSpec( \reverse, BoolSpec(false ) );
 			
 			
-		WFSPathEditDef( \simpleSize, 
+		WFSPathTransformerDef( \simpleSize, 
 			{ |f, path|
 				var oldTimes;
 				var newPos, newTimes;
