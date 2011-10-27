@@ -44,18 +44,23 @@
 			\circle,
 			{ |f, path, n| 
 				var clockwise, startAngle, center, radius, periods;
+				var close, nn = n;
 				clockwise = f.get( \clockwise ).binaryValue.linlin( 0,1,-1,1);
 				startAngle = (f.get( \startAngle ) / 360) * 2pi;
 				center = f.get( \center );
 				radius = f.get( \radius );
 				periods = f.get( \periods );
+				close = f.get( \close );
+				if( close ) { nn = n-1 };
 				path.positions = n.collect({ |i|
-					(((i.linlin(0,n-1,0,2pi * periods) * clockwise) + [0,0.5pi] + startAngle)
+					(((i.linlin(0,nn,0,2pi * periods) * clockwise) + [0,0.5pi] + startAngle)
 						.sin.asPoint * radius) + center
 				});
 				path;
 			},
-			[ \periods, 1, \startAngle, 0, \clockwise, true, \center, 0@0, \radius, 8@8 ]
+			[ \periods, 1, \close, true, \startAngle, 0, 
+				\clockwise, true, \center, 0@0, \radius, 8@8 
+			]
 		)
 			.changesT_( false )
 			.setSpec( \periods, [0, inf, \lin, 0.125, 1].asSpec )
@@ -81,6 +86,27 @@
 			.setSpec( \seed, PositiveIntegerSpec(12345) )
 			.setSpec( \center, PointSpec( 200, 0.1@0.1 ) )
 			.setSpec( \radius, PointSpec( Rect(0,0,200,200), 0.1@0.1 ) );
+			
+		WFSPathGeneratorDef(
+			\randTime,
+			{ |f, path, n| 
+				var min, max, seed, dur;
+				min = f.get( \min );
+				max = f.get( \max );
+				seed = f.get( \seed );
+				dur = path.times.sum;
+				thisThread.randSeed = f.get( \seed );
+				path.times = path.times.collect({ |item|
+					(item * min) exprand: (item * max);
+				}).normalizeSum( dur ) * dur;
+			},
+			[ \min, 0.5, \max, 2, \seed, 12345 ]
+		)
+			.changesX_( false )
+			.changesY_( false )
+			.setSpec( \min, [0.01, 100, \exp, 0, 0.5].asSpec )
+			.setSpec( \max, [0.01, 100, \exp, 0, 2].asSpec )
+			.setSpec( \seed, PositiveIntegerSpec(12345) );
 			
 		WFSPathGeneratorDef(
 			\brown,
@@ -136,7 +162,5 @@
 			.setSpec( \start, PointSpec( 200, 0.1@0.1 ) )
 			.setSpec( \end, PointSpec( 200, 0.1@0.1 ) )
 			.setSpec( \amp, [ -inf, inf, \lin, 0.125 ].asSpec );
-
-
 	}
 }
