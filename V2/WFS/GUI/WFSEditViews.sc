@@ -902,7 +902,7 @@ WFSPathTimeView : WFSPathXYView {
 							"% points, duration: %"
 								.format( 
 									object.positions.size, 
-									timesSum.asSMPTEString ),
+									timesSum.asSMPTEString(1000) ),
 							5@2
 						);
 					} { selected.size == 1 } {
@@ -1036,13 +1036,13 @@ WFSPathTimeView : WFSPathXYView {
 		^pts;					
 	}
 	
-	mouseEditSelected { |newPoint|
+	mouseEditSelected { |newPoint, mod|
 		var pt;
 		// returns true if edited
 		switch( editMode,
 			\move,  { 
 				pt = (newPoint.round(round) - lastPoint.round(round));
-				this.moveSelected( pt.x, pt.y, \no_undo );
+				this.moveSelected( pt.x, pt.y, mod, \no_undo );
 			}
 		);
 	}
