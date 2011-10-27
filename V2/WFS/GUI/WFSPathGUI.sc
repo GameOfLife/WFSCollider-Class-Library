@@ -173,6 +173,15 @@ WFSPathGUI {
 				action.value(this);
 			};
 			
+			generatorView.duplicateAction_({ |ev| 
+				if( ev.object.isKindOf( WFSPathURL ) ) {
+					WFSPathGUI( object: ev.object.wfsPath.deepCopy ) 
+				} {
+					WFSPathGUI( object: ev.object.deepCopy ) 
+				};
+			});
+		
+			
 			ctrl = SimpleController( pathView.xyView )
 				.put( \select, { generatorView.selected = pathView.selected })
 				.put( \mouse_hit, { 
@@ -205,7 +214,7 @@ WFSPathGUI {
 				generatorView = nil;
 			};
 			
-			generatorView.view.onClose_({
+			generatorView.onClose_({
 				ctrl.remove; ctrl2.remove; ctrl3.remove; 
 				view.onClose.removeFunc( closeFunc );
 			});

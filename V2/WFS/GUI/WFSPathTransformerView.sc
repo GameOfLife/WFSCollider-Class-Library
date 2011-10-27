@@ -25,24 +25,115 @@ WFSPathTransformerView {
 	var <view, <views;
 	var <>action;
 	var <>duplicateAction;
+	var <>onClose;
 	
 	*new { |parent, bounds, object, editDefs|
 		^super.new.init( parent, bounds, object, editDefs )
 	}
 	
 	init { |parent, bounds, inObject, editDefs|
-		
 		object = inObject ? object;
 		object = object.asWFSPath2;
 		this.makeObjectCopy;
+		editFuncs = this.makeEditFuncs( editDefs );
+		this.makeView( parent, bounds );	
+		this.resetFuncs;
+	}
+	
+	rebuildViews {
+		var tempOnClose, parent, bounds;
+		tempOnClose = onClose;
+		onClose = nil;
+		parent = view.parent;
+		bounds = view.bounds;
+		view.remove;
+		this.makeView( parent, bounds );
+		onClose = tempOnClose;
+	}
+	
+	makeObjectCopy {
+		if( object.isKindOf( WFSPathURL ) ) {
+			objectCopy = object.wfsPath.deepCopy; // copy the associated trajectory
+		} {
+			objectCopy = object.deepCopy;
+		}
+	}
+	
+	selected {
+		^editFuncs[0].selection;
+	}
+	
+	selected_ { |selected|
+		editFuncs.do( _.selection_(selected) );
+	}
+	
+	revertObject { 
+		object.positions = objectCopy.positions.deepCopy;
+		object.times = objectCopy.times.deepCopy;
+		object.type = objectCopy.type;
+		object.curve = objectCopy.curve;
+		object.clipMode = objectCopy.clipMode;
+	}
+	
+	object_ { |newObject|
+		object = newObject;
+		this.resetFuncs;
+		this.makeObjectCopy;
+	}
+	
+	resize_ { |resize|
+		view.resize_( resize )
+	}
+	
+	apply { |final = true, active = false|
 		
+		this.revertObject;
+		
+		if( this.checkBypass.not ) {
+			editFuncs.do({ |func|
+				func.value( object );
+			});
+			
+			if( final ) {
+				this.resetFuncs;
+				this.makeObjectCopy;
+				this.changed( \apply );
+			};
+		};
+	
+		^object;
+	}
+	
+	resetFuncs {
+		editFuncs.do({ |func|
+			func.reset( object );
+		});
+	}
+	
+	checkBypass { 
+		var bypass = true;
+		editFuncs.do({ |func|
+			if( func.checkBypass( object ).not ) {
+				bypass = false;
+			};
+		});
+		^bypass;
+	}
+	
+	reset {
+		this.revertObject;
+		this.resetFuncs;
+		this.changed( \reset );
+	}
+	
+	makeView { |parent, bounds|
 		
 		if( parent.isNil ) {
 			bounds = bounds ?? { 177 @ 280 };
 		};
 		
 		view = EZCompositeView( parent ? this.class.name.asString, bounds, true, 2@2, 2@2 );
-		editFuncs = this.makeEditFuncs( editDefs );
+		
 		
 		this.makeViews;
 		
@@ -90,83 +181,7 @@ WFSPathTransformerView {
 		
 		view.view.bounds = view.view.bounds.height_( view.view.children.last.bounds.bottom );
 		
-		this.resetFuncs;
-		
-	}
-	
-	makeObjectCopy {
-		if( object.isKindOf( WFSPathURL ) ) {
-			objectCopy = object.wfsPath.deepCopy; // copy the associated trajectory
-		} {
-			objectCopy = object.deepCopy;
-		}
-	}
-	
-	selected {
-		^editFuncs[0].selection;
-	}
-	
-	selected_ { |selected|
-		editFuncs.do( _.selection_(selected) );
-	}
-	
-	revertObject { 
-		object.positions = objectCopy.positions;
-		object.times = objectCopy.times;
-		object.type = objectCopy.type;
-		object.curve = objectCopy.curve;
-		object.clipMode = objectCopy.clipMode;
-	}
-	
-	object_ { |newObject|
-		object = newObject;
-		this.resetFuncs;
-		this.makeObjectCopy;
-	}
-	
-	resize_ { |resize|
-		view.resize_( resize )
-	}
-	
-	apply { |final = true, active = false|
-		
-		if( this.checkBypass.not ) {	
-			this.revertObject;
-			
-			editFuncs.do({ |func|
-				func.value( object );
-			});
-			
-			if( final ) {
-				this.resetFuncs;
-				this.makeObjectCopy;
-				this.changed( \apply );
-			};
-		};
-	
-		^object;
-	}
-	
-	resetFuncs {
-		editFuncs.do({ |func|
-			func.reset( object );
-		});
-	}
-	
-	checkBypass { 
-		var bypass = true;
-		editFuncs.do({ |func|
-			if( func.checkBypass( object ).not ) {
-				bypass = false;
-			};
-		});
-		^bypass;
-	}
-	
-	reset {
-		this.revertObject;
-		this.resetFuncs;
-		this.changed( \reset );
+		view.onClose_({ this.onClose.value });
 	}
 	
 	makeViews {
@@ -191,19 +206,40 @@ WFSPathTransformerView {
 		] })	
 			.asCollection 
 			.collect(_.asWFSPathTransformer)
+			.select(_.notNil);
 	}
+	
+	editDefs { ^editFuncs }
+	
+	editDefs_ { |editDefs|
+		editFuncs = this.makeEditFuncs( editDefs );
+		this.rebuildViews;
+		this.apply( false );
+		action.value( this, \editDefs );
+	}
+	
 	
 }
 
 WFSPathGeneratorView : WFSPathTransformerView {
 	
+	editDefs { ^editFuncs[2..] }
+
 	makeEditFuncs { |editDefs|
-		^[ WFSPathTransformer( \simpleSize ), WFSPathTransformer( \duration ) ] ++
-			(editDefs ?? { [ 
+		var prepfuncs;
+		
+		if( editFuncs.notNil ) {
+			prepfuncs = editFuncs[..1];
+		} {
+			prepfuncs = [ WFSPathTransformer( \simpleSize ), WFSPathTransformer( \duration ) ];
+		};
+		
+		^prepfuncs ++ (editDefs ?? { [ 
 				\circle 
 			] })	
 				.asCollection 
 				.collect(_.asWFSPathGenerator)
+				.select(_.notNil);
 	}
 	
 }
