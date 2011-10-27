@@ -78,23 +78,8 @@ WFSPathTransformer : SimpleTransformer {
 	
 	selection_ { |newSelection| selection = newSelection; this.changed( \selection, selection ); }
 	
-	getInitArgs {
-		var defArgs;
-		defArgs = (this.def.args( this ) ? []).clump(2);
-		^args.clump(2).select({ |item, i| 
-			item != defArgs[i]
-		 }).flatten(1);
-	}
-	
-	storeArgs { 
-		var initArgs;
-		initArgs = this.getInitArgs;
-		if( initArgs.size > 0 ) {
-			^[ this.defName, initArgs ];
-		} {
-			^[ this.defName ];
-		};
-	}
+	asWFSPathTransformer { ^this }
+	asWFSPathGenerator { ^this } // these are exchangeable
 	
 }
 
@@ -199,6 +184,27 @@ WFSPathGenerator : WFSPathTransformer {
 	modeT_ { |newModeT| modeT = newModeT; this.changed( \modeT, modeT )  }
 	blend_ { |val = 1| blend = val; this.changed( \blend, blend )  }
 	polar_ { |bool = false| polar = bool; this.changed( \polar, polar )  }
+	
+	storeModifiersOn{|stream|
+		if( blend != 1 ) {
+			stream << ".blend_(" <<< blend << ")";
+		};
+		if( (modeX !== \replace) && { this.def.changesX } ) {
+			stream << ".modeX_(" <<< modeX << ")";
+		};
+		if( (modeY !== \replace) && { this.def.changesY } ) {
+			stream << ".modeY_(" <<< modeY << ")";
+		};
+		if( (modeT !== \replace) && { this.def.changesT } ) {
+			stream << ".modeT_(" <<< modeT << ")";
+		};
+		if( polar ) {
+			stream << ".polar_(" <<< polar << ")";
+		};
+	}
+	
+	asWFSPathTransformer { ^nil } // cannot be used as transformer
+	asWFSPathGenerator { ^this } 
 
 }
 

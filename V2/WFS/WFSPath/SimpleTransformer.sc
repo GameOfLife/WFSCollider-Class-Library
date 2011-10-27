@@ -141,6 +141,11 @@ SimpleTransformer : ObjectWithArgs {
 		};	
 	}
 	
+	rate { ^this.get( \rate ) }
+	loop { ^this.get( \loop ) }
+	size { ^this.get( \size ) }
+	
+	
 	reset { |obj| // can use an object to get the defaults from
 		this.args = this.defaults( obj );
 	}
@@ -160,6 +165,28 @@ SimpleTransformer : ObjectWithArgs {
 	
 	prValue { |obj|
 		^this.def.func.value( this, obj );
+	}
+	
+	printOn { arg stream;
+		stream << "a " << this.class.name << "(" <<* this.storeArgs  <<")"
+	}
+	
+	getInitArgs {
+		var defArgs;
+		defArgs = (this.def.args( this ) ? []).clump(2);
+		^args.clump(2).select({ |item, i| 
+			item != defArgs[i]
+		 }).flatten(1);
+	}
+	
+	storeArgs { 
+		var initArgs;
+		initArgs = this.getInitArgs;
+		if( initArgs.size > 0 ) {
+			^[ this.defName, initArgs ];
+		} {
+			^[ this.defName ];
+		};
 	}
 
 }
