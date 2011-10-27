@@ -217,6 +217,7 @@
 		vws[ \box ] = SMPTEBox( vws[ \view ], 
 				Rect(labelWidth + 4,0,bounds.width-(labelWidth + 4),bounds.height)
 			)
+			.applySmoothSkin
 		    .action_({ |vw|
 		        action.value( vw, vw.value );
 		    } ).resize_(5)
