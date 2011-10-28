@@ -63,6 +63,23 @@ WFSMenuBar {
             USession.current !! _.add(UScoreList())
         });
 
+        SCMenuItem.new(sessionAdd, "Current score").action_({
+                        USession.current !! { |session|
+                            UScore.current !! { |score|
+                                session.add( score )
+                            }
+                        }
+                    }).setShortCut("A",true);
+
+        SCMenuItem.new(sessionAdd, "Current score duplicated").action_({
+                USession.current !! { |session|
+                    UScore.current !! { |score|
+                        session.add( score.deepCopy )
+                    }
+                }
+            }).setShortCut("A",true);
+
+
         SCMenuItem.new(sessionAdd, "Selected events").action_({
             USession.current !! { |session|
                 UScoreEditorGUI.current !! { |editor|
