@@ -302,7 +302,7 @@ UScore : UEvent {
 			// targets = targets.asCollection.collect(_.asTarget); // leave this to UChain:prepare
 			this.playState_(\preparing);
 			eventsToPrepareNow.do({ |item|
-			    item.prepare( targets, action: multiAction.getAction );
+			    item.prepare( targets, (startPos - item.startTime).max(0), action: multiAction.getAction );
 			});
 	    } {
 	        this.playState_(\preparing);
