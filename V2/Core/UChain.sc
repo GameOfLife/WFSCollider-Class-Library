@@ -450,7 +450,7 @@ UChain : UEvent {
 				});
 			};
 			releaseUnits[0].release( time, 14 ); // longest fadeOut releases group
-			releaseUnits[1..].do( _.release( time, 0 ) );
+			releaseUnits[1..].do( _.release( time, 14 ) );
 		} {
 			this.stop; // stop if no releaseable synths
 		};
