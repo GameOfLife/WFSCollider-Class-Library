@@ -279,7 +279,7 @@ UChain : UEvent {
 		        	if( item == maxDurUnit or: { item.get( \u_dur ) == inf } ) {
 			        	item.set( \u_doneAction, 14 );
 		        	} {
-			        	item.set( \u_doneAction, 0 );
+			        	item.set( \u_doneAction, 14 );
 		        	};
 	        	});
 		};
@@ -470,8 +470,16 @@ UChain : UEvent {
 		};
 	}
 
-	apxCPU {
-		^units.collect(_.apxCPU).sum;
+	apxCPU { |target|
+		if( target.notNil ) {
+			if( this.shouldPlayOn( target.asTarget ) ? true ) {
+				^units.collect({ |u| u.apxCPU( target ) }).sum;
+			} {
+				^0
+			};
+		} {
+			^units.collect(_.apxCPU).sum;
+		};
 	}
 
 	prepare { |target, startPos = 0, action|
@@ -484,9 +492,9 @@ UChain : UEvent {
 		target = target.asCollection.select({ |tg|
 			this.shouldPlayOn( tg ) != false;
 		});
-		cpu = this.apxCPU;
+		//cpu = this.apxCPU;
 		target = target.collect({ |tg|
-			tg.asTarget(cpu);
+			tg.asTarget(this.apxCPU(tg));
 		});
 		preparedServers = target;
 	     units.do( _.prepare(target, startPos, action.getAction ) );

@@ -361,7 +361,11 @@ U : ObjectWithArgs {
 	
 	getArgsFor { |server, startPos = 0|
 		server = server.asTarget.server;
-		^this.args.clump(2).collect({ |item, i|
+		^this.class.formatArgs( this.args, server, startPos );
+	}
+	
+	*formatArgs { |inArgs, server, startPos = 0|
+		^inArgs.clump(2).collect({ |item, i|
 			[ item[0], switch( item[0], 
 				\u_startPos, { startPos },
 				\u_dur, { item[1] - startPos },
@@ -550,7 +554,13 @@ U : ObjectWithArgs {
 		^this.valuesToPrepare.size > 0;
 	}
 	
-	apxCPU { ^this.def.apxCPU }
+	apxCPU { |target|
+		if( target.isNil or: { this.shouldPlayOn( target.asTarget ) ? true } ) {
+		 	^this.def.apxCPU 
+		 } {
+			 ^0
+		 };
+	}
 	
 	prepare { |target, startPos = 0, action|
 		var valuesToPrepare, act;

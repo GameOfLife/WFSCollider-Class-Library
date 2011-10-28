@@ -31,10 +31,10 @@ def = FreeUdef( \wfsDynamicIndex, [
 	.shouldPlayOnFunc_({ |unit, target|
 		WFSSpeakerConf.includesServer( target.asTarget.server );
 	})
-	.createSynthFunc_({ |unit, target|
+	.createSynthFunc_({ |unit, target, startPos = 0|
 		var startIndex;
 		startIndex = WFSSpeakerConf.default.firstSpeakerIndexOf( target.asTarget.server );
-		Synth( "wfsp_id", [ \startIndex, startIndex ] ++ unit.getArgsFor( target ), 
+		Synth( "wfsp_id", [ \startIndex, startIndex ] ++ unit.getArgsFor( target, startPos ), 
 			target, \addToTail );
 	});
 

@@ -37,10 +37,11 @@ def = FreeUdef( \wfsStaticIndex, [
 			);
 		};
 	})
-	.createSynthFunc_({ |unit, target|
+	.createSynthFunc_({ |unit, target, startPos = 0|
 		var startIndex;
 		startIndex = WFSSpeakerConf.default.firstSpeakerIndexOf( target.asTarget.server );
-		Synth( "wfsp_is", [ \startIndex, startIndex ] ++ unit.getArgsFor( target.asTarget.server ), 
+		Synth( "wfsp_is", [ \startIndex, startIndex ] ++ 
+			unit.getArgsFor( target.asTarget.server, startPos ), 
 			target, \addToTail );
 	});
 

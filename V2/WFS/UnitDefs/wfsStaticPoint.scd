@@ -23,23 +23,25 @@ if( WFS.previewMode.isNil ) {
 	
 		.category_( \wfs_panner )
 		// first a few general things
-		.envPut( \getArgsFor, { |evt, which, args, server|
+		.envPut( \getArgsFor, { |evt, which, args, server, startPos = 0|
 			if( which.notNil ) {
-				(args ? []).clump(2)
-					.select({ |arr| which.includes( arr[0] ) })
-					.collect({ |arr| [arr[0],arr[1].asControlInputFor(server)] })
-					.flatten;
+				U.formatArgs( 
+					(args ? []).clump(2)
+						.select({ |arr| which.includes( arr[0] ) }).flatten(1),
+					server,
+					startPos
+				)
 			} {
 				[];
 			}
 		})
-		.envPut( \getInitArgsFor, { |evt, defName, args, server|
+		.envPut( \getInitArgsFor, { |evt, defName, args, server, startPos = 0|
 			var which;
 			which = evt[ ("init_" ++ defName).asSymbol ] ++ evt[ ("set_" ++ defName).asSymbol ];
-			evt.getArgsFor( which, args, server );
+			evt.getArgsFor( which, args, server, startPos );
 		})
-		.envPut( \getSetArgsFor, { |evt, defName, args, server|
-			evt.getArgsFor( evt[ ("set_" ++ defName).asSymbol ], args, server );
+		.envPut( \getSetArgsFor, { |evt, defName, args, server, startPos = 0|
+			evt.getArgsFor( evt[ ("set_" ++ defName).asSymbol ], args, server, startPos );
 		})
 		.envPut( \init_wfsp, [ \latencyComp, \u_dur, \point ] ) // controls only set at init
 		.envPut( \set_wfsp, [ // controls that can always be set
@@ -51,7 +53,7 @@ if( WFS.previewMode.isNil ) {
 			\u_globalEQ_setting, \u_globalEQ_bypass, 
 		] )
 		.envPut( \init_wfsa, [ \arrayLimit, \arrayDbRollOff, \u_i_ar_0_bus, \point ] )
-		.createSynthFunc_({ |unit, target|
+		.createSynthFunc_({ |unit, target, startPos = 0|
 			var server, n = 0;
 			var arrayConfs;
 			var arrayGroup;
@@ -74,7 +76,7 @@ if( WFS.previewMode.isNil ) {
 			
 			// make the pre-panner synth (has to know the nodeID's of the panner synths)
 			prePanSynth = Synth( "wfsp_n_0",
-			 	unit.def.env.getInitArgsFor( \wfsp, unit.args, server ),
+			 	unit.def.env.getInitArgsFor( \wfsp, unit.args, server, startPos ),
 				arrayGroup, addAction: \addBefore
 			);
 			
@@ -86,7 +88,7 @@ if( WFS.previewMode.isNil ) {
 								\arrayConf, ac, 
 								\outOffset, n,
 								\amp, normalLevels[i]
-							] ++ unit.def.env.getInitArgsFor( \wfsa, unit.args, server ), 
+							] ++ unit.def.env.getInitArgsFor( \wfsa, unit.args, server, startPos ), 
 							arrayGroup, addAction: \addToTail 
 						) 
 					);
@@ -101,7 +103,7 @@ if( WFS.previewMode.isNil ) {
 								\arrayConf, ac, 
 								\outOffset, n,
 								\amp, focusLevels[i]
-							] ++ unit.def.env.getInitArgsFor( \wfsa, unit.args, server ), 
+							] ++ unit.def.env.getInitArgsFor( \wfsa, unit.args, server, startPos ), 
 							arrayGroup, addAction: \addToTail 
 						) 
 					);
@@ -152,23 +154,25 @@ if( WFS.previewMode.isNil ) {
 	
 		.category_( \wfs_panner )
 		// first a few general things
-		.envPut( \getArgsFor, { |evt, which, args, server|
+		.envPut( \getArgsFor, { |evt, which, args, server, startPos = 0|
 			if( which.notNil ) {
-				(args ? []).clump(2)
-					.select({ |arr| which.includes( arr[0] ) })
-					.collect({ |arr| [arr[0],arr[1].asControlInputFor(server)] })
-					.flatten;
+				U.formatArgs( 
+					(args ? []).clump(2)
+						.select({ |arr| which.includes( arr[0] ) }).flatten(1),
+					server,
+					startPos
+				)
 			} {
 				[];
 			}
 		})
-		.envPut( \getInitArgsFor, { |evt, defName, args, server|
+		.envPut( \getInitArgsFor, { |evt, defName, args, server, startPos = 0|
 			var which;
 			which = evt[ ("init_" ++ defName).asSymbol ] ++ evt[ ("set_" ++ defName).asSymbol ];
-			evt.getArgsFor( which, args, server );
+			evt.getArgsFor( which, args, server, startPos );
 		})
-		.envPut( \getSetArgsFor, { |evt, defName, args, server|
-			evt.getArgsFor( evt[ ("set_" ++ defName).asSymbol ], args, server );
+		.envPut( \getSetArgsFor, { |evt, defName, args, server, startPos = 0|
+			evt.getArgsFor( evt[ ("set_" ++ defName).asSymbol ], args, server, startPos );
 		})
 		.envPut( \init_wfsp, [ \latencyComp, \u_dur, \point ] ) // controls only set at init
 		.envPut( \set_wfsp, [ // controls that can always be set
@@ -180,7 +184,7 @@ if( WFS.previewMode.isNil ) {
 			\u_globalEQ_setting, \u_globalEQ_bypass, 
 		] )
 		.envPut( \init_wfsa, [ \arrayLimit, \arrayDbRollOff, \u_i_ar_0_bus, \point ] )
-		.createSynthFunc_({ |unit, target|
+		.createSynthFunc_({ |unit, target, startPos = 0|
 			var server, n = 0;
 			var prePanSynth;
 			var previewSynth;
@@ -189,13 +193,13 @@ if( WFS.previewMode.isNil ) {
 			
 			// make the pre-panner synth (has to know the nodeID's of the panner synths)
 			prePanSynth = Synth( "wfsp_n_0",
-			 	unit.def.env.getInitArgsFor( \wfsp, unit.args, server ),
+			 	unit.def.env.getInitArgsFor( \wfsp, unit.args, server, startPos ),
 				target, \addToTail
 			);
 			
 			previewSynth = Synth( 
 				WFSPreviewSynthDefs.getDefName( WFS.previewMode, \s ),
-				unit.def.env.getInitArgsFor( \wfsa, unit.args, server ),
+				unit.def.env.getInitArgsFor( \wfsa, unit.args, server, startPos ),
 				target, \addToTail 
 			);
 					
