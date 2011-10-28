@@ -72,7 +72,7 @@ WFSArrayPanSynthDefs {
 			var point = 0@0, amp = 1, arrayRollOff = -9, arrayLimit = 1;
 			
 			// local variables
-			var gain = 10.dbamp; // hard-wired for now
+			var gain = 0.dbamp; // hard-wired for now
 			var panner, input;
 			
 			// always static
