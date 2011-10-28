@@ -1,0 +1,37 @@
+For Beta 2 - to be released in December before workshop ?
+
+Bugs:
+ - Stuff not releasing correctly. pointing to empty array, should be nil.
+ - Multiple panners, where some only play on one server, sometimes don't free the chain on one server. This also affects Load balancing.
+
+TODO:
+ - Mass editor - set infinite for all
+ - Settable time for how long to do
+ - MassUChain editor should allow to edit multiple paths, at least to be able to plot them. -W
+ - Move Unit stuff into a Quark, import the quark into WFSCollider (change cmake file).
+ - USessionGUI, UChainGroup, USessionList - make it more functional. Drag and Drop.
+ - Code editing - perhaps for now only of file Udefs.
+ - update cmake. - wait for Quark situation.
+ - Cut events - u_trimStart, u_trimEnd.
+ - take elements from USession into score.
+ - Reorder elements in USession
+ - UMixer for session
+ - Move WFSPath stuff into UTrajectory, etc. I really think we should do this, this is a great class, and it can be used by people using ambisonics and VBAP. It could easilly become the standard trajectory stuff for supercollider.
+ - Cleanup: remove unused files. Check if there are unused methods. Check if there is code that can (easilly) be made more elegant.
+ - Documentation: schelp files for classes.
+ - MassEdit - add and remove units.
+ - supernova.
+ - inner score looping.
+ - nested chains/ UChain groups
+ - Right-click menu
+ - drag and drop
+ - implement cutting sub-scores
+ - cleanup code.
+ - UDef code editing - allow forking code to new Udef.
+ - remove MetaUdef -M, W?
+ - invent fixed extension names for Trajectory, and perhaps also for UEvent files.
+ - add more Udefs -M,W
+ - cpu wfsservers view
+
+Done:
+ X - offline panners.
