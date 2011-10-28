@@ -46,40 +46,27 @@ UScoreEditorGui_TopBar {
     }
 
     addScoreEditorController{
+
+        var checkUndo = {
+            if( this.scoreEditor.undoStates.size != 0 ) {
+                views[\undo].enabled_(true)
+            };
+            if( this.scoreEditor.redoStates.size != 0 ) {
+                views[\redo].enabled_(true)
+            }
+        };
         if(scoreEditorController.notNil) {
                 scoreEditorController.remove;
         };
         scoreEditorController = SimpleController( scoreView.currentEditor );
-
-		scoreEditorController.put(\undo, {
-
-            if( this.scoreEditor.redoStates.size != 0 ) {
-                views[\redo].enabled_(true)
-            };
-            if( this.scoreEditor.undoStates.size == 0 ) {
-                views[\undo].enabled_(false)
-            };
-        });
-
-        scoreEditorController.put(\redo, {
-
-            if( this.scoreEditor.undoStates.size != 0 ) {
-			views[\undo].enabled_(true)
-            };
-            if( this.scoreEditor.redoStates.size == 0 ) {
-                views[\redo].enabled_(false)
-            }
-        });
+		scoreEditorController.put(\undo, { checkUndo.value });
+        scoreEditorController.put(\redo, { checkUndo.value });
 
         if( scoreController.notNil ) {
 	        scoreController.remove;
 	    };
         scoreController = SimpleController( scoreView.currentScore );
-
-        scoreController.put(\something, {
-		    views[\undo].enabled_(true);
-		    views[\redo].enabled_(false);
-		});
+        scoreController.put(\something, { checkUndo.value });
 
     }
 
