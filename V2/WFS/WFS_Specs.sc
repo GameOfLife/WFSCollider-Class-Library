@@ -28,7 +28,7 @@ WFSPathSpec : Spec {
 	}
 	
 	default { 
-		^WFSPathBuffer( WFSPath2( { (8.0@8.0).rand2 } ! 7, [0.5] ) );
+		^WFSPathBuffer( nil );
 	}
 	
 	*newFromObject { |obj|

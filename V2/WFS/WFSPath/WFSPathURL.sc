@@ -82,7 +82,9 @@ WFSPathURL {
 		if( ( oldURL = this.getURL( wfsPath ) ).notNil ) {
 			all.put( oldURL.asSymbol, wfsPath.deepCopy );
 		};
-		all.put( this.formatURL( url ), wfsPath );
+		if( url.notNil ) {
+			all.put( this.formatURL( url ), wfsPath );
+		};
 	}
 	
 	wfsPath {
@@ -111,6 +113,8 @@ WFSPathURL {
 			};
 		};
 	}
+	
+	dirty { ^if( this.wfsPath.notNil ) { this.wfsPath.dirty } { true }; }
 	
 	exists { ^this.wfsPath.notNil }
 	

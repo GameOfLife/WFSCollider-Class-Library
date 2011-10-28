@@ -293,7 +293,7 @@ U : ObjectWithArgs {
 			args = def.asArgsArray( inArgs ? [] )
 				.collect({ |item, i|
 					if( i.odd ) {
-						item.asUnitArg( this );
+						item.deepCopy.asUnitArg( this );
 					} {
 						item;
 					};

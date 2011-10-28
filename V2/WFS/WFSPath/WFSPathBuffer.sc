@@ -66,10 +66,32 @@ WFSPathBuffer : AbstractRichBuffer {
 	filePath { ^if( wfsPath.isWFSPath2 ) { wfsPath.filePath } { wfsPath }; }
 	 
 	filePath_ { |new|
+		var tempPath;
 		if( new.notNil ) {
-			wfsPath = new.asWFSPath2;
+			tempPath = new.asWFSPath2;
+			/*
+			if( (tempPath.class == WFSPathURL) && { tempPath.wfsPath.isNil } ) {
+				this.duplicatePath
+					.filePath_( new )
+					.savedCopy_( nil );
+			} {
+				
+			};
+			*/
+			this.wfsPath = tempPath;
 			this.changed( \filePath, this.filePath );
+		} {
+			this.duplicatePath;
 		};
+	}
+	
+	duplicatePath {
+		if( wfsPath.class == WFSPathURL ) {
+			this.wfsPath = wfsPath.wfsPath.deepCopy;
+		} {
+			this.wfsPath = wfsPath.deepCopy;
+		};
+		^wfsPath;
 	}
 
 	rate_ { |new|
@@ -180,7 +202,7 @@ WFSPathBuffer : AbstractRichBuffer {
 		};
 	}
 	
-	writeFile { |servers, path|
+	writeFile { |servers, path, action|
 		if( wfsPath.isWFSPath2 ) {
 			servers = (servers ? writeServers).asCollection;
 			if( path.notNil ) {
@@ -189,8 +211,11 @@ WFSPathBuffer : AbstractRichBuffer {
 			wfsPath.savedCopy = wfsPath.deepCopy;
 			if( this.filePath.notNil ) {
 				servers.do({ |srv|
-					this.writeBuffer( srv, this.filePath );
+					this.writeBuffer( srv, this.filePath, action );
 				});
+				if( wfsPath.class != WFSPathURL ) {
+					this.wfsPath = WFSPathURL( wfsPath.filePath );
+				};
 			} {
 				"%-writeFile : can't write file because filePath is unknown"
 					.format( this.class )

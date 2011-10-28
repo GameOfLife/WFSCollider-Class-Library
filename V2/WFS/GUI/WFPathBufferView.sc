@@ -217,7 +217,6 @@ WFSPathBufferView {
 			.border_( 1 )
 			.label_( "write data" )
 			.action_({ |bt|
-				
 				Dialog.savePanel({ |path|
 				  	this.performWFSPathBuffer( \writeFile, nil, path );
 				  	this.performWFSPathBuffer( \changed, \filePath );
@@ -335,105 +334,8 @@ WFSPathBufferView {
 			.action_({ |pu|
 				this.class.timeMode = [ \seconds, \frames ][ pu.value ];
 			});
-
-		
-		/*	
-		views[ \startLabel ] = StaticText( view, 30 @ viewHeight )
-			.applySkin( RoundView.skin )
-			.string_( "start" );
-		
-		views[ \startComp ] = CompositeView( view, (bounds.width - 78) @ viewHeight )
-			.resize_( 2 );
-		
-		views[ \startSecond ] = SMPTEBox( views[ \startComp ], 
-				views[ \startComp ].bounds.moveTo(0,0) )
-			.applySmoothSkin
-			.resize_( 5 )
-			.clipLo_( 0 )
-			.action_({ |nb|
-				this.performSndFile( \startSecond_ , nb.value );
-				action.value( this );
-			});
-			
-		views[ \startFrame] = SmoothNumberBox( views[ \startComp ], 
-				views[ \startComp ].bounds.moveTo(0,0) )
-			.resize_( 5 )
-			.clipLo_( 0 )
-			.action_({ |nb|
-				this.performSndFile( \startFrame_ , nb.value );
-				action.value( this );
-			})
-			.visible_( false );
-			
-		views[ \endLabel ] = StaticText( view, 30 @ viewHeight )
-			.applySkin( RoundView.skin )
-			.string_( "end" );
-		
-		views[ \endComp ] = CompositeView( view, (bounds.width - 78) @ viewHeight )
-			.resize_( 2 );
-		
-		views[ \endSecond ] = SMPTEBox( views[ \endComp ], 
-				views[ \endComp ].bounds.moveTo(0,0) )
-			.applySmoothSkin
-			.resize_( 5 )
-			.clipLo_( 0 )
-			.action_({ |nb|
-				this.performSndFile( \endSecond_ , nb.value );
-				action.value( this );
-			});
-			
-		views[ \endFrame] = SmoothNumberBox( views[ \endComp ], 
-				views[ \endComp ].bounds.moveTo(0,0) )
-			.resize_( 5 )
-			.clipLo_( 0 )
-			.action_({ |nb|
-				this.performSndFile( \endFrame_ , nb.value );
-				action.value( this );
-			})
-			.visible_( false );
-			
-		views[ \rateLabel ] = StaticText( view, 30 @ viewHeight )
-			.applySkin( RoundView.skin )
-			.string_( "rate" );
-			
-		views[ \rateComp ] = CompositeView( view, (bounds.width - 118) @ viewHeight )
-			.resize_( 2 );
-		
-		views[ \rateRatio ] = SmoothNumberBox( views[ \rateComp ], 
-				views[ \rateComp ].bounds.moveTo(0,0) )
-			.resize_( 5 )
-			.scroll_step_( 0.1 )
-			.clipLo_( 0 )
-			.value_( 1 )
-			.action_({ |nb|
-				this.performSndFile( \rate_ , nb.value );
-				action.value( this );
-			});
-			
-		views[ \rateSemitones ] = SmoothNumberBox( views[ \rateComp ], 
-				views[ \rateComp ].bounds.moveTo(0,0) )
-			.resize_( 5 )
-			.action_({ |nb|
-				this.performSndFile( \rate_ , nb.value.midiratio );
-				action.value( this );
-			})
-			.visible_( false );
-			
-		views[ \rateMode ] = PopUpMenu( view, 80 @ viewHeight )
-			.applySkin( RoundView.skin )
-			.items_( [ "ratio", "semitones" ] )
-			.resize_( 3 )
-			.action_({ |pu|
-				this.class.rateMode = [ \ratio, \semitones ][ pu.value ];
-			});
-			
-		
-		this.setTimeMode( timeMode );
-		this.setRateMode( rateMode );
-		*/
-		
+					
 		this.setFont;
 	}
 	
 }
-
