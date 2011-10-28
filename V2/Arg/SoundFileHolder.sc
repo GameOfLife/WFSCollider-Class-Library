@@ -598,15 +598,22 @@ DiskSndFile : AbstractSndFile {
 	    //endFrame not used
 		var test = true;
 		var buf, addStartFrame = 0;
+		var actualStartFrame;
 		
 		if( numChannels.isNil ) { 
 			test = this.prReadFromFile; // get numchannels etc.
 		};
 		
 		if( test ) {
+			
 			if( startPos != 0 ) { addStartFrame = this.secondsToFrames( startPos ) };
+			if( loop ) {
+				 actualStartFrame = (startFrame + addStartFrame).wrap( 0, this.endFrame );
+			} {
+				actualStartFrame = startFrame + addStartFrame;
+			};
 			buf = Buffer.alloc(server, diskBufferSize, numChannels, { arg buffer;
-				buffer.readMsg(path.getGPath, startFrame + addStartFrame, 
+				buffer.readMsg(path.getGPath, actualStartFrame, 
 					diskBufferSize, 0, true, {|buf|
 						["/b_query", buf.bufnum]
 					}
