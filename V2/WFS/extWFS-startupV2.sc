@@ -157,7 +157,7 @@
             WFSServers.default.multiServers.collect({ |ms|
                 LoadBalancer( *ms.servers )
             });
-        WFSPathBuffer.writeServers = UServerCenter.servers.collect(_.asTarget.server);
+        WFSPathBuffer.writeServers = UServerCenter.servers.collect{ |s| s.asTarget.server };
 
         UGlobalGain.gui;
         UGlobalEQ.gui;
