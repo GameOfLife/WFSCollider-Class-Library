@@ -76,7 +76,7 @@ UScoreEditorGui_TransportBar {
 		});
 
 		scoreController.put(\updatePos, { |who,what,updatePos|
-		    views[\update].value = updatePos.not.binaryValue;
+		    views[\update].value = updatePos.binaryValue;
 		});
 
 		scoreController.put(\pos, { |who,what,pos|
@@ -198,18 +198,15 @@ UScoreEditorGui_TransportBar {
                     this.score.pos = v.value
                 }
             });
-
-        views[\update] = SmoothSimpleButton( view, 40@size  )
-			.states_( [
-			    [ "update", Color.black, Color.green.alpha_(0.5) ],
-			    [ "update", Color.black, Color.clear ]] )
-			.canFocus_(false)
-			.font_( font )
-			.border_(1).background_(Color.grey(0.8))
-			//.changeStateWhenPressed_(false)
-			.action_({  |v,c,d,e|
-                this.score.updatePos = v.value.booleanValue;
-            });
+        StaticText(view, 60@size )
+            .string_("Update:")
+            .align_('right');
+        views[\update] = SmoothButton( view, size@size )
+            .label_( [ "", 'x' ] )
+            .value_(1)
+            .radius_( bounds.height / 8 )
+            .action_({ |bt| this.score.updatePos = bt.value.booleanValue; })
+            .canFocus_(false)
 
     }
 
