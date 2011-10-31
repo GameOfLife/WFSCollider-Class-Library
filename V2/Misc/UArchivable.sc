@@ -22,7 +22,7 @@ UArchivable {
 	var <>filePath, <lastVersionSaved;
 
     isDirty{
-	    ^lastVersionSaved !! { |x| this.asTextArchive !=  x} ? true
+	    ^lastVersionSaved !? { |x| this.asTextArchive !=  x} ? true
 	}
 
     archiveAsCompileString { ^true }
@@ -108,7 +108,7 @@ UArchivable {
 
     save { |successAction, cancelAction|
 	    if(this.isDirty){
-            filePath !! { |x| this.write(x,true, true,
+            filePath !? { |x| this.write(x,true, true,
                 { |x| filePath = x; lastVersionSaved = this.asTextArchive; this.onSaveAction; successAction.value}, cancelAction) } ?? {
                 this.saveAs(nil,successAction, cancelAction)
             }

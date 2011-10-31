@@ -38,7 +38,7 @@ UScoreEditor {
 	    clipboard = [];
 	}
 
-	*current { ^UScoreEditorGUI !! { |x| x.editor } }
+	*current { ^UScoreEditorGUI !? { |x| x.editor } }
 
 	events { ^score.events }
 

@@ -32,7 +32,7 @@ USession : UArchivable{
         objects = if(inObjects.size > 0){ inObjects }{ [] };
     }
 
-    *current { ^USessionGUI.current !! _.session }
+    *current { ^USessionGUI.current !? _.session }
 
     *acceptedClasses{
         ^[UChain,UChainGroup,UScore,UScoreList]

@@ -136,7 +136,7 @@ UScoreEditorGui_TopBar {
 			.font_( Font( font.name, 10 ).boldVariant )
 			.radius_([8,0,0,8])
 			.action_({
-				this.selectedEventsOrAll !! { |x| this.scoreEditor.trimEventsStartAtPos( x ) }
+				this.selectedEventsOrAll !? { |x| this.scoreEditor.trimEventsStartAtPos( x ) }
 			});
 
 		SmoothButton( header, size@size  )
@@ -145,7 +145,7 @@ UScoreEditorGui_TopBar {
 			.radius_(0)
 			.border_(1).background_(Color.grey(0.8))
 			.action_({
-				this.selectedEventsOrAll !! { |x| this.scoreEditor.splitEventsAtPos( x ) }
+				this.selectedEventsOrAll !? { |x| this.scoreEditor.splitEventsAtPos( x ) }
 			});
 
 		SmoothButton( header, size@size  )
@@ -154,7 +154,7 @@ UScoreEditorGui_TopBar {
 			.radius_([0,8,8,0])
 			.border_(1).background_(Color.grey(0.8))
 			.action_({
-			    this.selectedEventsOrAll !! { |x| this.scoreEditor.trimEventsEndAtPos( x ) }
+			    this.selectedEventsOrAll !? { |x| this.scoreEditor.trimEventsEndAtPos( x ) }
 		    });
 
 		header.decorator.shift(10);
@@ -184,7 +184,7 @@ UScoreEditorGui_TopBar {
 			.canFocus_(false)
 			.border_(1).background_(Color.grey(0.8))
 			.action_({ |b|
-				this.selectedEvents !! { |x|  this.scoreEditor.toggleDisableEvents( x ) }
+				this.selectedEvents !? { |x|  this.scoreEditor.toggleDisableEvents( x ) }
 			});
 
 		SmoothButton( header, size@size  )
@@ -192,7 +192,7 @@ UScoreEditorGui_TopBar {
 			.canFocus_(false)
 			.border_(1).background_(Color.grey(0.8))
 			.action_({
-			    this.selectedEvents !! { |x|
+			    this.selectedEvents !? { |x|
                     if( x.every(_.isFolder) ) {
                         this.scoreEditor.unpackSelectedFolders(x)
                     }{

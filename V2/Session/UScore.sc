@@ -54,7 +54,7 @@ UScore : UEvent {
 		activeScores = Set();
 	}
 
-	*current { ^UScoreEditorGUI.current !! { |x| x.score } }
+	*current { ^UScoreEditorGUI.current !? { |x| x.score } }
 
 	*new { |... events| 
 		^super.new.init( events );
@@ -184,7 +184,7 @@ UScore : UEvent {
 		^events.select({ |item|
 			( (item.startTime <= endTime) and: (item.startTime >= startTime ) ) or:
 			( (item.endTime <= endTime) and: (item.endTime >= startTime ) )
-		}).collect(_.track).maxItem !! (_+1) ?? {events.collect(_.track).maxItem} ? 0;
+		}).collect(_.track).maxItem !? (_+1) ?? {events.collect(_.track).maxItem} ? 0;
 
 	}
 
