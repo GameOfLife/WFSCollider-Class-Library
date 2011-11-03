@@ -112,6 +112,7 @@ WFSPathGUI {
 			.border_( 1 )
 			.label_( "generate" )
 			.font_( Font( Font.defaultSansFace, 10 ) )
+			.resize_( 3 )
 			.action_({
 				this.openGeneratorView;
 			});
