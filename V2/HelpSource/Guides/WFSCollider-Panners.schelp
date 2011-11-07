@@ -1,0 +1,94 @@
+title:: WFSCollider Panners
+summary:: Explanation of the different types of WFS panners.
+categories:: WFSCollider
+related::Guides/WFSCollider-Overview
+
+WFSCollider provides panners simulating 3 types of sources.
+
+SECTION::Point Source
+
+Simulates a very small source which radiates wavefronts shapped as 3D sphere.
+
+subsection::Dynamic
+image::wfsDynamicPoint.png::
+
+list::
+## strong::pointFromBus::: Set x/y position to the incoming values at control busses 0 and 1.
+## strong::point::: move the point. "edit" -> open the point editor.
+## strong::pointLag::: smoothes the movement of the point. Useful when setting the position from a device with low resolution.
+## strong::quality:::
+    list::
+    ## good -
+    ## better -
+    ::
+## strong::latencyComp:::
+## strong::dbRollOff:::
+## strong::maxAmpRadius:::
+## strong::arrayLimit:::
+## strong::crossfadeLag:::
+## strong::don't pause:::
+::
+
+subsection::Static
+image::wfsStaticPoint.png::
+
+List::
+## strong::latencyComp:::
+## strong::dbRollOff:::
+## strong::maxAmpRadius:::
+## strong::arrayLimit:::
+::
+
+SECTION::Plane Wave
+
+Simulates a source very far way which radiates wavefronts shapped as a flat plane.
+
+subsection::Dynamic
+image::wfsDynamicPlane.png::
+
+list::
+## strong::pointFromBus::: Set x/y position to the incoming values at control busses 0 and 1.
+## strong::point::: move the point. "edit" -> open the point editor.
+## strong::pointLag::: smoothes the movement of the point. Useful when setting the position from a device with low resolution.
+## strong::quality:::
+    list::
+    ## good -
+    ## better -
+    ::
+## strong::latencyComp:::
+## strong::dbRollOff:::
+## strong::maxAmpRadius:::
+## strong::arrayLimit:::
+## strong::crossfadeLag:::
+## strong::don't pause:::
+::
+subsection::Static
+image::wfsStaticPlane.png::
+
+List::
+## strong::latencyComp:::
+## strong::dbRollOff:::
+## strong::maxAmpRadius:::
+## strong::arrayLimit:::
+::
+
+SECTION::Index
+
+Plays sound through just one speaker.
+
+subsection::Dynamic
+image::wfsDynamicIndex.png::
+
+List::
+## strong::indexFromBus::: Set the index of the speaker to the the incoming values at control bus 0.
+## strong::index::: set the speaker number (starting from 0).
+## strong::gain::: change the level.
+::
+
+subsection::Static
+image::wfsStaticIndex.png::
+
+List::
+## strong::index::: set the speaker number (starting from 0).
+## strong::gain::: change the level.
+::
