@@ -17,7 +17,43 @@
     along with GameOfLife WFSCollider.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-+ WFS {
+WFS {
+
+    classvar <>graphicsMode = \fast;
+    classvar <>scVersion = \new;
+    classvar <>debugMode = false;
+
+    classvar <>debugSMPTE;
+
+    classvar <>syncWrap = 16777216; // == 2**24 == max resolution 32 bits float
+
+    classvar <>previewMode;
+
+    *initClass { debugSMPTE = SMPTE(0, 1000); }
+
+    *debug { |string ... argsArray |
+        if( debugMode )
+            { (string.asString ++ "\n").postf( *argsArray ); };
+        }
+
+    *secsToTimeCode { |secs = 0|
+        ^debugSMPTE.initSeconds( secs ).toString;
+        }
+
+    *setServerOptions{ |numOuts=96|
+        Server.default.options
+            .numAudioBusChannels_(256)
+            .numOutputBusChannels_(numOuts)
+            .numInputBusChannels_(20)
+            .numWireBufs_(2048)
+            .memSize_(2**19) // 256MB
+            .hardwareBufferSize_(512)
+            .blockSize_(128)
+            .sampleRate_( 44100 )
+            .blockAllocClass_( ContiguousBlockAllocator )
+            .maxNodes_( 2**16 );
+
+    }
 		
 	*startupV2 {
 		var file, speakers,ip,name, dict, wfsConf;
@@ -79,8 +115,6 @@
         server.m.waitForBoot({
             var defs;
 
-            // todo: offline panner simulators
-
             defs = Udef.loadAllFromDefaultDirectory.collect(_.synthDef).flat.select(_.notNil);
 
               defs.do({|def|
@@ -88,6 +122,7 @@
               });
 
             SyncCenter.loadMasterDefs;
+            WFSPreviewSynthDefs.generateAll;
             // WFSLevelBus.makeWindow;
 
             "\n\tWelcome to the WFS Offline System V2".postln
