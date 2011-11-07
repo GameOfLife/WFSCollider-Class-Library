@@ -55,7 +55,7 @@ WFS {
 
     }
 		
-	*startupV2 {
+	*startup {
 		var file, speakers,ip,name, dict, wfsConf;
 
 		Udef.userDefsFolder = File.getcwd +/+ "UnitDefs";		   
@@ -75,12 +75,12 @@ WFS {
 			
 			if(dict[\hostname].notNil){
 				"starting server mode".postln;
-				WFS.startupServerV2;
+				WFS.startupServer;
 			};
 			
 			if(dict[\ips].notNil){
 				"starting client mode".postln;
-				WFS.startupClientV2( 
+				WFS.startupClient(
 					dict[\ips], 
 					dict[\startPorts] ?? { 58000 ! 2 }, 
 					dict[\scsynthsPerSystem] ? 8, 
@@ -91,13 +91,13 @@ WFS {
 			
 		} {
 			"starting offline".postln;
-			WFS.startupOfflineV2;
+			WFS.startupOffline;
 		};
 		WFSMenuBar();
 
 	}
 		
-    *startupOfflineV2 {
+    *startupOffline {
         var server;
 
         this.setServerOptions(20);
@@ -138,7 +138,7 @@ WFS {
         ^server
     }
 
-    *startupClientV2 { |ips, startPort, serversPerSystem = 8, hostnames,
+    *startupClient { |ips, startPort, serversPerSystem = 8, hostnames,
             soundCard = "MOTU 828mk2"|
         var server;
         this.setServerOptions;
@@ -200,7 +200,7 @@ WFS {
         ^server
     }
 
-    *startupServerV2 { |hostName, startPort = 58000, serversPerSystem = 8, soundCard = "JackRouter"|
+    *startupServer { |hostName, startPort = 58000, serversPerSystem = 8, soundCard = "JackRouter"|
         var server, serverCounter = 0;
 
         if( Buffer.respondsTo( \readChannel ).not )
