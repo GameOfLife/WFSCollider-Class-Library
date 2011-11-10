@@ -54,6 +54,35 @@ WFS {
             .maxNodes_( 2**16 );
 
     }
+    
+    *startupCustom { |config|
+		var file, speakers,ip,name, wfsConf;
+
+		Udef.userDefsFolder = File.getcwd +/+ "UnitDefs";		   
+		Udef.defsFolders = Udef.defsFolders.add( 
+			WFSArrayPan.filenameSymbol.asString.dirname +/+ "UnitDefs"
+		);		
+		
+		WFSSpeakerConf.rect( *config[\speakConf] * [1,1,0.5,0.5] ).makeDefault;
+			
+		if(config[\hostname].notNil){
+			"starting server mode".postln;
+			WFS.startupServer;
+		};
+			
+		if(config[\ips].notNil){
+			"starting client mode".postln;
+			WFS.startupClient(
+				config[\ips],
+				config[\startPorts] ?? { 58000 ! 2 },
+				config[\scsynthsPerSystem] ? 8,
+				config[\hostnames],
+				config[\soundCard] ? "MOTU 828mk2",
+				config[\numSpeakers] ? 96
+			);
+		};			
+		   
+    }
 		
 	*startup {
 		var file, speakers,ip,name, dict, wfsConf;
@@ -93,7 +122,9 @@ WFS {
 			"starting offline".postln;
 			WFS.startupOffline;
 		};
-		WFSMenuBar();
+		if(thisProcess.platform.class == OSXPlatform) {
+		    WFSMenuBar();
+		};
 
 	}
 		
@@ -139,11 +170,13 @@ WFS {
     }
 
     *startupClient { |ips, startPort, serversPerSystem = 8, hostnames,
-            soundCard = "MOTU 828mk2"|
+            soundCard = "MOTU 828mk2", numSpeakers = 96|
         var server;
-        this.setServerOptions;
+        this.setServerOptions(numSpeakers);
 
-        Server.default.options.device_( soundCard );
+        if(thisProcess.platform.class == OSXPlatform) {
+            Server.default.options.device_( soundCard );
+        };
         server = WFSServers( ips, startPort, serversPerSystem ).makeDefault;
         server.hostNames_( *hostnames );
 
