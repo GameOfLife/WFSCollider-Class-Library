@@ -1,7 +1,7 @@
 //supernova version
 
 (
-Server.program = "cd % && exec ./supernova -D 0 -U plugins".format(String.scDir.quote);
+Server.program = "cd % && exec ./supernova -D 1 -U plugins".format(String.scDir.quote);
 
 ~soptions = ServerOptions()
 .memSize_(8192*12)

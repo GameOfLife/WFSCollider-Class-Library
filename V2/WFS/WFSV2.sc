@@ -42,7 +42,7 @@ WFS {
 
     *setServerOptions{ |numOuts=96|
         Server.default.options
-            .numAudioBusChannels_(256)
+            .numPrivateAudioBusChannels_(256)
             .numOutputBusChannels_(numOuts)
             .numInputBusChannels_(20)
             .numWireBufs_(2048)
@@ -50,7 +50,6 @@ WFS {
             .hardwareBufferSize_(512)
             .blockSize_(128)
             .sampleRate_( 44100 )
-            .blockAllocClass_( ContiguousBlockAllocator )
             .maxNodes_( 2**16 );
 
     }
