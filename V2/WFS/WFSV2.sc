@@ -121,7 +121,7 @@ WFS {
 			"starting offline".postln;
 			WFS.startupOffline;
 		};
-		if(thisProcess.platform.class == OSXPlatform) {
+		if(thisProcess.platform.class.asSymbol == 'an OSXPlatform') {
 		    WFSMenuBar();
 		};
 
