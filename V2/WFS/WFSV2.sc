@@ -91,6 +91,10 @@ WFS {
 			WFSArrayPan.filenameSymbol.asString.dirname +/+ "UnitDefs"
 		);
 		
+		UnitRack.defsFolders = UnitRack.defsFolders.add( 
+			WFSArrayPan.filenameSymbol.asString.dirname +/+ "UnitRacks"
+		);
+		
 		WFSSpeakerConf.rect( 48, 48, 5, 5 ).makeDefault;
 		
 		GlobalPathDict.put( \wfs, "/WFSSoundFiles" );
@@ -128,7 +132,7 @@ WFS {
 	}
 		
     *startupOffline {
-        var server;
+        var server, defs;
 
         this.setServerOptions(20);
 
@@ -140,19 +144,23 @@ WFS {
             .numSystems_(1)
             .addServer( server.m, 0 );
 
+        defs = Udef.loadAllFromDefaultDirectory.collect(_.synthDef).flat.select(_.notNil)
+        ++WFSPrePanSynthDefs.generateAll.flat++WFSPreviewSynthDefs.generateAll;
+
+        UnitRack.loadAllFromDefaultDirectory;
+
         server.boot;
         server.makeWindow;
         server.m.waitForBoot({
-            var defs;
 
-            defs = Udef.loadAllFromDefaultDirectory.collect(_.synthDef).flat.select(_.notNil);
+            defs.do({|def|
+                def.load( server.m );
+            });
 
-              defs.do({|def|
-                    def.load( server.m );
-              });
+
 
             SyncCenter.loadMasterDefs;
-            WFSPreviewSynthDefs.generateAll;
+
             // WFSLevelBus.makeWindow;
 
             "\n\tWelcome to the WFS Offline System V2".postln
@@ -203,7 +211,7 @@ WFS {
                     def.load( server.m );
               });
 
-
+            UnitRack.loadAllFromDefaultDirectory;
             /*
             server.multiServers.do({ |ms|
                 ms.servers.do({ |server|
