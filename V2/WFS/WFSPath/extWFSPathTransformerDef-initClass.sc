@@ -74,7 +74,7 @@
 		WFSPathTransformerDef( \smooth, 
 			{ |f, path| 
 				var newPos, win, n, amt;
-				n = (f.get( \order ) * path.positions.size).max(3);
+				n = (f.get( \window ) * path.positions.size).max(3);
 				amt = f.get( \smooth );
 				win = ({ |i| 
 					i.linlin(0,(n-1).max(2),-0.5pi,1.5pi).sin.linlin(-1,1,0,1) 
@@ -92,11 +92,11 @@
 					path.positions.collect({ |item, i| item.blend( newPos[i], amt ) })
 				);
 			}, 
-			[ \smooth, 0, \order, 0.3 ],
+			[ \smooth, 0, \window, 0.3 ],
 			{ |f, path| [ \smooth, 0, \order, f.get( \order) ] }
 		)
 			.setSpec( \smooth, ControlSpec( -1, 1, \lin, 0, 0 ) )
-			.setSpec( \order, ControlSpec( 0, 1, \lin, 0.1, 0.3 ) )
+			.setSpec( \window, ControlSpec( 0, 1, \lin, 0.1, 0.3 ) )
 			.useSelection_( false );
 			
 		WFSPathTransformerDef( \size, 
@@ -150,6 +150,21 @@
 		
 		WFSPathTransformerDef( \duration, 
 			{ |f, path|
+				var tms, origTms, seldur, dur, adddur;
+				var sel;
+				sel = f.selection;
+				if( sel.size > 0 ) {
+					origTms = path.times;
+					tms = origTms.clipAt(sel);
+					seldur = tms.sum;
+					dur = path.times.sum;
+					adddur = f.get( \duration ) - dur;
+					tms = (tms.normalizeSum * (seldur + adddur)).max(0.001);
+					tms.do({ |tm, i|
+						origTms[ sel[i] ] = tm;
+					});
+					path.times = origTms;
+				};
 				path.times = path.times.normalizeSum * f.get( \duration );
 			},
 			[ \duration, 1 ],
@@ -165,7 +180,7 @@
 				var mode, amt;
 				
 				mode = f.get( \equal );
-				amt = f.get( ' ' );
+				amt = f.get( \amount );
 				oldTimes = path.times;
 				equalTimes = oldTimes.blend( 
 					((1/oldTimes.size) * oldTimes.sum)!(oldTimes.size),
@@ -197,14 +212,14 @@
 					path.positions = newPos;
 					newTimes = equalTimes;
 				};
-					
+				newTimes = newTimes.max(0); // clip negative times
 				path.times_( newTimes );
 			},
-			[ \equal, \times, ' ', 0, \resample, false ], 
-			{ |f, path| [ \equal, f.get( \equal ), ' ', 0, \resample, f.get( \resample ) ] }
+			[ \equal, \times, \amount, 0, \resample, false ], 
+			{ |f, path| [ \equal, f.get( \equal ), \amount, 0, \resample, f.get( \resample ) ] }
 		)
 			.setSpec( \equal, ListSpec( [ \times, \speeds ] ))
-			.setSpec( ' ', ControlSpec(-1,1,\lin,0,0) )
+			.setSpec( \amount, ControlSpec(-1,1,\lin,0,0) )
 			.setSpec( \resample, BoolSpec( false ) )
 			.useSelection_( false );
 				
