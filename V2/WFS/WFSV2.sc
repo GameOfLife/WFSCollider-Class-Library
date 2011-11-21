@@ -94,6 +94,7 @@ WFS {
 		UnitRack.defsFolders = UnitRack.defsFolders.add( 
 			WFSArrayPan.filenameSymbol.asString.dirname +/+ "UnitRacks"
 		);
+		U.addUneditableCategory(\wfs_panner);
 		
 		WFSSpeakerConf.rect( 48, 48, 5, 5 ).makeDefault;
 		
