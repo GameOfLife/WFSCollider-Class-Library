@@ -204,7 +204,7 @@
 			{ |f, path| [ \equal, f.get( \equal ), ' ', 0, \resample, f.get( \resample ) ] }
 		)
 			.setSpec( \equal, ListSpec( [ \times, \speeds ] ))
-			.setSpec( ' ', ControlSpec(0,1,\lin,0,0) )
+			.setSpec( ' ', ControlSpec(-1,1,\lin,0,0) )
 			.setSpec( \resample, BoolSpec( false ) )
 			.useSelection_( false );
 				
