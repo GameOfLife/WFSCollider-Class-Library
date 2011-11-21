@@ -557,7 +557,7 @@ WFSPathXYView : WFSBasicEditView {
 					Pen.color = Color.black;
 					leftTop = this.view.viewRect.leftTop;
 					Pen.translate( leftTop.x, leftTop.y );
-					Pen.scale(scale.wrapAt(0),scale.wrapAt(1));
+					Pen.scale(*scale.maxItem.dup);
 					case { selected.size == 0 } {
 						posx = object.positions.collect(_.x);
 						posy = object.positions.collect(_.y);
