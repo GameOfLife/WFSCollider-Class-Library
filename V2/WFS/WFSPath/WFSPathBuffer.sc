@@ -206,7 +206,7 @@ WFSPathBuffer : AbstractRichBuffer {
 		if( wfsPath.isWFSPath2 ) {
 			servers = (servers ? writeServers).asCollection;
 			if( path.notNil ) {
-				wfsPath.filePath = path;
+				wfsPath.filePath = path.replaceExtension( "wfspath" );
 			};
 			wfsPath.savedCopy = wfsPath.deepCopy;
 			if( this.filePath.notNil ) {

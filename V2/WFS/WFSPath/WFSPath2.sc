@@ -500,6 +500,7 @@ WFSPath2 {
 	    if( path.isNil ) {
 		    Dialog.savePanel( { |pth|
 			    path = pth;
+			    path = path.replaceExtension( "wfspath" );
 			    writeFunc.value;
 		    } );
 	    } {
