@@ -295,10 +295,12 @@ WFSPointSpec : PointSpec {
 			.linlin(-0.5pi, 1.5pi, 180, -180 );
 		view[ \editor ] !? {
 			view[ \editor ].object[ 0 ] = value;
-			view[ \editor ].refresh;
+			{ view[ \editor ].refresh; }.defer;
 		};
-		this.setMode( view, mode );
-		{ view[ \mode ].value = view[ \mode ].items.indexOf( mode ) ? 0; }.defer;
+		{ 
+			this.setMode( view, mode );
+			view[ \mode ].value = view[ \mode ].items.indexOf( mode ) ? 0; 
+		}.defer;
 		if( active ) { view[ \x ].doAction };
 	}
 	
