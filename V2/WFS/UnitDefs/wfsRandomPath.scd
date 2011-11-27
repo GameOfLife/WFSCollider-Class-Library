@@ -7,6 +7,7 @@ Udef( \wfsRandomPath, { |
 		seed = 12345
 		|
 	varÊrandom;
+	RandSeed.ir(1,seed);
 	random =ÊLFDNoise3.kr(  
 		speed.dup,
 		radius,

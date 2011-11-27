@@ -1,7 +1,6 @@
 Udef( \wfsPathPlayer, {
-	var input, sig;
-	input = UIn.kr( 0, 2 ) * \mix_in.kr(0);
+	var sig;
 	sig = WFSPathBufferPlayer.kr( \wfsPath );
-	UOut.kr( 0, sig + input );
+	UMixOut.kr( 0, sig );
 }, [ [ \wfsPath, nil, WFSPathSpec() ] ] )
 	.category_( \wfs_control );
