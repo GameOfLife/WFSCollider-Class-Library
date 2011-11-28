@@ -178,20 +178,20 @@ WFSMenuBar {
 		//mute, solo
 		SCMenuSeparator.new(events);
 		
-		SCMenuItem.new(events, "Mute selected").action_({
-			UScoreEditorGUI.current !! { |x| x.scoreView.muteSelected }
+		SCMenuItem.new(events, "Disable selected").action_({
+			UScoreEditorGUI.current !! { |x| x.scoreView.disableSelected }
 		}).setShortCut("m",true);
 		
-		SCMenuItem.new(events, "Unmute selected").action_({
-			UScoreEditorGUI.current !! { |x| x.scoreView.unmuteSelected }
+		SCMenuItem.new(events, "Enable selected").action_({
+			UScoreEditorGUI.current !! { |x| x.scoreView.enableSelected }
 		}).setShortCut("u",true);
 		
-		SCMenuItem.new(events, "Unmute all").action_({
-			UScoreEditorGUI.current !! { |x| x.editor.unmuteAll }
+		SCMenuItem.new(events, "Enable all").action_({
+			UScoreEditorGUI.current !! { |x| x.editor.enableAll }
 		});
 		
-		SCMenuItem.new(events, "Solo selected").action_({
-			UScoreEditorGUI.current !! { |x| x.scoreView.soloSelected }
+		SCMenuItem.new(events, "Enable selected and disable all others").action_({
+			UScoreEditorGUI.current !! { |x| x.scoreView.soloEnableSelected }
 		}).setShortCut("p",true);
 
 		//tracks
