@@ -5,31 +5,28 @@ Bugs:
  - Multiple panners, where some only play on one server, sometimes don't free the chain on one server. This also affects Load balancing.
 
 TODO:
+ - UDef code editing - allow forking code to new Udef. STARTED
  - make ScoreEditor redraw when duration or startTime of UChain changes.
  - MassUChain editor should allow to edit multiple paths, at least to be able to plot them. -W
- - EQ Udef.
- - Code editing - perhaps for now only of file Udefs.
  - Cut events - u_trimStart, u_trimEnd.
  - UMixer for session
  - Cleanup: remove unused files. Check if there are unused methods. Check if there is code that can (easilly) be made more elegant.
  - Documentation: schelp files for classes. STARTED
  - MassEdit - add and remove units.
- - supernova. STARTED
+ - supernova. STARTED - CPU usage issues.
  - nested chains/ UChain groups
- - implement cutting sub-scores
- - UDef code editing - allow forking code to new Udef.
- - remove MetaUdef -M, W?
  - invent fixed extension names for Trajectory, and perhaps also for UEvent files.
- - add more Udefs -M,W
  - cpu wfsservers view
 
  Less priority:
- - drag and drop
+ - implement cutting sub-scores
  - Right-click menu
  - inner score looping.
  - Move WFSPath stuff into UTrajectory, etc. I really think we should do this, this is a great class, and it can be used by people using ambisonics and VBAP. It could easilly become the standard trajectory stuff for supercollider.
 
 Done:
+ X- remove MetaUdef -M, W?
+ X- audio solo button on mixer
  X- USessionGUI, UChainGroup, USessionList - make it more functional. Drag and Drop.
    X - take elements from USession into score.
    X - Reorder elements in USession
