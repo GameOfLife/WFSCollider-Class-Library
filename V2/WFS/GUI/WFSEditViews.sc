@@ -550,7 +550,7 @@ WFSPathXYView : WFSBasicEditView {
 				WFSSpeakerConf.rect(48,48,5,5);
 			}).draw;
 			
-			if( showInfo ) {	
+			if( showInfo && { object.positions.size > 0 }) {	
 				Pen.use({
 					var posx, posy, leftTop;
 					Pen.font = Font( Font.defaultSansFace, 10 );
@@ -608,7 +608,9 @@ WFSPathXYView : WFSBasicEditView {
 			// draw center
 			Pen.line( -0.25 @ 0, 0.25 @ 0 ).line( 0 @ -0.25, 0 @ 0.25).stroke;
 			
-			object.draw( drawMode, selected, pos, showControls, scale.asArray.mean );
+			if( object.positions.size > 0 ) {
+				object.draw( drawMode, selected, pos, showControls, scale.asArray.mean );
+			};
 			
 		});
 		
