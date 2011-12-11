@@ -76,6 +76,146 @@ WFSPathSpec : Spec {
 		if( active ) { view.doAction };
 	}
 	
+	
+	massEditSpec { |inArray|
+		^WFSMultiPathSpec(inArray); 
+	}
+	
+	massEditValue { |inArray|
+		^inArray
+	}
+	
+	massEdit { |inArray, params|
+		^params;
+	}
+	
+}
+
+WFSMultiPathSpec : Spec {
+	
+	// array of points instead of a single point
+	
+	var <>default;
+	
+	*new { |default|
+		^super.new.default_( default );
+	}
+	
+	*testObject { |obj|
+		^obj.isCollection && { obj[0].class == WFSPathBuffer };
+	}
+	
+	constrain { |value|
+		^value;
+	}
+	
+	*newFromObject { |obj|
+		^this.new;
+	}
+	
+	makeView { |parent, bounds, label, action, resize|
+		var vws, view, labelWidth;
+		var localStep;
+		var font;
+		var editAction;
+		vws = ();
+		
+		font =  (RoundView.skin ? ()).font ?? { Font( Font.defaultSansFace, 10 ); };
+		
+		bounds.isNil.if{bounds= 320@20};
+		
+		view = EZCompositeView( parent, bounds, gap: 4@4 );
+		bounds = view.asView.bounds;
+		
+		vws[ \view ] = view;
+		
+		vws[ \val ] = [];
+		vws[ \bufs ] = [];
+		
+		if( label.notNil ) {
+			labelWidth = (RoundView.skin ? ()).labelWidth ? 80;
+			vws[ \labelView ] = StaticText( vws[ \view ], labelWidth @ bounds.height )
+				.string_( label.asString ++ " " )
+				.align_( \right )
+				.resize_( 4 )
+				.applySkin( RoundView.skin );
+		} {
+			labelWidth = 0;
+		};
+		
+		vws[ \plot ] = SmoothButton( view, 40 @ (bounds.height) )
+			.label_( "plot" )
+			.border_( 1 )
+			.radius_( 2 )
+			.font_( font )
+			.action_({
+				var editor;
+				if( vws[ \editor ].isNil or: { vws[ \editor ].isClosed } ) {
+					editor = WFSPathXYView( object: vws[ \val ] )
+						.editMode_( \none )
+						.onClose_({ 
+							if( vws[ \editor ] == editor ) {
+								vws[ \editor ] = nil;
+							};
+						});
+					vws[ \editor ] = editor;
+				} {
+					vws[ \editor ].front;
+				};
+				
+			});
+		
+		vws[ \write ] = SmoothButton( view, 60 @ (bounds.height) )
+			.label_( "write all" )
+			.border_( 1 )
+			.radius_( 2 )
+			.font_( font )
+			.action_({
+				Dialog.savePanel({ |pth|
+					var existing, i = 0;
+					vws[ \val ].paths.collect({ |item|
+						if( item.filePath.notNil ) {
+							item.write( pth.dirname +/+ 
+								item.filePath.basename.replaceExtension( "wfspath" ) 
+							);
+						} {
+							item.write( pth.dirname +/+ pth.basename.removeExtension ++
+								"_" ++ i.asStringToBase(10,3) ++ ".wfspath" 
+							);
+							i = i + 1;
+						};
+					});
+					if( WFSPathBuffer.writeServers.every(_.isLocal).not ) {
+						SCAlert( "please run the 'Distribute SoundFiles' script\nto copy the paths to all servers" );
+					};
+				});
+			});
+			
+		view.view.onClose_({
+			if( vws[ \editor ].notNil ) {
+				vws[ \editor ].close;
+			};
+		});
+	
+		^vws;
+	}
+	
+	makeMultiPath { |pathBuffers|
+		^WFSMultiPath().paths_(pathBuffers.collect(_.wfsPath).collect(_.asWFSPath2).select(_.notNil));
+	}
+	
+	setView { |view, value, active = false|
+		view[ \val ] = this.makeMultiPath( value.asCollection );
+		if( view[ \val ].paths.any(_.dirty) ) {
+			view[ \write ].background_( Color.red.alpha_(0.25) );
+		} {
+			view[ \write ].background_( Color.clear );
+		};
+		view[ \editor ] !? {
+			view[ \editor ].object_(view[ \val ], false); 
+		};
+	}
+	
 }
 
 WFSPointSpec : PointSpec {
