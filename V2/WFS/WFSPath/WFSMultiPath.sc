@@ -58,4 +58,12 @@ WFSMultiPath {
 		^paths.collect(_.length).maxItem;
 	}
 	
+	asRect {
+		^if( paths.size > 0 ) { 
+			paths.collect(_.asRect).reduce(\union);
+		} {
+			Rect(0,0,0,0);
+		}
+	}
+	
 }
