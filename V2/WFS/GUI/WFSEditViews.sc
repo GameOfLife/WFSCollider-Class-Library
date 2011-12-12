@@ -531,6 +531,10 @@ WFSPathXYView : WFSBasicEditView {
 					mod,
 					\no_undo
 				);
+			},
+			\elastic, {
+				pt = (newPoint.round(round) - lastPoint.round(round)) * (1@(-1));
+				this.moveElastic( pt.x, pt.y, mod, \no_undo );
 			}
 		);
 	}
@@ -685,6 +689,46 @@ WFSPathXYView : WFSBasicEditView {
 					};
 				});
 			};
+			this.refresh; 
+			this.edited( \edit, \move, *moreArgs );
+		};
+	}
+	
+	moveElastic { |x = 0,y = 0, mod ...moreArgs|
+		var selection;
+		if( selected.size > 0 ) {
+			
+			selection = (selected.minItem..selected.maxItem);
+			
+			selection.do({ |index|
+				var pt;
+				pt = object.positions[ index ];
+				if( pt.notNil ) {
+					pt.x = pt.x + x;
+					pt.y = pt.y + y;
+				};
+			});
+			
+			2.do({ |ii|
+				var rest, restSize;
+				if( ii == 0 ) {
+					rest = (..selection[0]);
+				} {
+					rest = (selection.last..object.positions.size-1).reverse;
+				};
+				rest = rest[..rest.size-2];
+				restSize = rest.size;
+				rest.do({ |index, i|
+					var pt, factor;
+					pt = object.positions[ index ];
+					if( pt.notNil ) {
+						factor = (i/restSize);
+						pt.x = pt.x + (x * factor);
+						pt.y = pt.y + (y * factor);
+					};
+				});	
+			});
+			
 			this.refresh; 
 			this.edited( \edit, \move, *moreArgs );
 		};
@@ -1045,6 +1089,10 @@ WFSPathTimeView : WFSPathXYView {
 			\move,  { 
 				pt = (newPoint.round(round) - lastPoint.round(round));
 				this.moveSelected( pt.x, pt.y, mod, \no_undo );
+			},
+			\elastic,  { 
+				pt = (newPoint.round(round) - lastPoint.round(round));
+				this.moveElastic( pt.x, pt.y, mod, \no_undo );
 			}
 		);
 	}
@@ -1070,6 +1118,50 @@ WFSPathTimeView : WFSPathXYView {
 			object.forceTimes((timesPositions[0]).differentiate[1..]);
 			selected = timesPositions[2].indicesOfEqual( true );
 			this.refresh;
+			this.edited( \edit, \move, *moreArgs );
+		};
+	}
+	
+	moveElastic { |x = 0,y = 0, mod ...moreArgs|
+		var selection;
+		var timesPositions;
+		var moveAmt;
+		if( selected.size > 0 ) {
+			
+			moveAmt = x * this.getTimesSum;
+			
+			timesPositions = [ 
+				[ 0 ] ++ object.times.integrate, 
+				object.positions,
+				object.positions.collect({ |item, i| selected.includesEqual(i) })
+			].flop;
+			
+			selection = (selected.minItem..selected.maxItem);
+			
+			selection.do({ |index|
+				timesPositions[ index ][0] = timesPositions[ index ][0] + moveAmt;			});
+			
+			2.do({ |ii|
+				var rest, restSize;
+				if( ii == 0 ) {
+					rest = (..selection[0]);
+				} {
+					rest = (selection.last..timesPositions.size-1).reverse;
+				};
+				rest = rest[..rest.size-2];
+				restSize = rest.size;
+				rest.do({ |index, i|
+					timesPositions[ index ][0] = timesPositions[ index ][0] 
+						+ (moveAmt * (i/restSize));
+				});	
+			});
+			
+			timesPositions = timesPositions.sort({ |a,b| a[0] <= b[0] }).flop;
+			object.positions = timesPositions[1];
+			object.forceTimes((timesPositions[0]).differentiate[1..]);
+			selected = timesPositions[2].indicesOfEqual( true );
+			
+			this.refresh; 
 			this.edited( \edit, \move, *moreArgs );
 		};
 	}
