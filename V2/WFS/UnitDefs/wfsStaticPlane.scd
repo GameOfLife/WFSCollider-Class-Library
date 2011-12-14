@@ -92,7 +92,7 @@ if( WFS.previewMode.isNil ) {
 				n = n + arrayConfs[i].n;
 			});
 					
-			arrayGroup.freeAction_({ |group| unit.synths.remove( group ); });
+			arrayGroup.freeAction_({ |group| unit.removeSynth( group ); });
 			unit.synths = unit.synths.add( arrayGroup );
 			
 			prePanSynth;
