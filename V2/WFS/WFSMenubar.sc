@@ -254,13 +254,11 @@ WFSMenuBar {
         */
 		//view
 		viewMenu = SCMenuGroup.new(nil, "View", index + 3);
-		SCMenuItem.new(viewMenu, "All").action_( {WFSEQ.new; WFSTransport.new; WFSLevelBus.makeWindow;}).setShortCut("T",true);
-		SCMenuSeparator.new(viewMenu);
-		SCMenuItem.new(viewMenu, "EQ").action_( {WFSEQ.new; });
-		SCMenuItem.new(viewMenu, "Transport").action_( {WFSTransport.new; });		SCMenuItem.new(viewMenu, "Level").action_( {WFSLevelBus.makeWindow; });
+		SCMenuItem.new(viewMenu, "EQ").action_( { UGlobalEQ.gui; });		SCMenuItem.new(viewMenu, "Level").action_( { UGlobalGain.gui; });
+		SCMenuItem.new(viewMenu, "UDefs").action_( { UdefListView(); });
 		if(WFSServers.default.isSingle){
 			SCMenuItem.new(viewMenu, "Meter").action_({
-				ServerMeter(WFSServers.default.masterServer,0,2);
+				WFSServers.default.m.meter;
 			});
 		};
 
