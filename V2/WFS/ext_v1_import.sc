@@ -78,6 +78,8 @@
 		);
 		
 		^UChain( 0, 0, dur, true, *units )
+			.fadeIn_( this.fadeInTime )
+			.fadeOut_( this.fadeOutTime )
 			.setGain( level.ampdb + gain );
 	}
 	
