@@ -2,7 +2,6 @@ For Beta 2 - to be released in December before workshop ?
 
 Bugs:
  - Stuff not releasing correctly. pointing to empty array, should be nil.
- - Multiple panners, where some only play on one server, sometimes don't free the chain on one server. This also affects Load balancing.
 
 TODO:
  - Make UCHainGUI like GUI for UScore, to change startime of innerscore.
@@ -23,6 +22,7 @@ TODO:
  - Move WFSPath stuff into UTrajectory, etc. I really think we should do this, this is a great class, and it can be used by people using ambisonics and VBAP. It could easilly become the standard trajectory stuff for supercollider.
 
 Done:
+ X- Multiple panners, where some only play on one server, sometimes don't free the chain on one server. This also affects Load balancing.
  X- make ScoreEditor redraw when duration or startTime of UChain changes.
  X- Cleanup: remove unused files. Check if there are unused methods. Check if there is code that can (easilly) be made more elegant.
  X- UDef code editing - allow forking code to new Udef.

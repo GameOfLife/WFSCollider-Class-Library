@@ -28,7 +28,7 @@ WFS TODO NEW (no particular order)
 - WFSPath
 	- implement free spline wfspaths
 	- rename to WFSPath; subclass of Trajectory
-	- check undo functionality (seems broken)
+	X check undo functionality (seems broken) FIXED
 	- more generators:
 		- import SVG
 		- import MIDI
