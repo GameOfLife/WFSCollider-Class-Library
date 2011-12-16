@@ -93,7 +93,7 @@
 				);
 			}, 
 			[ \smooth, 0, \window, 0.3 ],
-			{ |f, path| [ \smooth, 0, \order, f.get( \order) ] }
+			{ |f, path| [ \smooth, 0, \window, f.get( \window) ] }
 		)
 			.setSpec( \smooth, ControlSpec( -1, 1, \lin, 0, 0 ) )
 			.setSpec( \window, ControlSpec( 0, 1, \lin, 0.1, 0.3 ) )
