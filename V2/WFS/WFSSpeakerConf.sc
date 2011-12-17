@@ -142,6 +142,10 @@ WFSArrayConf { // configuration for one single speaker array
 	lastPoint {
 		^this.pointAt(n-1);
 	}
+	
+	centerPoint {
+		^( dist @ offset.neg ).rotate( angle );
+	}
 		
 	asPoints { // for plotting
 		^n.collect({ |i| this.pointAt(i)});
@@ -154,6 +158,29 @@ WFSArrayConf { // configuration for one single speaker array
 		^corners.collect({ |c|
 			( dist @ c ).rotate( angle );
 		});
+	}
+	
+	cornerPoints_ { |array|
+		var current;
+		array = array.asCollection.extend( 2, nil );
+		if( array.any(_.isNil) ) {
+			current = this.cornerPoints;
+			array[0] = array[0] ? current[0];
+			array[1] = array[1] ? current[1];
+		};
+		this.prCornerPoints_( array );
+	}
+	
+	prCornerPoints_ { |array|
+		// re-calculate angle and dist from corner points
+		angle = ((array[1] - array[0]).angle + 0.5pi).wrap(-pi,pi);
+		dist = array[0].dist(0@0) * (angle - array[0].angle.wrap(-pi,pi)).cos;
+		if( dist < 0 ) { 
+			angle = (angle + pi).wrap(-pi,pi);
+			dist = dist.neg;
+			array = array.reverse;
+		};
+		corners = array.collect({ |pt| pt.rotate( angle.neg ).y });
 	}
 	
 	draw { |mode = \lines| // 1m = 1px
@@ -312,6 +339,9 @@ WFSSpeakerConf {
 	asLines { ^arrayConfs.collect(_.asLine) }
 	
 	draw { |mode = \lines| arrayConfs.do(_.draw(mode)); }
+	
+	plot {
+	}
 	
 	storeArgs { ^arrayConfs.collect(_.storeArgs) }
 	
