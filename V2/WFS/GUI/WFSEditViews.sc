@@ -52,6 +52,8 @@ WFSBasicEditView {
 	
 	var <undoManager;
 	
+	var <>drawFunc; // draws on top
+	
 	*new { |parent, bounds, object|
 		^this.newCopyArgs(object).init.makeView( parent, bounds ).setDefaults;
 	}
@@ -312,6 +314,7 @@ WFSBasicEditView {
 		
 		view.drawFunc = { |vw|			
 			this.drawContents(  vw.pixelScale );
+			Pen.use({ this.drawFunc.value( vw ); });
 		};
 			
 		view.unscaledDrawFunc = { |vw|
@@ -479,6 +482,15 @@ WFSBasicEditView {
 	
 	selectAll { this.select( \all ) }
 	selectNone { this.select( ) }
+	
+	// subclass responsibility
+
+	drawContents { } 	
+	defaultObject { ^nil }
+	getNearestIndex { ^nil }
+	getIndicesInRect { ^[] }
+	select { }
+	selectNoUpdate { }
 }
 
 //////// PATH EDITOR /////////////////////////////////////////////////////////////////
