@@ -98,6 +98,14 @@ WFS {
 		
 		WFSSpeakerConf.rect( 48, 48, 5, 5 ).makeDefault;
 		
+		UChain.makeDefaultFunc = {
+			UChain( \bufSoundFile, 
+				[ \wfsStaticPoint, 
+					[ \point, (5@0).rotate(2pi.rand) ]
+				]
+			).useSndFileDur
+		};
+		
 		GlobalPathDict.put( \wfs, "/WFSSoundFiles" );
 		
 		if( File.exists( "/Library/Application Support/WFSCollider/WFSCollider_configuration.txt" ) ) {
