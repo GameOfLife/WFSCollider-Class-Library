@@ -346,6 +346,8 @@ WFSPathBufferView {
 				this.performWFSPathBuffer( \rate_ , sl.value );
 				action.value( this );
 			});
+			
+		views[ \rate ].sliderView.centered_(true);
 					
 		this.setFont;
 	}
