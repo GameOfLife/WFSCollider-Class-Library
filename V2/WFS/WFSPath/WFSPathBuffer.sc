@@ -85,6 +85,8 @@ WFSPathBuffer : AbstractRichBuffer {
 		};
 	}
 	
+	dirty { ^wfsPath.dirty }
+	
 	duplicatePath {
 		if( wfsPath.class == WFSPathURL ) {
 			this.wfsPath = wfsPath.wfsPath.deepCopy;
@@ -157,7 +159,7 @@ WFSPathBuffer : AbstractRichBuffer {
 	
 	makeBuffer { |server, action, bufnum|
 	    var buf;
-	    if( this.filePath.notNil ) {
+	    if( this.filePath.notNil && { wfsPath.dirty.not } ) {
 		    buf = this.readBuffer( server, action, bufnum );
 	    } {
 		    buf = this.sendBuffer( server, action, bufnum );
