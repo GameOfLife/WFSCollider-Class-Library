@@ -81,6 +81,7 @@ WFSPathBufferView {
 		// views[ \name ].value = inWFSPathBuffer.name ? "";
 		views[ \filePath ].value = inWFSPathBuffer.filePath;
 		views[ \loop ].value = inWFSPathBuffer.loop.binaryValue;
+		views[ \rate ].value = inWFSPathBuffer.rate;
 		if( inWFSPathBuffer.wfsPath.isWFSPath2 ) {
 			views[ \miniPlot ].fromBounds = 
 				inWFSPathBuffer.wfsPath.asRect.scale(1@ -1).insetBy(-2,-2);
@@ -130,6 +131,7 @@ WFSPathBufferView {
 		views[ \startFrame ].font = font;
 		views[ \startSecond ].font = font;
 		views[ \startLabel ].font = font;
+		views[ \rate ].font = font;
 
 	}
 	
@@ -141,7 +143,7 @@ WFSPathBufferView {
 		};
 	}
 	
-	*viewNumLines { ^5 }
+	*viewNumLines { ^6 }
 	
 	makeView { |parent, bounds, resize|
 		
@@ -288,6 +290,7 @@ WFSPathBufferView {
 		
 		views[ \fileLabel ] = StaticText( view, 30 @ viewHeight )
 			.applySkin( RoundView.skin )
+			.align_( \right )
 			.string_( "file" );
 		
 		views[ \filePath ] = FilePathView( view, 
@@ -301,9 +304,10 @@ WFSPathBufferView {
 			
 		views[ \startLabel ] = StaticText( view, 30 @ viewHeight )
 			.applySkin( RoundView.skin )
+			.align_( \right )
 			.string_( "start" );
 		
-		views[ \startComp ] = CompositeView( view, (bounds.width - 78) @ viewHeight )
+		views[ \startComp ] = CompositeView( view, (bounds.width - 82) @ viewHeight )
 			.resize_( 2 );
 		
 		views[ \startSecond ] = SMPTEBox( views[ \startComp ], 
@@ -327,12 +331,20 @@ WFSPathBufferView {
 			})
 			.visible_( false );
 			
-		views[ \timeMode ] = PopUpMenu( view, 40 @ viewHeight )
+		views[ \timeMode ] = PopUpMenu( view, 44 @ viewHeight )
 			.applySkin( RoundView.skin )
 			.items_( [ "s", "fr" ] )
 			.resize_( 3 )
 			.action_({ |pu|
 				this.class.timeMode = [ \seconds, \frames ][ pu.value ];
+			});
+			
+		views[ \rate ] = EZSmoothSlider( view, bounds.width@viewHeight, 
+				"rate", [ 0.125, 8, \exp, 0.125, 1 ].asSpec, 1 )
+			.labelWidth_( 30 )
+			.action_({ |sl|
+				this.performWFSPathBuffer( \rate_ , sl.value );
+				action.value( this );
 			});
 					
 		this.setFont;
