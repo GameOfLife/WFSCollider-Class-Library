@@ -573,8 +573,6 @@ WFSPath2 {
     
     exists { ^true }
 	
-	gui { |parent, bounds| ^WFSPathView( parent, bounds, this ); }
-	
 }
 
 + Object { 
