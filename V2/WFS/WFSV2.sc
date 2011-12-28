@@ -135,7 +135,7 @@ WFS {
 			WFS.startupOffline;
 		};
 		if(thisProcess.platform.class.asSymbol == 'OSXPlatform') {
-		    WFSMenuBar();
+		    UMenuBar();
 		};
 
 	}
