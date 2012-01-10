@@ -154,8 +154,8 @@ WFSServers {
 				.font_( Font( "Monaco", 9 ) )
 				.action_( { Server.killAll;
 					if(this.isMaster) {
-						"ssh gameoflife@192.168.2.11 \"killAll scsynth\"".systemCmd;
-						"ssh gameoflife@192.168.2.12 \"killAll scsynth\"".systemCmd;
+						"ssh gameoflife@192.168.2.11 \"killall -9 scsynth\"".systemCmd;
+						"ssh gameoflife@192.168.2.12 \"killall -9 scsynth\"".systemCmd;
 					}
 				} );
 			
@@ -196,11 +196,12 @@ WFSServers {
 					} );
 				
 				widgets.add(SyncCenterStatusWidget(window,17));		
-						
+				/*		
 				Button( window, Rect( 0, 0, 90, 16 ) )
 					.states_( [["open hosts"]] )
 					.font_( Font( "Monaco", 9 ) )
 					.action_( { this.openHosts; } ); 
+				*/
 					
 				Button( window, Rect( 0, 0, 110, 16 ) )
 					.states_( [["shut down hosts"]] )
@@ -211,21 +212,26 @@ WFSServers {
 							 { // "~/Unmount servers.app".openInFinder 
 							  "umount /WFSSoundFiles".unixCmd;
 								 },
-							 { //"~/Stop_SC_Servers.command".openInFinder;
-			"ssh gameoflife@192.168.2.11 \"open \\\"Stop_SC.app\\\"\"".systemCmd;
-			"ssh gameoflife@192.168.2.12 \"open \\\"Stop_SC.app\\\"\"".systemCmd; 
-							  	SCAlert( "Do you want to startup SC again?",
-							  		[ "no", "yes" ],
-							  		[ {}, { 
-							  		
-							  	//"~/ResartSC_Servers.command".openInFinder;
-				"ssh gameoflife@192.168.2.11 \"open \\\"/Applications/SuperCollider/SuperCollider.app\\\"\"".systemCmd;
-				"ssh gameoflife@192.168.2.12 \"open \\\"/Applications/SuperCollider/SuperCollider.app\\\"\"".systemCmd;
-							  	 }] );
-							  },
+							 { 
+						
+						ips.collect({ |ip, i|
+							"killall -9 WFSCollider; 
+							killall -9 WFSCollider-Leiden; 
+							killall -9 scsynth ; 
+							killall -9 SuperCollider; 
+							killall -9 jackdmp; 
+							killall -9 JackPilot; 
+							open '/Applications/autostart jackosx intel.app'; 
+							sleep 10; 
+							open '%'"
+							.format( String.scDir.dirname.dirname )
+							.asSSHCmd( "gameoflife", NetAddr(ip) )
+						}).join( " & " ).unixCmd;
+						
+						"restarting WFSCollider on hosts in apx. 10 seconds".postln;							  },
 							 {
 							  //"~/Unmount servers.app".openInFinder;
-							  "umount /WFSSoundFiles".unixCmd;
+							  //"umount /WFSSoundFiles".unixCmd;
 							  
 							{	var win, views;
 								
@@ -262,10 +268,22 @@ WFSServers {
 									.font_( Font( "Helvetica-Bold", 30 ) )
 									.action_({ |bt| win.close;
 									 // "~/Shutdown_Servers.command".openInFinder;
-									 "shutting down hosts..".postln;
-									"open \"Unmount servers.app\"".systemCmd;
-					"ssh gameoflife@192.168.2.11 \"open \\\"shutdown.app\\\"\"".unixCmd;
-					"ssh gameoflife@192.168.2.12 \"open \\\"shutdown.app\\\"\"".unixCmd;
+									  "shutting down hosts..".postln;
+									  
+									  /*
+									  for the shutdown to work you need to use the
+									  visudo unix command on each server and add 
+									  the following line:
+									  
+									  %admin ALL=NOPASSWD:/sbin/shutdown -h now
+									  */
+									(
+										"umount /WFSSoundFiles;" ++
+										ips.collect({ |ip|
+											"sudo shutdown -h now"
+												.asSSHCmd( "gameoflife", NetAddr(ip) )
+										}).join( " & " ) 
+									).unixCmd;
 									
 									 }).focus;
 									}.value;
@@ -287,11 +305,9 @@ WFSServers {
 				.font_( Font( "Monaco", 9 ) )
 				.action_( {
 					// kill synths and press cmd-k on remote
-					"killing scsynths on server % and recompiling, please wait � 5s plus another few for lifesign\n"
-						.postf( ips[i].asString );
-					("killall -9 scsynth; sleep 2; killall -9 scsynth; sleep 2;" +  // kills twice with wait in between
-					 "k".asKeyStrokeCmd( "command" ) )
-						.sshCmd( "gameoflife", ips[i].asString );
+					"killing scsynths on server %".postf( ips[i].asString );
+					"killall -9 scsynth; sleep 2; killall -9 scsynth;"
+						.sshCmd( "gameoflife", NetAddr(ips[i]) );
 			} );
 			
 			Button( window, Rect( 0, 0, 12, 12 ) )
@@ -299,12 +315,19 @@ WFSServers {
 				.font_( Font( "Monaco", 9 ) )
 				.action_( {
 					// kill synths and restart sc on remote
-					"killing scsynths on server % and rebooting sc, please wait � 10s plus another few for lifesign\n"
+					"killing scsynths on server % and rebooting sc in 10s"
 							.postf( ips[i].asString );
-					("killall -9 scsynth; sleep 2; killall -9 scsynth; sleep 2;" +
-				 	 "open 'Stop_SC.app'; sleep 3;" +
-				 	 "open '/Applications/SuperCollider/SuperCollider.app'")
-						.sshCmd( "gameoflife", ips[i].asString );
+					"killall -9 WFSCollider; 
+							killall -9 WFSCollider-Leiden; 
+							killall -9 scsynth ; 
+							killall -9 SuperCollider; 
+							killall -9 jackdmp; 
+							killall -9 JackPilot; 
+							open '/Applications/autostart jackosx intel.app'; 
+							sleep 10; 
+							open '%'"
+							.format( String.scDir.dirname.dirname )
+							.sshCmd( "gameoflife", NetAddr(ips[i]) );
 			} );
 					 
 			serverLabels[i] = StaticText( window, Rect( 0, 0, 300, 12 ) )
