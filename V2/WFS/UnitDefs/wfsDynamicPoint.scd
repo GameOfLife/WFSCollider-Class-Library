@@ -124,14 +124,13 @@ if( WFS.previewMode.isNil ) {
 		})
 		.setSynthFunc_({ |unit ...keyValuePairs|
 			unit.synths.do({ |sn|
-				switch( sn.class,
-					Group, {
-						sn.set( *unit.def.env.getSetArgsFor( \wfsa, keyValuePairs, sn.server ) )
-					},
-					Synth, {
-						sn.set( *unit.def.env.getSetArgsFor( \wfsp, keyValuePairs, sn.server ) )
-					}
-				)
+				var server = sn.server;
+				var key = switch( sn.class, Group, \wfsa, Synth, \wfsp );
+				server.sendSyncedBundle( Server.default.latency, nil, 
+					*server.makeBundle( false, {
+			    			sn.set( *unit.def.env.getSetArgsFor( key, keyValuePairs, server ) )
+		    			})
+		    		);
 			})
 		})
 		.shouldPlayOnFunc_({ |unit, target|
@@ -219,14 +218,14 @@ if( WFS.previewMode.isNil ) {
 		})
 		.setSynthFunc_({ |unit ...keyValuePairs|
 			unit.synths.do({ |sn|
-				switch( sn.defName.asString[..4].asSymbol,
-					\wfsx_, {
-						sn.set( *unit.def.env.getSetArgsFor( \wfsa, keyValuePairs, sn.server ) )
-					},
-					\wfsp_, {
-						sn.set( *unit.def.env.getSetArgsFor( \wfsp, keyValuePairs, sn.server ) )
-					}
-				)
+				var server = sn.server;
+				var key = switch( sn.defName.asString[..4].asSymbol, 
+					\wfsx_, \wfsa, \wfsp_, \wfsp );
+				server.sendSyncedBundle( Server.default.latency, nil, 
+					*server.makeBundle( false, {
+			    			sn.set( *unit.def.env.getSetArgsFor( key, keyValuePairs, server ) )
+		    			})
+		    		);
 			})
 		})
 		.shouldPlayOnFunc_({ |unit, target|
