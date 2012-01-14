@@ -29,11 +29,26 @@ WFSPreviewSynthDefs {
 			},
 			\stereo: { |in, point|
 				var distances, globalDist, delays, amplitudes;
-				distances = [ -0.5@0, 0.5@0 ].collect(_.dist( point ));
+				distances = [ -0.3@0, 0.3@0 ].collect(_.dist( point ));
 				globalDist = (0@0).dist( point );
 				delays = 0.06 + ((distances - globalDist) / WFSBasicPan.speedOfSound);
 				in = DelayC.ar( in, 0.12, delays );
-				amplitudes = Pan2.kr( 1, (point.x / 5).clip(-1,1) );
+				amplitudes = Pan2.kr( 1, (point.angle - 0.5pi).neg.fold(-0.5pi,0.5pi) / 0.5pi );
+				amplitudes = amplitudes.max( globalDist.linlin(0.5,1,1,0).clip(0,1) );
+				in * amplitudes;
+			},
+			\quad: { |in, point| // clockwise quadraphonic panning
+				var distances, globalDist, delays, amplitudes;
+				var radius = 0.3; // should be < 1
+				distances = [ 
+					(radius.neg)@radius, radius@radius, 
+					radius@(radius.neg), (radius.neg)@(radius.neg)
+				].collect(_.dist( point ));
+				globalDist = (0@0).dist( point );
+				delays = 0.06 + ((distances - globalDist) / WFSBasicPan.speedOfSound);
+				in = DelayC.ar( in, 0.12, delays );
+				amplitudes = PanAz.kr( 4, 1, (point.angle - 0.5pi).neg / pi);
+				amplitudes = amplitudes.max( globalDist.linlin(0.5,1,1,0).clip(0,1) );
 				in * amplitudes;
 			}
 		);
