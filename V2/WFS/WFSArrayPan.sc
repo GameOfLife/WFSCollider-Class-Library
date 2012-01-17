@@ -81,10 +81,14 @@ WFSCrossfader {
 			}).flop;
 			
 			// focused active
-			focusedActive = [ arrayConfs[i].firstPoint.angle, arrayConfs[i].lastPoint.angle ]
-				.collect({ |item|
-					((item - globalAngle).wrap(-pi,pi).abs < (fadeArea + 0.03pi)).binaryValue; 
-			});
+			if( WFSArrayPan.useFocusFades ) {
+				focusedActive = [ arrayConfs[i].firstPoint.angle, arrayConfs[i].lastPoint.angle ]
+					.collect({ |item|
+						((item - globalAngle).wrap(-pi,pi).abs < (fadeArea + 0.03pi)).binaryValue; 
+				});
+			} {
+				focusedActive = [1,1];
+			};
 			
 			[ arr[0].product.sqrt, arr[1].product, max( focusedActive[0], focusedActive[1] ) ];
 
@@ -371,10 +375,11 @@ WFSArrayPan : WFSBasicArrayPan {
 	
 	*/
 	
+	classvar <>useFocusFades = true; // need to rebuild synthdefs after changing this
+	
 	var <>focus; // nil, true or false
 	var <>dbRollOff = -9; // per speaker roll-off
 	var <>limit = 1; // in m, clipping amplitude from here to prevent inf
-	var <>useFocusFades = true;
 	
 	ar { |source, inPos, int, mul = 1, add = 0| // inPos: Point or Polar
 		var difx, dify, sqrdifx, inFront, crossing, delayOffset;
