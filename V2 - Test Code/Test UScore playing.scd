@@ -5,7 +5,7 @@ z = UScore(r);
 x = UScoreEditor(z);
 y = UScoreEditorGUI(x);
 fork{
-	z.start(UServerCenter.servers,0);
+	z.start(ULib.servers,0);
 }
 )
 
@@ -17,7 +17,7 @@ z = UScore(r);
 x = UScoreEditor(z);
 y = UScoreEditorGUI(x);
 fork{
-	z.start(UServerCenter.servers,0);
+	z.start(ULib.servers,0);
 	0.5.wait;
 	if(z.isPlaying != true){ "error ! isPlaying should be true".throw };
 	3.wait;
@@ -33,7 +33,7 @@ z = UScore(r);
 x = UScoreEditor(z);
 y = UScoreEditorGUI(x);
 fork{
-	z.start(UServerCenter.servers,0);
+	z.start(ULib.servers,0);
 	3.wait;
 	z.pause;
 	if(z.isPaused != true){ "error ! isPaused should be true".throw };
@@ -52,7 +52,7 @@ z = UScore(r,v);
 x = UScoreEditor(z);
 y = UScoreEditorGUI(x);
 fork{
-	z.start(UServerCenter.servers,0);
+	z.start(ULib.servers,0);
 	3.wait;
 	z.pause;
 	if(z.isPaused != true){ "error ! isPaused should be true".throw };

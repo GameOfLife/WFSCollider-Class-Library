@@ -176,7 +176,7 @@ WFS {
         });
 
         Server.default = WFSServers.default.m;
-        UServerCenter.servers = [ Server.default ];
+        ULib.servers = [ Server.default ];
         WFSPathBuffer.writeServers = [ Server.default ];
 
         UGlobalGain.gui;
@@ -237,11 +237,11 @@ WFS {
 
         Server.default = WFSServers.default.m;
 
-        UServerCenter.servers = [ Server.default ] ++
+        ULib.servers = [ Server.default ] ++
             WFSServers.default.multiServers.collect({ |ms|
                 LoadBalancer( *ms.servers )
             });
-        WFSPathBuffer.writeServers = UServerCenter.servers.collect{ |s| s.asTarget.server };
+        WFSPathBuffer.writeServers = ULib.servers.collect{ |s| s.asTarget.server };
 
         UGlobalGain.gui;
         UGlobalEQ.gui;

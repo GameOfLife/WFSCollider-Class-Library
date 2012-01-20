@@ -3,7 +3,7 @@
 	LoadBalancer( *WFSServers.default.multiServers[i].servers );
 });
 
-UServerCenter.servers = [ s ] ++ ~lbs;
+ULib.servers = [ s ] ++ ~lbs;
 
 UChain.defaultServers = [ s ] ++ ~lbs;
 )
