@@ -62,25 +62,32 @@ WFS {
 			WFSArrayPan.filenameSymbol.asString.dirname +/+ "UnitDefs"
 		);		
 		
-		WFSSpeakerConf.rect( *config[\speakConf] * [1,1,0.5,0.5] ).makeDefault;
+		config[\speakConf].makeDefault;
 			
 		if(config[\hostname].notNil){
 			"starting server mode".postln;
-			WFS.startupServer;
-		};
-			
-		if(config[\ips].notNil){
-			"starting client mode".postln;
-			WFS.startupClient(
-				config[\ips],
-				config[\startPorts] ?? { 58000 ! 2 },
+			WFS.startupServer(
+				config[\hostname],
+				config[\startPort] ?? { 58000 }, 
 				config[\scsynthsPerSystem] ? 8,
-				config[\hostnames],
-				config[\soundCard] ? "MOTU 828mk2",
-				config[\numSpeakers] ? 96
+				config[\soundCard],
+                config[\numSpeakers] ? 96,
+				config[\usesSASync] ? true
 			);
-		};			
-		   
+		} {
+			
+			if(config[\ips].notNil){
+				"starting client mode".postln;
+				WFS.startupClient(
+					config[\ips],
+					config[\startPorts] ?? { 58000 ! 2 },
+					config[\scsynthsPerSystem] ? 8,
+					config[\hostnames],
+					config[\soundCard] ? "MOTU 828mk2",
+					config[\numSpeakers] ? 96
+				);
+			};			
+	    }	   
     }
 		
 	*startup {
@@ -249,13 +256,13 @@ WFS {
         ^server
     }
 
-    *startupServer { |hostName, startPort = 58000, serversPerSystem = 8, soundCard = "JackRouter"|
+    *startupServer { |hostName, startPort = 58000, serversPerSystem = 8, soundCard = "JackRouter", numOutputs=96, usesSASync = true|
         var server, serverCounter = 0;
 
         if( Buffer.respondsTo( \readChannel ).not )
             { scVersion = \old };
 
-        this.setServerOptions;
+        this.setServerOptions(numOutputs);
 
         Server.default.options.device_( soundCard );
         server = WFSServers.client(nil, startPort, serversPerSystem).makeDefault;
@@ -275,13 +282,19 @@ WFS {
             defs = Udef.loadAllFromDefaultDirectory.collect(_.synthDef).flat.select(_.notNil);
 
             defs.do({|def| def.writeDefFile; });
-            SyncCenter.writeDefs;
-            server.multiServers[0].servers.do({ |server|
-                server.loadDirectory( SynthDef.synthDefDir );
-                });
+			if( usesSASync ) {
+				"writting syncing synthdefs".postln;
+				SyncCenter.writeDefs;
+			};
+			server.multiServers[0].servers.do({ |server|
+				server.loadDirectory( SynthDef.synthDefDir );
+            });
+				
 
             ("System ready; playing lifesign for "++hostName).postln;
-            (hostName ++ ", server ready").speak
+            if(thisProcess.platform.class.asSymbol == 'OSXPlatform') {
+				(hostName ++ ", server ready").speak
+			};
 
         }).play( AppClock );
         ^server // returns an instance of WFSServers for assignment
