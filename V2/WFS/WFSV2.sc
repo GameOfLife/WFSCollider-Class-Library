@@ -217,7 +217,7 @@ WFS {
     }
 
     *startupClient { |ips, startPort, serversPerSystem = 8, hostnames,
-            soundCard = "MOTU 828mk2", numSpeakers = 96, numInputs = 72, usesSASync = true, useAuxSpeakers|
+            soundCard = "MOTU 828mk2", numSpeakers = 96, numInputs = 72, usesSASync = true, useAuxSpeakers = false|
         var server, f, g;
         this.setServerOptions(numSpeakers, numInputs);
 
@@ -292,14 +292,15 @@ WFS {
        	UGlobalEQ.gui;
         	if( useAuxSpeakers ) {
 			f = { |s| Synth.tail(Group.basicNew(s,1),\wfsToAuxSpeakers) };
-        		g = { WFSServers.default.multiServers.do( _.servers.do(f) ) };
+        		g = { WFSServers.default.multiServers.do{ |s| s.servers.do(f) } };
         		CmdPeriod.add(g);
-        		WFSServers.default.multiServers.do( _.servers.do{ |s| s.doWhenBooted(f.(s)) } );
+        		WFSServers.default.multiServers.do{ |s| s.servers.do{ |s| s.doWhenBooted(f.(s)) } };
         	};		
 		^server
     }
 
     *startupServer { |hostName, startPort = 58000, serversPerSystem = 8, soundCard = "JackRouter", numOutputs=96, numInputs = 20, usesSASync = true, makeWindow = true|
+
         var server, serverCounter = 0;
 
         if( Buffer.respondsTo( \readChannel ).not )
