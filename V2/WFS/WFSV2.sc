@@ -349,7 +349,7 @@ WFS {
 			out = BLowPass.ar(out, lpf);
 			out = DelayL.ar(out, delays, delays);
 			ReplaceOut.ar(numSpeakers, out)
-		 }).write   
+		 }).writeDefFile   
     }
 	
 }
