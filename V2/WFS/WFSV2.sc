@@ -15,6 +15,9 @@
 
     You should have received a copy of the GNU General Public License
     along with GameOfLife WFSCollider.  If not, see <http://www.gnu.org/licenses/>.
+    
+    LFSpeakersConf (speakers:Arrays of indexed, lpf: low pass frequency, distanceDifs; array of distances in meters)
+    
 */
 
 WFS {
@@ -40,7 +43,7 @@ WFS {
         ^debugSMPTE.initSeconds( secs ).toString;
         }
 
-    *setServerOptions{ |numOuts=96, numInputs = 20|
+    *setServerOptions { |numOuts=96, numInputs = 20|
         Server.default.options
             .numPrivateAudioBusChannels_(256)
             .numOutputBusChannels_(numOuts)
@@ -85,7 +88,10 @@ WFS {
 					config[\scsynthsPerSystem] ? 8,
 					config[\hostnames],
 					config[\soundCard] ? "MOTU 828mk2",
-					config[\numSpeakers] ? 96
+					config[\numSpeakers] ? 96,
+					config[\numInputs] ? 20,
+					config[\usesSASync] ? true,
+					config[\useAuxSpeakers] ? false
 				);
 			};			
 	    }	   
@@ -127,7 +133,15 @@ WFS {
 							
 				if(dict[\hostname].notNil){
 					"starting server mode".postln;
-					WFS.startupServer;
+					WFS.startupServer(
+						dict[\hostname],
+						dict[\startPort] ?? { 58000 }, 
+						dict[\scsynthsPerSystem] ? 8,
+						dict[\soundCard] ? "JackRouter",
+		                	dict[\numSpeakers] ? 96,
+		                	dict[\numInputs] ? 20,
+						dict[\usesSASync] ? true
+					);
 				};
 				
 				if(dict[\ips].notNil){
@@ -137,7 +151,11 @@ WFS {
 						dict[\startPorts] ?? { 58000 ! 2 }, 
 						dict[\scsynthsPerSystem] ? 8, 
 						dict[\hostnames], 
-						dict[\soundCard] ? "MOTU 828mk2" 
+						dict[\soundCard] ? "MOTU 828mk2",
+						dict[\numSpeakers] ? 96,
+                			dict[\numInputs] ? 20,
+						dict[\usesSASync] ? true,
+						dict[\useAuxSpeakers] ? false 
 					);
 				};
 			}
@@ -198,9 +216,9 @@ WFS {
     }
 
     *startupClient { |ips, startPort, serversPerSystem = 8, hostnames,
-            soundCard = "MOTU 828mk2", numSpeakers = 96|
-        var server;
-        this.setServerOptions(numSpeakers);
+            soundCard = "MOTU 828mk2", numSpeakers = 96, numInputs = 72, usesSASync = true, useAuxSpeakers|
+        var server, f, g;
+        this.setServerOptions(numSpeakers, numInputs);
 
         if(thisProcess.platform.class == OSXPlatform) {
             Server.default.options.device_( soundCard );
@@ -219,49 +237,68 @@ WFS {
                 WFSSpeakerConf.addServer( server, i );
             });
         });
+	   if( usesSASync ) { 	
+		   	SyncCenter.writeDefs;
+	   		server.m.waitForBoot({
+	         		var defs;
+	            	SyncCenter.loadMasterDefs;
+	
+	             	defs = Udef.loadAllFromDefaultDirectory.collect(_.synthDef).flat.select(_.notNil);
+	
+	            	defs.do({|def|
+	              	def.load( server.m );
+	              });
+	
+	            	UnitRack.loadAllFromDefaultDirectory;
+	            	/*
+		            server.multiServers.do({ |ms|
+		                ms.servers.do({ |server|
+		                    defs.do({|def|
+		                        def.send( server )
+		                    })
+		                })
+		            });
+		            */
+		
+		            // WFSLevelBus.makeWindow;
+	            "\n\tWelcome to the WFS System".postln;
+	        });
+	
+	        Server.default = WFSServers.default.m;
+	   } {
+		Udef.loadAllFromDefaultDirectory;
+		UnitRack.loadAllFromDefaultDirectory;
+	     /*
+          server.multiServers.do({ |ms|
+          	ms.servers.do({ |server|
+              	defs.do({|def|
+                   	def.send( server )
+                   })
+               })
+          });
+          */
 
-        SyncCenter.writeDefs;
+          // WFSLevelBus.makeWindow;
+          "\n\tWelcome to the WFS System".postln; 
+	   };
+        	ULib.servers = [ Server.default ] ++
+         		WFSServers.default.multiServers.collect({ |ms|
+              	LoadBalancer( *ms.servers )
+            	});
+        	WFSPathBuffer.writeServers = ULib.servers.collect{ |s| s.asTarget.server };
 
-        server.m.waitForBoot({
-            var defs;
-            SyncCenter.loadMasterDefs;
-
-             defs = Udef.loadAllFromDefaultDirectory.collect(_.synthDef).flat.select(_.notNil);
-
-            defs.do({|def|
-                    def.load( server.m );
-              });
-
-            UnitRack.loadAllFromDefaultDirectory;
-            /*
-            server.multiServers.do({ |ms|
-                ms.servers.do({ |server|
-                    defs.do({|def|
-                        def.send( server )
-                    })
-                })
-            });
-            */
-
-            // WFSLevelBus.makeWindow;
-            "\n\tWelcome to the WFS System".postln;
-        });
-
-        Server.default = WFSServers.default.m;
-
-        ULib.servers = [ Server.default ] ++
-            WFSServers.default.multiServers.collect({ |ms|
-                LoadBalancer( *ms.servers )
-            });
-        WFSPathBuffer.writeServers = ULib.servers.collect{ |s| s.asTarget.server };
-
-        UGlobalGain.gui;
-        UGlobalEQ.gui;
-
-        ^server
+        	UGlobalGain.gui;
+       	UGlobalEQ.gui;
+        	if( useAuxSpeakers ) {
+			f = { |s| Synth.tail(Group.basicNew(s,1),\wfsToAuxSpeakers) };
+        		g = { WFSServers.default.multiServers.do( _.servers.do(f) ) };
+        		CmdPeriod.add(g);
+        		WFSServers.default.multiServers.do( _.servers.do{ |s| s.doWhenBooted(f.(s)) } );
+        	};		
+		^server
     }
 
-    *startupServer { |hostName, startPort = 58000, serversPerSystem = 8, soundCard = "JackRouter", numOutputs=96, numInputs = 20, usesSASync = true|
+    *startupServer { |hostName, startPort = 58000, serversPerSystem = 8, soundCard = "JackRouter", numOutputs=96, numInputs = 20, usesSASync = true, auxSpeakersConf=false|
         var server, serverCounter = 0;
 
         if( Buffer.respondsTo( \readChannel ).not )
@@ -304,6 +341,15 @@ WFS {
         }).play( AppClock );
         ^server // returns an instance of WFSServers for assignment
         // best to be assigned to var 'm' in the intepreter
+    }
+    
+    *writeAuxSpeakersDef{ |numSpeakers, speakerIndexes, lpf, delays|
+		SynthDef(\wfsToAuxSpeakers,{ 
+			var out = In.ar(speakerIndexes,1);
+			out = BLowPass.ar(out, lpf);
+			out = DelayL.ar(out, delays, delays);
+			ReplaceOut.ar(numSpeakers, out)
+		 }).write   
     }
 	
 }
