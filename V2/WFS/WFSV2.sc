@@ -74,9 +74,10 @@ WFS {
 				config[\startPort] ?? { 58000 }, 
 				config[\scsynthsPerSystem] ? 8,
 				config[\soundCard],
-                	config[\numSpeakers] ? 96,
-                	config[\numInputs] ? 20,
-				config[\usesSASync] ? true
+                config[\numSpeakers] ? 96,
+                config[\numInputs] ? 20,
+				config[\usesSASync] ? true,
+				config[\makeWindow] ? true
 			);
 		} {
 			
@@ -298,7 +299,7 @@ WFS {
 		^server
     }
 
-    *startupServer { |hostName, startPort = 58000, serversPerSystem = 8, soundCard = "JackRouter", numOutputs=96, numInputs = 20, usesSASync = true, auxSpeakersConf=false|
+    *startupServer { |hostName, startPort = 58000, serversPerSystem = 8, soundCard = "JackRouter", numOutputs=96, numInputs = 20, usesSASync = true, makeWindow = true|
         var server, serverCounter = 0;
 
         if( Buffer.respondsTo( \readChannel ).not )
@@ -310,8 +311,9 @@ WFS {
         server = WFSServers.client(nil, startPort, serversPerSystem).makeDefault;
         server.hostNames_( hostName );
         server.boot;
-        server.makeWindow;
-
+		if( makeWindow ) {
+			server.makeWindow;
+		};
         Routine({
             var allTypes, defs;
             while({ server.multiServers[0].servers
