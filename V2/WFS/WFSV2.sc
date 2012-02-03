@@ -40,11 +40,11 @@ WFS {
         ^debugSMPTE.initSeconds( secs ).toString;
         }
 
-    *setServerOptions{ |numOuts=96|
+    *setServerOptions{ |numOuts=96, numInputs = 20|
         Server.default.options
             .numPrivateAudioBusChannels_(256)
             .numOutputBusChannels_(numOuts)
-            .numInputBusChannels_(20)
+            .numInputBusChannels_(numInputs)
             .numWireBufs_(2048)
             .memSize_(2**19) // 256MB
             .hardwareBufferSize_(512)
@@ -71,7 +71,8 @@ WFS {
 				config[\startPort] ?? { 58000 }, 
 				config[\scsynthsPerSystem] ? 8,
 				config[\soundCard],
-                config[\numSpeakers] ? 96,
+                	config[\numSpeakers] ? 96,
+                	config[\numInputs] ? 20,
 				config[\usesSASync] ? true
 			);
 		} {
@@ -119,23 +120,27 @@ WFS {
 			file = File("/Library/Application Support/WFSCollider/WFSCollider_configuration.txt","r");
 			dict = file.readAllString.interpret;
 			file.close;
-			WFSSpeakerConf.rect( *dict[\speakConf] * [1,1,0.5,0.5] ).makeDefault;
-			
-			if(dict[\hostname].notNil){
-				"starting server mode".postln;
-				WFS.startupServer;
-			};
-			
-			if(dict[\ips].notNil){
-				"starting client mode".postln;
-				WFS.startupClient(
-					dict[\ips], 
-					dict[\startPorts] ?? { 58000 ! 2 }, 
-					dict[\scsynthsPerSystem] ? 8, 
-					dict[\hostnames], 
-					dict[\soundCard] ? "MOTU 828mk2" 
-				);
-			};
+			if( dict[\speakConf].class == WFSSpeakerConf ) {
+				WFS.startupCustom(dict)	
+			} {	
+				WFSSpeakerConf.rect( *dict[\speakConf] * [1,1,0.5,0.5] ).makeDefault;
+							
+				if(dict[\hostname].notNil){
+					"starting server mode".postln;
+					WFS.startupServer;
+				};
+				
+				if(dict[\ips].notNil){
+					"starting client mode".postln;
+					WFS.startupClient(
+						dict[\ips], 
+						dict[\startPorts] ?? { 58000 ! 2 }, 
+						dict[\scsynthsPerSystem] ? 8, 
+						dict[\hostnames], 
+						dict[\soundCard] ? "MOTU 828mk2" 
+					);
+				};
+			}
 			
 		} {
 			"starting offline".postln;
@@ -256,13 +261,13 @@ WFS {
         ^server
     }
 
-    *startupServer { |hostName, startPort = 58000, serversPerSystem = 8, soundCard = "JackRouter", numOutputs=96, usesSASync = true|
+    *startupServer { |hostName, startPort = 58000, serversPerSystem = 8, soundCard = "JackRouter", numOutputs=96, numInputs = 20, usesSASync = true|
         var server, serverCounter = 0;
 
         if( Buffer.respondsTo( \readChannel ).not )
             { scVersion = \old };
 
-        this.setServerOptions(numOutputs);
+        this.setServerOptions(numOutputs, numInputs);
 
         Server.default.options.device_( soundCard );
         server = WFSServers.client(nil, startPort, serversPerSystem).makeDefault;
