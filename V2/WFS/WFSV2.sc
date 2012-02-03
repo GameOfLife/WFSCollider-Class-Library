@@ -346,10 +346,10 @@ WFS {
         // best to be assigned to var 'm' in the intepreter
     }
     
-    *writeAuxSpeakersDef{ |numSpeakers, speakerIndexes, lpf, delays|
+    *writeAuxSpeakersDef{ |numSpeakers, speakerIndexes, lpf = 200, hp = 6000, delays|
 		SynthDef(\wfsToAuxSpeakers,{ 
 			var out = In.ar(speakerIndexes,1);
-			out = BLowPass.ar(out, lpf);
+			out = BLowPass.ar(out, lpf) + BHighPass.ar(out, hp);
 			out = DelayL.ar(out, delays, delays);
 			ReplaceOut.ar(numSpeakers, out)
 		 }).writeDefFile   
