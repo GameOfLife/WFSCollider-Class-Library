@@ -9,8 +9,6 @@ if( WFS.previewMode.isNil ) {
 			[ \latencyComp:  	0,		[0,1].asSpec ],
 			[ \dbRollOff:		0,		[ -24, 0, \lin, 1, -6 ].asSpec ],
 			[ \maxAmpRadius:	2,		[ 1, 5, \lin, 0, 2, "m" ].asSpec ],
-			[ \arrayLimit:	1,		[ 0.164, 1, \lin, 0, 1 ].asSpec ],  // better name?
-			[ \crossfadeLag:	0.2,		[ 0, 1, \lin, 0, 0.2 ].asSpec ],
 			[ \dontPause:		false,	BoolSpec( false ) ]
 	] )
 		.category_( \wfs_panner )
@@ -38,14 +36,14 @@ if( WFS.previewMode.isNil ) {
 		.envPut( \init_wfsp, [ \latencyComp, \u_dur ] )
 		.envPut( \set_wfsp, [ 
 			\pointFromBus, \point, \pointLag, \dbRollOff, 
-			\maxAmpRadius, \crossfadeLag, \dontPause,
+			\maxAmpRadius, \dontPause,
 			\u_i_ar_0_bus, \u_i_kr_0_bus, \u_i_kr_1_bus, 
 			\u_doneAction, \u_gain, \u_gate, \u_mute,
 			\u_fadeIn, \u_fadeOut,
 			\u_globalGain,
 			\u_globalEQ_setting, \u_globalEQ_bypass,  
 		] )
-		.envPut( \set_wfsa, [ \arrayLimit, \arrayDbRollOff, \u_i_ar_0_bus, 
+		.envPut( \set_wfsa, [ \arrayDbRollOff, \u_i_ar_0_bus, 
 			\u_i_kr_0_bus, \u_i_kr_1_bus,  
 		] )
 		.createSynthFunc_({ |unit, target, startPos = 0|
@@ -131,8 +129,6 @@ if( WFS.previewMode.isNil ) {
 			[ \latencyComp:  	0,		[0,1].asSpec ],
 			[ \dbRollOff:		0,		[ -24, 0, \lin, 1, -6 ].asSpec ],
 			[ \maxAmpRadius:	2,		[ 1, 5, \lin, 0, 2, "m" ].asSpec ],
-			[ \arrayLimit:	1,		[ 0.164, 1, \lin, 0, 1 ].asSpec ],  // better name?
-			[ \crossfadeLag:	0.2,		[ 0, 1, \lin, 0, 0.2 ].asSpec ],
 			[ \dontPause:		false,	BoolSpec( false ) ]
 	] )
 		.category_( \wfs_panner )
@@ -160,14 +156,14 @@ if( WFS.previewMode.isNil ) {
 		.envPut( \init_wfsp, [ \latencyComp, \u_dur ] )
 		.envPut( \set_wfsp, [ 
 			\pointFromBus, \point, \pointLag, \dbRollOff, 
-			\maxAmpRadius, \crossfadeLag, \dontPause,
+			\maxAmpRadius, \dontPause,
 			\u_i_ar_0_bus, \u_i_kr_0_bus, \u_i_kr_1_bus, 
 			\u_doneAction, \u_gain, \u_gate, \u_mute,
 			\u_fadeIn, \u_fadeOut,
 			\u_globalGain,
 			\u_globalEQ_setting, \u_globalEQ_bypass,  
 		] )
-		.envPut( \set_wfsa, [ \arrayLimit, \arrayDbRollOff, \u_i_ar_0_bus, 
+		.envPut( \set_wfsa, [ \arrayDbRollOff, \u_i_ar_0_bus, 
 			\u_i_kr_0_bus, \u_i_kr_1_bus,  
 		] )
 		.createSynthFunc_({ |unit, target, startPos = 0|

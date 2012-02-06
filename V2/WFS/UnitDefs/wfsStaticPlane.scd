@@ -14,7 +14,6 @@ if( WFS.previewMode.isNil ) {
 			[ \latencyComp:  	0,		[0,1].asSpec ],
 			[ \dbRollOff:		0,		[ -24, 0, \lin, 1, -6 ].asSpec ],
 			[ \maxAmpRadius:	2,		[ 1, 5, \lin, 0, 2, "m" ].asSpec ],
-			[ \arrayLimit:	1,		[ 0.164, 1, \lin, 0, 1 ].asSpec ],  // better name?
 	] )
 	
 		.category_( \wfs_panner )
@@ -48,7 +47,7 @@ if( WFS.previewMode.isNil ) {
 			\u_globalGain,
 			\u_globalEQ_setting, \u_globalEQ_bypass,  
 		] )
-		.envPut( \init_wfsa, [ \arrayLimit, \arrayDbRollOff, \u_i_ar_0_bus, \point ] )
+		.envPut( \init_wfsa, [ \arrayDbRollOff, \u_i_ar_0_bus, \point ] )
 		.createSynthFunc_({ |unit, target, startPos = 0|
 			var server, n = 0;
 			var arrayConfs;
@@ -129,8 +128,7 @@ if( WFS.previewMode.isNil ) {
 			[ \point: 		0@0,  	WFSPointSpec( 200, 0.1 ) ],
 			[ \latencyComp:  	0,		[0,1].asSpec ],
 			[ \dbRollOff:		0,		[ -24, 0, \lin, 1, -6 ].asSpec ],
-			[ \maxAmpRadius:	2,		[ 1, 5, \lin, 0, 2, "m" ].asSpec ],
-			[ \arrayLimit:	1,		[ 0.164, 1, \lin, 0, 1 ].asSpec ],  // better name?
+			[ \maxAmpRadius:	2,		[ 1, 5, \lin, 0, 2, "m" ].asSpec ]
 	] )
 	
 		.category_( \wfs_panner )
@@ -164,7 +162,7 @@ if( WFS.previewMode.isNil ) {
 			\u_globalGain,
 			\u_globalEQ_setting, \u_globalEQ_bypass,  
 		] )
-		.envPut( \init_wfsa, [ \arrayLimit, \arrayDbRollOff, \u_i_ar_0_bus, \point ] )
+		.envPut( \init_wfsa, [ \arrayDbRollOff, \u_i_ar_0_bus, \point ] )
 		.createSynthFunc_({ |unit, target, startPos = 0|
 			var server, n = 0;
 			var prePanSynth;
