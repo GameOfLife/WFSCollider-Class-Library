@@ -54,7 +54,8 @@ WFSPathBuffer : AbstractRichBuffer {
 	 }
 	 
 	wfsPath_ { |new|
-		wfsPath = (new ? wfsPath).asWFSPath2;
+		wfsPath = (new ? wfsPath);
+		if( wfsPath.isWFSPath2.not ) { wfsPath = wfsPath.asWFSPath2 };
 		if( wfsPath.isWFSPath2 ) {
 			numFrames = wfsPath.positions.size;
 		} {
