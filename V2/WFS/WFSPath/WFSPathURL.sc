@@ -114,6 +114,8 @@ WFSPathURL {
 		};
 	}
 	
+	size { ^if( this.wfsPath.notNil ) { this.wfsPath.size } { nil }; }
+	
 	dirty { ^if( this.wfsPath.notNil ) { this.wfsPath.dirty } { true }; }
 	
 	exists { ^this.wfsPath.notNil }

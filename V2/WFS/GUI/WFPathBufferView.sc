@@ -86,6 +86,18 @@ WFSPathBufferView {
 			views[ \miniPlot ].fromBounds = 
 				inWFSPathBuffer.wfsPath.asRect.scale(1@ -1).insetBy(-2,-2);
 			views[ \startSecond ].value = inWFSPathBuffer.startSecond;
+			{
+				if( inWFSPathBuffer.wfsPath.asWFSPath2.notNil ) {
+					views[ \dur ].string = "% (% pts)"
+						.format( 
+							((inWFSPathBuffer.wfsPath.duration - inWFSPathBuffer.startSecond) 
+								/ inWFSPathBuffer.rate).asSMPTEString(1000),
+							inWFSPathBuffer.wfsPath.size - inWFSPathBuffer.startFrame
+						);
+				} {
+					views[ \dur ].string = "--:--:--:--- (- pts)";
+				};
+			}.defer;
 		};
 		views[ \startFrame ].value = inWFSPathBuffer.startFrame;
 		if( inWFSPathBuffer.wfsPath.dirty ) {
@@ -143,7 +155,7 @@ WFSPathBufferView {
 		};
 	}
 	
-	*viewNumLines { ^6 }
+	*viewNumLines { ^7 }
 	
 	makeView { |parent, bounds, resize|
 		
@@ -290,7 +302,7 @@ WFSPathBufferView {
 		
 		views[ \fileLabel ] = StaticText( view, 30 @ viewHeight )
 			.applySkin( RoundView.skin )
-			.align_( \right )
+			.align_( \left )
 			.string_( "file" );
 		
 		views[ \filePath ] = FilePathView( view, 
@@ -300,12 +312,20 @@ WFSPathBufferView {
 				this.performWFSPathBuffer( \filePath_ , fv.value );
 				action.value( this );
 			});	
-
+			
+		views[ \durLabel ] = StaticText( view, 30 @ viewHeight )
+			.applySkin( RoundView.skin )
+			.align_( \left )
+			.string_( "dur" );
+			
+		views[ \dur ] = StaticText( view, (bounds.width - 34) @ viewHeight )
+			.applySkin( RoundView.skin )
+			.string_( "--:--:--:--- (- pts)" );	
 			
 		views[ \startLabel ] = StaticText( view, 30 @ viewHeight )
 			.applySkin( RoundView.skin )
-			.align_( \right )
-			.string_( "start" );
+			.align_( \left )
+			.string_( "offset" );
 		
 		views[ \startComp ] = CompositeView( view, (bounds.width - 82) @ viewHeight )
 			.resize_( 2 );
@@ -333,7 +353,7 @@ WFSPathBufferView {
 			
 		views[ \timeMode ] = PopUpMenu( view, 44 @ viewHeight )
 			.applySkin( RoundView.skin )
-			.items_( [ "s", "fr" ] )
+			.items_( [ "s", "pt" ] )
 			.resize_( 3 )
 			.action_({ |pu|
 				this.class.timeMode = [ \seconds, \frames ][ pu.value ];
@@ -348,6 +368,7 @@ WFSPathBufferView {
 			});
 			
 		views[ \rate ].sliderView.centered_(true);
+		views[ \rate ].labelView.align_( \left );
 					
 		this.setFont;
 	}

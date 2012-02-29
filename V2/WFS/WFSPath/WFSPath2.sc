@@ -153,6 +153,8 @@ WFSPath2 {
 		// note the reversed y axis; 
 		}
 		
+	size { ^positions.size }
+		
 		
 /// TIMES ////////////////////////////////////////
 
