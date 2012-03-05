@@ -14,6 +14,11 @@ Each score can be saved as an xml file.
 ## System Requirements ##
 
 Mac OS X 10.5 or greater
+Depends on:
+
+* the wslib, NetLib and XML quarks.
+* Unit Lib.
+* sc3plugins.
 
 ## Download ##
 
