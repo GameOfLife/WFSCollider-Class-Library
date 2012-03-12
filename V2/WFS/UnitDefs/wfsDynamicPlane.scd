@@ -3,7 +3,7 @@ if( WFS.previewMode.isNil ) {
 	(
 	FreeUdef( \wfsDynamicPlane, [	
 			[ \pointFromBus: 	false,	BoolSpec( false ) ],
-			[ \point: 		0@0,  	WFSPointSpec( 200, 0.1 ) ],
+			[ \point: 		0@0,  	WFSPlaneSpec( 200, 0.1 ) ],
 			[ \pointLag:		0,		[ 0, 5, \lin, 0, 0 ].asSpec ], // lagtime for point
 			[ \quality:		0,		ListSpec([ \normal, \better ], 0 ) ], // for \l or \c
 			[ \latencyComp:  	0,		[0,1].asSpec ],
@@ -123,7 +123,7 @@ if( WFS.previewMode.isNil ) {
 	(
 	FreeUdef( \wfsDynamicPlane, [	
 			[ \pointFromBus: 	false,	BoolSpec( false ) ],
-			[ \point: 		0@0,  	WFSPointSpec( 200, 0.1 ) ],
+			[ \point: 		0@0,  	WFSPlaneSpec( 200, 0.1 ) ],
 			[ \pointLag:		0,		[ 0, 5, \lin, 0, 0 ].asSpec ], // lagtime for point
 			[ \quality:		0,		ListSpec([ \normal, \better ], 0 ) ], // for \l or \c
 			[ \latencyComp:  	0,		[0,1].asSpec ],
