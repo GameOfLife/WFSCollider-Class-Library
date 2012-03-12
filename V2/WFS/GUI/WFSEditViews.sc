@@ -1494,6 +1494,10 @@ WFSPointView : WFSBasicEditView {
 //////// PLANE EDITOR /////////////////////////////////////////////////////////////////
 
 WFSPlaneView : WFSPointView {
+	
+	init {
+		this.editMode = \rotateS;
+	}
 
 	drawContents { |scale = 1|
 		var points, controls;

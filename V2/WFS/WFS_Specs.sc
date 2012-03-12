@@ -366,7 +366,7 @@ WFSPointSpec : PointSpec {
 			.action_({
 				var editor;
 				if( vws[ \editor ].isNil or: { vws[ \editor ].isClosed } ) {
-					editor = WFSPointView( object: [ vws[ \val ] ] )
+					editor = this.editorClass.new( object: [ vws[ \val ] ] )
 						.canChangeAmount_( false )
 						.action_( editAction )
 						.onClose_({ 
@@ -444,6 +444,8 @@ WFSPointSpec : PointSpec {
 		if( active ) { view[ \x ].doAction };
 	}
 	
+	editorClass { ^WFSPointView }
+	
 	mapSetView { |view, value, active = false|
 		this.setView( view, this.map( value ), active );
 	}
@@ -460,6 +462,17 @@ WFSPointSpec : PointSpec {
 		^params;
 	}
 
+}
+
+WFSPlaneSpec : WFSPointSpec {
+	
+	classvar <>defaultMode = \deg_cw;
+	
+	editorClass { ^WFSPlaneView }
+	
+	massEditSpec { |inArray|
+		^WFSMultiPlaneSpec( rect, step, inArray, units, mode ); 
+	}
 }
 
 WFSMultiPointSpec : PointSpec {
@@ -528,7 +541,7 @@ WFSMultiPointSpec : PointSpec {
 			.action_({
 				var editor;
 				if( vws[ \editor ].isNil or: { vws[ \editor ].isClosed } ) {
-					editor = WFSPointView( object: vws[ \val ] )
+					editor = this.editorClass.new( object: vws[ \val ] )
 						.canChangeAmount_( false )
 						.action_( editAction )
 						.onClose_({ 
@@ -559,7 +572,16 @@ WFSMultiPointSpec : PointSpec {
 		};
 	}
 	
+	editorClass { ^WFSPointView }
 }
+
+WFSMultiPlaneSpec : WFSMultiPointSpec {
+	
+	classvar <>defaultMode = \deg_cw;
+	
+	editorClass { ^WFSPlaneView }
+}
+
 
 WFSRectSpec : RectSpec {
 	
