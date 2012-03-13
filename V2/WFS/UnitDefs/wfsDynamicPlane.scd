@@ -7,7 +7,7 @@ if( WFS.previewMode.isNil ) {
 			[ \pointLag:		0,		[ 0, 5, \lin, 0, 0 ].asSpec ], // lagtime for point
 			[ \quality:		0,		ListSpec([ \normal, \better ], 0 ) ], // for \l or \c
 			[ \latencyComp:  	0,		[0,1].asSpec ],
-			[ \dbRollOff:		0,		[ -24, 0, \lin, 1, -6 ].asSpec ],
+			[ \dbRollOff:		0,		[ -24, 0, \lin, 1, 0 ].asSpec ],
 			[ \maxAmpRadius:	2,		[ 1, 5, \lin, 0, 2, "m" ].asSpec ],
 			[ \dontPause:		false,	BoolSpec( false ) ]
 	] )
@@ -127,7 +127,7 @@ if( WFS.previewMode.isNil ) {
 			[ \pointLag:		0,		[ 0, 5, \lin, 0, 0 ].asSpec ], // lagtime for point
 			[ \quality:		0,		ListSpec([ \normal, \better ], 0 ) ], // for \l or \c
 			[ \latencyComp:  	0,		[0,1].asSpec ],
-			[ \dbRollOff:		0,		[ -24, 0, \lin, 1, -6 ].asSpec ],
+			[ \dbRollOff:		0,		[ -24, 0, \lin, 1, 0 ].asSpec ],
 			[ \maxAmpRadius:	2,		[ 1, 5, \lin, 0, 2, "m" ].asSpec ],
 			[ \dontPause:		false,	BoolSpec( false ) ]
 	] )

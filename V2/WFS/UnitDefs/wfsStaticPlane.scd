@@ -12,7 +12,7 @@ if( WFS.previewMode.isNil ) {
 	FreeUdef( \wfsStaticPlane, [
 			[ \point: 		0@0,  	WFSPlaneSpec( 200, 0.1 ) ],
 			[ \latencyComp:  	0,		[0,1].asSpec ],
-			[ \dbRollOff:		0,		[ -24, 0, \lin, 1, -6 ].asSpec ],
+			[ \dbRollOff:		0,		[ -24, 0, \lin, 1, 0 ].asSpec ],
 			[ \maxAmpRadius:	2,		[ 1, 5, \lin, 0, 2, "m" ].asSpec ],
 	] )
 	
@@ -127,7 +127,7 @@ if( WFS.previewMode.isNil ) {
 	FreeUdef( \wfsStaticPlane, [
 			[ \point: 		0@0,  	WFSPlaneSpec( 200, 0.1 ) ],
 			[ \latencyComp:  	0,		[0,1].asSpec ],
-			[ \dbRollOff:		0,		[ -24, 0, \lin, 1, -6 ].asSpec ],
+			[ \dbRollOff:		0,		[ -24, 0, \lin, 1, 0 ].asSpec ],
 			[ \maxAmpRadius:	2,		[ 1, 5, \lin, 0, 2, "m" ].asSpec ]
 	] )
 	
