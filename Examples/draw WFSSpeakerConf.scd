@@ -2,8 +2,9 @@
 c = WFSSpeakerConf.rect( 48, 48, 5, 5 );
 m = \lines;
 a = \point;
-p = 0@7.5;
-t = 5/344;
+p = 0@7.5; // position
+t = 5/344; // time
+l = 0@2; // listener position (optional)
 w = ScaledUserView.window( "WFSSpeakerConf", 
 	Rect( 128, 64, 400, 400 ), 
 	Rect.aboutPoint( 0@0, 20, 20 );
@@ -21,13 +22,13 @@ w.mouseMoveAction = { |vw, x, y|
 w.drawFunc = { 
 	var speakerLines, speakerPoints, prePan, crossfader, crossfades, arrayPan;
 	var corners, polar, p1, p2, clip = true;
+	var showWaveFronts = true, showListener = false;
 	c.draw(m);
 	corners = c.arrayConfs.collect(_.cornerPoints).flop[0];
 	
 	Pen.use({ 
 		Pen.scale( 1, -1 );
 		Pen.addArc( p, 0.164, 0, 2pi ).fill;
-		
 		
 		Pen.line( 0.2@0, -0.2@0 ).line( 0 @ 0.2, 0 @ -0.2 ).stroke;
 		
@@ -68,16 +69,31 @@ w.drawFunc = {
 			});
 		};
 		
-		arrayPan.collect({ |times, i|
-			var color;
-			color = Color.blue(0.5).alpha_(crossfades[i]);
-			times = times.flop.flop;
-			speakerPoints[i].do({ |sp, ii|
-				Pen.color = color.copy.alpha_( (color.alpha * times[1][ii]).sqrt);
-				Pen.addArc( sp, ((t - times[0][ii] )*344).max(0), 
-					speakerLines[i].angle+0.5pi, pi ).stroke;
+		if( showWaveFronts ) {	
+			arrayPan.collect({ |times, i|
+				var color;
+				color = Color.blue(0.5).alpha_(crossfades[i]);
+				times = times.flop.flop;
+				speakerPoints[i].do({ |sp, ii|
+					Pen.color = color.copy.alpha_( (color.alpha * times[1][ii]).sqrt);
+					Pen.addArc( sp, ((t - times[0][ii] )*344).max(0), 
+						speakerLines[i].angle+0.5pi, pi ).stroke;
+				});
 			});
-		});
+		};
+		
+		if( showListener ) { // draws a head of a listener at actual size
+			Pen.fillColor = Color.white;
+			Pen.strokeColor = Color.black;
+			Pen.width = 1/50;
+			Pen.addArc( l, 0.2/2, 0.6pi, 1.8pi );
+			Pen.line( Polar(0.2/2, 0.6pi).asPoint + l, l + (0@0.125) );
+			Pen.lineTo( Polar(0.2/2, 0.4pi).asPoint + l);
+			Pen.fillStroke;
+			Pen.addArc( l + ((0.2/2)@0), 0.025, 0, 2pi );
+			Pen.addArc(l - ((0.2/2)@0), 0.025, 0, 2pi );
+			Pen.fillStroke;
+		};
 		
 	});
 };
@@ -86,18 +102,24 @@ w.drawFunc = {
 w.scale = 2;
 );
 
+// different settings
 c = WFSSpeakerConf.rect( 40, 56, 6, 4 ); w.refresh; // rectangular setup
-c = WFSSpeakerConf.rect( 48, 48, 5, 5 ); w.refresh;
 c = WFSSpeakerConf.polygon( 6, 5, 192 ); w.refresh;
 
 ( // single array setup
 c = WFSSpeakerConf( [ 64, 5, 0.5pi, 0, 0.164 ] ); 
 WFSArrayPan.useFocusFades = false;
+w.refresh;
 )
 
-WFSArrayPan.useFocusFades = true; // back to default (for closed setups)
+( // default setup (Game Of Life, 192sp)
+c = WFSSpeakerConf.rect( 48, 48, 5, 5 );
+WFSArrayPan.useFocusFades = true; // (for closed setups)
+w.refresh;
+)
 
 m = \points; w.refresh; // change plot mode
+m = \none; w.refresh; // hide speakers
 m = \lines; w.refresh;
 
 a = \point; w.refresh; // show point
