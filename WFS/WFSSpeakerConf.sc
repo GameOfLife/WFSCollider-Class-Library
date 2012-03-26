@@ -105,6 +105,7 @@ WFSArrayConf { // configuration for one single speaker array
 		cornerAngles[0] = (angle - aWFSArrayConf.angle).wrap(-pi,pi).abs;
 		corners[0] = ( dist - ( aWFSArrayConf.dist/ cos(cornerAngles[0]) ) )
 			/ tan(cornerAngles[0]).neg;
+		if( corners[0].isNaN ) { corners[0] = 200 };
 		
 	}
 	
@@ -113,6 +114,7 @@ WFSArrayConf { // configuration for one single speaker array
 		cornerAngles[1] = (angle - aWFSArrayConf.angle).wrap(-pi,pi).abs;
 		corners[1] =  ( dist - ( aWFSArrayConf.dist/ cos(cornerAngles[1]) ) )
 			/ tan(cornerAngles[1]);
+		if( corners[1].isNaN ) { corners[1] = -200 };
 	}
 	
 	
