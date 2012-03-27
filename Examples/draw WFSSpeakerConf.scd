@@ -5,10 +5,17 @@ a = \point;
 p = 0@7.5; // position
 t = 5/344; // time
 l = 0@2; // listener position (optional)
-w = ScaledUserView.window( "WFSSpeakerConf", 
-	Rect( 128, 64, 400, 400 ), 
+~win = Window("WFS preview", Rect(200,200,600,620)).front;
+~win.addFlowLayout(0@0,0@0);
+w = ScaledUserView.withSliders(~win,  
+	Rect( 128, 64, 600, 600 ), 
 	Rect.aboutPoint( 0@0, 20, 20 );
 );
+Slider(~win, Rect(100,100,600,20))
+	.action_{ |v|
+		t = v.value.linlin(0.0, 1.0, -10.0/344 , 10/344); w.refresh;
+	};
+	
 w.keepRatio = true;
 
 w.mouseDownAction = { |vw, x, y|
