@@ -222,7 +222,7 @@ WFSPathBufferView {
 			.action_({ |bt|
 				WFSPathView( )
 					.path_( wfsPathBuffer.wfsPath )
-					.editMode_( \none )
+					.editMode_( \lock )
 					.mouseMode_( \zoom );
 			});
 		
