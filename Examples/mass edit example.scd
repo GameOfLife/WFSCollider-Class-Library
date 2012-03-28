@@ -17,25 +17,25 @@ z.gui;
 
 // create 10 similar uchains
 (
-y = 10.collect({ 
+y = 10.collect({ |i|
 	UChain( 
 		[ 
 			[ \sine, [ \freq, 220 rrand: 880, \amp, 0.1 rrand: 0.5 ] ],
-			[ \whitenoise, [ \amp, 0.1 rrand: 0.5 ] ]
+			[ \whiteNoise, [ \amp, 0.1 rrand: 0.5 ] ]
 		].choose,
 		\output
 	)
+	.track_(i)
 	.dur_( 2 rrand: 10 )
 	.setGain( -10 rrand: 10 );
 });
 
+a = UScore(*y);
 
 )
 
 // show them all in a window
-w = Window("mass-edit", Rect(571, 101, 360, 381), scroll: true).front;
-w.addFlowLayout;
-y.do(_.gui(w));
+a.gui;
 
 // create a mass editor
 z = MassEditUChain( y );
