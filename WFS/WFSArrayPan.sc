@@ -376,6 +376,7 @@ WFSArrayPan : WFSBasicArrayPan {
 	*/
 	
 	classvar <>useFocusFades = true; // need to rebuild synthdefs after changing this
+	classvar <>tapering = 0;
 	
 	var <>focus; // nil, true or false
 	var <>dbRollOff = -9; // per speaker roll-off
@@ -418,6 +419,13 @@ WFSArrayPan : WFSBasicArrayPan {
 		
 		// ------- calculate amplitudes --------
 		amplitudes = distances.pow(dbRollOff/6).min( limit.pow(dbRollOff/6) );
+		
+		// apply tapering
+		amplitudes = amplitudes * (1..n).fold(0,(n/2) + 0.5)
+				.linlin(0, (n+1) * tapering, -0.5pi, 0.5pi )
+				.sin
+				.linlin(-1,1,0,1);
+		
 		amplitudes = amplitudes * ( mul / amplitudes.sum ); // normalize amps (sum == mul)
 		
 		// focus crossfades (per speaker, dependent on angle)
