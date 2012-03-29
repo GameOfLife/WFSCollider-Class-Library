@@ -10,13 +10,14 @@ l = 0@2; // listener position (optional)
 w = ScaledUserView.withSliders(~win,  
 	Rect( 128, 64, 600, 600 ), 
 	Rect.aboutPoint( 0@0, 20, 20 );
-);
+).resize_(5);
 SmoothSlider(~win, Rect(100,100,600,20))
 	.action_{ |v|
 		t = v.value.linlin(0.0, 1.0, -10.0/344 , 10/344); w.refresh;
 	}
 	.centered_(true)
-	.value_( 0.75 );
+	.value_( 0.75 )
+	.resize_(8);
 	
 w.keepRatio = true;
 
