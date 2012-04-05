@@ -98,6 +98,7 @@ WFSPathURL {
 	
 	url { ^url.asString }
 	
+	filePath { ^this.doesNotUnderstand( \filePath ) ?? { this.url; } }
 	
 	doesNotUnderstand { |selector ...args|
 		var res, wfsPath;

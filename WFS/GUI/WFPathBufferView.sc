@@ -78,13 +78,18 @@ WFSPathBufferView {
 	}
 	
 	setViews { |inWFSPathBuffer|
+		var rect;
 		// views[ \name ].value = inWFSPathBuffer.name ? "";
 		views[ \filePath ].value = inWFSPathBuffer.filePath;
 		views[ \loop ].value = inWFSPathBuffer.loop.binaryValue;
 		views[ \rate ].value = inWFSPathBuffer.rate;
 		if( inWFSPathBuffer.wfsPath.isWFSPath2 ) {
-			views[ \miniPlot ].fromBounds = 
-				inWFSPathBuffer.wfsPath.asRect.scale(1@ -1).insetBy(-2,-2);
+			rect = inWFSPathBuffer.wfsPath.asRect;
+			if( rect.notNil ) {
+				views[ \miniPlot ].fromBounds = rect.scale(1@ -1).insetBy(-2,-2);
+			} {
+				views[ \miniPlot ].fromBounds = Rect(0,0,20,20);
+			};
 			views[ \startSecond ].value = inWFSPathBuffer.startSecond;
 			{
 				if( inWFSPathBuffer.wfsPath.asWFSPath2.notNil ) {
@@ -184,6 +189,10 @@ WFSPathBufferView {
 					}).draw;
 					
 					path.asWFSPath2.draw( 1, pixelScale: vw.pixelScale * 1.5);
+				} {
+					Pen.font = Font( Font.defaultSansFace, 16 );
+					Pen.color = Color.red(0.66);
+					Pen.stringAtPoint( "?", 5@0 );
 				};
 			});
 		
