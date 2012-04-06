@@ -128,10 +128,10 @@
 					\fold, {
 						oldTimes = path.times ++ [ path.times.last ];
 						newPos = n.collect({ |i|
-							path.positions.foldAt( i );
+							path.positions.foldAt( i ).copy;
 						});
 						newTimes = n.collect({ |i|
-							oldTimes.wrapAt( i );
+							oldTimes.foldAt( i );
 						});
 						newTimes.pop;
 						oldTimes.pop;
