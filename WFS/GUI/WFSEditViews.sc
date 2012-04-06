@@ -1270,6 +1270,11 @@ WFSPointView : WFSBasicEditView {
 		this.changed( \labels ); 
 	}
 	
+	objectAndLabels_ { |object, inLabels|
+		labels = inLabels.asCollection;
+		this.object = object;
+	}
+	
 	
 	drawContents { |scale = 1|
 		var points, controls;
