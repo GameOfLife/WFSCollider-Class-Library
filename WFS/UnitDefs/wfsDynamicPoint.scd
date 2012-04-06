@@ -8,7 +8,6 @@ def = FreeUdef( \wfsDynamicPoint, [
 		[ \latencyComp:  	0,		[0,1].asSpec ],
 		[ \dbRollOff:		-6,		[ -24, 0, \lin, 1, -6 ].asSpec ],
 		[ \maxAmpRadius:	2,		[ 1, 5, \lin, 0, 2, "m" ].asSpec ],
-		[ \arrayLimit:	1,		[ 0.164, 1, \lin, 0, 1 ].asSpec ],  // better name?
 		[ \crossfadeLag:	0.2,		[ 0, 1, \lin, 0, 0.2 ].asSpec ],
 		[ \dontPause:		false,	BoolSpec( false ) ]
 	] ).category_( \wfs_panner )
@@ -43,9 +42,7 @@ def = FreeUdef( \wfsDynamicPoint, [
 		\u_globalGain,
 		\u_globalEQ_setting, \u_globalEQ_bypass,  
 	] )
-	.envPut( \set_wfsa, [ \arrayLimit, \arrayDbRollOff, \u_i_ar_0_bus, 
-		\u_i_kr_0_bus, \u_i_kr_1_bus,  
-	] )
+	.envPut( \set_wfsa, [ \u_i_ar_0_bus, \u_i_kr_0_bus, \u_i_kr_1_bus ] )
 	.addUEnv
 	.addUGlobalEQ
 	.addUIO( UIn, \ar, 0, 1 )
@@ -103,7 +100,8 @@ if( WFS.previewMode.isNil ) {
 			server.sendMsg( *sn.newMsg( arrayGroup, [ 
 					\arrayConf, arrayConfs[i], 
 					\levelBus, normalLevelBuses[i],
-					\outOffset, n
+					\outOffset, n,
+					\arrayLimit, WFSSpeakerConf.default.arrayLimit
 				] ++ unit.def.env.getInitArgsFor( \wfsa, unit.args, server, startPos ), 
 				\addToTail ) 
 			);
@@ -115,7 +113,8 @@ if( WFS.previewMode.isNil ) {
 			server.sendMsg( *sn.newMsg( arrayGroup, [ 
 					\arrayConf, arrayConfs[i], 
 					\levelBus, focusLevelBuses[i],
-					\outOffset, n
+					\outOffset, n,
+					\arrayLimit, WFSSpeakerConf.default.arrayLimit
 				] ++ unit.def.env.getInitArgsFor( \wfsa, unit.args, server, startPos ), 
 				\addToTail ) 
 			);

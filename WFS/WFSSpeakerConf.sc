@@ -215,6 +215,7 @@ WFSSpeakerConf {
 	classvar <>default;
 	
 	var <>arrayConfs;
+	var <>arrayLimit = 1;
 	
 	*new { |...args|
 		^super.newCopyArgs().arrayConfs_( args.collect(_.asWFSArrayConf) ).init;
@@ -346,5 +347,9 @@ WFSSpeakerConf {
 	}
 	
 	storeArgs { ^arrayConfs.collect(_.storeArgs) }
-	
+	storeModifiersOn { |stream|
+		if( arrayLimit != 1 ) {
+			stream << ".arrayLimit_( " << arrayLimit << " )";
+		};
+	}
 }

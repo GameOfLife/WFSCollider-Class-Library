@@ -18,7 +18,6 @@ def = FreeUdef( \wfsStaticPoint, [
 		[ \latencyComp:  	0,		[0,1].asSpec ],
 		[ \dbRollOff:		-6,		[ -24, 0, \lin, 1, -6 ].asSpec ],
 		[ \maxAmpRadius:	2,		[ 1, 5, \lin, 0, 2, "m" ].asSpec ],
-		[ \arrayLimit:	1,		[ 0.164, 1, \lin, 0, 1 ].asSpec ],  // better name?
 	] )
 	.category_( \wfs_panner )
 	// first a few general things
@@ -51,7 +50,7 @@ def = FreeUdef( \wfsStaticPoint, [
 		\u_globalGain,
 		\u_globalEQ_setting, \u_globalEQ_bypass, 
 	] )
-	.envPut( \init_wfsa, [ \arrayLimit, \arrayDbRollOff, \u_i_ar_0_bus, \point ] )
+	.envPut( \init_wfsa, [ \u_i_ar_0_bus, \point ] )
 	.addUEnv
 	.addUGlobalEQ
 	.addUIO( UIn, \ar, 0, 1 );
@@ -91,7 +90,8 @@ if( WFS.previewMode.isNil ) {
 				normalSynths = normalSynths.add(							Synth( defNames[0] ++ ac.n, [ 
 							\arrayConf, ac, 
 							\outOffset, n,
-							\amp, normalLevels[i]
+							\amp, normalLevels[i],
+							\arrayLimit, WFSSpeakerConf.default.arrayLimit,
 						] ++ unit.def.env.getInitArgsFor( \wfsa, unit.args, server, startPos ), 
 						arrayGroup, addAction: \addToTail 
 					) 
@@ -106,7 +106,8 @@ if( WFS.previewMode.isNil ) {
 				focusSynths = focusSynths.add(							Synth( defNames[1] ++ ac.n, [ 
 							\arrayConf, ac, 
 							\outOffset, n,
-							\amp, focusLevels[i]
+							\amp, focusLevels[i],
+							\arrayLimit, WFSSpeakerConf.default.arrayLimit,
 						] ++ unit.def.env.getInitArgsFor( \wfsa, unit.args, server, startPos ), 
 						arrayGroup, addAction: \addToTail 
 					) 
