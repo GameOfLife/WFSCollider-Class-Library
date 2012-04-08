@@ -69,7 +69,7 @@
 			\plane, {
 				units.add( U( \wfsStaticPlane, [ 
 					\point, wfsPath.asPoint,
-					\dbRolloff, -6 // this mimicks the old behaviour
+					\dbRollOff, -6 // this mimicks the old behaviour
 				] ) );
 			},
 			\index, {
