@@ -68,7 +68,7 @@
 			},
 			\plane, {
 				units.add( U( \wfsStaticPlane, [ 
-					\point, wfsPath.asPoint,
+					\point, wfsPath.distance_(wfsPath.distance.max(1.0e-12)).asPoint,
 					\dbRollOff, -6 // this mimicks the old behaviour
 				] ) );
 			},
