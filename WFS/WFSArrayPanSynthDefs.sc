@@ -97,6 +97,7 @@ WFSArrayPanSynthDefs {
 				};
 			};
 			
+			gain = \gain.kr( gain );
 			input = UIn.ar(0, 1) * gain * amp;
 			
 			if( type === \p ) {

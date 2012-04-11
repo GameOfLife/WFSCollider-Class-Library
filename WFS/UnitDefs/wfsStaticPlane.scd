@@ -62,6 +62,7 @@ if( WFS.previewMode.isNil ) {
 		var planeSynths = [];
 		var defName;
 		var crossfader;
+		var planeWaveMakeUpGain;
 		
 		server = target.asTarget.server;
 		
@@ -80,6 +81,8 @@ if( WFS.previewMode.isNil ) {
 			arrayGroup, addAction: \addBefore
 		);
 		
+		planeWaveMakeUpGain = WFSSpeakerConf.default.planeWaveMakeUpGain;
+		
 		// make the panner synths
 		n = 0;
 		arrayConfs.do({ |ac, i|
@@ -87,7 +90,8 @@ if( WFS.previewMode.isNil ) {
 				planeSynths = planeSynths.add(							Synth( defName ++ ac.n, [ 
 							\arrayConf, ac, 
 							\outOffset, n,
-							\amp, planeLevels[i]
+							\amp, planeLevels[i],
+							\gain, planeWaveMakeUpGain
 						] ++ unit.def.env.getInitArgsFor( \wfsa, unit.args, server, startPos ), 
 						arrayGroup, addAction: \addToTail 
 					) 

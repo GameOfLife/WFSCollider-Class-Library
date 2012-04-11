@@ -229,6 +229,8 @@ WFSSpeakerConf {
 		});
 	}
 	
+	planeWaveMakeUpGain { ^48 / arrayConfs.collect(_.n).mean } // gain if array size != 48
+	
 	// fast creation
 	*rect { |nx = 48, ny, dx = 5, dy| // dx/dy: radius (i.e. from center to array)
 		ny = ny ? nx;
