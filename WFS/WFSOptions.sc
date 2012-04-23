@@ -1,4 +1,47 @@
-WFSMultiServerOptions {
+AbstractWFSOptions {
+	
+	*fromPreset { |name| ^this.presets[ name ].copy; }
+	
+	== { |that| // use === for identity
+		^this.compareObject(that);
+	}
+	
+	storeOn { arg stream;
+		stream << this.class.name;
+		this.storeModifiersOn(stream);
+	}
+	
+	storeModifiersOn { |stream|
+		var preset;
+		preset = this.class.presets.findKeyForValue(this);
+		if( preset.notNil ) {
+			stream << ".fromPreset(" <<< preset << ")";
+		} {	
+			stream << "()";
+			this.class.instVarNames.do({ |item, i|
+				if( this.perform( item ) != this.class.iprototype[i] ) {
+					stream << "\n\t." << item << "_(" <<< this.perform( item ) << ")";
+				};
+			});
+		}
+	}
+	
+}
+
+WFSMasterOptions : AbstractWFSOptions {
+	
+	var <>port = 57999;
+	var <>toServersBus = 14;
+	var <>numOutputBusChannels = 20;
+	var <>numInputBusChannels = 20;
+	var <>device;
+	var <>useForWFS = false;
+	
+	*presets { ^Dictionary[] }
+		
+}
+
+WFSServerOptions : AbstractWFSOptions {
 	
 	classvar <>presets;
 	
@@ -8,63 +51,36 @@ WFSMultiServerOptions {
 	var <>n = 8;
 	var <>numOutputBusChannels = 96;
 	var <>numInputBusChannels = 8;
-	var <>device;
+	var <>device = "JackRouter";
 	
 	*initClass {
-		presets = ( 
-			'game_of_life_1': WFSMultiServerOptions()
+		presets = Dictionary[
+			'game_of_life_1'-> WFSServerOptions()
 				.name_( "Game Of Life 1" )
-				.ip_( "192.168.2.11" )
-				.startPort_( 58000 )
-				.n_( 8 )
-				.numOutputBusChannels_( 96 )
-				.numOutputBusChannels_( 8 )
-				.device_( "JackRouter" ),
-			'game_of_life_2': WFSMultiServerOptions()
+				.ip_( "192.168.2.11" ),
+			'game_of_life_2'-> WFSServerOptions()
 				.name_( "Game Of Life 2" )
-				.ip_( "192.168.2.12" )
-				.startPort_( 58000 )
-				.n_( 8 )
-				.numOutputBusChannels_( 96 )
-				.numInputBusChannels_( 8 )
-				.device_( "JackRouter" ),
-			'sampl': WFSMultiServerOptions()
+				.ip_( "192.168.2.12" ),
+			'sampl'-> WFSServerOptions()
 				.name_( "SamPL WFS" )
 				.ip_( "127.0.0.1" )
-				.startPort_( 58000 )
 				.n_( 4 )
 				.numOutputBusChannels_( 32 )
 				.numInputBusChannels_( 32 )
-				.device_( nil ),
-			'bea7': WFSMultiServerOptions()
+				.device_( "PreSonus FireStudio" ),
+			'bea7'-> WFSServerOptions()
 				.name_( "BEA7 WFS" )
 				.ip_( "127.0.0.1" )
-				.startPort_( 58000 )
 				.n_( 6 )
 				.numOutputBusChannels_( 128 )
 				.numInputBusChannels_( 128 )
-				.device_( nil )
-		);	
-	}
-	
-	*fromPreset { |name| ^presets[ name ]; }
-	
-	storeModifiersOn { |stream|
-		
+				.device_( nil ) // ?
+		];	
 	}
 	
 }
 
-WFSMasterOptions {
-	
-	var <>toServersBus = 14;
-	var <>numOutputBusChannels = 20;
-	var <>numInputBusChannels = 20;
-	var <>device;
-	
-}
-
-WFSOptions {
+WFSOptions : AbstractWFSOptions {
 	
 	classvar <>presets;
 	classvar <>current;
@@ -79,38 +95,35 @@ WFSOptions {
 	}
 	
 	*initClass {
-		Class.initClassTree( WFSMultiServerOptions );
-		presets = ( 
-			'game_of_life_master': WFSOptions()
+		Class.initClassTree( WFSServerOptions );
+		presets = Dictionary[
+			'game_of_life_master'-> WFSOptions()
 				.masterOptions_(
 					WFSMasterOptions()
 						.toServersBus_(14)
 						.numOutputBusChannels_(20)
 						.device_( "MOTU 828mk2" )					)
 				.serverOptions_([	
-					WFSMultiServerOptions.fromPreset( 'game_of_life_1' ),
-					WFSMultiServerOptions.fromPreset( 'game_of_life_2' )
+					WFSServerOptions.fromPreset( 'game_of_life_1' ),
+					WFSServerOptions.fromPreset( 'game_of_life_2' )
 				]),
-			'sampl': WFSOptions()
-				.serverOptions_([
-					WFSMultiServerOptions.fromPreset( 'sampl' )
-				]),
-			'bea7_client':  WFSOptions()
+			'game_of_life_server'-> WFSOptions()
 				.serverOptions_([	
-					WFSMultiServerOptions.fromPreset( 'bea7' )
+					WFSServerOptions()
+				]),
+			'sampl'-> WFSOptions()
+				.serverOptions_([
+					WFSServerOptions.fromPreset( 'sampl' )
+				]),
+			'bea7_client'->  WFSOptions()
+				.serverOptions_([	
+					WFSServerOptions.fromPreset( 'bea7' )
 						.ip_( "192.168.2.11" ) // ?
 				]),
-			'bea7_server':  WFSOptions()
+			'bea7_server'->  WFSOptions()
 				.serverOptions_([	
-					WFSMultiServerOptions.fromPreset( 'bea7' )
+					WFSServerOptions.fromPreset( 'bea7' )
 				])
-		);	
-	}
-	
-	*fromPreset { |name| ^presets[ name ]; }
-	
-	storeModifiersOn { |stream|
-		
-	}
-	
+		];	
+	}	
 }
