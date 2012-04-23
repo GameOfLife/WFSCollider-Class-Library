@@ -40,6 +40,7 @@ w.drawFunc = {
 		Pen.scale( 1, -1 );
 		Pen.addArc( p, 0.164, 0, 2pi ).fill;
 		
+		Pen.width = 0.164;
 		Pen.line( 0.2@0, -0.2@0 ).line( 0 @ 0.2, 0 @ -0.2 ).stroke;
 		
 		Pen.color = Color.red(0.5).alpha_(0.25); 
