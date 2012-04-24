@@ -120,8 +120,10 @@ WFSServers {
 	
 	boot { if( masterServer.notNil )
 			{ masterServer.boot; };
-		multiServers.do( _.boot(10) );
-		}
+		multiServers.do({ |ms|
+			if( ms[0].options.device == "JackRouter" ) { ms.boot(10) } { ms.boot(0) }
+		});
+	}
 	
 	cmdPeriod { Server.freeAllRemote( false ); }
 	
