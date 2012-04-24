@@ -4,6 +4,10 @@ WFSLib {
 		var defs, servers, o;
 		var bootFunc;
 		
+		this.loadOldPrefs;
+		this.loadPrefs;
+		
+				
 		if( WFSSpeakerConf.default.isNil ) {
 			WFSSpeakerConf.default = WFSSpeakerConf.fromPreset( \default );
 		};
@@ -18,7 +22,10 @@ WFSLib {
 					wfsOptions.serverOptions.collect(_.ip),
 					wfsOptions.serverOptions.collect(_.startPort),
 					wfsOptions.serverOptions[0].n
-				).makeDefault;
+				)
+				.hostNames_( wfsOptions.serverOptions.collect(_.name) )
+				.makeDefault;
+				
 				WFSPathBuffer.writeServers = WFSServers.default.multiServers.collect(_[0]);
 			} {
 				WFSServers.single( ).makeDefault;
@@ -104,9 +111,11 @@ WFSLib {
 		
 		ULib.servers = servers;
 		
-		if( wfsOptions.showGUI ) {
-			
+		if( wfsOptions.showServerWindow ) {
 			WFSServers.default.makeWindow;
+		};
+		
+		if( wfsOptions.showGUI ) {
 			
 			if(thisProcess.platform.class.asSymbol == 'OSXPlatform') {
 			    UMenuBar();
@@ -116,8 +125,78 @@ WFSLib {
 			UGlobalEQ.gui;
 		};
 		
-		WFSServers.default.boot;
-		 
+	  WFSSynthDefs.generateAllOnce({
+	  	WFSServers.default.boot;
+	  });
+	  
+	  if( wfsOptions.playSoundWhenReady ) {
+		  
+	  };
+	  		 
+	}
+	
+	*loadPrefs {
+		var path;
+		if( File.exists( File.getcwd +/+ "preferences.scd" ) ) {
+			path =  File.getcwd +/+ "preferences.scd";
+		} {
+			if( File.exists( 
+				"/Library/Application Support/WFSCollider/preferences.scd" 
+			)) {
+				path = "/Library/Application Support/WFSCollider/preferences.scd";
+			};
+		};
+		if( path.notNil ) { path.load };
+	}
+	
+	*writePrefs { |dir|
+		var file;
+		dir = dir ? "/Library/Application Support/WFSCollider";
+		dir.makeDir;
+		// TODO
+	}
+	
+	*loadOldPrefs {
+		var file, dict;
+		if( File.exists( 
+			"/Library/Application Support/WFSCollider/WFSCollider_configuration.txt" 
+		) ) {
+			file = File(
+				"/Library/Application Support/WFSCollider/WFSCollider_configuration.txt","r"
+			);
+			dict = file.readAllString.interpret;
+			file.close;
+			
+			WFSSpeakerConf.rect( *dict[\speakConf] * [1,1,0.5,0.5] ).makeDefault;
+			
+			if(dict[\hostname].notNil){
+				"starting server mode".postln;
+				WFSOptions.fromPreset( 'game_of_life_server' );
+			};
+			
+			if(dict[\ips].notNil){
+				"starting client mode".postln;
+				WFSOptions()
+					.masterOptions_(
+						WFSMasterOptions()
+							.toServersBus_(14)
+							.numOutputBusChannels_(20)
+							.device_( dict[\soundCard] ? "MOTU 828mk2" )					)
+					.serverOptions_(
+						dict[ \ips ].collect({ |ip, i|
+							var startport;
+							if( dict[\startPorts].notNil ) {
+								startport = dict[\startPorts].asCollection.wrapAt(i);
+							};
+							WFSServerOptions()
+								.ip_( ip )
+								.n_( dict[\scsynthsPerSystem] ? 8 )
+								.startPort_(  startport ? 58000 )
+								.name_( dict[ \hostnames ][i] );
+						})
+					);
+			};	
+		};	
 	}
 	
 }

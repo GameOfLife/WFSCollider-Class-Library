@@ -90,7 +90,9 @@ WFSOptions : AbstractWFSOptions {
 	var <>masterOptions;
 	var <>serverOptions = #[];
 	var <>showGUI = true;
+	var <>showServerWindow = true;
 	var <>previewMode = nil;
+	var <>playSoundWhenReady = false;
 	
 	*new { ^super.new.init; }
 	
@@ -123,7 +125,8 @@ WFSOptions : AbstractWFSOptions {
 				.serverOptions_([	
 					WFSServerOptions()
 				])
-				.showGUI_( false ),
+				.showGUI_( false )
+				.playSoundWhenReady_( true ),
 			'sampl'-> WFSOptions()
 				.serverOptions_([
 					WFSServerOptions.fromPreset( 'sampl' )
