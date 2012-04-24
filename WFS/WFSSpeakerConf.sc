@@ -93,6 +93,10 @@ WFSArrayConf { // configuration for one single speaker array
 			.init;
 	}
 	
+	== { |that| // use === for identity
+		^this.compareObject(that);
+	}
+	
 	init {
 		corners = [ dist, dist.neg ]; // assumes square setup
 		cornerAngles = [ 0.5pi, 0.5pi ]; // assumes rectangular setup
@@ -213,9 +217,21 @@ WFSSpeakerConf {
 	
 	classvar <numSystems, <>serverGroups;
 	classvar <>default;
+	classvar <>presets;
 	
 	var <>arrayConfs;
 	var <>arrayLimit = 1;
+	
+	
+	*initClass { 
+		 
+		presets = Dictionary[
+			'default' -> WFSSpeakerConf.rect(48,dx:5),
+			'sampl' -> WFSSpeakerConf([32, 5, 0.5pi, 0, 0.1275])
+		];
+		
+		this.numSystems = 2; // create server library
+	}
 	
 	*new { |...args|
 		^super.newCopyArgs().arrayConfs_( args.collect(_.asWFSArrayConf) ).init;
@@ -227,6 +243,12 @@ WFSSpeakerConf {
 			conf.adjustCorner1To( arrayConfs.wrapAt( i-1 ) );
 			conf.adjustCorner2To( arrayConfs.wrapAt( i+1 ) );
 		});
+	}
+	
+	*fromPreset { |name| ^this.presets[ name ].copy; }
+	
+	== { |that| // use === for identity
+		^this.compareObject(that);
 	}
 	
 	planeWaveMakeUpGain { ^48 / arrayConfs.collect(_.n).mean } // gain if array size != 48
@@ -331,12 +353,6 @@ WFSSpeakerConf {
 	*includesServer { |server|
 		^this.systemOfServer( server ).notNil;
 	}
-	
-	*initClass { 
-		this.numSystems = 2; // create server library
-	}
-	
-	
 	
 	// drawing
 	asPoints { ^arrayConfs.collect(_.asPoints).flat }

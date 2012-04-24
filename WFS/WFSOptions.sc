@@ -29,8 +29,7 @@ AbstractWFSOptions {
 }
 
 WFSMasterOptions : AbstractWFSOptions {
-	
-	var <>port = 57999;
+
 	var <>toServersBus = 14;
 	var <>numOutputBusChannels = 20;
 	var <>numInputBusChannels = 20;
@@ -52,6 +51,7 @@ WFSServerOptions : AbstractWFSOptions {
 	var <>numOutputBusChannels = 96;
 	var <>numInputBusChannels = 8;
 	var <>device = "JackRouter";
+	
 	
 	*initClass {
 		presets = Dictionary[
@@ -78,6 +78,8 @@ WFSServerOptions : AbstractWFSOptions {
 		];	
 	}
 	
+	useForWFS { ^true }
+	
 }
 
 WFSOptions : AbstractWFSOptions {
@@ -87,6 +89,8 @@ WFSOptions : AbstractWFSOptions {
 	
 	var <>masterOptions;
 	var <>serverOptions = #[];
+	var <>showGUI = true;
+	var <>previewMode = nil;
 	
 	*new { ^super.new.init; }
 	
@@ -94,9 +98,17 @@ WFSOptions : AbstractWFSOptions {
 		current = this;
 	}
 	
+	*fromPreset { |name| ^this.presets[ name ].copy.init; }
+	
 	*initClass {
 		Class.initClassTree( WFSServerOptions );
 		presets = Dictionary[
+			'default'-> WFSOptions() // offline
+				.masterOptions_(
+					WFSMasterOptions()
+						.useForWFS_(true)
+				)
+				.previewMode_( \headphone ),
 			'game_of_life_master'-> WFSOptions()
 				.masterOptions_(
 					WFSMasterOptions()
@@ -110,7 +122,8 @@ WFSOptions : AbstractWFSOptions {
 			'game_of_life_server'-> WFSOptions()
 				.serverOptions_([	
 					WFSServerOptions()
-				]),
+				])
+				.showGUI_( false ),
 			'sampl'-> WFSOptions()
 				.serverOptions_([
 					WFSServerOptions.fromPreset( 'sampl' )
@@ -124,6 +137,8 @@ WFSOptions : AbstractWFSOptions {
 				.serverOptions_([	
 					WFSServerOptions.fromPreset( 'bea7' )
 				])
-		];	
+				.showGUI_( false )
+		];
+		current = nil;
 	}	
 }
