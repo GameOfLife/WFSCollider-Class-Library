@@ -17,7 +17,53 @@
     along with GameOfLife WFSCollider.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-WFSArrayPanSynthDefs {
+AbstractWFSSynthDefs {
+	
+	classvar <>synthDefs;
+	
+	*checkIfExists { |dir|
+		^((dir ? SynthDef.synthDefDir) +/+ this.prefix ++ "_*.scsyndef" ).pathMatch.size > 0;
+	}
+	
+	*generateAllOnce { |action, dir|
+		if( this.checkIfExists( dir ).not ) {
+			this.generateAll( action, dir );
+		} {
+			action.value( this );
+		};
+	}
+	
+}
+
+WFSSynthDefs {
+	
+	*generateAllOnce { |action, dir|
+		WFSPrePanSynthDefs.generateAllOnce( dir: dir );
+		WFSPreviewSynthDefs.generateAllOnce( dir: dir );
+		WFSArrayPanSynthDefs.generateAllOnce( action, dir );
+	}
+	
+	*generateAll { |action, dir|
+		WFSPrePanSynthDefs.generateAll( dir: dir );
+		WFSPreviewSynthDefs.generateAll( dir: dir );
+		WFSArrayPanSynthDefs.generateAll( action, dir );
+	}
+	
+	*loadAll { |action, dir|
+		dir = dir ? SynthDef.synthDefDir;
+		this.generateAll({ 
+			Server.all.do({ |srv|
+				if( srv.isLocal && srv.serverRunning ) {
+					srv.loadDirectory( dir );
+					"loaded WFSSynthDefs to %\n".postf( srv );
+				};
+			});
+		});
+	}
+	
+}
+
+WFSArrayPanSynthDefs : AbstractWFSSynthDefs {
 	
 	/*
 	generates and maintains the SynthDefs needed for array panners.
@@ -25,10 +71,11 @@ WFSArrayPanSynthDefs {
 	might not need one of those (or only for the env and gain)
 	*/
 	
-	classvar <>synthDefs;
 	classvar <>minSize = 8, <>maxSize = 64, <>division = 8; 
 		// if we get > 64 we might want to combine multiple
 	classvar <>types, <>modes, <>intTypes;
+	
+	*prefix { ^"wfsa" }
 	
 	*initClass {
 		types = [ \n, \f, \u, \p ]; // normal, focused, uni (= normal and focused), plane
@@ -48,7 +95,7 @@ WFSArrayPanSynthDefs {
 		// 'wfsa_fdl_32' : focused dynamic linear point, 32 speakers
 		// 'wfsa_psn_40' : static non-interpolating plane, 40 speakers
 		
-		^["wfsa", [type, mode, int].join(""), size ].join("_");
+		^[ this.prefix, [type, mode, int].join(""), size ].join("_");
 	}
 	
 	*generateDef { |size = 8, type = \uni, mode = \static, int = \n|
@@ -116,7 +163,7 @@ WFSArrayPanSynthDefs {
 		});
 	}
 	
-	*generateAll { |action, estimatedTime = 27, dir| // and write to disk
+	*generateAll { |action, dir, estimatedTime = 27| // and write to disk
 		
 		// this takes about 30 seconds in normal settings
 		// can be stopped via cmd-.
@@ -158,11 +205,11 @@ WFSArrayPanSynthDefs {
 			"done generating WFSArrayPanSynth synthdefs in %s\n"
 				.postf( (Main.elapsedTime - started).round(0.001) );
 			action.value( synthDefs );
-		}.fork();
+		}.fork(AppClock);
 	}
 }
 
-WFSPrePanSynthDefs {
+WFSPrePanSynthDefs : AbstractWFSSynthDefs {
 	
 	/*
 	generates and maintains the SynthDefs needed for pre panners.
@@ -176,12 +223,11 @@ WFSPrePanSynthDefs {
 	// we have an UEnv and a WFSLevelBus in here as well
 	// should we throw in global eqhere too?
 	
-	classvar <>synthDefs;
 	classvar <>maxArrays = 4; // should do for now
 	
 	classvar <>crossfadeModes, <>modesThatNeedArrays;
 	
-	
+	*prefix { ^"wfsp" }
 	*initClass {
 		crossfadeModes = [ \d, \u, \p, \n ];  // dual, uni, plane, none (none: static sources)
 		modesThatNeedArrays = [ \d, \u, \p ];
@@ -194,7 +240,7 @@ WFSPrePanSynthDefs {
 		// wfsp_d_2 : pre-panner for 2 arrays in dual mode (focused and normal separate panners )
 		// wfsp_p_3 : pre-panner for 3 arrays plane wave
 		
-		^["wfsp", crossfadeMode, numArrays ].join("_");
+		^[ this.prefix, crossfadeMode, numArrays ].join("_");
 	}
 	
 	*generateDef { |numArrays = 1, crossfadeMode = \dual|
@@ -419,7 +465,7 @@ WFSPrePanSynthDefs {
 		
 	}
 	
-	*generateAll { |dir|
+	*generateAll { |action, dir|
 		dir = dir ? SynthDef.synthDefDir;
 		synthDefs = crossfadeModes.collect({ |item|
 			if( modesThatNeedArrays.includes( item ) ) {
@@ -430,6 +476,7 @@ WFSPrePanSynthDefs {
 				[ this.generateDef( 0, item ).writeDefFile( dir ) ]
 			};
 		});
+		action.value(this);
 		^synthDefs;		
 	}
 	

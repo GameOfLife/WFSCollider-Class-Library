@@ -1,4 +1,4 @@
-WFSPreviewSynthDefs {
+WFSPreviewSynthDefs : AbstractWFSSynthDefs {
 	
 	/*
 	These synthdefs should be placed after a WFSPrePanSynthDef. 
@@ -6,10 +6,10 @@ WFSPreviewSynthDefs {
 	not be completely accurate.
 	*/
 	
-	classvar <>synthDefs;
-	
 	classvar <>modes;
 	classvar <>pannerFuncs;
+	
+	*prefix { ^"wfsx" }
 	
 	*initClass {
 		modes = [ \s, \d ]; // static, dynamic
@@ -55,7 +55,7 @@ WFSPreviewSynthDefs {
 	}
 	
 	*getDefName { |type = \headphone, mode = \s|
-		^["wfsx", type, mode.asString[0].toLower ].join("_");
+		^[ this.prefix, type, mode.asString[0].toLower ].join("_");
 	}
 	
 	*generateDef { |type = \headphone, mode = \s|
@@ -83,13 +83,14 @@ WFSPreviewSynthDefs {
 		
 	}
 	
-	*generateAll { |dir|
+	*generateAll { |action, dir|
 		dir = dir ? SynthDef.synthDefDir;
 		synthDefs = modes.collect({ |mode|
 			pannerFuncs.keys.as(Array).collect({ |type|
 				this.generateDef( type, mode ).writeDefFile( dir );
 			})
 		}).flatten(1);
+		action.value(this);
 		^synthDefs;		
 	
 	}
