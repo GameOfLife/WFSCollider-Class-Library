@@ -8,7 +8,7 @@ def = FreeUdef( \wfsDynamicIndex, [
 ] )
 	.category_( \wfs_panner )
 	.synthDef_(
-		SynthDef( "wfsp_id", {
+		SynthDef( "wfsi_id", {
 			var input, env, maxIndex;
 			var gain = -10.dbamp;
 			var index = 0, indexFromBus = 0;
@@ -34,7 +34,7 @@ def = FreeUdef( \wfsDynamicIndex, [
 	.createSynthFunc_({ |unit, target, startPos = 0|
 		var startIndex;
 		startIndex = WFSSpeakerConf.default.firstSpeakerIndexOf( target.asTarget.server );
-		Synth( "wfsp_id", [ \startIndex, startIndex ] ++ unit.getArgsFor( target, startPos ), 
+		Synth( "wfsi_id", [ \startIndex, startIndex ] ++ unit.getArgsFor( target, startPos ), 
 			target, \addToTail );
 	});
 

@@ -10,7 +10,7 @@ def = FreeUdef( \wfsStaticIndex, [
 ] )
 	.category_( \wfs_panner )
 	.synthDef_(
-		SynthDef( "wfsp_is", {
+		SynthDef( "wfsi_is", {
 			var input, env, maxIndex;
 			var gain = -10.dbamp;
 			var index = 0, indexFromBus = 0;
@@ -40,7 +40,7 @@ def = FreeUdef( \wfsStaticIndex, [
 	.createSynthFunc_({ |unit, target, startPos = 0|
 		var startIndex;
 		startIndex = WFSSpeakerConf.default.firstSpeakerIndexOf( target.asTarget.server );
-		Synth( "wfsp_is", [ \startIndex, startIndex ] ++ 
+		Synth( "wfsi_is", [ \startIndex, startIndex ] ++ 
 			unit.getArgsFor( target.asTarget.server, startPos ), 
 			target, \addToTail );
 	});
