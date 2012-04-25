@@ -139,7 +139,8 @@ WFSLib {
 		var paths;
 		paths = [
 			File.getcwd,
-			"/Library/Application Support/WFSCollider"
+			"/Library/Application Support/WFSCollider",
+			"~/Library/Application Support/WFSCollider".spath
 		].collect(_ +/+ "preferences.scd");
 		
 		paths.do({ |path|
@@ -186,7 +187,7 @@ WFSLib {
 	*writePrefs { |path|
 		var file;
 		path = path ? this.getCurrentPrefsPath ? 
-			"/Library/Application Support/WFSCollider/preferences.scd";
+			"~/Library/Application Support/WFSCollider/preferences.scd".spath;
 		path.dirname.makeDir;
 		"writing preferences file:\n%\n".postf( path );
 		file = File( path, "w" );
