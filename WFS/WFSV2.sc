@@ -62,7 +62,7 @@ WFS {
 			WFSArrayPan.filenameSymbol.asString.dirname +/+ "UnitDefs"
 		);		
 		
-		WFSSpeakerConf.rect( *config[\speakConf] * [1,1,0.5,0.5] ).makeDefault;
+		WFSSpeakerConf.rect( *config[\speakConf][[0,1,3,2]] * [1,1,0.5,0.5] ).makeDefault;
 			
 		if(config[\hostname].notNil){
 			"starting server mode".postln;
@@ -113,7 +113,7 @@ WFS {
 			file = File("/Library/Application Support/WFSCollider/WFSCollider_configuration.txt","r");
 			dict = file.readAllString.interpret;
 			file.close;
-			WFSSpeakerConf.rect( *dict[\speakConf] * [1,1,0.5,0.5] ).makeDefault;
+			WFSSpeakerConf.rect( *dict[\speakConf][[0,1,3,2]] * [1,1,0.5,0.5] ).makeDefault;
 			
 			if(dict[\hostname].notNil){
 				"starting server mode".postln;
