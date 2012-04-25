@@ -1,5 +1,7 @@
 AbstractWFSOptions {
 	
+	classvar <>usePresetsForCS = true;
+	
 	*fromPreset { |name| ^this.presets[ name ].copy; }
 	
 	== { |that| // use === for identity
@@ -14,7 +16,7 @@ AbstractWFSOptions {
 	storeModifiersOn { |stream|
 		var preset;
 		preset = this.class.presets.findKeyForValue(this);
-		if( preset.notNil ) {
+		if( usePresetsForCS && { preset.notNil } ) {
 			stream << ".fromPreset(" <<< preset << ")";
 		} {	
 			stream << "()";

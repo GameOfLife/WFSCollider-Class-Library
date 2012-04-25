@@ -135,25 +135,63 @@ WFSLib {
 	  		 
 	}
 	
-	*loadPrefs {
-		var path;
-		if( File.exists( File.getcwd +/+ "preferences.scd" ) ) {
-			path =  File.getcwd +/+ "preferences.scd";
-		} {
-			if( File.exists( 
-				"/Library/Application Support/WFSCollider/preferences.scd" 
-			)) {
-				path = "/Library/Application Support/WFSCollider/preferences.scd";
+	*getCurrentPrefsPath { |action|
+		var paths;
+		paths = [
+			File.getcwd,
+			"/Library/Application Support/WFSCollider"
+		].collect(_ +/+ "preferences.scd");
+		
+		paths.do({ |path|
+			if( File.exists( path ) ) {
+				action.value( path );
+				^path;
 			};
-		};
-		if( path.notNil ) { path.load };
+		});
+		
+		^nil;
 	}
 	
-	*writePrefs { |dir|
+	*loadPrefs {
+		this.getCurrentPrefsPath(_.load);
+	}
+	
+	*openPrefs {
+		this.getCurrentPrefsPath(Document.open(_));
+	}
+	
+	*formatPrefs {
+		var stream;
+		stream = CollStream();
+		
+		stream << "//// WFSCollider preferences (generated on: %) ////\n\n"
+			.format( Date.localtime.asString );
+			
+		stream << "//speaker configuration:\n";
+		stream <<< WFSSpeakerConf.default << ".makeDefault;\n\n";
+		
+		stream << "//options:\n";
+		stream <<< WFSOptions.current << ";";
+		
+		if( WFSArrayPan.useFocusFades != true ) {
+			stream << "\n\nWFSArrayPan.useFocusFades = " << WFSArrayPan.useFocusFades << ";";
+		};
+		if( WFSArrayPan.tapering != 0 ) {
+			stream << "\n\nWFSArrayPan.tapering = " <<< WFSArrayPan.tapering << ";";
+		};
+		
+		^stream.collection;
+	}
+
+	*writePrefs { |path|
 		var file;
-		dir = dir ? "/Library/Application Support/WFSCollider";
-		dir.makeDir;
-		// TODO
+		path = path ? this.getCurrentPrefsPath ? 
+			"/Library/Application Support/WFSCollider/preferences.scd";
+		path.dirname.makeDir;
+		"writing preferences file:\n%\n".postf( path );
+		file = File( path, "w" );
+		file.write( this.formatPrefs );
+		file.close;
 	}
 	
 	*loadOldPrefs {
@@ -167,7 +205,7 @@ WFSLib {
 			dict = file.readAllString.interpret;
 			file.close;
 			
-			WFSSpeakerConf.rect( *dict[\speakConf] * [1,1,0.5,0.5] ).makeDefault;
+			WFSSpeakerConf.rect( *dict[\speakConf][[0,1,3,2]] * [1,1,0.5,0.5] ).makeDefault;
 			
 			if(dict[\hostname].notNil){
 				"starting server mode".postln;
