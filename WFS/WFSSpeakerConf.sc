@@ -227,7 +227,7 @@ WFSSpeakerConf {
 		 
 		presets = Dictionary[
 			'default' -> WFSSpeakerConf.rect(48,dx:5),
-			'sampl' -> WFSSpeakerConf([32, 5, 0.5pi, 0, 0.1275])
+			'sampl' -> WFSSpeakerConf([32, 5, 0.5pi, 0, 0.1275]).arrayLimit_(0.3)
 		];
 		
 		this.numSystems = 2; // create server library
