@@ -137,8 +137,20 @@ WFSArrayConf { // configuration for one single speaker array
 		};
 	}
 	
+	rotatedPointAt { |index = 0|
+		^( dist @ ( ( (index - ((n-1)/2)) * spWidth) - offset ) );
+	}
+	
+	rotatedFirstPoint {
+		^this.rotatedPointAt(0);
+	}
+	
+	rotatedLastPoint {
+		^this.rotatedPointAt(n-1);
+	}
+	
 	pointAt { |index = 0|
-		^( dist @ ( ( (index - ((n-1)/2)) * spWidth) - offset ) ).rotate( angle )
+		^this.rotatedPointAt(index).rotate( angle )
 	}
 	
 	firstPoint {
@@ -270,6 +282,8 @@ WFSSpeakerConf {
 	
 	at { |index| ^arrayConfs[ index ] }
 	
+	size { ^arrayConfs.size }
+	
 	speakerCount { ^arrayConfs.collect(_.n).sum; }
 	
 	divideArrays { |n| // split the arrayConfs into n equal (or not so equal) groups
@@ -358,6 +372,13 @@ WFSSpeakerConf {
 	asPoints { ^arrayConfs.collect(_.asPoints).flat }
 	
 	asLines { ^arrayConfs.collect(_.asLine) }
+	
+	asRect {
+		var allPoints, allX, allY;
+		allPoints = [0@0] ++ this.asLines.flatten(1);
+		#allX, allY = ([0@0] ++ this.asLines.flatten(1)).collect(_.asArray).flop;
+		^Rect.fromPoints( allX.minItem @ (allY.minItem), allX.maxItem @ (allY.maxItem) );
+	}
 	
 	draw { |mode = \lines| arrayConfs.do(_.draw(mode)); }
 	
