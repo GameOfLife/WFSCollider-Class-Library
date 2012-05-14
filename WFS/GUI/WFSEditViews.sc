@@ -74,7 +74,7 @@ WFSBasicEditView {
 			.sliderWidth_( 10 )
 			.move_( [0.5,0.5] )
 			.scale_( [10,10] )
-			.maxZoom_( 20 )
+			.maxZoom_( 40 )
 			.keepRatio_( true )
 			.resize_(5)
 			.gridLines_( [ 200, 200 ] )
@@ -1382,6 +1382,7 @@ WFSPointView : WFSBasicEditView {
 		#x, y = object.collect({ |item| item.asArray }).flop;
 		if( includeCenter ) { 
 			view.viewRect_( Rect.fromPoints( x.minItem @ y.minItem, x.maxItem @ y.maxItem )
+				.scale(1@ -1)
 				.union( Rect(0,0,0,0) ).insetBy(-5,-5) );  
 		} { 
 			view.viewRect_( Rect.fromPoints( x.minItem @ y.minItem, x.maxItem @ y.maxItem )
