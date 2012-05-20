@@ -110,4 +110,8 @@ WFSPositionTracker {
 		});
 		^(objects ? []).flop;
 	}
+	
+	*points {
+		^positions.values.collect(_.asArray).flatten(1);
+	}
 }
