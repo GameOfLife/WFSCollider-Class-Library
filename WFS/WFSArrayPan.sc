@@ -48,7 +48,7 @@ WFSCrossfader {
 		
 		// for the focusFades
 		globalAngle = point.angle;
-		fadeArea = point.rho.linlin(0.5,1,pi,0.25pi,\none).clip(0.25pi,pi); 
+		fadeArea = point.rho.linlin(0.5,1,pi,0.125pi,\none).clip(0.125pi,2pi); 
 		
 		cornerPoints = arrayConfs.collect( _.cornerPoints );
 		
@@ -84,7 +84,7 @@ WFSCrossfader {
 			if( WFSArrayPan.useFocusFades ) {
 				focusedActive = [ arrayConfs[i].firstPoint.angle, arrayConfs[i].lastPoint.angle ]
 					.collect({ |item|
-						((item - globalAngle).wrap(-pi,pi).abs < (fadeArea + 0.03pi)).binaryValue; 
+						((item - globalAngle).wrap(-pi,pi).abs < (fadeArea * 2)).binaryValue; 
 				});
 			} {
 				focusedActive = [1,1];
@@ -438,10 +438,13 @@ WFSArrayPan : WFSBasicArrayPan {
 		if( useFocusFades && { focus != false } ) { // disabled when forced unfocused
 			globalAngle = pos.angle;
 			speakerAngleRange = [ (dist@speakerArray[0]).angle, (dist@speakerArray.last).angle ];
-			fadeArea = globalDist.linlin(0.5,1,pi,0.25pi,\none).clip(0.25pi,pi); 
+			fadeArea = globalDist.linlin(0.5,1,pi,0.125pi,\none).clip(0.125pi,pi); 
 			focusFades = speakerArray.collect({ |item, i|
 				(i.linlin(0,n-1,*speakerAngleRange) - globalAngle).wrap(-pi,pi)
-					.abs.linlin(fadeArea, fadeArea + 0.03pi,1,0,\none).clip(0,1); 
+					.abs.linlin(fadeArea, fadeArea * 2,0.5pi, -0.5pi,\none)
+						.clip(-0.5pi,0.5pi)
+						.sin
+						.linlin(-1,1,0,1); 
 			});
 			
 			if( focus.isNil ) {
