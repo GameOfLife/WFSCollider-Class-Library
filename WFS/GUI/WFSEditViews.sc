@@ -932,6 +932,9 @@ WFSPathTimeView : WFSPathXYView {
 		if( object.times.size > 0 ) {	
 			timesSum = this.getTimesSum;
 			times = ([ 0 ] ++ object.times.integrate) / timesSum;
+			speeds = object.speeds;
+			meanSpeed = (speeds * object.times).sum / timesSum;
+			speeds = speeds ++ [0];
 			
 			if( timesSum <= 60 ) {
 				vlines = timesSum.ceil.asInt.collect({ |i| i / timesSum });
@@ -947,59 +950,11 @@ WFSPathTimeView : WFSPathXYView {
 			});
 			Pen.stroke;
 			
-			if( showInfo ) {	
-				Pen.use({
-					var tms, leftTop;
-					Pen.font = Font( Font.defaultSansFace, 10 );
-					Pen.color = Color.black;
-					leftTop = this.view.viewRect.leftTop;
-					Pen.translate( leftTop.x, leftTop.y );
-					Pen.scale(scale.x,scale.y);
-					case { selected.size == 0 } {
-						Pen.stringAtPoint( 
-							"% points, duration: %"
-								.format( 
-									object.positions.size, 
-									timesSum.asSMPTEString(1000) ),
-							5@2
-						);
-					} { selected.size == 1 } {
-						if( times[ selected[0] ].notNil ) {
-							Pen.stringAtPoint( 
-								"point #% selected, time: %"
-									.format( 
-										selected[0],
-										(times[selected[0]] * timesSum).asSMPTEString(1000)									), 
-								5@2
-							);
-						};
-					} {
-						tms = times[ selected ].select( _.notNil );
-						if( tms.size > 0 ) {
-							Pen.stringAtPoint( 
-								"% selected points, % to % "
-									.format( 
-										selected.size, 
-										(tms.minItem * timesSum).asSMPTEString(1000),
-										(tms.maxItem * timesSum).asSMPTEString(1000)								),
-								5@2
-							); 
-						};
-						
-					};
-				});
-			};
-			
-			
-			speeds = object.speeds;
-			meanSpeed = (speeds * object.times).sum / timesSum;
-			speeds = speeds ++ [0];
-			
-			Pen.color = Color.blue(0.5).blend( Color.white, 0.5 );
+			Pen.color = Color.blue(0.5).blend( Color.white, 0.25 ).alpha_(0.5);
 			times.do({ |item, i|
 				//Pen.color = Color.red(0.75).alpha_( (speeds[i] / 334).min(1) );
 				Pen.addRect( 
-					Rect( item, 0.5, times.clipAt(i+1) - item, speeds[i] / -344));
+					Rect( item, 0.5, times.clipAt(i+1) - item, speeds[i].explin(0.1,344,0,1).neg));
 							
 			});
 			Pen.fill;	
@@ -1036,6 +991,50 @@ WFSPathTimeView : WFSPathXYView {
 			Pen.color = Color.blue(0.5);
 			times[1..].do({ |item, i| drawPoint.( item@0 ); });
 			Pen.draw(1);
+			
+			if( showInfo ) {	
+				Pen.use({
+					var tms, leftTop;
+					Pen.font = Font( Font.defaultSansFace, 10 );
+					Pen.color = Color.black;
+					leftTop = this.view.viewRect.leftTop;
+					Pen.translate( leftTop.x, leftTop.y );
+					Pen.scale(scale.x,scale.y);
+					case { selected.size == 0 } {
+						Pen.stringAtPoint( 
+							"% points, duration: %, avg speed: %m/s"
+								.format( 
+									object.positions.size, 
+									timesSum.asSMPTEString(1000),
+									meanSpeed.round(0.01) ),
+							5@2
+						);
+					} { selected.size == 1 } {
+						if( times[ selected[0] ].notNil ) {
+							Pen.stringAtPoint( 
+								"point #% selected, time: %"
+									.format( 
+										selected[0],
+										(times[selected[0]] * timesSum).asSMPTEString(1000)									), 
+								5@2
+							);
+						};
+					} {
+						tms = times[ selected ].select( _.notNil );
+						if( tms.size > 0 ) {
+							Pen.stringAtPoint( 
+								"% selected points, % to % "
+									.format( 
+										selected.size, 
+										(tms.minItem * timesSum).asSMPTEString(1000),
+										(tms.maxItem * timesSum).asSMPTEString(1000)								),
+								5@2
+							); 
+						};
+						
+					};
+				});
+			};
 		};
 	}
 	
