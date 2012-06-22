@@ -1,5 +1,5 @@
 (
-// a Udef generating a circular spatial path
+// a Udef generating a random spatial path
 Udef( \wfsRandomPath, { |
 		speed = 0.1, 
 		center = #[0,0],
