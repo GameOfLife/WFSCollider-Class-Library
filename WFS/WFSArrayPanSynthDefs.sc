@@ -292,7 +292,13 @@ WFSPrePanSynthDefs : AbstractWFSSynthDefs {
 			
 			input = UIn.ar( 0, 1 );
 			
-			output = UGlobalEQ.ar( panner.ar( input, point ) ) * UEnv.kr( extraSilence: 0.2 );
+			// filter and clip input for speaker protection
+			input = LeakDC.ar( input, 0.997 );
+			input = UGlobalEQ.ar( input );
+			input = (input / 4).softclip * 4; // 6dB headroom, then softclip to 12dB
+			output = panner.ar( input, point );
+			output = output * UEnv.kr( extraSilence: 0.2 );
+			
 			
 			ReplaceOut.ar( UIn.firstBusFor( \ar )+ \u_i_ar_0_bus.kr, output );
 			
