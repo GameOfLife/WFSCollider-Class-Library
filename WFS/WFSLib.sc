@@ -23,7 +23,7 @@ WFSLib {
 					wfsOptions.serverOptions.collect(_.startPort),
 					wfsOptions.serverOptions[0].n
 				)
-				.hostNames_( wfsOptions.serverOptions.collect(_.name) )
+				.hostNames_( *wfsOptions.serverOptions.collect(_.name) )
 				.makeDefault;
 				
 				WFSPathBuffer.writeServers = WFSServers.default.multiServers.collect(_[0]);
@@ -35,6 +35,7 @@ WFSLib {
 			Server.default = WFSServers.default.m;
 			o = wfsOptions.masterOptions;
 			WFSServers.pulsesOutputBus = o.toServersBus;
+			SyncCenter.outBus = o.toServersBus;
 			
 			if( o.useForWFS ) {
 				servers = [ WFSServers.default.m ];
@@ -130,7 +131,17 @@ WFSLib {
 	  });
 	  
 	  if( wfsOptions.playSoundWhenReady ) {
-		  
+		  Routine({
+            		var allTypes, defs;
+	              while { 
+		            	WFSServers.default.multiServers.collect(_.servers)
+		            		.flatten(1).collect( _.serverRunning ).every( _ == true ).not; 
+		         } { 
+			          0.2.wait; 
+			    };
+	             "System ready; playing lifesign".postln;
+	             "server ready".speak
+		   }).play( AppClock );
 	  };
 	  		 
 	}
