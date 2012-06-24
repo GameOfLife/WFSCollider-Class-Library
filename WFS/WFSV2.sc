@@ -137,6 +137,9 @@ WFS {
 		};
 		if(thisProcess.platform.class.asSymbol == 'OSXPlatform') {
 		    UMenuBar();
+		    SCMenuItem.new(UMenuBar.viewMenu, "WFSPositionTracker").action_({
+				WFSPositionTrackerGUI.newOrCurrent;
+			});
 		};
 
 	}
