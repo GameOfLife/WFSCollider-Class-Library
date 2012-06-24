@@ -81,7 +81,8 @@ if( WFS.previewMode.isNil ) {
 			[ "arrayConf" ++ i, item.asArray ]
 			}).flatten( 1 ) ++ [ 
 				\planeLevelBuses, planeLevelBuses, 
-				\planeIDs, planeSynths.collect(_.nodeID)
+				\planeIDs, planeSynths.collect(_.nodeID),
+				\sendPointRate, WFSPositionTracker.getRate
 			] ++ unit.def.env.getInitArgsFor( \wfsp, unit.args, server, startPos ),
 			arrayGroup, addAction: \addBefore
 		);
@@ -134,7 +135,8 @@ if( WFS.previewMode.isNil ) {
 		
 		// make the pre-panner synth (has to know the nodeID's of the panner synths)
 		prePanSynth = Synth( "wfsp_p_0",
-			unit.def.env.getInitArgsFor( \wfsp, unit.args, server, startPos ),
+			unit.def.env.getInitArgsFor( \wfsp, unit.args, server, startPos ) ++
+				[ \sendPointRate, WFSPositionTracker.getRate ],
 			target, \addToTail
 		);
 		
