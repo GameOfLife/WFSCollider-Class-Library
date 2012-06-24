@@ -3,7 +3,7 @@ WFSPositionTracker {
 	classvar <>all;
 	classvar <>positions;
 	classvar <sendPointRate = 10;
-	classvar <>active = false;
+	classvar <active = false;
 	
 	*initClass {
 		all = IdentityDictionary();
@@ -12,14 +12,19 @@ WFSPositionTracker {
 	
 	*start {
 		UChain.addDependant( this );
-		active = true;
+		this.active = true;
 	}
 	
 	*stop {
 		UChain.removeDependant( this );
-		active = false;
+		this.active = false;
 		this.rate = sendPointRate;
 		this.clear;
+	}
+	
+	*active_ { |bool|
+		active = bool;
+		this.changed( \active, bool );
 	}
 	
 	*clear {
@@ -40,6 +45,7 @@ WFSPositionTracker {
 		Server.all.do({ |srv|
 			RootNode(srv).set( \sendPointRate, this.getRate );
 		});
+		this.changed( \rate, sendPointRate );
 	}
 	
 	*getRate { ^sendPointRate * active.binaryValue }
