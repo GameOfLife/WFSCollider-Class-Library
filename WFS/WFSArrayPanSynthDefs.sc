@@ -296,8 +296,9 @@ WFSPrePanSynthDefs : AbstractWFSSynthDefs {
 			input = LeakDC.ar( input, 0.997 );
 			input = UGlobalEQ.ar( input );
 			input = (input / 4).softclip * 4; // 6dB headroom, then softclip to 12dB
+			input = Line.kr(0,1,\u_fadeIn.kr(0)) * input;
 			output = panner.ar( input, point );
-			output = output * UEnv.kr( extraSilence: 0.2 );
+			output = output * UEnv.kr( extraSilence: 0.2, ignoreFadeIn: true );
 			
 			
 			ReplaceOut.ar( UIn.firstBusFor( \ar )+ \u_i_ar_0_bus.kr, output );
