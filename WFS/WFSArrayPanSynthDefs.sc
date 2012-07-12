@@ -330,6 +330,7 @@ WFSPrePanSynthDefs : AbstractWFSSynthDefs {
 					cornerfades = crossfader.cornerfades;
 					
 					focusShouldRun = crossfader.arraysShouldRun( true );
+					focusShouldRun = focusShouldRun * \focusMul.kr(1);
 					focusShouldRun = Slew.kr( focusShouldRun, *(1/crossfadeLag).dup ).sqrt;
 	
 					normalShouldRun = crossfader.arraysShouldRun( false );
