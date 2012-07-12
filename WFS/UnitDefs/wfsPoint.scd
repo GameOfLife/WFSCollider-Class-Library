@@ -11,3 +11,4 @@ Udef(\wfsPoint,
     [ \lag: 0, [ 0, 1, \lin, 0, 0].asSpec ]
 ]
 ).category_( 'wfs_control' )
+.setControlOutName( [0,1], ['x', 'y'] );

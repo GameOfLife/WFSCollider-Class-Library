@@ -46,7 +46,8 @@ def = FreeUdef( \wfsDynamicPoint, [
 	.addUEnv
 	.addUGlobalEQ
 	.addUIO( UIn, \ar, 0, 1 )
-	.addUIO( UIn, \kr, 0, 2 );
+	.addUIO( UIn, \kr, 0, 2 )
+	.setControlInName( [0,1], ['x', 'y'] );
 	
 if( WFS.previewMode.isNil ) {
 // dynamic point wfs panner

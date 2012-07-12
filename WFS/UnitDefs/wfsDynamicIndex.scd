@@ -36,7 +36,8 @@ def = FreeUdef( \wfsDynamicIndex, [
 		startIndex = WFSSpeakerConf.default.firstSpeakerIndexOf( target.asTarget.server );
 		Synth( "wfsi_id", [ \startIndex, startIndex ] ++ unit.getArgsFor( target, startPos ), 
 			target, \addToTail );
-	});
+	})
+	.setControlOutName( 0, 'index' );
 
 def.removeArgSpec( \startIndex ); // this is set by createSynthFunc
 

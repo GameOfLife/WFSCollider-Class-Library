@@ -20,4 +20,5 @@ Udef( \wfsRandomPath, { |
 	.setSpec( \center, WFSPointSpec( 200, 0.1@0.1 ) )
 	.setSpec( \radius, PointSpec( Rect(0,0,200,200), 0.1@0.1 ) )
 	.setSpec( \seed, PositiveIntegerSpec(12345) )
+	.setControlOutName( [0,1], ['x', 'y'] )
 )
