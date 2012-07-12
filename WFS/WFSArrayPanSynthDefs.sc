@@ -223,7 +223,7 @@ WFSPrePanSynthDefs : AbstractWFSSynthDefs {
 	// we have an UEnv and a WFSLevelBus in here as well
 	// should we throw in global eqhere too?
 	
-	classvar <>maxArrays = 4; // should do for now
+	classvar <>maxArrays = 12; // should do for now
 	
 	classvar <>crossfadeModes, <>modesThatNeedArrays;
 	
