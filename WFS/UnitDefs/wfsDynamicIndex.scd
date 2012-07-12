@@ -37,7 +37,7 @@ def = FreeUdef( \wfsDynamicIndex, [
 		Synth( "wfsi_id", [ \startIndex, startIndex ] ++ unit.getArgsFor( target, startPos ), 
 			target, \addToTail );
 	})
-	.setControlOutName( 0, 'index' );
+	.setControlInName( 0, 'index' );
 
 def.removeArgSpec( \startIndex ); // this is set by createSynthFunc
 
