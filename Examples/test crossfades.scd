@@ -9,9 +9,10 @@ w = ScaledUserView.window( "WFSSpeakerConf",
 );
 w.keepRatio = true;
 w.drawFunc = { 
-	var fader, crossfades, lines;
+	var fader, crossfades, lines, focusMul;
 	c.draw(m); 
 	Pen.addArc( p * (1 @ -1), 0.3/2, 0, 2pi ).fill; 
+	focusMul = c.focusDetector.kr( p );
 	
 	// draw corns as blue points
 	Pen.color = Color.blue;
@@ -38,16 +39,19 @@ w.drawFunc = {
 		});
 		
 		// draw focused as blue lines inside arrays
-		Pen.use({
-			Pen.scale(0.9, -0.9);
-			Pen.color = Color.blue;
-			Pen.width = 0.2;
-			fader.arraysShouldRun( true ).do({ |fade, i|
-				if( fade == 1 ) {
-					Pen.line( *lines[i] ).stroke;
-				};
+		if( focusMul == 1 ) {
+			Pen.use({	
+				
+				Pen.scale(0.9, -0.9);
+				Pen.color = Color.blue;
+				Pen.width = 0.2;
+				fader.arraysShouldRun( true ).do({ |fade, i|
+					if( fade == 1 ) {
+						Pen.line( *lines[i] ).stroke;
+					};
+				});
 			});
-		});
+		};
 	} {
 		fader = WFSCrossfaderPlane(p, c.arrayConfs );
 		crossfades = fader.crossfades;
