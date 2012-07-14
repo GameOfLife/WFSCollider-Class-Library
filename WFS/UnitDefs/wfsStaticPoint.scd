@@ -65,11 +65,13 @@ if( WFS.previewMode.isNil ) {
 		var normalSynths = [], focusSynths = [];
 		var defNames;
 		var crossfader;
+		var focusMul;
 		
 		server = target.asTarget.server;
 		
 		arrayConfs = WFSSpeakerConf.default.getArraysFor( server );
 		crossfader = WFSCrossfader( unit.get( \point ), arrayConfs );
+		focusMul = WFSSpeakerConf.default.focusDetector.kr( unit.get( \point ) );
 		
 		arrayGroup = Group(target, addAction: \addToTail);
 		
@@ -100,21 +102,23 @@ if( WFS.previewMode.isNil ) {
 			n = n + arrayConfs[i].n;
 		});
 		
-		n = 0;
-		arrayConfs.do({ |ac, i|
-			if( focusLevels[i] > 0 ) {
-				focusSynths = focusSynths.add(							Synth( defNames[1] ++ ac.n, [ 
-							\arrayConf, ac, 
-							\outOffset, n,
-							\amp, focusLevels[i],
-							\arrayLimit, WFSSpeakerConf.default.arrayLimit,
-						] ++ unit.def.env.getInitArgsFor( \wfsa, unit.args, server, startPos ), 
-						arrayGroup, addAction: \addToTail 
-					) 
-				);
-			};
-			n = n + arrayConfs[i].n;
-		});
+		if( focusMul > 0 ) {	
+			n = 0;
+			arrayConfs.do({ |ac, i|
+				if( focusLevels[i] > 0 ) {
+					focusSynths = focusSynths.add(							Synth( defNames[1] ++ ac.n, [ 
+								\arrayConf, ac, 
+								\outOffset, n,
+								\amp, focusLevels[i],
+								\arrayLimit, WFSSpeakerConf.default.arrayLimit,
+							] ++ unit.def.env.getInitArgsFor( \wfsa, unit.args, server, startPos ), 
+							arrayGroup, addAction: \addToTail 
+						) 
+					);
+				};
+				n = n + arrayConfs[i].n;
+			});
+		};
 		
 		arrayGroup.freeAction_({ |group| unit.removeSynth( group ); });
 		unit.synths = unit.synths.add( arrayGroup );

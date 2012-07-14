@@ -234,6 +234,8 @@ WFSSpeakerConf {
 	var <>arrayConfs;
 	var <>arrayLimit = 1;
 	
+	var <>focusDetector;
+	
 	
 	*initClass { 
 		 
@@ -255,6 +257,8 @@ WFSSpeakerConf {
 			conf.adjustCorner1To( arrayConfs.wrapAt( i-1 ) );
 			conf.adjustCorner2To( arrayConfs.wrapAt( i+1 ) );
 		});
+		
+		focusDetector = WFSFocusDetector( arrayConfs.collect({ |item| item.cornerPoints[0] }) );
 	}
 	
 	*fromPreset { |name| ^this.presets[ name ].copy; }
