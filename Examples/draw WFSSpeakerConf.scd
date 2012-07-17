@@ -122,12 +122,14 @@ c = WFSSpeakerConf.polygon( 6, 5, 192 ); w.refresh;
 ( // single array setup
 c = WFSSpeakerConf( [ 64, 5, 0.5pi, 0, 0.164 ] ); 
 WFSArrayPan.useFocusFades = false;
+WFSArrayPan.tapering = 0.1;
 w.refresh;
 )
 
 ( // default setup (Game Of Life, 192sp)
 c = WFSSpeakerConf.rect( 48, 48, 5, 5 );
 WFSArrayPan.useFocusFades = true; // (for closed setups)
+WFSArrayPan.tapering = 0;
 w.refresh;
 )
 
