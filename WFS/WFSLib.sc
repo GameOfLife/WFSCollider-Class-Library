@@ -23,8 +23,8 @@ WFSLib {
 					wfsOptions.serverOptions.collect(_.startPort),
 					wfsOptions.serverOptions[0].n
 				)
-				.hostNames_( *wfsOptions.serverOptions.collect(_.name) )
-				.makeDefault;
+				.makeDefault
+				.hostNames_( *wfsOptions.serverOptions.collect(_.name) );
 				
 				WFSPathBuffer.writeServers = WFSServers.default.multiServers.collect(_[0]);
 			} {
@@ -69,6 +69,8 @@ WFSLib {
 			LoadBalancer( *ms.servers ) 
 		});
 		
+		WFSSpeakerConf.resetServers;
+		
 		WFSSpeakerConf.numSystems = servers.size;
 		
 		servers.do({ |srv, i|
@@ -80,6 +82,10 @@ WFSLib {
 				WFSSpeakerConf.addServer( srv, i );
 			};
 		});
+		
+		if( WFSServers.default.m.notNil && { servers.includes( WFSServers.default.m ).not }) {
+			servers = [ WFSServers.default.m ] ++ servers;
+		};
 		
 		Udef.userDefsFolder = File.getcwd +/+ "UnitDefs";
 	   

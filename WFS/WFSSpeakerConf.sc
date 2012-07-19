@@ -372,6 +372,11 @@ WFSSpeakerConf {
 		^this.systemOfServer( server ).notNil;
 	}
 	
+	*resetServers {
+		serverGroups = nil;
+		this.numSystems = this.numSystems;
+	}
+	
 	// drawing
 	asPoints { ^arrayConfs.collect(_.asPoints).flat }
 	
