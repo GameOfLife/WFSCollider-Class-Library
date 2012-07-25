@@ -125,6 +125,6 @@ WFSPathURL {
 
 	asWFSPath2 { ^this.wfsPath }
 	
-	storeArgs { ^[ url.asString ] }
+	storeArgs { ^[ url.asString.formatGPath ] }
 	
 }
