@@ -59,7 +59,7 @@ WFSLib {
 			};
 		};
 		
-		WFS.setServerOptions( o.numOutputBusChannels );
+		this.setServerOptions( o.numOutputBusChannels );
 		Server.default.options.device = o.device;
 		Server.default.options.numInputBusChannels = o.numInputBusChannels;
 		
@@ -155,6 +155,19 @@ WFSLib {
 	  		 
 	}
 	
+	*setServerOptions{ |numOuts=96|
+		Server.default.options
+			.numPrivateAudioBusChannels_(256)
+			.numOutputBusChannels_(numOuts)
+			.numInputBusChannels_(20)
+			.numWireBufs_(2048)
+			.memSize_(2**19) // 256MB
+			.hardwareBufferSize_(512)
+			.blockSize_(128)
+			.sampleRate_( 44100 )
+			.maxNodes_( 2**16 );
+     }
+
 	*getCurrentPrefsPath { |action|
 		var paths;
 		paths = [
