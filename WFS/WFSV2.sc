@@ -135,9 +135,17 @@ WFS {
 			"starting offline".postln;
 			WFS.startupOffline;
 		};
-		if(thisProcess.platform.class.asSymbol == 'OSXPlatform') {
+		
+		if(thisProcess.platform.class.asSymbol === 'OSXPlatform' && {
+			thisProcess.platform.ideName.asSymbol === \scapp 
+		}) {
 		    UMenuBar();
 		    SCMenuItem.new(UMenuBar.viewMenu, "WFSPositionTracker").action_({
+				WFSPositionTrackerGUI.newOrCurrent;
+			});
+		} {
+			UMenuWindow();
+			UMenuWindow.viewMenu.tree.put( 'WFSPositionTracker', {
 				WFSPositionTrackerGUI.newOrCurrent;
 			});
 		};
