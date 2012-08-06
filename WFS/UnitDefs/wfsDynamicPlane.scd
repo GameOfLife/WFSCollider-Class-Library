@@ -94,6 +94,7 @@ if( WFS.previewMode.isNil ) {
 		n = 0;
 		planeSynths.do({ |sn, i|
 			server.sendMsg( *sn.newMsg( arrayGroup, [ 
+					\gain, WFSSpeakerConf.default.gain.dbamp, 
 					\arrayConf, arrayConfs[i], 
 					\levelBus, planeLevelBuses[i],
 					\outOffset, n,

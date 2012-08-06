@@ -90,6 +90,7 @@ if( WFS.previewMode.isNil ) {
 		arrayConfs.do({ |ac, i|
 			if( normalLevels[i] > 0 ) {
 				normalSynths = normalSynths.add(							Synth( defNames[0] ++ ac.n, [ 
+							\gain, WFSSpeakerConf.default.gain.dbamp,
 							\arrayConf, ac, 
 							\outOffset, n,
 							\amp, normalLevels[i],
@@ -107,6 +108,7 @@ if( WFS.previewMode.isNil ) {
 			arrayConfs.do({ |ac, i|
 				if( focusLevels[i] > 0 ) {
 					focusSynths = focusSynths.add(							Synth( defNames[1] ++ ac.n, [ 
+								\gain, WFSSpeakerConf.default.gain.dbamp,
 								\arrayConf, ac, 
 								\outOffset, n,
 								\amp, focusLevels[i],

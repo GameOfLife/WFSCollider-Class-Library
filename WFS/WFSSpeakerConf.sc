@@ -236,6 +236,8 @@ WFSSpeakerConf {
 	
 	var <>focusDetector;
 	
+	var <>gain = 0; // in db
+	
 	
 	*initClass { 
 		 
@@ -397,7 +399,10 @@ WFSSpeakerConf {
 	storeArgs { ^arrayConfs.collect(_.storeArgs) }
 	storeModifiersOn { |stream|
 		if( arrayLimit != 1 ) {
-			stream << ".arrayLimit_( " << arrayLimit << " )";
+			stream << ".arrayLimit_( " <<< arrayLimit << " )";
+		};
+		if( gain != 0 ) {
+			stream << ".gain_( " <<< gain << " )";
 		};
 	}
 }

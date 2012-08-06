@@ -100,6 +100,7 @@ if( WFS.previewMode.isNil ) {
 		n = 0;
 		normalSynths.do({ |sn, i|
 			server.sendMsg( *sn.newMsg( arrayGroup, [ 
+					\gain, WFSSpeakerConf.default.gain.dbamp,
 					\arrayConf, arrayConfs[i], 
 					\levelBus, normalLevelBuses[i],
 					\outOffset, n,
@@ -113,6 +114,7 @@ if( WFS.previewMode.isNil ) {
 		n = 0;
 		focusSynths.do({ |sn, i|
 			server.sendMsg( *sn.newMsg( arrayGroup, [ 
+					\gain, WFSSpeakerConf.default.gain.dbamp,
 					\arrayConf, arrayConfs[i], 
 					\levelBus, focusLevelBuses[i],
 					\outOffset, n,

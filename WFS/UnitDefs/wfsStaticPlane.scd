@@ -88,6 +88,7 @@ if( WFS.previewMode.isNil ) {
 		arrayConfs.do({ |ac, i|
 			if( planeLevels[i] > 0 ) {
 				planeSynths = planeSynths.add(							Synth( defName ++ ac.n, [ 
+							\gain, WFSSpeakerConf.default.gain.dbamp,
 							\arrayConf, ac, 
 							\outOffset, n,
 							\amp, planeLevels[i],
