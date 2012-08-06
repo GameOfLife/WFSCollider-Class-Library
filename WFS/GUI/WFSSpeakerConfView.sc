@@ -6,8 +6,11 @@ WFSSpeakerConfView : WFSBasicEditView {
 	
 	drawContents { |scale = 1|
 		var conf, lines;
+		var count = 0;
+		var letters;
 		
-		scale = scale.asArray;
+		scale = scale.asArray.mean;
+	
 		
 		conf = this.conf;
 		
@@ -30,6 +33,45 @@ WFSSpeakerConfView : WFSBasicEditView {
 					Pen.stroke;
 					
 				};
+				
+				Pen.color = Color.black;
+				
+				letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+				
+				conf.arrayConfs.do({ |arrayConf, i|
+					var points, counts, movePt;
+					points = [ arrayConf.lastPoint, arrayConf.firstPoint ];
+					counts = count + [0, arrayConf.n-1 ];
+					count = count + arrayConf.n;
+					movePt = Polar(12, arrayConf.angle.neg ).asPoint;
+					
+					Pen.color = Color.black.alpha_(0.33);
+					Pen.font = Font( Font.defaultSansFace, 9 );
+					points.do({ |item, ii|
+						Pen.use({
+							Pen.translate( item.x, item.y );
+							Pen.scale(scale,scale.neg);
+							Pen.stringCenteredIn( 
+								counts[ii].asString,
+								Rect.aboutPoint( movePt, 20, 15)
+							);
+						});
+					});
+					
+					Pen.color = Color.red(0.5, 0.5);
+					Pen.font = Font( Font.defaultSansFace, 14 );
+					Pen.use({
+						Pen.translate( *(arrayConf.centerPoint).asArray );
+						Pen.scale(scale,scale.neg);
+						Pen.stringCenteredIn( 
+								letters[i].asString,
+								Rect.aboutPoint( movePt, 22, 22)
+							);
+						
+					});
+					
+				});
+				
 			});
 			
 			Pen.use({
@@ -45,15 +87,31 @@ WFSSpeakerConfView : WFSBasicEditView {
 		
 	}
 	
-	select { |index| // can only select one
-		if( index.notNil && { index < this.conf.size }) {
-			selected = [index];
-		} {
-			selected = [];
+	select { |...indices|
+		if( indices[0] === \all ) { 
+			indices = object.positions.collect({ |item, i| i }).flat; 
+		} { 
+			indices = indices.flat.select(_.notNil);
 		};
-		this.refresh;
-		this.changed( \select );
+		if( selected != indices ) {
+			selected = indices; 
+			this.refresh;
+			this.changed( \select );
+		};
 	}
+	
+	selectNoUpdate { |...index|
+		if( index[0] === \all ) { 
+			index = object.positions.collect({ |item, i| i }).flat 
+		} {
+			index = index.flat.select(_.notNil);
+		};
+		if( selected != index ) {
+			selected = index;
+			this.changed( \select ); 
+		};
+	}
+
 	
 	zoomToFit {
 		view.viewRect_( 
@@ -85,31 +143,17 @@ WFSSpeakerConfView : WFSBasicEditView {
 	
 	
 	getIndicesInRect { |rect|
-		/*
-		TODO
-		var conf, index, corners;
+		var conf, index = [], corners;
 		conf = this.conf;
 		if( conf.notNil ) {
-			corners = [ rect.leftTop, rect.rightTop, rect.leftBottom, rect.rightBottom ];
-			index = conf.arrayConfs.detectIndex({ |arr, i|
-				var pts;
-				pts = corners.collect(_.rotate( arr.angle.neg ));
-				arr.dist.inclusivelyBetween( 
-					pts.collect(_.x).minItem, 
-					pts.collect(_.x).maxItem
-				) &&
-				{
-					
-					pt.y.inclusivelyBetween( 
-						arr.rotatedFirstPoint.y - radius,
-						arr.rotatedLastPoint.y + radius
-					);
-				};
+			conf.arrayConfs.do({ |arrayConf, i|
+				var rct;
+				// close enough for jazz..
+				rct = Rect.fromPoints( arrayConf.firstPoint, arrayConf.lastPoint );
+				if( rct.intersects( rect ) ) { index = index.add(i) };
 			});
 		};
-		^index ? [];
-		*/
-		^[]				
+		^index;			
 	}
 	
 	mouseEditSelected {
