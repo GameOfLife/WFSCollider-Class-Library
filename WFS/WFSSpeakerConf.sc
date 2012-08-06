@@ -231,7 +231,7 @@ WFSSpeakerConf {
 	classvar <>default;
 	classvar <>presets;
 	
-	var <>arrayConfs;
+	var <arrayConfs;
 	var <>arrayLimit = 1;
 	
 	var <>focusDetector;
@@ -250,17 +250,29 @@ WFSSpeakerConf {
 	}
 	
 	*new { |...args|
-		^super.newCopyArgs().arrayConfs_( args.collect(_.asWFSArrayConf) ).init;
+		^super.newCopyArgs().arrayConfs_( args );
 	}
 	
 	init {
 		// adjust corners and cornerAngles to each other
-		arrayConfs.do({ |conf, i|
-			conf.adjustCorner1To( arrayConfs.wrapAt( i-1 ) );
-			conf.adjustCorner2To( arrayConfs.wrapAt( i+1 ) );
+		
+		var sortedConfs;
+		
+		sortedConfs = arrayConfs.copy.sort({ |a,b| a.angle >= b.angle });
+		
+		sortedConfs.do({ |conf, i|
+			conf.adjustCorner1To( sortedConfs.wrapAt( i-1 ) );
+			conf.adjustCorner2To( sortedConfs.wrapAt( i+1 ) );
 		});
 		
 		focusDetector = WFSFocusDetector( arrayConfs.collect({ |item| item.cornerPoints[0] }) );
+		
+		this.changed( \init );
+	}
+	
+	arrayConfs_ { |newConfs| 
+		arrayConfs = newConfs.collect(_.asWFSArrayConf); 
+		this.init;
 	}
 	
 	*fromPreset { |name| ^this.presets[ name ].copy; }
@@ -287,6 +299,22 @@ WFSSpeakerConf {
 	makeDefault { default = this; }
 	
 	at { |index| ^arrayConfs[ index ] }
+	
+	copySeries { |first, second, last|  ^arrayConfs.copySeries( first, second, last ) }
+	
+	put { |index, obj| this.arrayConfs = arrayConfs.put( index, obj ); }
+	
+	add { |arrayConf| this.arrayConfs = arrayConfs.add( arrayConf ); }
+	
+	rotate { |angle = 0| 
+		arrayConfs.do({ |item| item.angle = item.angle + angle });
+		this.init;
+	}
+	
+	removeAt { |index|
+		arrayConfs.removeAt( index );
+		this.init;
+	}
 	
 	size { ^arrayConfs.size }
 	
