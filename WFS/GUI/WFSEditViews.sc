@@ -312,7 +312,14 @@ WFSBasicEditView {
 			};
 		};
 		
-		view.drawFunc = { |vw|			
+		view.drawFunc = { |vw|	
+			Pen.use({	
+				Pen.color = Color.white.alpha_(0.4);
+				Pen.width = vw.pixelScale.asArray.mean;
+				Pen.line( -200 @ 0, 200 @ 0 );
+				Pen.line( 0 @ -200, 0 @ 200 );
+				Pen.stroke;
+			});	
 			this.drawContents(  vw.pixelScale );
 			Pen.use({ this.drawFunc.value( vw ); });
 		};
@@ -620,9 +627,6 @@ WFSPathXYView : WFSBasicEditView {
 					};
 				});
 			};
-				
-			// draw center
-			Pen.line( -0.25 @ 0, 0.25 @ 0 ).line( 0 @ -0.25, 0 @ 0.25).stroke;
 			
 			if( object.positions.size > 0 ) {
 				object.draw( drawMode, selected, pos, showControls, scale.asArray.mean );
@@ -1290,10 +1294,7 @@ WFSPointView : WFSBasicEditView {
 			(WFSSpeakerConf.default ?? {
 				WFSSpeakerConf.rect(48,48,5,5);
 			}).draw;
-				
-			// draw center
-			Pen.line( -0.25 @ 0, 0.25 @ 0 ).line( 0 @ -0.25, 0 @ 0.25).stroke;
-			
+
 			Pen.scale(1,-1);
 			
 			points = object.asCollection.collect(_.asPoint);
@@ -1519,9 +1520,6 @@ WFSPlaneView : WFSPointView {
 			(WFSSpeakerConf.default ?? {
 				WFSSpeakerConf.rect(48,48,5,5);
 			}).draw;
-				
-			// draw center
-			Pen.line( -0.25 @ 0, 0.25 @ 0 ).line( 0 @ -0.25, 0 @ 0.25).stroke;
 			
 			Pen.scale(1,-1);
 			

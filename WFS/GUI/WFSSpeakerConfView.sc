@@ -39,9 +39,6 @@ WFSSpeakerConfView : WFSBasicEditView {
 					
 				//// draw configuration
 				conf.draw;
-						
-				// draw center
-				Pen.line( -0.25 @ 0, 0.25 @ 0 ).line( 0 @ -0.25, 0 @ 0.25).stroke;
 				
 			});
 		};
