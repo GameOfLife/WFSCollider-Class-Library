@@ -19,7 +19,7 @@
 
 WFSArrayConf { // configuration for one single speaker array
 	
-	var <>n = 48, <>dist = 5, <>angle = 0.5pi, <>offset = 0, <>spWidth;
+	var <n = 48, <dist = 5, <angle = 0.5pi, <offset = 0, <spWidth;
 	var <>corners;
 	var <>cornerAngles; // angle to next array
 	
@@ -135,6 +135,30 @@ WFSArrayConf { // configuration for one single speaker array
 			corners = array[[0,1]];
 			cornerAngles = array[[2,3]];
 		};
+	}
+	
+	n_ { |newN| n = newN; this.changed( \n, n ); }
+	dist_ { |newDist| 
+		dist = newDist; 
+		this.changed( \dist, dist );
+		this.changed( \center, this.center ); 
+	}
+	angle_ { |newAngle| 
+		angle = newAngle; 
+		this.changed( \angle, angle ); 
+		this.changed( \center, this.center ); 
+	}
+	offset_ { |newOffset| offset = newOffset; this.changed( \offset, offset ); }
+	spWidth_ { |newSpWidth| spWidth = newSpWidth; this.changed( \spWidth, spWidth ); }
+	
+	center { ^Polar( dist, angle ).asPoint; }
+	center_ { |newCenter|
+		newCenter = newCenter.asPolar;
+		dist = newCenter.rho;
+		angle = newCenter.theta; 
+		this.changed( \dist, dist );
+		this.changed( \angle, angle );
+		this.changed( \center, this.center );
 	}
 	
 	rotatedPointAt { |index = 0|
