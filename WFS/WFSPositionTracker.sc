@@ -2,12 +2,14 @@ WFSPositionTracker {
 	
 	classvar <>all;
 	classvar <>positions;
+	classvar <>types;
 	classvar <sendPointRate = 10;
 	classvar <active = false;
 	
 	*initClass {
 		all = IdentityDictionary();
 		positions = IdentityDictionary();
+		types = IdentityDictionary();
 	}
 	
 	*start {
@@ -31,6 +33,7 @@ WFSPositionTracker {
 		all.do({ |xx| xx.do({ |item| item.remove }); });
 		all.clear;
 		positions.clear;
+		types.clear;
 	}
 	
 	*update { |obj, groupDict, mode, uchain|
@@ -52,15 +55,22 @@ WFSPositionTracker {
 	
 	*add { |uchain|
 		var pannerUnits, repliers;
+		var typeDict = Order();
 		this.remove( uchain );
-		uchain.units.do({ |unit|
+		uchain.units.do({ |unit, i|
 			if( [ 
 					\wfsStaticPoint, 
 					\wfsDynamicPoint, 
+				].includes( unit.name ) ) {
+				pannerUnits = pannerUnits.add( unit );
+				typeDict[ i ] = \point;
+			};
+			if( [ 
 					\wfsStaticPlane, 
 					\wfsDynamicPlane 
 				].includes( unit.name ) ) {
 				pannerUnits = pannerUnits.add( unit );
+				typeDict[ i ] = \plane;
 			};
 		});
 		if( pannerUnits.size > 0 ) {
@@ -87,6 +97,7 @@ WFSPositionTracker {
 			if( repliers.size > 0 ) {
 				all[ uchain ] = repliers;
 				positions[ uchain ] = Order();
+				types[ uchain ] = typeDict;
 			};
 		};
 	}
@@ -95,6 +106,7 @@ WFSPositionTracker {
 		all[ uchain ].do({ |item| item.remove });
 		all[ uchain ] = nil;
 		positions[ uchain ] = nil;
+		types[ uchain ] = nil;
 	}
 	
 	*list {
@@ -111,7 +123,11 @@ WFSPositionTracker {
 		var objects;
 		positions.keysValuesDo({  |uchain, points|
 			points.do({ |point, i|
-				objects = objects.add( [point,  uchain.name ++ [ i ].asString ] );
+				objects = objects.add( [
+					point,  
+					uchain.name ++ [ i ].asString, 
+					types[ uchain ][i]
+				] );
 			});
 		});
 		^(objects ? []).flop;

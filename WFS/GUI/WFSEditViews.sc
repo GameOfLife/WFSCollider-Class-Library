@@ -1571,3 +1571,99 @@ WFSPlaneView : WFSPointView {
 		
 	}	
 }
+
+
+//////// MIXED EDITOR /////////////////////////////////////////////////////////////////
+
+WFSMixedView : WFSPointView {
+	
+	var <>type = \point;
+	
+	drawType { |which, p, scale = 1|
+		var polar, p1, p2;
+		
+		switch( which,
+			\point, { 
+				Pen.moveTo( p );
+				Pen.addArc( p, 3 * scale, 0, 2pi );
+				Pen.line( p - ((5 * scale)@0), p + ((5 * scale)@0));
+				Pen.line( p - (0@(5 * scale)), p + (0@(5 * scale)));
+			},
+			\plane, {
+				polar = (p * (1@ 1)).asPolar;
+				p1 = polar.asPoint;
+				p2 = Polar( 50, polar.angle-0.5pi).asPoint;
+				Pen.line( p1 + p2, p1 - p2 ).stroke;
+				p2 = Polar( scale * 15, polar.angle ).asPoint;
+				Pen.arrow( p1 + p2, p1 - p2, scale * 5 );
+		});
+	}
+
+	drawContents { |scale = 1|
+		var points, controls, types;
+		var selectColor = Color.yellow;
+		
+		scale = scale.asArray.mean;
+		
+		Pen.use({	
+			
+			Pen.width = 0.164;
+			Pen.color = Color.red(0.5, 0.5);
+				
+			//// draw configuration
+			(WFSSpeakerConf.default ?? {
+				WFSSpeakerConf.rect(48,48,5,5);
+			}).draw;
+			
+			Pen.scale(1,-1);
+			
+			points = object.asCollection;
+			types = this.type.asCollection.wrapExtend(points.size);
+			
+			Pen.width = scale;
+		
+			Pen.color = Color.blue(0.5,0.75);
+			points.do({ |p, i|
+				this.drawType( types[i], p, scale );
+			});
+			Pen.stroke;
+		
+			// selected
+			Pen.use({	
+				if( selected.notNil ) {	
+					Pen.width = scale;
+					Pen.color = selectColor;
+					selected.do({ |item|
+						Pen.moveTo( points[item] );
+						Pen.addArc( points[item] , 2.5 * scale, 0, 2pi );
+					});
+					
+					Pen.fill;
+				};
+			});
+			
+			if( showLabels && { points.size > 1 } ) {
+					Pen.font = Font( Font.defaultSansFace, 9 );
+					Pen.color = Color.black;
+					points.do({ |item, i|
+						Pen.use({
+							Pen.translate( item.x, item.y );
+							Pen.scale(scale,scale.neg);
+							Pen.stringAtPoint( 
+								((labels ? [])[i] ? i).asString, 
+								5 @ -12 );
+						});
+					});
+			};
+			
+		});
+		
+	}
+	
+	objectAndLabels_ { |object, inLabels, type|
+		labels = inLabels.asCollection;
+		this.object = object;
+		this.type = type ? \point;
+	}
+		
+}

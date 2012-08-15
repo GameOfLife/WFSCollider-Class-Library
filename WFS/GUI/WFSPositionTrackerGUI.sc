@@ -77,7 +77,7 @@ WFSPositionTrackerGUI {
 			
 		rateSlider.view.resize_(2);
 		
-		view = WFSPointView( composite, composite.bounds.insetAll( 0, 22, 0, 0 ), [] )
+		view = WFSMixedView( composite, composite.bounds.insetAll( 0, 22, 0, 0 ), [] )
 			.mouseMode_(\lock)
 			.showLabels_( false );
 			
