@@ -1,5 +1,7 @@
 WFSSpeakerConfView : WFSBasicEditView {
 	
+	var <>showCorners = true;
+	
 	defaultObject	{ ^nil } // nil means default
 	
 	conf { ^object ? WFSSpeakerConf.default; }
@@ -69,6 +71,14 @@ WFSSpeakerConfView : WFSBasicEditView {
 							);
 						
 					});
+					
+					if( showCorners ) {
+						Pen.color = Color.black.alpha_(0.33);
+						arrayConf.cornerPoints.do({ |pt|
+							Pen.addArc( pt, scale * 2.5, 0, 2pi );
+						});
+						Pen.fill;
+					};
 					
 				});
 				
