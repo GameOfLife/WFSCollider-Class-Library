@@ -161,6 +161,8 @@ WFSArrayConf { // configuration for one single speaker array
 		this.changed( \center, this.center );
 	}
 	
+	rotate { |amount = 0| this.angle = angle + amount; }
+	
 	rotatedPointAt { |index = 0|
 		^( dist @ ( ( (index - ((n-1)/2)) * spWidth) - offset ) );
 	}
@@ -331,7 +333,7 @@ WFSSpeakerConf {
 	add { |arrayConf| this.arrayConfs = arrayConfs.add( arrayConf ); }
 	
 	rotate { |angle = 0| 
-		arrayConfs.do({ |item| item.angle = item.angle + angle });
+		arrayConfs.do(_.rotate(angle));
 		this.init;
 	}
 	
