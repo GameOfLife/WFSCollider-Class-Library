@@ -26,7 +26,7 @@ WFSArrayConfGUI {
 	var <parent, <composite, <views, <controller;
 	var <viewHeight = 14, <labelWidth = 80;
 	var <>action;
-	var <>selected = false;
+	var <selected = false;
 	
 	*initClass {
 		specs = (
@@ -68,6 +68,7 @@ WFSArrayConfGUI {
 		composite.onClose = {
 			controller.remove
 		 };
+		 if( selected ) { composite.background = Color.yellow.alpha_(0.125); };
 		
 		views = ();
 		
@@ -82,6 +83,15 @@ WFSArrayConfGUI {
 				
 			views[ key ] = vw;
 		});
+	}
+	
+	selected_ { |bool = true|
+		selected = bool;
+		if( selected ) { 
+			{ composite.background = Color.yellow.alpha_(0.25); }.defer;
+		} {
+			{ composite.background = Color.clear; }.defer;
+		};
 	}
 	
 	resize_ { |resize| composite.resize_(resize) }
