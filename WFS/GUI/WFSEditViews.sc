@@ -69,7 +69,7 @@ WFSBasicEditView {
 		
 		gridColor = gridColor ?? { Color.white.alpha_(0.25) };
 		
-		view = ScaledUserView.withSliders( parent, bounds, Rect(-100, -100, 200, 200 ) )
+		view = ScaledUserView.withSliders( parent ?? { this.class.name.asString }, bounds, Rect(-100, -100, 200, 200 ) )
 			.scaleSliderLength_( 40 )
 			.sliderWidth_( 10 )
 			.move_( [0.5,0.5] )
