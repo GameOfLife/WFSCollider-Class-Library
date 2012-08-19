@@ -137,6 +137,9 @@ WFSServers {
 	
 	makeWindow {
 		var comp, widgets = List.new;
+		var font;
+		
+		font = Font( Font.defaultSansFace, 11 );
 		
 		if( window.notNil && { window.isClosed.not }) { window.front; ^this };
 		
@@ -155,7 +158,7 @@ WFSServers {
 			
 			Button( window, Rect( 0, 0, 16, 16 ) )
 				.states_([["K", Color.black, Color.clear]])
-				.font_( Font( "Monaco", 9 ) )
+				.font_( font )
 				.action_( { Server.killAll;
 					if(this.isMaster) {
 						"ssh gameoflife@192.168.2.11 \"killall -9 scsynth\"".systemCmd;
@@ -165,22 +168,22 @@ WFSServers {
 			
 			Button(window, Rect(0,0, 16, 16))
 				.states_([["F", Color.black, Color.clear]])
-				.font_( Font( "Monaco", 9 ) )
+				.font_( font )
 				.action_( { Server.freeAllRemote; } );
 				
 			Button(window, Rect(0,0, 16, 16))
 				.states_([["R", Color.black, Color.clear]])
-				.font_( Font( "Monaco", 9 ) )
+				.font_( font )
 				.action_( { ServerRecordWindow( masterServer, 999 ); } );
 			
 			Button(window, Rect(0,0, 16, 16))
 				.states_([["?", Color.black, Color.clear]])
-				.font_( Font( "Monaco", 9 ) )
+				.font_( font )
 				.action_( { WFS.openHelpFile } );
 			
 			StaticText( window, Rect( 0, 0, 140, 15 ) )
 				.string_( "master (" ++ ( NetAddr.myIP ? "127.0.0.1" ) ++ ")" )
-				.font_( Font( "Monaco", 9 ) );
+				.font_( font );
 
 			EZSmoothSlider(window, Rect(0,0,200,15),"Latency", [0.02,1,\exp,0,0.02].asSpec)
 			    .value_(masterServer.latency)
@@ -194,7 +197,7 @@ WFSServers {
 				
 				Button( window, Rect( 0, 0, 110, 16 ) )
 					.states_( [["sync"]] )
-					.font_( Font( "Monaco", 9 ) )
+					.font_( font )
 					.action_( {
 						SyncCenter.remoteSync;	
 					} );
@@ -209,7 +212,7 @@ WFSServers {
 					
 				Button( window, Rect( 0, 0, 110, 16 ) )
 					.states_( [["shut down hosts"]] )
-					.font_( Font( "Monaco", 9 ) )
+					.font_( font )
 					.action_( { SCAlert( "Do you really want to shut down\nboth host servers?",
 							 ["cancel", "unmount only", "restart SC", "Shut Down"], 
 							 [{}, 
@@ -306,7 +309,7 @@ WFSServers {
 		
 			Button( window, Rect( 0, 0, 12, 12 ) )
 				.states_([["k", Color.red, Color.red.alpha_(0.1)]])
-				.font_( Font( "Monaco", 9 ) )
+				.font_( font )
 				.action_( {
 					// kill synths and press cmd-k on remote
 					"killing scsynths on server %".postf( ips[i].asString );
@@ -316,7 +319,7 @@ WFSServers {
 			
 			Button( window, Rect( 0, 0, 12, 12 ) )
 				.states_([["x", Color.red, Color.red.alpha_(0.1)]])
-				.font_( Font( "Monaco", 9 ) )
+				.font_( font )
 				.action_( {
 					// kill synths and restart sc on remote
 					"killing scsynths on server % and rebooting sc in 10s"
@@ -339,7 +342,7 @@ WFSServers {
 					if( ips[i] == "127.0.0.1",
 						{ NetAddr.myIP ? "127.0.0.1" }, { ips[i] } )
 					++ "/" ++ multiServer.hostName ++ ")" )
-				.font_( Font( "Monaco", 9 ) );
+				.font_( font );
 			window.view.decorator.nextLine;
 			
 			multiServer.servers.do({ |server, ii| 
