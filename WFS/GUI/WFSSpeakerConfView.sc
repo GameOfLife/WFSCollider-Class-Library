@@ -93,6 +93,82 @@ WFSSpeakerConfView : WFSBasicEditView {
 				conf.draw;
 				
 			});
+				
+			Pen.use({
+				var rect, arrayConf, pts, gap, leftTop;
+				Pen.font = Font( Font.defaultSansFace, 10 );
+				Pen.color = Color.black;
+				leftTop = this.view.viewRect.leftTop;
+				Pen.translate( leftTop.x, leftTop.y );
+				Pen.scale(*scale.dup);
+				case { conf.arrayConfs.size == 1 } {
+					Pen.stringAtPoint( 
+						"single array: % speakers, dist: %m, angle: %pi, width: %m"
+							.format( 
+								conf.arrayConfs[0].n,
+								conf.arrayConfs[0].dist.asStringWithFrac(2),
+								(conf.arrayConfs[0].angle / pi).asStringWithFrac(2),
+								conf.arrayConfs[0].n * conf.arrayConfs[0].spWidth
+							),
+						5@2
+					);
+				} { selected.size == 1 or: { conf.arrayConfs.size == 1 } } {
+					arrayConf = conf.arrayConfs[ selected[0] ];
+					if( arrayConf.notNil ) {
+						Pen.stringAtPoint( 
+							"array %: % speakers, dist: %m, angle: %pi, width: %m"
+								.format( 
+									letters[selected[0]],
+									arrayConf.n,
+									arrayConf.dist.asStringWithFrac(2),
+									(arrayConf.angle / pi).asStringWithFrac(2),
+									arrayConf.n * arrayConf.spWidth
+								),
+							5@2
+						);
+					};
+				} { selected.size == 0 } {
+					rect = conf.asRect;
+					Pen.stringAtPoint( 
+						"% speakers, % arrays, dimensions: %m x %m"
+							.format( 
+								conf.arrayConfs.collect(_.n).sum, 
+								conf.arrayConfs.size,
+								rect.width.asStringWithFrac(2),
+								rect.height.asStringWithFrac(2),
+							),
+						5@2
+					);
+				} { selected.size == 2 } {
+					pts = conf.arrayConfs[selected]
+						.collect({ |arr| [ arr.firstPoint, arr.lastPoint ] });
+					gap = [ 
+						pts[0][0].dist(pts[1][0]), 
+						pts[0][1].dist(pts[1][1]), 
+						pts[0][0].dist(pts[1][1]), 
+						pts[0][1].dist(pts[1][0]),
+					].minItem;
+					Pen.stringAtPoint( 
+						"arrays %: % speakers, gap: %m"
+							.format( 
+								selected.collect(letters[_]).join( ", "), 
+								conf.arrayConfs[selected].collect(_.n).sum,
+								gap.asStringWithFrac(2)
+							),
+						5@2
+					);
+				} {
+					Pen.stringAtPoint( 
+						"arrays %: % speakers"
+							.format( 
+								selected.collect(letters[_]).join( ", "), 
+								conf.arrayConfs[selected].collect(_.n).sum
+							),
+						5@2
+					);
+				};
+			});
+			
 		};
 		
 	}
