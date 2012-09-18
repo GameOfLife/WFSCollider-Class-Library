@@ -61,7 +61,7 @@ if( WFS.previewMode.isNil ) {
 		var planeSynths;
 		var planeLevelBuses;
 		var defName;
-		var planeWaveMakeUpGain;
+		var gain;
 		
 		server = target.asTarget.server;
 		
@@ -88,17 +88,16 @@ if( WFS.previewMode.isNil ) {
 			arrayGroup, addAction: \addBefore
 		);
 		
-		planeWaveMakeUpGain = WFSSpeakerConf.default.planeWaveMakeUpGain;
+		gain = WFSSpeakerConf.default.gain.dbamp * WFSSpeakerConf.default.planeWaveMakeUpGain;
 		
 		// send the panner synths
 		n = 0;
 		planeSynths.do({ |sn, i|
 			server.sendMsg( *sn.newMsg( arrayGroup, [ 
-					\gain, WFSSpeakerConf.default.gain.dbamp, 
+					\gain, gain, 
 					\arrayConf, arrayConfs[i], 
 					\levelBus, planeLevelBuses[i],
-					\outOffset, n,
-					\gain, planeWaveMakeUpGain
+					\outOffset, n
 				] ++ unit.def.env.getInitArgsFor( \wfsa, unit.args, server, startPos ), 
 				\addToTail ) 
 			);
