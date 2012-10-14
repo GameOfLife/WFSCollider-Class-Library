@@ -108,6 +108,94 @@ WFSLib {
 			).useSndFileDur
 		};
 		
+		UChainGUI.presetManager
+			.putRaw( \dynamicPoint, { 
+				UChain( 
+					[ \bufSoundFile, [ 
+						\soundFile, BufSndFile.newBasic("@resources/sounds/a11wlk01-44_1.aiff", 
+							107520, 1, 44100, 0, nil, 1, true) 
+					] ],
+					[ \wfsDynamicPoint, 
+						[  
+							\point, 5.0.rand2@(5.0 rrand: 10),
+							\pointLag, 1,
+							\quality, \better
+						] // always behind array
+					]
+				).useSndFileDur 
+			})
+			.putRaw( \staticPlane, { 
+				UChain( 
+					[ \bufSoundFile, [ 
+						\soundFile, BufSndFile.newBasic("@resources/sounds/a11wlk01-44_1.aiff", 
+							107520, 1, 44100, 0, nil, 1, true) 
+					] ], 
+					[ \wfsStaticPlane, [  \point, 5.0.rand2@(5.0 rrand: 10) ] ]
+				).useSndFileDur 
+			})
+			.putRaw( \circlePath, {
+				UChain(  
+					[ \bufSoundFile, [ 
+						\soundFile, BufSndFile.newBasic("@resources/sounds/a11wlk01-44_1.aiff", 
+							107520, 1, 44100, 0, nil, 1, true) 
+					] ],
+					[ \wfsCirclePath, [ \speed, 0.4 ] ],
+					[ \wfsDynamicPoint, [ \pointFromBus, true, \quality, \better ] ]
+				).useSndFileDur 
+			})
+			.putRaw( \wfsPath, {
+				UChain(  
+					[ \bufSoundFile, [ 
+						\soundFile, BufSndFile.newBasic("@resources/sounds/a11wlk01-44_1.aiff", 
+							107520, 1, 44100, 0, nil, 1, true) 
+					] ],
+					[ \wfsPathPlayer, [ \wfsPath, 
+						WFSPathBuffer( 
+							WFSPath2.generate( 10, 5, 
+								[ \random, [\seed, 100000.rand, \radius, 10@10] ] 
+							), 0, 1, true
+						), 
+					] ],
+					[ \wfsDynamicPoint, [ \pointFromBus, true, \quality, \better ] ]
+				).useSndFileDur
+			})
+			.putRaw( \sinewave, { UChain( 
+				\sine,
+				[ \wfsDynamicPoint, 
+						[  
+							\point, 5.0.rand2@(5.0 rrand: 10),
+							\pointLag, 1,
+							\quality, \better
+						] // always behind array
+					]
+				).useSndFileDur
+			})
+			.putRaw( \noiseband, { UChain( 
+				\pinkNoise,
+				[ \cutFilter, [ 
+					\freq, 1.0.rand.linexp( 0,1, 200, 2000 ).round(200) + [0,200]
+				] ],
+				[ \wfsDynamicPoint, [  
+					\point, 5.0.rand2@(5.0 rrand: 10),
+					\pointLag, 1,
+					\quality, \better
+				] ]
+				).useSndFileDur
+			})
+			.putRaw( \dualdelay, UChain( 
+				'bufSoundFile', 
+				[ 'delay', 
+					[ 'time', 0.3, 'maxTime', 0.3, 'dry', 0.0, 'amp', 0.5, 'u_o_ar_0_bus', 1 ] 
+				],
+				[ 'delay', 
+					[ 'time', 0.5, 'maxTime', 0.5, 'dry', 0.0, 'amp', 0.5, 'u_o_ar_0_bus', 2 ] 
+				], 
+				[ 'wfsStaticPoint', [ 'point', Point(-6, 6) ] ], 
+				[ 'wfsStaticPlane', [ 'point', Point(6, 6), 'u_i_ar_0_bus', 1 ] ],
+				[ 'wfsStaticPlane', [ 'point', Point(-6, -6), 'u_i_ar_0_bus', 2 ] ]
+				)
+			);
+		
 		defs = Udef.loadAllFromDefaultDirectory.collect(_.synthDef).flat.select(_.notNil);
 		UnitRack.loadAllFromDefaultDirectory;
 		
