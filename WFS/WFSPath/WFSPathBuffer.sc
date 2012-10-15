@@ -96,6 +96,10 @@ WFSPathBuffer : AbstractRichBuffer {
 		};
 		^wfsPath;
 	}
+		
+	== { |that| // use === for identity
+		^this.compareObject(that);
+	}
 
 	rate_ { |new|
 		rate = new ? 1;
