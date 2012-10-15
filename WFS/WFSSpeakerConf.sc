@@ -255,7 +255,7 @@ WFSSpeakerConf {
 	
 	classvar <numSystems, <>serverGroups;
 	classvar <>default;
-	classvar <>presets;
+	classvar <>presetManager;
 	
 	var <arrayConfs;
 	var <>arrayLimit = 1;
@@ -266,11 +266,21 @@ WFSSpeakerConf {
 	
 	
 	*initClass { 
-		 
-		presets = Dictionary[
-			'default' -> WFSSpeakerConf.rect(48,dx:5),
-			'sampl' -> WFSSpeakerConf([32, 5, 0.5pi, 0, 0.1275]).arrayLimit_(0.3)
-		];
+		 StartUp.defer({
+			 presetManager = PresetManager( WFSSpeakerConf );
+			 presetManager
+			 	.putRaw( 'default', WFSSpeakerConf.rect(48,dx:5) )
+			 	.putRaw( 'sampl', WFSSpeakerConf([32, 5, 0.5pi, 0, 0.1275]).arrayLimit_(0.3) )
+			 	.applyFunc_( { |object, preset|
+				 	if( object === WFSSpeakerConf ) {
+					 	preset.deepCopy;
+				 	} {	
+					 	object.arrayLimit = preset.arrayLimit;
+					 	object.gain = preset.gain;
+					 	object.arrayConfs = preset.arrayConfs.deepCopy;
+					 }
+			 	} );
+		 });
 		
 		this.numSystems = 2; // create server library
 	}
@@ -301,7 +311,9 @@ WFSSpeakerConf {
 		this.init;
 	}
 	
-	*fromPreset { |name| ^this.presets[ name ].copy; }
+	*fromPreset { |name| ^presetManager.apply( name ) }
+	
+	fromPreset { |name| ^presetManager.apply( name, this ); }
 	
 	== { |that| // use === for identity
 		^this.compareObject(that);
