@@ -13,6 +13,10 @@ WFSFocusDetector {
 		^super.newCopyArgs( cornerPoints, vectors, size );
 	}
 	
+	== { |that| // use === for identity
+		^this.compareObject(that);
+	}
+	
 	init {
 		size = cornerPoints.size;
 		if( size < 3 ) { 
