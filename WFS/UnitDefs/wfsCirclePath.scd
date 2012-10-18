@@ -5,11 +5,12 @@ Udef( \wfsCirclePath, { |
 		startAngle = 0,
 		clockwise = 1, 
 		center = #[0,0],
-		radius = #[10,10]|
+		radius = #[10,10],
+		u_startPos = 0|
 	var circle;
 	circle = SinOsc.kr(  
 		speed * clockwise.linlin(0,1,-1,1), 
-		[ -0.5pi, 0 ] + ((startAngle / 360) * 2pi),
+		[ 0, 0.5pi ] + (((startAngle / 360) + (u_startPos * speed)) * 2pi),
 		radius,
 		center
 	);
