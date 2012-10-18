@@ -50,7 +50,13 @@ WFSPathBuffer : AbstractRichBuffer {
 	}
 	
 	asControlInputFor { |server, startPos = 0| 
-	    ^[ this.currentBuffer(server, startPos), startFrame, rate, loop.binaryValue ] 
+		var realStartFrame;
+		if( (startPos > 0) && { wfsPath.isWFSPath2 } ) {
+			realStartFrame = wfsPath.indexAtTime( 
+				(startPos * rate) + wfsPath.timeAtIndex( startFrame ) 
+			);
+		};
+	    ^[ this.currentBuffer(server), realStartFrame ? startFrame, rate, loop.binaryValue ] 
 	 }
 	 
 	wfsPath_ { |new|
