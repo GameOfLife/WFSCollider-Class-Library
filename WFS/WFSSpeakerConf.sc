@@ -270,6 +270,9 @@ WFSSpeakerConf {
 		presetManager = PresetManager( WFSSpeakerConf );
 		presetManager
 		 	.putRaw( 'default', WFSSpeakerConf.rect(48,dx:5) )
+		 	.putRaw( 'rect',  WFSSpeakerConf.rect(40, 56, 5.5, 4.5) )
+		 	.putRaw( 'square9x9',  WFSSpeakerConf.rect(48,dx:4.5) )
+		 	.putRaw( 'single64',  WFSSpeakerConf([64, 5, 0.5pi, 0, 0.164]).arrayLimit_(0.5) )
 		 	.putRaw( 'sampl', WFSSpeakerConf([32, 5, 0.5pi, 0, 0.1275]).arrayLimit_(0.3) )
 		 	.applyFunc_( { |object, preset|
 			 	if( object === WFSSpeakerConf ) {
@@ -307,6 +310,7 @@ WFSSpeakerConf {
 	
 	arrayConfs_ { |newConfs| 
 		arrayConfs = newConfs.collect(_.asWFSArrayConf); 
+		this.changed( \arrayConfs );
 		this.init;
 	}
 	
@@ -343,6 +347,48 @@ WFSSpeakerConf {
 	
 	add { |arrayConf| this.arrayConfs = arrayConfs.add( arrayConf ); }
 	
+	addArray { |keepSpeakerCount = false|
+		// intelligently expand the setup by one array
+		var startAngle, diffs, scaleAmt, newAngles;
+		var newConf;
+		diffs = arrayConfs.collect(_.angle);
+		startAngle = diffs[0];
+		diffs = diffs.differentiate[1..].wrap(-pi,pi);
+		scaleAmt = this.size / (this.size + 1);
+		diffs = diffs * scaleAmt;
+		newAngles = ([ startAngle ] ++ diffs).integrate;
+		newConf = WFSArrayConf( 
+			arrayConfs.last.n, 
+			[ arrayConfs.last.dist, arrayConfs.first.dist ].mean,
+			newAngles.last - ((newAngles.last - (newAngles.first + 2pi))/2),
+			0,
+			arrayConfs.last.spWidth
+		);
+		arrayConfs.do({ |item, i|
+			item.angle = newAngles[i].wrap(-pi,pi);
+		});
+		this.arrayConfs = arrayConfs.add( newConf );
+	}
+	
+	removeArray { 
+		// intelligently expand the setup by one array
+		var startAngle, diffs, scaleAmt, newAngles;
+		if( arrayConfs.size > 1 ) {	
+			diffs = arrayConfs.collect(_.angle);
+			startAngle = diffs[0];
+			diffs = diffs.differentiate[1..].wrap(-pi,pi);
+			scaleAmt = this.size / (this.size - 1);
+			diffs = diffs * scaleAmt;
+			newAngles = ([ startAngle ] ++ diffs).integrate;
+			arrayConfs.do({ |item, i|
+				item.angle = newAngles[i].wrap(-pi,pi);
+			});
+			this.arrayConfs = arrayConfs[..arrayConfs.size-2];
+		} {
+			"%:removeArray - number of arrays can't be < 1".postln;
+		};
+	}
+	
 	rotate { |angle = 0| 
 		arrayConfs.do(_.rotate(angle));
 		this.init;
@@ -356,6 +402,29 @@ WFSSpeakerConf {
 	size { ^arrayConfs.size }
 	
 	speakerCount { ^arrayConfs.collect(_.n).sum; }
+	
+	setSpeakerCount { |speakers = 192, unitSize = 8|
+		var currentCount;
+		var counts, countsCopy, index;
+		var addArray, mul = 1, i = 0;
+		speakers = speakers.round( unitSize ).max( this.size * unitSize );
+		counts = arrayConfs.collect({ |item| item.n.round( unitSize ) });
+		countsCopy = counts.copy;
+		if( speakers < counts.sum ) { mul = -1 };
+		while { (counts.sum != speakers) && { i < 1000 }} {
+			index = ((counts * countsCopy) * mul).minIndex;
+			counts[index] = counts[index] + (unitSize * mul);
+			i = i+1; // timeout
+			if( i == 1000 ) { 
+				"WFSSpeakerConf:setSpeakerCount - timeout occurred";
+				counts = arrayConfs.collect({ |item| item.n.round( unitSize ) });
+			};
+		};
+		//addArray.sort;
+		arrayConfs.do({ |item, i|
+			item.n = counts[i]
+		});
+	}
 	
 	divideArrays { |n| // split the arrayConfs into n equal (or not so equal) groups
 		var division, counter = 0, result = [];

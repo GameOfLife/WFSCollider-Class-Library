@@ -6,6 +6,19 @@ WFSSpeakerConfView : WFSBasicEditView {
 	
 	conf { ^object ? WFSSpeakerConf.default; }
 	
+	conf_ { |newConf| 
+		object.removeDependant( this );
+		this.object = newConf ? WFSSpeakerConf.default; 
+		object.addDependant( this );
+	}
+	
+	init {
+		this.conf = this.conf;
+		this.onClose = { this.conf.removeDependant( this ); };
+	}
+	
+	update { { this.refresh }.defer }
+	
 	drawContents { |scale = 1|
 		var conf, lines;
 		var count = 0;
@@ -245,5 +258,6 @@ WFSSpeakerConfView : WFSBasicEditView {
 	mouseEditSelected {
 	}
 	
-	
+	moveSelected { }
+
 }

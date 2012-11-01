@@ -32,7 +32,7 @@ WFSBasicEditView {
 	
 	var <selected, <allSelected = false;
 	
-	var <>action;
+	var <>action, <>onClose;
 	
 	var <selectRect, <hitIndex, <moveHitPoint;
 	var <prevMouseMode;
@@ -354,17 +354,16 @@ WFSBasicEditView {
 			};
 		};	
 		
+		view.onClose = { onClose.value( this ) };
+		
 		this.setDragHandlers;
 	}
 	
 	setDragHandlers { }
 	
 	refresh {
-		if( view.view.isClosed.not ) { view.refresh };
+		if( view.notNil && { view.view.isClosed.not }) { view.refresh };
 	}
-	
-	onClose { ^view.onClose }
-	onClose_ { |func| view.onClose = func }
 	
 	close { // close enclosing window
 		view.view.getParents.last.findWindow.close;
