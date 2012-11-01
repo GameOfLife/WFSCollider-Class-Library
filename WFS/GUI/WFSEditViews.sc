@@ -489,6 +489,9 @@ WFSBasicEditView {
 	selectAll { this.select( \all ) }
 	selectNone { this.select( ) }
 	
+	resize_ { |val| view.resize = val }
+	resize { ^view.resize }
+	
 	// subclass responsibility
 
 	drawContents { } 	
