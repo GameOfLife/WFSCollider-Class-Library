@@ -229,11 +229,17 @@ WFS {
 			thisProcess.platform.ideName.asSymbol === \scapp 
 		}) {
 		    UMenuBar();
+		    SCMenuItem.new(UMenuBar.viewMenu, "WFSSpeakerConfGUI").action_({
+			    WFSSpeakerConfGUI.newOrCurrent;
+			});
 		    SCMenuItem.new(UMenuBar.viewMenu, "WFSPositionTracker").action_({
 				WFSPositionTrackerGUI.newOrCurrent;
 			});
 		} {
 			UMenuWindow();
+			UMenuWindow.viewMenu.tree.put( 'WFSSpeakerConfGUI', {
+				WFSSpeakerConfGUI.newOrCurrent;
+			});
 			UMenuWindow.viewMenu.tree.put( 'WFSPositionTracker', {
 				WFSPositionTrackerGUI.newOrCurrent;
 			});
