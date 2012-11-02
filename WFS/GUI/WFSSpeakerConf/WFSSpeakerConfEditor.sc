@@ -87,7 +87,7 @@ WFSSpeakerConfEditor {
 			})
 			.resize_( 7 );
 		
-		StaticText( composite, 50@14 )
+		StaticText( composite, 80@14 )
 			.applySkin( RoundView.skin )
 			.string_( "arrayLimit" )
 			.align_( \right )
@@ -122,7 +122,7 @@ WFSSpeakerConfEditor {
 			})
 			.resize_( 7 );
 		
-		StaticText( composite, 50@14 )
+		StaticText( composite, 80@14 )
 			.applySkin( RoundView.skin )
 			.string_( "unitSize" )
 			.align_( \right )
@@ -172,9 +172,9 @@ WFSSpeakerConfEditor {
 			})
 			.resize_( 7 );
 			
-		StaticText( composite, 52@14 )
+		StaticText( composite, 82@14 )
 			.applySkin( RoundView.skin )
-			.string_( "offset" )
+			.string_( "orientation" )
 			.align_( \right )
 			.resize_( 7 );
 			

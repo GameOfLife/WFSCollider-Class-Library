@@ -68,10 +68,10 @@ WFSSpeakerConfGUI {
 		
 		editView.resize_(5);
 		
-		editor.action = { |vw| editView.select( *vw.selected ) };
+		editor.action = { |vw| editView.select( *editor.selected ) };
 		
 		ctrl = SimpleController( editView )
-			.put( \select, { editor.select( editView.selected ) });
+			.put( \select, { editor.select( *editView.selected ) });
 
 		current = this;
 		this.class.changed( \current );
