@@ -7,6 +7,7 @@ WFSLib {
 		this.loadOldPrefs;
 		this.loadPrefs;
 		
+		WFSServers.default !? _.close;
 				
 		if( WFSSpeakerConf.default.isNil ) {
 			WFSSpeakerConf.default = WFSSpeakerConf.fromPreset( \default );
@@ -215,6 +216,7 @@ WFSLib {
 			if(thisProcess.platform.class.asSymbol === 'OSXPlatform' && {
 					thisProcess.platform.ideName.asSymbol === \scapp 
 				}) {
+			    UMenuBar.remove;
 			    UMenuBar();
 			    SCMenuItem.new(UMenuBar.viewMenu, "WFSSpeakerConfGUI").action_({
 					WFSSpeakerConfGUI.newOrCurrent;

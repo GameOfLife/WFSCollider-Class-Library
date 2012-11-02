@@ -127,6 +127,20 @@ WFSServers {
 		});
 	}
 	
+	quit {
+		 if( masterServer.notNil ) { masterServer.quit; };
+		 multiServers.do({ |ms|
+			 ms.servers.do({ |srv|
+				 if( srv.isLocal ) { srv.quit };
+			 });
+		 });
+	}
+	
+	close {
+		this.quit;
+		if( window.notNil && { window.isClosed.not }) { window.close; };
+	}
+	
 	cmdPeriod { Server.freeAllRemote( false ); }
 	
 	isMaster { ^( masterServer.notNil && { multiServers.size != 0 }) }
