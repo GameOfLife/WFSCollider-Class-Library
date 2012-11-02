@@ -7,6 +7,7 @@ WFSOptionsGUI {
 	var <view, <firstColumn, <secondColumn, <optionsView;
 	var <masterComp, <masterHeader, <masterView;
 	var <serverComp, <serverHeader, <serverViews;
+	var <>savedMasterOptions;
 	
 	*new { |parent, bounds, object|
 		^super.new.init( parent, bounds, object )
@@ -85,8 +86,10 @@ WFSOptionsGUI {
 			.value_( object.masterOptions.notNil.binaryValue )
 			.action_({ |bt|
 				if( bt.value == 1 ) {
-					object.masterOptions = object.masterOptions ?? { WFSMasterOptions().useForWFS_(true) };
+					object.masterOptions = object.masterOptions ? savedMasterOptions ??
+						 { WFSMasterOptions().useForWFS_(true) };
 				} {
+					savedMasterOptions = object.masterOptions;
 					object.masterOptions = nil;
 				};
 				this.makeMasterGUI;
