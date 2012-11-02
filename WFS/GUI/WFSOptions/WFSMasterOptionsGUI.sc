@@ -115,7 +115,7 @@ WFSServerOptionsGUI : AbstractWFSOptionsGUI {
 
 }
 
-WFSOptionsGUI : AbstractWFSOptionsGUI {
+WFSOptionsObjectGUI : AbstractWFSOptionsGUI {
 	
 	classvar <>specs;
 	
@@ -129,5 +129,14 @@ WFSOptionsGUI : AbstractWFSOptionsGUI {
 	}
 
 }
+
++ WFSMasterOptions {
+	gui { |parent, bounds| ^WFSMasterOptionsGUI( parent, bounds, this ) }
+}
+
++ WFSServerOptions {
+	gui { |parent, bounds| ^WFSServerOptionsGUI( parent, bounds, this ) }
+}
+
 
 
