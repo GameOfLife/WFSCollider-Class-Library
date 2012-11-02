@@ -55,7 +55,7 @@ def = FreeUdef( \wfsStaticPoint, [
 	.addUGlobalEQ
 	.addUIO( UIn, \ar, 0, 1 );
 
-if( WFS.previewMode.isNil ) {	
+if( WFSPreviewSynthDefs.pannerFuncs.keys.includes( WFS.previewMode ).not ) {
 	def.createSynthFunc_({ |unit, target, startPos = 0|
 		var server, n = 0;
 		var arrayConfs;
