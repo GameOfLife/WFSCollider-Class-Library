@@ -8,6 +8,17 @@ AbstractWFSOptions {
 		^this.compareObject(that);
 	}
 	
+	doesNotUnderstand { |selector, arg1 ...args|
+		// MVC support for all args that have no setters
+		if( selector.isSetter ) {
+			selector = selector.asGetter;
+			if( this.class.instVarNames.includes( selector ) ) {
+				this.slotPut( selector, arg1 );
+				this.changed( selector, arg1 );
+			};
+		};
+	}
+	
 	storeOn { arg stream;
 		stream << this.class.name;
 		this.storeModifiersOn(stream);
@@ -32,11 +43,11 @@ AbstractWFSOptions {
 
 WFSMasterOptions : AbstractWFSOptions {
 
-	var <>toServersBus = 14;
-	var <>numOutputBusChannels = 20;
-	var <>numInputBusChannels = 20;
-	var <>device;
-	var <>useForWFS = false;
+	var <toServersBus = 14;
+	var <numOutputBusChannels = 20;
+	var <numInputBusChannels = 20;
+	var <device;
+	var <useForWFS = false;
 	
 	*presets { ^Dictionary[] }
 		
@@ -46,13 +57,13 @@ WFSServerOptions : AbstractWFSOptions {
 	
 	classvar <>presets;
 	
-	var <>name = "Game Of Life 1";
-	var <>ip = "127.0.0.1";
-	var <>startPort = 58000;
-	var <>n = 8;
-	var <>numOutputBusChannels = 96;
-	var <>numInputBusChannels = 8;
-	var <>device = "JackRouter";
+	var <name = "Game Of Life 1";
+	var <ip = "127.0.0.1";
+	var <startPort = 58000;
+	var <n = 8;
+	var <numOutputBusChannels = 96;
+	var <numInputBusChannels = 8;
+	var <device = "JackRouter";
 	
 	
 	*initClass {
@@ -89,12 +100,12 @@ WFSOptions : AbstractWFSOptions {
 	classvar <>presets;
 	classvar <>current;
 	
-	var <>masterOptions;
-	var <>serverOptions = #[];
-	var <>showGUI = true;
-	var <>showServerWindow = true;
-	var <>previewMode = nil;
-	var <>playSoundWhenReady = false;
+	var <masterOptions;
+	var <serverOptions = #[];
+	var <showGUI = true;
+	var <showServerWindow = true;
+	var <previewMode = nil;
+	var <playSoundWhenReady = false;
 	
 	*new { ^super.new.init; }
 	
