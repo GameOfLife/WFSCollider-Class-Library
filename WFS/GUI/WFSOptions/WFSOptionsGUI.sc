@@ -1,11 +1,12 @@
 WFSOptionsGUI {
 	
 	classvar <>current;
-	classvar <>columnWidth = 220;
+	classvar <>columnWidth = 220, <>footerHeight = 24;
 	
-	var <object;
-	var <view, <firstColumn, <secondColumn, <optionsView;
-	var <masterComp, <masterHeader, <masterView;
+	var <object, <>ctrl;
+	var <view, <firstColumn, <secondColumn, <footer, <presetManagerGUI;
+	var <optionsView;
+	var <masterComp, <masterHeader, <masterView, <masterButton;
 	var <serverComp, <serverHeader, <serverViews;
 	var <>savedMasterOptions;
 	
@@ -24,17 +25,13 @@ WFSOptionsGUI {
 	
 	init { |parent, bounds, inObject|
 		
-		var ctrl;
-		
-		
-		
 		if( parent.isNil ) { 
 			parent = this.class.asString;
 			bounds = bounds ?? { Rect( 
 					190 rrand: 220, 
-					70 rrand: 100,
-					2 * (columnWidth + 12), 
-					412
+					300 rrand: 350,
+					(2 * (columnWidth + 6)) + 2, 
+					320
  				 ) 
 			}; 
 		} {
@@ -48,19 +45,27 @@ WFSOptionsGUI {
 		bounds = view.asView.bounds;
 		view.addFlowLayout(2@2, 6@6);
 		
+		ctrl = SimpleController( object );
+		
 		RoundView.pushSkin( UChainGUI.skin );
 		
-		firstColumn = CompositeView( view, columnWidth @ bounds.height )
+		firstColumn = CompositeView( view, columnWidth @ (bounds.height - footerHeight) )
 			.background_( Color.gray(1).alpha_(0.125) )
 			.resize_(4);
 			
 		firstColumn.addFlowLayout(0@0, 2@2);
 		
-		secondColumn = CompositeView( view, columnWidth @ bounds.height )
+		secondColumn = CompositeView( view, columnWidth @ (bounds.height - footerHeight) )
 			.background_( Color.gray(1).alpha_(0.125) )
 			.resize_(5);
 			
 		secondColumn.addFlowLayout(0@0, 2@2);
+		
+		footer = CompositeView( view, ((2 * columnWidth) + 2) @ footerHeight )
+			.background_( Color.gray(1).alpha_(0.125) )
+			.resize_(8);
+			
+		footer.addFlowLayout(0@0, 2@2);
 		
 		StaticText( firstColumn, columnWidth @ 14 )
 			.applySkin( RoundView.skin )
@@ -80,7 +85,7 @@ WFSOptionsGUI {
 			.applySkin( RoundView.skin )
 			.string_( " master server" );
 
-		SmoothButton( masterHeader, 14 @ 14 )
+		masterButton = SmoothButton( masterHeader, 14 @ 14 )
 			.label_([ "", 'x' ])
 			.radius_(2)
 			.value_( object.masterOptions.notNil.binaryValue )
@@ -92,12 +97,33 @@ WFSOptionsGUI {
 					savedMasterOptions = object.masterOptions;
 					object.masterOptions = nil;
 				};
-				this.makeMasterGUI;
+				//this.makeMasterGUI;
 			});		
 		
 		masterComp = CompositeView( firstColumn, columnWidth @ WFSMasterOptionsGUI.getHeight );
 		
 		this.makeMasterGUI;
+		
+		firstColumn.decorator.shift(0, 14);
+		
+		SmoothButton( firstColumn, firstColumn.bounds.width @ 14 )
+			.label_( "edit speaker configuration" )
+			.action_({
+				WFSSpeakerConfGUI.newOrCurrent
+			})
+			.resize_(9);
+		
+		firstColumn.decorator.nextLine;
+		firstColumn.decorator.top_( firstColumn.bounds.height - 34);
+		
+		presetManagerGUI = PresetManagerGUI( 
+			firstColumn, 
+			firstColumn.bounds.width @ 28,
+			object.class.presetManager, 
+			object
+		);
+		
+		presetManagerGUI.resize_(7);
 		
 		serverHeader = CompositeView( secondColumn, columnWidth @ 14 )
 			.background_( Color.gray(0.8).alpha_(0.5) )
@@ -137,7 +163,7 @@ WFSOptionsGUI {
 					};
 				};
 				object.serverOptions = object.serverOptions ++ [ last ];
-				this.makeServersGUI;
+				//this.makeServersGUI;
 			})
 			.resize_( 3 );
 			
@@ -148,7 +174,40 @@ WFSOptionsGUI {
 					
 		this.makeServersGUI;
 		
+		footer.decorator.left_( footer.bounds.width - 154 );
+		
+		/*
+		SmoothButton( footer, 100 @ 14 )
+			.label_( "delete prefs" )
+			.action_({
+				WFSLib.deletePrefs;
+			})
+			.resize_(9);
+		*/
+		
+		SmoothButton( footer, 50 @ 24 )
+			.states_( [ [ "save", Color.black, Color.red(1,0.25) ] ] )
+			.action_({
+				WFSLib.writePrefs;
+			})
+			.resize_(9);
+		
+		SmoothButton( footer, 100 @ 24 )
+			.label_( "apply" )
+			.action_({
+				WFSLib.startup( object );
+			})
+			.resize_(9);
+		
 		RoundView.popSkin;
+		
+		ctrl.put( \masterOptions, {
+				masterButton.value = object.masterOptions.notNil.binaryValue;
+				this.makeMasterGUI;
+			})
+			.put( \serverOptions, {
+				this.makeServersGUI;
+			});
 
 		current = this;
 		this.class.changed( \current );
@@ -159,13 +218,12 @@ WFSOptionsGUI {
 		};
 		
 		view.onClose = view.onClose.addFunc( { 
-			//ctrl.remove;
+			ctrl.remove;
 			if( current == this ) {
 				current = nil;
 				this.class.changed( \current );
 			};
 		} );
-	
 	}
 	
 	makeMasterGUI {
@@ -193,6 +251,8 @@ WFSOptionsGUI {
 	}
 	
 	object_ { |obj| 
+		ctrl.remove;
+		object = obj;
 		optionsView.object = obj;
 		
 	 }
