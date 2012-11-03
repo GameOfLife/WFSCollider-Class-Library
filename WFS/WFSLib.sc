@@ -17,6 +17,8 @@ WFSLib {
 			wfsOptions = WFSOptions.current ?? { WFSOptions.fromPreset( \default ); };
 		};
 		
+		wfsOptions.makeCurrent;
+		
 		if( wfsOptions.masterOptions.notNil ) {
 			if( wfsOptions.serverOptions.size > 0 ) {
 				WFSServers.master( 
@@ -304,8 +306,10 @@ WFSLib {
 		stream << "//// WFSCollider preferences (generated on: %) ////\n\n"
 			.format( Date.localtime.asString );
 			
-		stream << "//speaker configuration:\n";
-		stream <<< WFSSpeakerConf.default << ".makeDefault;\n\n";
+		if( WFSSpeakerConf.default.notNil ) {	
+			stream << "//speaker configuration:\n";
+			stream <<< WFSSpeakerConf.default << ".makeDefault;\n\n";
+		};
 		
 		stream << "//options:\n";
 		stream <<< WFSOptions.current << ";";
@@ -329,6 +333,13 @@ WFSLib {
 		file = File( path, "w" );
 		file.write( this.formatPrefs );
 		file.close;
+	}
+	
+	*deletePrefs { |path|
+		var file;
+		path = path ? this.getCurrentPrefsPath ? 
+			"~/Library/Application Support/WFSCollider/preferences.scd".spath;
+		"rm %".format( path.asString.escapeChar( $ ) ).unixCmd;
 	}
 	
 	*loadOldPrefs {
