@@ -2,7 +2,7 @@ AbstractWFSOptions {
 	
 	classvar <>usePresetsForCS = true;
 	
-	*fromPreset { |name| ^this.presets[ name ].copy; }
+	*fromPreset { |name| ^this.presets[ name ].deepCopy; }
 	
 	== { |that| // use === for identity
 		^this.compareObject(that);
@@ -19,6 +19,16 @@ AbstractWFSOptions {
 		};
 	}
 	
+	fromObject { |obj|
+		 this.class.instVarNames.do({ |varname|
+			 this.perform( varname.asSetter, obj.perform( varname ).deepCopy );
+		 });
+	}
+	
+	matchPreset {
+		^this.class.presets.findKeyForValue(this);
+	}
+	
 	storeOn { arg stream;
 		stream << this.class.name;
 		this.storeModifiersOn(stream);
@@ -26,7 +36,7 @@ AbstractWFSOptions {
 	
 	storeModifiersOn { |stream|
 		var preset;
-		preset = this.class.presets.findKeyForValue(this);
+		preset = this.matchPreset;
 		if( usePresetsForCS && { preset.notNil } ) {
 			stream << ".fromPreset(" <<< preset << ")";
 		} {	
@@ -97,8 +107,8 @@ WFSServerOptions : AbstractWFSOptions {
 
 WFSOptions : AbstractWFSOptions {
 	
-	classvar <>presets;
 	classvar <>current;
+	classvar <>presetManager;
 	
 	var <masterOptions;
 	var <serverOptions = #[];
@@ -110,21 +120,43 @@ WFSOptions : AbstractWFSOptions {
 	*new { ^super.new.init; }
 	
 	init {
+		this.makeCurrent;
+	}
+	
+	makeCurrent {
 		current = this;
 	}
 	
-	*fromPreset { |name| ^this.presets[ name ].copy.init; }
+	*presets { ^presetManager.presets.as(IdentityDictionary) }
+	
+	*fromPreset { |name| ^presetManager.apply( name ).makeCurrent }
+	
+	fromPreset { |name| ^presetManager.apply( name, this ); }
+	
+	matchPreset {
+		^presetManager.match(this);
+	}
 	
 	*initClass {
 		Class.initClassTree( WFSServerOptions );
-		presets = Dictionary[
-			'default'-> WFSOptions() // offline
+		Class.initClassTree( PresetManager );
+		presetManager = PresetManager( WFSOptions );
+		presetManager.applyFunc_( { |object, preset|
+			 	if( object === WFSOptions ) {
+				 	preset.deepCopy;
+			 	} {	
+				 	object.fromObject( preset );
+				}
+		 	} );
+		 	
+		presetManager.presets = [
+			'default', WFSOptions() // offline
 				.masterOptions_(
 					WFSMasterOptions()
 						.useForWFS_(true)
 				)
 				.previewMode_( \headphone ),
-			'game_of_life_master'-> WFSOptions()
+			'game_of_life_master', WFSOptions()
 				.masterOptions_(
 					WFSMasterOptions()
 						.toServersBus_(14)
@@ -134,27 +166,28 @@ WFSOptions : AbstractWFSOptions {
 					WFSServerOptions.fromPreset( 'game_of_life_1' ),
 					WFSServerOptions.fromPreset( 'game_of_life_2' )
 				]),
-			'game_of_life_server'-> WFSOptions()
+			'game_of_life_server', WFSOptions()
 				.serverOptions_([	
 					WFSServerOptions()
 				])
 				.showGUI_( false )
 				.playSoundWhenReady_( true ),
-			'sampl'-> WFSOptions()
+			'sampl', WFSOptions()
 				.serverOptions_([
 					WFSServerOptions.fromPreset( 'sampl' )
 				]),
-			'bea7_client'->  WFSOptions()
+			'bea7_client',  WFSOptions()
 				.serverOptions_([	
 					WFSServerOptions.fromPreset( 'bea7' )
 						.ip_( "192.168.2.11" ) // ?
 				]),
-			'bea7_server'->  WFSOptions()
+			'bea7_server',  WFSOptions()
 				.serverOptions_([	
 					WFSServerOptions.fromPreset( 'bea7' )
 				])
 				.showGUI_( false )
 		];
+		
 		current = nil;
 	}	
 }
