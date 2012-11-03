@@ -44,8 +44,8 @@ WFSSpeakerConfGUI {
 		if( parent.isNil ) { 
 			parent = this.class.asString;
 			bounds = bounds ?? { Rect( 
-					190 rrand: 220, 
-					70 rrand: 100,
+					400 rrand: 450, 
+					120 rrand: 150,
 					737, 
 					412
  				 ) 
