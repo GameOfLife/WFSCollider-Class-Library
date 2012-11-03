@@ -228,20 +228,21 @@ WFS {
 		if(thisProcess.platform.class.asSymbol === 'OSXPlatform' && {
 			thisProcess.platform.ideName.asSymbol === \scapp 
 		}) {
-		    UMenuBar();
-		    SCMenuItem.new(UMenuBar.viewMenu, "WFSSpeakerConfGUI").action_({
-			    WFSSpeakerConfGUI.newOrCurrent;
-			});
-		    SCMenuItem.new(UMenuBar.viewMenu, "WFSPositionTracker").action_({
+		     UMenuBar.remove;
+			UMenuBar();
+			SCMenuItem.new(UMenuBar.viewMenu, "WFS Position tracker").action_({
 				WFSPositionTrackerGUI.newOrCurrent;
+			});
+			SCMenuItem.new(UMenuBar.viewMenu, "WFS Preferences...").action_({
+				WFSOptionsGUI.newOrCurrent;
 			});
 		} {
 			UMenuWindow();
-			UMenuWindow.viewMenu.tree.put( 'WFSSpeakerConfGUI', {
-				WFSSpeakerConfGUI.newOrCurrent;
-			});
-			UMenuWindow.viewMenu.tree.put( 'WFSPositionTracker', {
+			UMenuWindow.viewMenu.tree.put( 'WFS Position tracker', {
 				WFSPositionTrackerGUI.newOrCurrent;
+			});
+			UMenuWindow.viewMenu.tree.put( 'WFS Preferences...', {
+				WFSOptionsGUI.newOrCurrent;
 			});
 		};
 
