@@ -84,6 +84,13 @@ WFSServerOptions : AbstractWFSOptions {
 			'game_of_life_2'-> WFSServerOptions()
 				.name_( "Game Of Life 2" )
 				.ip_( "192.168.2.12" ),
+			'bea7'-> WFSServerOptions()
+				.name_( "WFSBea7" )
+				.ip_( "127.0.0.1" )
+				.n_( 6 )
+				.numOutputBusChannels_( 120 )
+				.numInputBusChannels_( 72 )
+				.device_( nil ), // ?
 			'sampl'-> WFSServerOptions()
 				.name_( "SamPL WFS" )
 				.ip_( "127.0.0.1" )
@@ -91,13 +98,6 @@ WFSServerOptions : AbstractWFSOptions {
 				.numOutputBusChannels_( 32 )
 				.numInputBusChannels_( 32 )
 				.device_( "PreSonus FireStudio" ),
-			'bea7'-> WFSServerOptions()
-				.name_( "BEA7 WFS" )
-				.ip_( "127.0.0.1" )
-				.n_( 6 )
-				.numOutputBusChannels_( 128 )
-				.numInputBusChannels_( 128 )
-				.device_( nil ) // ?
 		];	
 	}
 	
@@ -172,20 +172,21 @@ WFSOptions : AbstractWFSOptions {
 				])
 				.showGUI_( false )
 				.playSoundWhenReady_( true ),
-			'sampl', WFSOptions()
-				.serverOptions_([
-					WFSServerOptions.fromPreset( 'sampl' )
-				]),
 			'bea7_client',  WFSOptions()
 				.serverOptions_([	
 					WFSServerOptions.fromPreset( 'bea7' )
-						.ip_( "192.168.2.11" ) // ?
+						.ip_( "10.20.1.2" )
 				]),
 			'bea7_server',  WFSOptions()
 				.serverOptions_([	
 					WFSServerOptions.fromPreset( 'bea7' )
 				])
 				.showGUI_( false )
+				.showServerWindow_( false ),
+			'sampl', WFSOptions()
+				.serverOptions_([
+					WFSServerOptions.fromPreset( 'sampl' )
+				]),
 		];
 		
 		current = nil;

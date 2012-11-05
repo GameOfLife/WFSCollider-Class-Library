@@ -268,13 +268,20 @@ WFSSpeakerConf {
 	*initClass { 
 		Class.initClassTree( PresetManager );
 		presetManager = PresetManager( WFSSpeakerConf );
-		presetManager
-		 	.putRaw( 'default', WFSSpeakerConf.rect(48,dx:5) )
-		 	.putRaw( 'rect',  WFSSpeakerConf.rect(40, 56, 5.5, 4.5) )
-		 	.putRaw( 'square9x9',  WFSSpeakerConf.rect(48,dx:4.5) )
-		 	.putRaw( 'single64',  WFSSpeakerConf([64, 5, 0.5pi, 0, 0.164]).arrayLimit_(0.5) )
-		 	.putRaw( 'sampl', WFSSpeakerConf([32, 5, 0.5pi, 0, 0.1275]).arrayLimit_(0.3) )
-		 	.applyFunc_( { |object, preset|
+		presetManager.presets = [
+		 	'default', WFSSpeakerConf.rect(48,dx:5),
+		 	'rect',  WFSSpeakerConf.rect(40, 56, 5.5, 4.5),
+		 	'square9x9',  WFSSpeakerConf.rect(48,dx:4.5),
+		 	'single64',  WFSSpeakerConf([64, 5, 0.5pi, 0, 0.164]).arrayLimit_(0.5),
+		 	'bea7', WFSSpeakerConf(
+				[ 24, 2.77, 1.5pi, 0, 0.17 ], 
+				[ 32, 2.2958816567648, 0.97527777777778pi, -0.17867399847052, 0.17 ], 
+				[ 24, 2.83, 0.5pi, 0, 0.17 ], 
+				[ 32, 2.2958816567648, 0.024722222222222pi, 0.17867399847052, 0.17 ]
+			),
+		 	'sampl', WFSSpeakerConf([32, 5, 0.5pi, 0, 0.1275]).arrayLimit_(0.3)
+		 ];
+		 presetManager.applyFunc_( { |object, preset|
 			 	if( object === WFSSpeakerConf ) {
 				 	preset.deepCopy;
 			 	} {	
