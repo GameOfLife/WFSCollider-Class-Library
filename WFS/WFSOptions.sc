@@ -180,7 +180,9 @@ WFSOptions : AbstractWFSOptions {
 						.ip_( "10.20.1.2" )
 				])
 				.serverAction_({ |server|
-	Synth.tail(Group.basicNew(server,1),\wfsToAuxSpeakers) 
+	{
+		Synth.tail( server, \wfsToAuxSpeakers ); 
+	}.defer(0.1);
 }),
 			'bea7_server',  WFSOptions()
 				.serverOptions_([	
