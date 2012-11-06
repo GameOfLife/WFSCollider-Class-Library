@@ -361,7 +361,7 @@ WFSServers {
 			
 			multiServer.servers.do({ |server, ii| 
 				if( this.isMaster ) {
-					widgets.add(SyncCenterServerWidget(window,70@17,server))
+					widgets.add(SyncCenterServerWidget(window,70@17,server,true))
 				};
 				server.makeView( window ); 
 				});
