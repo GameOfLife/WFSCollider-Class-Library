@@ -31,7 +31,7 @@ WFSOptionsGUI {
 					190 rrand: 220, 
 					300 rrand: 350,
 					(2 * (columnWidth + 6)) + 2, 
-					320
+					360
  				 ) 
 			}; 
 		} {

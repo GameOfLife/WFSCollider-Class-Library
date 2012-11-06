@@ -116,6 +116,8 @@ WFSOptions : AbstractWFSOptions {
 	var <showServerWindow = true;
 	var <previewMode = \off;
 	var <playSoundWhenReady = false;
+	var <startupAction;
+	var <serverAction;
 	
 	*new { ^super.new.init; }
 	

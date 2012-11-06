@@ -124,7 +124,9 @@ WFSOptionsObjectGUI : AbstractWFSOptionsGUI {
 			\previewMode, ListSpec( [ \off, \headphone, \stereo, \quad ] ),
 			\showGUI, BoolSpec(true),
 			\showServerWindow, BoolSpec(true),
-			\playSoundWhenReady, BoolSpec(true)
+			\playSoundWhenReady, BoolSpec(true),
+			\startupAction, CodeSpec(),
+			\serverAction, CodeSpec()
 		);
 	}
 

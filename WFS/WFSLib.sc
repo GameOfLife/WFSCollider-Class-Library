@@ -240,24 +240,42 @@ WFSLib {
 			UGlobalEQ.gui;
 		};
 		
+	  wfsOptions.startupAction.value( this );
+		
 	  WFSSynthDefs.generateAllOnce({
 	  	WFSServers.default.boot;
 	  });
 	  
-	  if( wfsOptions.playSoundWhenReady ) {
+	  CmdPeriod.add( this );
+	  
+	  if( wfsOptions.playSoundWhenReady or: { wfsOptions.serverAction.notNil } ) {
 		  Routine({
             		var allTypes, defs;
+            		var servers;
+            		servers = WFSServers.default.multiServers.collect(_.servers).flatten(1);
 	              while { 
-		            	WFSServers.default.multiServers.collect(_.servers)
-		            		.flatten(1).collect( _.serverRunning ).every( _ == true ).not; 
+		            	servers.collect( _.serverRunning ).every( _ == true ).not; 
 		         } { 
 			          0.2.wait; 
 			    };
-	             "System ready; playing lifesign".postln;
-	             "server ready".speak
+	             "System ready".postln;
+	             if( wfsOptions.playSoundWhenReady ) {
+		             "playing lifesign".postln;
+		             "server ready".speak
+	             };
+	             servers.do({ |srv| wfsOptions.serverAction.value( srv ) });
 		   }).play( AppClock );
 	  };
 	  		 
+	}
+	
+	*cmdPeriod {
+		if( WFSOptions.current.notNil ) {
+			WFSServers.default.multiServers
+				.collect(_.servers).flatten(1).do({ |srv|
+					WFSOptions.current.serverAction.value( srv )
+				});
+		};
 	}
 	
 	*setServerOptions{ |numOuts=96|
