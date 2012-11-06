@@ -153,6 +153,8 @@ WFSServers {
 		var comp, widgets = List.new;
 		var font;
 		
+		RoundView.pushSkin( UChainGUI.skin );
+		
 		font = Font( Font.defaultSansFace, 11 );
 		
 		if( window.notNil && { window.isClosed.not }) { window.front; ^this };
@@ -170,7 +172,7 @@ WFSServers {
 			//delayViews = syncDelays.copy;
 			window.bounds = window.bounds + Rect( 0, 0, 0, 45 + 20 );
 			
-			Button( window, Rect( 0, 0, 16, 16 ) )
+			SmoothButton( window, Rect( 0, 0, 16, 16 ) )
 				.states_([["K", Color.black, Color.clear]])
 				.font_( font )
 				.action_( { Server.killAll;
@@ -180,17 +182,17 @@ WFSServers {
 					}
 				} );
 			
-			Button(window, Rect(0,0, 16, 16))
+			SmoothButton(window, Rect(0,0, 16, 16))
 				.states_([["F", Color.black, Color.clear]])
 				.font_( font )
 				.action_( { Server.freeAllRemote; } );
 				
-			Button(window, Rect(0,0, 16, 16))
+			SmoothButton(window, Rect(0,0, 16, 16))
 				.states_([["R", Color.black, Color.clear]])
 				.font_( font )
 				.action_( { ServerRecordWindow( masterServer, 999 ); } );
 			
-			Button(window, Rect(0,0, 16, 16))
+			SmoothButton(window, Rect(0,0, 16, 16))
 				.states_([["?", Color.black, Color.clear]])
 				.font_( font )
 				.action_( { WFS.openHelpFile } );
@@ -209,7 +211,7 @@ WFSServers {
 			
 				window.bounds = window.bounds + Rect( 0, 0, 0, 45 + 20 + 20 );
 				
-				Button( window, Rect( 0, 0, 110, 16 ) )
+				SmoothButton( window, Rect( 0, 0, 116, 16 ) )
 					.states_( [["sync"]] )
 					.font_( font )
 					.action_( {
@@ -224,7 +226,7 @@ WFSServers {
 					.action_( { this.openHosts; } ); 
 				*/
 					
-				Button( window, Rect( 0, 0, 110, 16 ) )
+				SmoothButton( window, Rect( 0, 0, 110, 16 ) )
 					.states_( [["shut down hosts"]] )
 					.font_( font )
 					.action_( { SCAlert( "Do you really want to shut down\nboth host servers?",
@@ -321,8 +323,9 @@ WFSServers {
 		serverLabels = nil!multiServers.size;
 		multiServers.do({ |multiServer, i| 
 		
-			Button( window, Rect( 0, 0, 12, 12 ) )
-				.states_([["k", Color.red, Color.red.alpha_(0.1)]])
+			SmoothButton( window, Rect( 0, 0, 12, 12 ) )
+				.states_([["k", Color.black, Color.red.alpha_(0.1)]])
+				.radius_(2)
 				.font_( font )
 				.action_( {
 					// kill synths and press cmd-k on remote
@@ -331,8 +334,9 @@ WFSServers {
 						.sshCmd( "gameoflife", NetAddr(ips[i]) );
 			} );
 			
-			Button( window, Rect( 0, 0, 12, 12 ) )
-				.states_([["x", Color.red, Color.red.alpha_(0.1)]])
+			SmoothButton( window, Rect( 0, 0, 12, 12 ) )
+				.states_([["x", Color.black, Color.red.alpha_(0.1)]])
+				.radius_(2)
 				.font_( font )
 				.action_( {
 					// kill synths and restart sc on remote
@@ -375,6 +379,8 @@ WFSServers {
 			});
 			
 		if( this.isSingle ) { window.bounds = window.bounds + Rect(0,240,0,45+20); };
+		
+		RoundView.popSkin
 		
 		//window.view.decorator.nextLine;
 		}
