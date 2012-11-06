@@ -58,6 +58,7 @@ WFSSynthDefs {
 					"loaded WFSSynthDefs to %\n".postf( srv );
 				};
 			});
+			action.value;
 		});
 	}
 	

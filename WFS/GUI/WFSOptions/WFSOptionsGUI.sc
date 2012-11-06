@@ -7,6 +7,7 @@ WFSOptionsGUI {
 	var <view, <firstColumn, <secondColumn, <footer, <presetManagerGUI;
 	var <optionsView;
 	var <masterComp, <masterHeader, <masterView, <masterButton;
+	var <wfsHeader, <taperingSpec, <taperingView, <waitView;
 	var <serverComp, <serverHeader, <serverViews;
 	var <>savedMasterOptions;
 	
@@ -31,7 +32,7 @@ WFSOptionsGUI {
 					190 rrand: 220, 
 					300 rrand: 350,
 					(2 * (columnWidth + 6)) + 2, 
-					360
+					440
  				 ) 
 			}; 
 		} {
@@ -106,12 +107,52 @@ WFSOptionsGUI {
 		
 		firstColumn.decorator.shift(0, 14);
 		
-		SmoothButton( firstColumn, firstColumn.bounds.width @ 14 )
+		wfsHeader = CompositeView( firstColumn, columnWidth @ 14 )
+			.background_( Color.gray(0.8).alpha_(0.5) );
+			
+		masterHeader.addFlowLayout( 0@0, 2@2 );
+			
+		StaticText( wfsHeader, columnWidth - (2 + 14) @ 14 )
+			.applySkin( RoundView.skin )
+			.string_( " wfs settings" );	
+		
+		SmoothButton( firstColumn, firstColumn.bounds.width @ 24 )
 			.label_( "edit speaker configuration" )
 			.action_({
 				WFSSpeakerConfGUI.newOrCurrent
-			})
-			.resize_(9);
+			});
+			
+		BoolSpec( WFSArrayPan.useFocusFades )
+			.makeView( firstColumn, firstColumn.bounds.width @ 14, "useFocusFades", { |vw, value|
+				WFSArrayPan.useFocusFades = value;
+			} );
+			
+		taperingSpec = ControlSpec( 0, 0.5, \lin, 0.05, 0 ); 
+		taperingView = taperingSpec.makeView( firstColumn, firstColumn.bounds.width @ 14,
+			"tapering", { |vw, value|
+				WFSArrayPan.tapering = value;
+			}
+		);
+		taperingSpec.setView( taperingView, WFSArrayPan.tapering );
+		
+		firstColumn.decorator.nextLine;
+		firstColumn.decorator.shift( 64, 0);
+		
+		waitView = WaitView( firstColumn, 14 @ 14 )
+			.alphaWhenStopped_(0);
+		
+		SmoothButton( firstColumn, (firstColumn.bounds.width - 80) @ 14 )
+			.label_( "rebuild SynthDefs" )
+			.action_({ |bt|
+				bt.enabled = false;
+				waitView.start;
+				{
+					WFSSynthDefs.loadAll({
+						waitView.stop;
+						if( bt.isClosed.not ) { bt.enabled = true; };
+					});
+				}.defer(0.1);
+			});
 		
 		firstColumn.decorator.nextLine;
 		firstColumn.decorator.top_( firstColumn.bounds.height - 34);
