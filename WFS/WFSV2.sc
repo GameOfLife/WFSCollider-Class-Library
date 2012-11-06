@@ -225,16 +225,17 @@ WFS {
 			WFS.startupOffline;
 		};
 		
+		UMenuBar.remove;
+		if( thisProcess.platform.class.asSymbol === 'OSXPlatform' ) {
+			thisProcess.preferencesAction = { WFSOptionsGUI.newOrCurrent; };
+		};
+		
 		if(thisProcess.platform.class.asSymbol === 'OSXPlatform' && {
 			thisProcess.platform.ideName.asSymbol === \scapp 
 		}) {
-		     UMenuBar.remove;
 			UMenuBar();
 			SCMenuItem.new(UMenuBar.viewMenu, "WFS Position tracker").action_({
 				WFSPositionTrackerGUI.newOrCurrent;
-			});
-			SCMenuItem.new(UMenuBar.viewMenu, "WFS Preferences...").action_({
-				WFSOptionsGUI.newOrCurrent;
 			});
 		} {
 			UMenuWindow();
