@@ -351,12 +351,19 @@ WFSServers {
 							.sshCmd( "gameoflife", NetAddr(ips[i]) );
 			} );
 					 
-			serverLabels[i] = StaticText( window, Rect( 0, 0, 300, 12 ) )
+			serverLabels[i] = StaticText( window, Rect( 0, 0, 196, 12 ) )
 				.string_("multi" ++ (i+1) ++ " (" ++ 
 					if( ips[i] == "127.0.0.1",
 						{ NetAddr.myIP ? "127.0.0.1" }, { ips[i] } )
 					++ "/" ++ multiServer.hostName ++ ")" )
 				.font_( font );
+			
+			if( this.isMaster.not ) {	 
+				EZSmoothSlider(window, Rect(0,0,200,15),"Latency", [0.02,1,\exp,0,0.02].asSpec)
+				    .value_(multiServer[0].latency)
+				    .action_({ |v| multiServer[0].latency = v.value});
+			};
+			
 			window.view.decorator.nextLine;
 			
 			multiServer.servers.do({ |server, ii| 
