@@ -28,7 +28,11 @@ WFSLib {
 				)
 				.makeDefault
 				.hostNames_( *wfsOptions.serverOptions.collect(_.name) );
-				
+				wfsOptions.serverOptions.do({ |item, i|
+					WFSServers.default[ 0 ][ i ].options						.numInputBusChannels_(  item.numInputBusChannels )
+						.numOutputBusChannels_( item.numOutputBusChannels )
+						.device_( item.device )
+				});
 				WFSPathBuffer.writeServers = WFSServers.default.multiServers.collect(_[0]);
 			} {
 				WFSServers.single( ).makeDefault;
