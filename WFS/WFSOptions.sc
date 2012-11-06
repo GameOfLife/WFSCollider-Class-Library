@@ -178,13 +178,29 @@ WFSOptions : AbstractWFSOptions {
 				.serverOptions_([	
 					WFSServerOptions.fromPreset( 'bea7' )
 						.ip_( "10.20.1.2" )
-				]),
+				])
+				.serverAction_({ |server|
+	Synth.tail(Group.basicNew(server,1),\wfsToAuxSpeakers) 
+}),
 			'bea7_server',  WFSOptions()
 				.serverOptions_([	
 					WFSServerOptions.fromPreset( 'bea7' )
 				])
 				.showGUI_( false )
-				.showServerWindow_( false ),
+				.showServerWindow_( false )
+				.startupAction_({				
+	var numSpeakers = 112;
+	var speakerIndexes = [54, 81, 24, 111, 67, 11, 39, 96];
+	var lpf = 200, hp = 6000;
+	var delays = [ 1, 0.84, 1, 0.93, 0, 0, 0.9, 0.9 ] / 1000;
+
+	SynthDef(\wfsToAuxSpeakers,{ 
+		var out = In.ar(speakerIndexes,1);
+		out = BLowPass.ar(out, lpf) + BHiPass.ar(out, hp);
+		out = DelayL.ar(out, delays, delays);
+		ReplaceOut.ar(numSpeakers, out)
+	}).writeDefFile;
+}),
 			'sampl', WFSOptions()
 				.serverOptions_([
 					WFSServerOptions.fromPreset( 'sampl' )
