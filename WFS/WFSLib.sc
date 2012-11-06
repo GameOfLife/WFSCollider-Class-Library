@@ -217,12 +217,12 @@ WFSLib {
 			WFSServers.default.makeWindow;
 		};
 		
+		UMenuBar.remove;
 		if( wfsOptions.showGUI ) {
 			
 			if(thisProcess.platform.class.asSymbol === 'OSXPlatform' && {
 					thisProcess.platform.ideName.asSymbol === \scapp 
 				}) {
-			    UMenuBar.remove;
 			    UMenuBar();
 			    SCMenuItem.new(UMenuBar.viewMenu, "WFS Position tracker").action_({
 					WFSPositionTrackerGUI.newOrCurrent;
