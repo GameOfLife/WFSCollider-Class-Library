@@ -218,6 +218,10 @@ WFSLib {
 		};
 		
 		UMenuBar.remove;
+		if( thisProcess.platform.class.asSymbol === 'OSXPlatform' ) {
+			thisProcess.preferencesAction = { WFSOptionsGUI.newOrCurrent; };
+		};
+		
 		if( wfsOptions.showGUI ) {
 			
 			if(thisProcess.platform.class.asSymbol === 'OSXPlatform' && {
@@ -226,9 +230,6 @@ WFSLib {
 			    UMenuBar();
 			    SCMenuItem.new(UMenuBar.viewMenu, "WFS Position tracker").action_({
 					WFSPositionTrackerGUI.newOrCurrent;
-				});
-				SCMenuItem.new(UMenuBar.viewMenu, "WFS Preferences...").action_({
-					WFSOptionsGUI.newOrCurrent;
 				});
 			} {
 				UMenuWindow();
