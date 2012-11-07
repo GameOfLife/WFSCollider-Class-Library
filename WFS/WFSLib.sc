@@ -107,6 +107,19 @@ WFSLib {
 		GlobalPathDict.put( \wfs, "/WFSSoundFiles" );
 		GlobalPathDict.put( \resources, String.scDir );
 		
+		
+		Udef.loadOnInit = false;
+		
+		defs = Udef.loadAllFromDefaultDirectory.collect(_.synthDef).flat.select(_.notNil);
+		UnitRack.loadAllFromDefaultDirectory;
+		
+		Udef.loadOnInit = true;
+		
+		defs.do({|def| def.writeDefFile; });
+		if( SyncCenter.mode == 'sample' ) {
+			SyncCenter.writeDefs;
+		};
+		
 		UChain.makeDefaultFunc = {	
 			UChain( \bufSoundFile, 
 				[ \wfsStaticPoint, 
@@ -202,14 +215,6 @@ WFSLib {
 				[ 'wfsStaticPlane', [ 'point', Point(-6, -6), 'u_i_ar_0_bus', 2 ] ]
 				)
 			);
-		
-		defs = Udef.loadAllFromDefaultDirectory.collect(_.synthDef).flat.select(_.notNil);
-		UnitRack.loadAllFromDefaultDirectory;
-		
-		defs.do({|def| def.writeDefFile; });
-		if( SyncCenter.mode == 'sample' ) {
-			SyncCenter.writeDefs;
-		};
 		
 		ULib.servers = servers;
 		
