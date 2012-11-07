@@ -123,7 +123,11 @@ WFSServers {
 	boot { if( masterServer.notNil )
 			{ masterServer.boot; };
 		multiServers.do({ |ms|
-			if( ms[0].options.device == "JackRouter" ) { ms.boot(10) } { ms.boot(0) }
+			if( ms[0].options.device == "JackRouter" ) { 
+				{ 0.1.wait; ms.boot(10) }.fork 
+			} { 
+				ms.boot(0)
+			};
 		});
 	}
 	

@@ -207,7 +207,24 @@ WFSOptions : AbstractWFSOptions {
 				.serverOptions_([
 					WFSServerOptions.fromPreset( 'sampl' )
 				]),
-		];
+			'test_sync', WFSOptions()
+				.masterOptions_(
+					WFSMasterOptions()
+						.toServersBus_(0)
+						.device_("JackRouter")
+				)
+				.serverOptions_([ 
+					WFSServerOptions()
+					.n_(4) ])
+				.playSoundWhenReady_(true)
+				.serverAction_({ |srv|
+var i;
+// this requires jackosx to be running
+i = srv.name.asString.last;
+"/usr/local/bin/jack_disconnect system:capture_1 scsynth-0%:in1".format(i).unixCmd;
+"/usr/local/bin/jack_connect scsynth:out1 scsynth-0%:in1".format(i).unixCmd;
+})
+];
 		
 		current = nil;
 	}	
