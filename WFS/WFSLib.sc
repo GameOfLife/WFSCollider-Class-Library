@@ -1,5 +1,7 @@
 WFSLib {
 	
+	classvar <>previewMode;
+	
 	*startup { |wfsOptions|
 		var defs, servers, o;
 		var bootFunc;
@@ -70,7 +72,7 @@ WFSLib {
 		Server.default.options.device = o.device;
 		Server.default.options.numInputBusChannels = o.numInputBusChannels;
 		
-		WFS.previewMode = wfsOptions.previewMode;
+		WFSLib.previewMode = wfsOptions.previewMode;
 		
 		servers = servers ++ WFSServers.default.multiServers.collect({ |ms|
 			LoadBalancer( *ms.servers ) 

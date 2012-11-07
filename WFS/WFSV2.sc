@@ -26,9 +26,7 @@ WFS {
     classvar <>debugSMPTE;
 
     classvar <>syncWrap = 16777216; // == 2**24 == max resolution 32 bits float
-
-    classvar <>previewMode;
-
+    
     *initClass { debugSMPTE = SMPTE(0, 1000); }
 
     *debug { |string ... argsArray |

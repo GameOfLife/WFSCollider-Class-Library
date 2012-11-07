@@ -52,7 +52,7 @@ def = FreeUdef( \wfsStaticPlane, [
 	.addUGlobalEQ
 	.addUIO( UIn, \ar, 0, 1 );
 	
-if( WFSPreviewSynthDefs.pannerFuncs.keys.includes( WFS.previewMode ).not ) {
+if( WFSPreviewSynthDefs.pannerFuncs.keys.includes( WFSLib.previewMode ).not ) {
 	def.createSynthFunc_({ |unit, target, startPos = 0|
 		var server, n = 0;
 		var arrayConfs;
@@ -142,7 +142,7 @@ def.createSynthFunc_({ |unit, target, startPos = 0|
 		);
 		
 		previewSynth = Synth( 
-			WFSPreviewSynthDefs.getDefName( WFS.previewMode, \s ),
+			WFSPreviewSynthDefs.getDefName( WFSLib.previewMode, \s ),
 			unit.def.env.getInitArgsFor( \wfsa, unit.args, server, startPos ),
 			target, \addToTail 
 		);

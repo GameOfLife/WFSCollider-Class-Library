@@ -49,7 +49,7 @@ def = FreeUdef( \wfsDynamicPoint, [
 	.addUIO( UIn, \kr, 0, 2 )
 	.setControlInName( [0,1], ['x', 'y'] );
 	
-if( WFSPreviewSynthDefs.pannerFuncs.keys.includes( WFS.previewMode ).not ) {
+if( WFSPreviewSynthDefs.pannerFuncs.keys.includes( WFSLib.previewMode ).not ) {
 // dynamic point wfs panner
 	def.createSynthFunc_({ |unit, target, startPos = 0|
 		var server, n = 0;
@@ -162,7 +162,7 @@ if( WFSPreviewSynthDefs.pannerFuncs.keys.includes( WFS.previewMode ).not ) {
 		);
 		
 		previewSynth = Synth( 
-			WFSPreviewSynthDefs.getDefName( WFS.previewMode, \d ),
+			WFSPreviewSynthDefs.getDefName( WFSLib.previewMode, \d ),
 			unit.def.env.getInitArgsFor( \wfsa, unit.args, server, startPos ),
 			target, \addToTail 
 		);
