@@ -57,7 +57,9 @@ WFSLib {
 					wfsOptions.serverOptions.collect(_.ip),
 					wfsOptions.serverOptions.collect(_.startPort),
 					wfsOptions.serverOptions[0].n
-				).init( false ).makeDefault;
+				).init( false )
+					.makeDefault
+					.hostNames_( *wfsOptions.serverOptions.collect(_.name) );
 				WFSPathBuffer.writeServers = WFSServers.default.multiServers.collect(_[0]);
 				Server.default = WFSServers.default.multiServers[0][0];
 				o = wfsOptions.serverOptions[0];
