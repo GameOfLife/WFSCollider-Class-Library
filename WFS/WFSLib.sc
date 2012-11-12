@@ -33,6 +33,7 @@ WFSLib {
 				wfsOptions.serverOptions.do({ |item, i|
 					WFSServers.default[ 0 ][ i ].options						.numInputBusChannels_(  item.numInputBusChannels )
 						.numOutputBusChannels_( item.numOutputBusChannels )
+						.blockSize_( 128 )
 						.device_( item.device )
 				});
 				WFSPathBuffer.writeServers = WFSServers.default.multiServers.collect(_[0]);
