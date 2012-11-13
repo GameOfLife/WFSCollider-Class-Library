@@ -254,7 +254,7 @@ WFS {
 
         server = WFSServers.single.makeDefault;
         
-        this.previewMode = \headphone;
+        WFSLib.previewMode = \headphone;
 
         WFSSpeakerConf
             .numSystems_(1)
@@ -305,7 +305,7 @@ WFS {
 
         server.makeWindow;
         
-         this.previewMode = nil;
+         WFSLib.previewMode = nil;
 
         WFSSpeakerConf.numSystems_( ips.size );
 
