@@ -133,7 +133,7 @@ WFSLib {
 			).useSndFileDur
 		};
 		
-		UChainGUI.presetManager
+		UChain.presetManager
 			.putRaw( \dynamicPoint, { 
 				UChain( 
 					[ \bufSoundFile, [ 
