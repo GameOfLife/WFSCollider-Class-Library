@@ -8,9 +8,9 @@ FreeUdef( \vbap3D_Panner, [
     [ \spread:  1,	    [ 1, 100.0, \lin, 0, 0 ].asSpec ]
     ])
     .createSynthFunc_({ |unit, target, startPos = 0|
-		
+
 		var conf = VBAPSpeakerConf.default;
-		var buf = conf.buffer;
+		var buf = conf.buffers.at(target.asTarget.server);
 		var n = conf.numSpeakers;
 		var delays = conf.distances !? VBAPDistComp2.delayTimes(_);
 
@@ -30,5 +30,5 @@ FreeUdef( \vbap3D_Panner, [
     .addUIO( UIn, \ar, 0, 1 )
     .addUIO( UIn, \kr, 0, 2 );
 
-		
+
 		

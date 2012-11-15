@@ -1,9 +1,9 @@
 VBAPSpeakerConf {
-	
-	classvar <>default; /* VBAPSpeakerConf */  	
+
+	classvar <>default; /* VBAPSpeakerConf */
 	var <vbapArray;  /* VBAPSpeakerArray */
 	var <distances; /* Array[Float] */
-	var <buffer; /* Buffer */
+	var <buffers; /* Buffer */
 
 	*basicNew{ |vbapArray, distances |
 		^super.new.init(vbapArray, distances)
@@ -22,23 +22,34 @@ VBAPSpeakerConf {
 	    VBAPSpeakerConf.default = newConfig;
 	    newConfig.makeBuffer;
 	}
-	
+
 	init { |argVbapArray, argDistances|
 		vbapArray = argVbapArray;
 		distances = argDistances;
+        buffers = IdentityDictionary.new;
 	}
-	
-	makeBuffer { |server|
-		buffer = vbapArray.loadToBuffer(server);
+
+	loadBuffer { |server|
+        this.addBuffers( vbapArray.loadToBufferMulti(server.asCollection) )
 	}
-		
+
+    sendBuffer { |server|
+        this.addBuffers( vbapArray.sendToBufferMulti(server.asCollection) )
+	}
+
+    addBuffers { |bufs|
+        bufs.do{ |buf|
+            buffers.put( buf.server, buf )
+        }
+    }
+
 	*fivePointOne {
 		^VBAPSpeakerConf.fromAngles( [-30, 30, 0, -110, 110] )	}
-		
+
 	*eightChan {
 		^VBAPSpeakerConf.fromAngles( [0, 45, 90, 135, 180, -135, -90, -45] )
 	}
-	
+
 	*zigzagDome {
 		^VBAPSpeakerConf.fromAngles([ [-22.5, 14.97], [22.5, 14.97], [-67.5, 14.97], [67.5, 14.97],
 		 [-112.5, 14.97], [112.5, 14.97], [-157.5, 14.97], [157.5, 14.97], [-45, 0], [45, 0], [-90, 0],
@@ -48,5 +59,5 @@ VBAPSpeakerConf {
 	numSpeakers {
 	    ^vbapArray.numSpeakers
 	}
-	
+
 }

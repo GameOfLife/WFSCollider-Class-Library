@@ -5,9 +5,9 @@ FreeUdef( \vbap2D_Simple_Panner, [
     [ \spread:  1,	    [ 1, 100.0, \lin, 0, 0 ].asSpec ]
     ])
     .createSynthFunc_({ |unit, target, startPos = 0|
-		
+
 		var conf = VBAPSpeakerConf.default;
-		var buf = conf.buffer;
+		var buf = conf.buffers.at(target.asTarget.server);
 		var n = conf.numSpeakers;
 
 		Synth( ("VBAP_SIMPLE_2D_"++n).asSymbol,
@@ -20,5 +20,5 @@ FreeUdef( \vbap2D_Simple_Panner, [
     .addUIO( UIn, \ar, 0, 1 )
     .addUIO( UIn, \kr, 0, 2 );
 
-		
+
 		
