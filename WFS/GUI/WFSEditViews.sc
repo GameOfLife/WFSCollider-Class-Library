@@ -1580,6 +1580,7 @@ WFSPlaneView : WFSPointView {
 WFSMixedView : WFSPointView {
 	
 	var <>type = \point;
+	var <>colors;
 	
 	drawType { |which, p, scale = 1|
 		var polar, p1, p2;
@@ -1624,11 +1625,19 @@ WFSMixedView : WFSPointView {
 			
 			Pen.width = scale;
 		
-			Pen.color = Color.blue(0.5,0.75);
-			points.do({ |p, i|
-				this.drawType( types[i], p, scale );
-			});
-			Pen.stroke;
+			if( this.colors.size < 2 ) {
+				Pen.color = this.colors.asCollection[0] ?? { Color.blue(0.5,0.75); };
+				points.do({ |p, i|
+					this.drawType( types[i], p, scale );
+				});
+				Pen.stroke;
+			} {
+				points.do({ |p, i|
+					Pen.color = this.colors.asCollection.wrapAt(i) ?? { Color.blue(0.5,0.75); };
+					this.drawType( types[i], p, scale );
+					Pen.stroke;
+				});
+			};
 		
 			// selected
 			Pen.use({	
@@ -1662,10 +1671,11 @@ WFSMixedView : WFSPointView {
 		
 	}
 	
-	objectAndLabels_ { |object, inLabels, type|
+	objectAndLabels_ { |object, inLabels, type, colors|
 		labels = inLabels.asCollection;
 		this.object = object;
 		this.type = type ? \point;
+		this.colors = colors;
 	}
 		
 }

@@ -126,7 +126,8 @@ WFSPositionTracker {
 				objects = objects.add( [
 					point,  
 					uchain.name ++ [ i ].asString, 
-					types[ uchain ][i]
+					types[ uchain ][i], // and source types
+					uchain.getTypeColor // and display colors
 				] );
 			});
 		});
