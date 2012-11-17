@@ -1,11 +1,21 @@
-Udef( \wfsServerIn, { |bus = 0| // same as soundIn, but only plays on servers 
+(
+var def;
+def = MultiChannelUdef( \wfsServerIn, { |bus = 0| // same as soundIn, but only plays on servers 
 	var input;
-	input = SoundIn.ar( bus );
-	input = input * if( bus > (NumInputBuses.ir - 1), 0, 1 ); // silent if bus out of range
+	input = ((..Udef.numChannels - 1) + bus).collect({ |item| SoundIn.ar( item ) });
+	input = input.collect({ |input|
+		input * if( bus > (NumInputBuses.ir - 1), 0, 1 );
+	});
 	UOut.ar( 0, input );
-})
+}, channels: (1..8))
 	.category_( \wfs_io )
-	.setSpec( \bus, PositiveIntegerSpec( 0 ) )
 	.shouldPlayOnFunc_({ |unit, target|
 		WFSSpeakerConf.includesServer( target.asTarget.server );
 	});
+
+def.udefs.do({ |item|
+	item.setSpec( \bus, IntegerSpec( 0, 0, 8 - item.numChannels ) );
+});
+
+def;
+)
