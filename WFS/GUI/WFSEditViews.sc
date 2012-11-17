@@ -362,7 +362,9 @@ WFSBasicEditView {
 	setDragHandlers { }
 	
 	refresh {
-		if( view.notNil && { view.view.isClosed.not }) { view.refresh };
+		if( view.notNil && { view.view.isClosed.not }) { 
+			{ view.refresh }.defer;
+		};
 	}
 	
 	close { // close enclosing window
