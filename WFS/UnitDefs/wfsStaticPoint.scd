@@ -53,6 +53,7 @@ def = FreeUdef( \wfsStaticPoint, [
 	.envPut( \init_wfsa, [ \u_i_ar_0_bus, \point ] )
 	.addUEnv
 	.addUGlobalEQ
+	.setSpecMode( \latencyComp, \init, \point, \init )
 	.addUIO( UIn, \ar, 0, 1 );
 
 if( WFSPreviewSynthDefs.pannerFuncs.keys.includes( WFSLib.previewMode ).not ) {

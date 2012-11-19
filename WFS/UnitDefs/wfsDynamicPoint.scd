@@ -47,6 +47,7 @@ def = FreeUdef( \wfsDynamicPoint, [
 	.addUGlobalEQ
 	.addUIO( UIn, \ar, 0, 1 )
 	.addUIO( UIn, \kr, 0, 2 )
+	.setSpecMode( \latencyComp, \init, \quality, \init )
 	.setControlInName( [0,1], ['x', 'y'] );
 	
 if( WFSPreviewSynthDefs.pannerFuncs.keys.includes( WFSLib.previewMode ).not ) {

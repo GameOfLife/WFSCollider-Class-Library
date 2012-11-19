@@ -28,6 +28,7 @@ def = FreeUdef( \wfsStaticIndex, [
 		})
 	)
 	.addSynthDefControls
+	.setSpecMode( \index, \init )
 	.shouldPlayOnFunc_({ |unit, target|
 		target = target.asTarget.server;
 		WFSSpeakerConf.includesServer( target ) && {
