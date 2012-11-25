@@ -647,12 +647,31 @@ WFSPathXYView : WFSBasicEditView {
 				var drg = View.currentDrag;
 				drg.isKindOf( WFSPath2 ) or: { 
 					drg.isKindOf( WFSPathURL ) or: {	
-						drg.isString && { WFSPathURL.all.keys.includes( drg.asSymbol ) };
+						drg.isString && { 
+							WFSPathURL.all.keys.includes( drg.asSymbol ) or: {
+								{ drg.interpret }.try !? { |obj|
+									obj.isKindOf( WFSPath2 ) or: {
+										obj.isKindOf( WFSPathURL )
+									}
+								} ? false;
+							};
+						};
 					};
 				};
 			})
 			.receiveDragHandler_({ |vw|
-				this.object = View.currentDrag.asWFSPath2;
+				var obj;
+				var drg = View.currentDrag;
+				if( drg.isString ) {
+					if( WFSPathURL.all.keys.includes( drg.asSymbol ) ) {
+						obj = drg.asWFSPath2;
+					} {
+						obj = drg.interpret.asWFSPath2;
+					};
+				} {
+					obj = drg.asWFSPath2.deepCopy;
+				};
+				this.object = obj;
 			});
 	 }
 	
