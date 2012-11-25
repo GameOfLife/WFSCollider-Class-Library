@@ -160,24 +160,6 @@ WFSPathTransformerView {
 				this.reset;
 				action.value( this, \reset );
 			});
-			
-		view.decorator.nextLine;
-		
-		view.decorator.shift( 65, 0 );
-			
-		views[ \duplicate ] = SmoothButton( view, 82@14 )
-			.font_( Font( Font.defaultSansFace, 10 ) )
-			.label_( "duplicate" )
-			.border_( 1 )
-			.radius_( 2 )
-			.action_({ 
-				if( duplicateAction.notNil ) {
-					duplicateAction.value( this );
-				} {
-					WFSPathTransformerView( object: object.deepCopy );
-				};
-			});
-			
 		
 		view.view.bounds = view.view.bounds.height_( view.view.children.last.bounds.bottom );
 		
