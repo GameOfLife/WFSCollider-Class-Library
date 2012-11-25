@@ -49,7 +49,7 @@ WFSPath2 {
 		var editors, path;
 		if( args.size == 0 ) { args = [ \circle ] };
 		editors = args.collect(_.asWFSPathGenerator);
-		path = this.new( {0@0}!size, (5/(size-1))!(size-1) );
+		path = this.new( {0@0}!size, (duration/(size-1))!(size-1) );
 		editors.do({ |ed|
 			path = ed.applyFunc( path );
 		});
