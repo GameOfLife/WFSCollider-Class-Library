@@ -25,6 +25,7 @@ WFSPathGUI {
 	var <generatorView;
 	var <editWidth = 177;
 	var <>action;
+	var <>onClose;
 	
 	
 	*new { |parent, bounds, object, addUndoManager = true|
@@ -139,6 +140,7 @@ WFSPathGUI {
 				current = nil;
 				this.class.changed( \current );
 			};
+			onClose.value( this ); 
 		} );
 	
 	}
