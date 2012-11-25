@@ -1284,6 +1284,33 @@ WFSPointView : WFSBasicEditView {
 		);
 	}
 	
+	setDragHandlers {
+		view.view
+			.beginDragAction_({ object })
+			.canReceiveDragHandler_({ |vw|
+				var drg = View.currentDrag;
+				if( drg.isString ) {
+					drg = { drg.interpret }.try;
+				};
+				case { drg.isArray } {
+					drg.collect(_.asPoint).every(_.isKindOf( Point ) );
+				} { drg.isKindOf( Point ) } {
+					true
+				} { drg.isKindOf( WFSPath2 ) } {
+					true
+				} {
+					false;
+				};
+			})
+			.receiveDragHandler_({ |vw|
+				var drg = View.currentDrag;
+				if( drg.isString ) {
+					drg = drg.interpret;
+				};
+				this.points = drg;
+			});
+	 }
+
 	showLabels_ { |bool| 
 		showLabels = bool; 
 		this.refresh; 
@@ -1397,6 +1424,23 @@ WFSPointView : WFSBasicEditView {
 	
 	point_ { |point| this.object = (object ? [0]).asCollection[0] = point.asPoint }
 	point { ^object.asCollection[0] }
+	
+	points_ { |points|
+		if( points.isKindOf( WFSPath2 ) ) {
+			points = points.positions.deepCopy;
+		} {
+			points = points.asCollection.collect(_.asPoint);
+		};
+		if( canChangeAmount ) {
+			this.object = points;
+		} {
+			this.object = this.object.collect({ |item, i|
+				points[i] ?? { object[i] };
+			});
+		};
+	}
+	
+	points { ^object }
 	
 	at { |index| ^object.asCollection[index] }
 	
