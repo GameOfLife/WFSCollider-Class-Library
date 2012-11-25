@@ -151,10 +151,7 @@ WFSLib {
 			})
 			.putRaw( \staticPlane, { 
 				UChain( 
-					[ \bufSoundFile, [ 
-						\soundFile, BufSndFile.newBasic("@resources/sounds/a11wlk01-44_1.aiff", 
-							107520, 1, 44100, 0, nil, 1, true) 
-					] ], 
+					\bufSoundFile, 
 					[ \wfsStaticPlane, [  \point, 5.0.rand2@(5.0 rrand: 10) ] ]
 				).useSndFileDur 
 			})
@@ -170,13 +167,10 @@ WFSLib {
 			})
 			.putRaw( \wfsPath, {
 				UChain(  
-					[ \bufSoundFile, [ 
-						\soundFile, BufSndFile.newBasic("@resources/sounds/a11wlk01-44_1.aiff", 
-							107520, 1, 44100, 0, nil, 1, true) 
-					] ],
+					\bufSoundFile,
 					[ \wfsPathPlayer, [ \wfsPath, 
 						WFSPathBuffer( 
-							WFSPath2.generate( 10, 5, 
+							WFSPath2.generate( 5, 2.4380952380952, 
 								[ \random, [\seed, 100000.rand, \radius, 10@10] ] 
 							), 0, 1, true
 						), 
