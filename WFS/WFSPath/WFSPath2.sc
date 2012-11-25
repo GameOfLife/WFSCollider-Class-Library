@@ -20,7 +20,7 @@
 WFSPath2 {
 	
 	var <positions, >times;
-	var <type = \cubic; // \cubic, \bspline, \linear (future; add \quad, \step?)
+	var <type = \bspline; // \bspline, \cubic, \linear (future; add \quad, \step?)
 	var <>curve = 1; // curve = 1: hermite
 	var <clipMode = 'clip'; // 'clip', 'wrap', 'fold' // TODO for bspline
 	var <>name;	
@@ -63,7 +63,7 @@ WFSPath2 {
 	
 /// TYPES ////////////////////////////////////////
 	
-	*types { ^[ \cubic, \bspline, \linear ] }
+	*types { ^[ \bspline, \cubic, \linear ] }
 	*clipModes { ^[ \clip, \wrap, \fold ] }
 	
 	*getType { |in|
