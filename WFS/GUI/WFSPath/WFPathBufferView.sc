@@ -27,6 +27,8 @@ WFSPathBufferView {
 	var <parent, <view, <views;
 	var <>action;
 	var <viewHeight = 14;
+	var <editor;
+	var updateEditor;
 	
 	*new { |parent, bounds, action, wfsPathBuffer|
 		^super.new.init( parent, bounds, action ).value_( wfsPathBuffer ).addToAll;
@@ -103,6 +105,7 @@ WFSPathBufferView {
 					views[ \dur ].string = "--:--:--:--- (- pts)";
 				};
 			}.defer;
+			updateEditor.value;
 		};
 		views[ \startFrame ].value = inWFSPathBuffer.startFrame;
 		if( inWFSPathBuffer.wfsPath.dirty ) {
@@ -168,8 +171,22 @@ WFSPathBufferView {
 		
 		view = EZCompositeView( parent, bounds, gap: 4@4 );
 		bounds = view.asView.bounds;
-		view.onClose_({ this.remove; }).resize_( resize ? 5 );
+		view.onClose_({ 
+			this.remove; 
+			if( editor.notNil && { editor.isClosed.not }) {
+				editor.close;
+			};
+		}).resize_( resize ? 5 );
 		views = ();
+		
+		
+		updateEditor = {
+			if( editor.notNil && { editor.isClosed.not && {
+				editor.object != this.performWFSPathBuffer( \wfsPath );
+			}} ) {
+				editor.object = this.performWFSPathBuffer( \wfsPath );
+			};
+		};
 		
 		views[ \miniPlot ] = ScaledUserView( view, ((viewHeight * 2) + 4).asPoint )
 			.fromBounds_( Rect.aboutPoint( 0@0, 100, 100 ) )
@@ -203,17 +220,35 @@ WFSPathBufferView {
 				case { drg.isKindOf( WFSPath2 ) } 
 					{ true }
 					{ drg.isKindOf( WFSPathURL ) }
-					{ true } /*
+					{ true }
+					{ drg.isString } 
+					{
+						{ drg.interpret }.try !? { |obj|
+							obj.isKindOf( WFSPath2 ) or: {
+								obj.isKindOf( WFSPathURL )
+							}
+						} ? false;
+					}
+					 /*
 					{ drg.isKindOf( WFSPathBuffer ) }
 					{ true } */
 					{ false }
 			})
 			.receiveDragHandler_({ |sink, x, y|
+					var interpreted;
 					case { View.currentDrag.isKindOf( WFSPath2 ) } {
-						wfsPathBuffer.wfsPath = View.currentDrag;
+						if( wfsPathBuffer.wfsPath != View.currentDrag ) {
+							wfsPathBuffer.wfsPath = View.currentDrag.deepCopy;
+							updateEditor.value;
+						};
 						action.value( this );
 					} { View.currentDrag.isKindOf( WFSPathURL ) } {
 						wfsPathBuffer.wfsPath = View.currentDrag;
+						updateEditor.value;
+						action.value( this );
+					} { View.currentDrag.isString } {
+						wfsPathBuffer.wfsPath = View.currentDrag.interpret;
+						updateEditor.value;
 						action.value( this );
 					};
 			})
@@ -263,12 +298,17 @@ WFSPathBufferView {
 			.border_( 1 )
 			.label_( "edit" )
 			.action_({ |bt|
-				WFSPathGUI( object: wfsPathBuffer.wfsPath )
-					.action_({ |editor|
-						wfsPathBuffer.wfsPath = editor.object;
-						views[ \miniPlot ].refresh;
-						action.value( this );
-					}); 
+				if( editor.isNil or: { editor.isClosed } ) {
+					editor = WFSPathGUI( object: wfsPathBuffer.wfsPath )
+						.action_({ |editor|
+							wfsPathBuffer.wfsPath = editor.object;
+							views[ \miniPlot ].refresh;
+							action.value( this );
+						})
+						.onClose_({ editor = nil });
+				} {
+					editor.front;
+				};
 			});	
 		
 					
