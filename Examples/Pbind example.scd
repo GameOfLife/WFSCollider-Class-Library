@@ -14,7 +14,7 @@ x[ \play ] = {
 	});
 	~fadeIn !? { newChain.fadeIn = ~fadeIn };
 	~fadeOut !? { newChain.fadeOut = ~fadeOut };
-	~gain !? { newChain.fadeOut = ~gain };
+	~gain !? { newChain.gain = ~gain };
 	newChain.duration = ~sustain.value;
 	newChain.prepareWaitAndStart; // this particular chain doesn't need prepare time
 };
