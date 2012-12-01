@@ -1,7 +1,17 @@
-// speaker index on wfs system, static variant
-// the difference with the dynamic version is that this one will only play on the server
-// it needs to play on. The index can still be changed dynamically, but it won't sound on the
-// other server if changed after start
+/*
+\wfsStaticIndex
+
+This udef can send sound to an individual speaker on the WFS system. The index of the speaker can not be changed in realtime (static); changes to the index will only become audible after the unit has been stopped and started again.
+
+indexFromBus: set to true if you want to set the index with a controller or by setting index.
+index: the number of the speaker, starting at 0.
+gain: the output level (dB).
+
+--
+this is an Udef definition file
+part of the WFSCollider Class Library default Udefs set
+*/
+
 (
 var def;
 def = FreeUdef( \wfsStaticIndex, [	

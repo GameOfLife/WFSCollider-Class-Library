@@ -1,3 +1,28 @@
+/*
+\wfsDynamicPoint
+
+This udef creates a dynamic point source on the WFS system. The position of the source can be changed in realtime (dynamic).
+
+pointFromBus: (Boolean) set to true if you want to set the plane wave from the input of another unit in the chain (such as \wfsPathPlayer or another from the wfs_control category).
+point: This point represents the absolute location of the point source.
+pointLag: damps the movement of the point. This is useful if your controller has a low resolution or the point is changed manually. This uses a second-order filter, which may cause slight oscillations at beginnings and endings of movements. Changing the lag time during playback may cause audible artifacts.
+quality: (i) (\normal or \better) setting for the interpolation quality of the delays.
+	normal = linear interpolation
+	better = cubic interpolation
+Cubic interpolation uses about 50% more cpu.
+latencyComp: (i) cancels the delay caused bu the distance of the source. 0 = no compensation, 1 = full compensation. This can reduce the doppler shift for moving sources, and can ensure synchronicity between this source and other sources.
+dbRollOff: decrease in level due to a doubling of the distance. In nature this is -6 dB in free field conditions, and might be -3 dB in extremely reverberant rooms.
+maxAmpRadius: defines the radius of the circular area in the centre where the level will always be 0 dB. The dbRollOff starts where this area ends. So the larger the area, the louder the sounds outside of it.
+crossfadeLag: when a point source crosses the loudspeaker array, the WFS calculations switch to a different mode. To prevent this transition to cause an audible click, a crossfade is made between the two mode. The crossFadeLag sets the duration of the crossfade in seconds.
+dontPause: when processes are not sounding, processes are dynamically switched off. However, there could be cases where the movement is too fast for the pausing engine to keep up.
+
+Changes to arguments marked with (i) only become effective the next time the event is played.
+
+--
+this is an Udef definition file
+part of the WFSCollider Class Library default Udefs set
+*/
+
 var def;
 
 def = FreeUdef( \wfsDynamicPoint, [	

@@ -1,16 +1,20 @@
-// static point wfs panner
 /*
-This panner performs the crossfades on the language side, and only starts panner synths for 
-those arrays that need them. The shouldPlayOn func also checks if there are any arrays
-with non-zero level, and if not blocks playback for the given server. Normal sources
-use the dedicated "wfsa_nsn_XX" arraypanners, in which the focused source per-speaker
-crossfades are absent. Altogether this creates the ultimate most efficient panner.
+\wfsStaticPoint
 
-The point can only be changed at init, and cannot be from a bus (which is why this is a
-"static" point). The latencyComp parameter can also only be set at init. The dbRollOff 
-and other global amplitude parameters however can be changed dynamically.
+This udef creates a static point source on the WFS system. The position of the source can not be changed in realtime (static); changes will only become audible after the unit has been stopped and started again.
 
+point (i): This point represents the absolute location of the point source.
+latencyComp: (i) cancels the delay caused by the distance of the source. 0 = no compensation, 1 = full compensation. This can ensure synchronicity between this source and other sources.
+dbRollOff:decrease in level due to a doubling of the distance. In nature this is -6 dB in free field conditions, and might be -3 dB in extremely reverberant rooms.
+maxAmpRadius: defines the radius of the circular area in the centre where the level will always be 0 dB. The dbRollOff starts where this area ends. So the larger the area, the louder the sounds outside of it.
+
+Changes to arguments marked with (i) only become effective the next time the event is played.
+
+--
+this is an Udef definition file
+part of the WFSCollider Class Library default Udefs set
 */
+
 var def;
 
 def = FreeUdef( \wfsStaticPoint, [

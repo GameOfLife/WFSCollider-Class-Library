@@ -1,3 +1,21 @@
+/*
+\wfsMasterIn
+
+Input audio from a hardware input of the master audio interface of the system (if there is one). 
+
+Using this Udef in a UChain will cause the whole UChain to be played on the master computer instead of the servers.
+
+bus: number of the hardware input bus (starting at 0).
+numChannels: number of channels (*)
+
+(*) only the following numbers of channels are allowed:
+1,2,3,4,5,6,7,8,10,12,16,24,32
+
+--
+this is an Udef definition file
+part of the WFSCollider Class Library default Udefs set
+*/
+
 MultiChannelUdef( \wfsMasterIn, { |bus = 0|
 	var input;
 	input = ((..Udef.numChannels - 1) + bus).collect({ |item| SoundIn.ar( item ) });

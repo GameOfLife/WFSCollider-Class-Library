@@ -1,12 +1,20 @@
-// static plane wfs panner
 /*
-This panner performs the crossfades on the language side, and only starts panner synths for 
-those arrays that need them. The shouldPlayOn func also checks if there are any arrays
-with non-zero level, and if not blocks playback for the given server.
+\wfsStaticPlane
 
-The plane is entered as a point location, can only be changed at init, and cannot be from a bus (which is why this is a "static" point). The latencyComp parameter can also only be set at init. The dbRollOff (default: 0!!) and other global amplitude parameters however can be changed dynamically
+This udef creates a static plane wave source on the WFS system. The position of the source can not be changed in realtime (static); changes will only become audible after the unit has been stopped and started again.
 
+point (i): This Point represents the closest point of the plane wave to the center.
+latencyComp: (i) cancels the delay caused by the distance of the source. 0 = no compensation, 1 = full compensation. This can ensure synchronicity between this source and other sources.
+dbRollOff: decrease in level due to a doubling of the distance. In theory this is should be 0 dB, as perfect plane waves will not loose energy over distance. However, it will in many cases be convenient to use similar settings to point sources (-3 to -6 db) in practice.
+maxAmpRadius: defines the radius of the circular area in the centre where the level will always be 0 dB. The dbRollOff starts where this area ends. So the larger the area, the louder the sounds outside of it.
+
+Changes to arguments marked with (i) only become effective the next time the event is played.
+
+--
+this is an Udef definition file
+part of the WFSCollider Class Library default Udefs set
 */
+
 var def;
 
 def = FreeUdef( \wfsStaticPlane, [

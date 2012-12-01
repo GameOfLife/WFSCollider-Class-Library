@@ -1,4 +1,14 @@
-// dynamic point wfs panner
+/*
+\wfsDynamicIndex
+
+This udef can send sound to an individual speaker on the WFS system. The index of the speaker can be changed in realtime (dynamic).
+indexFromBus: set to true if you want to set the index with a controller or by setting index.index: the number of the speaker, starting at 0.gain: the output level (dB).
+
+--
+this is an Udef definition file
+part of the WFSCollider Class Library default Udefs set
+*/
+
 (
 var def;
 def = FreeUdef( \wfsDynamicIndex, [	
