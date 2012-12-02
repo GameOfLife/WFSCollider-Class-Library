@@ -66,4 +66,6 @@ UScore(*[
 	UChain(0, 11, 10, [ 'formant', [ 'freq', 244.62219238281, 'formant', 1617.8710456896 ] ], [ 'wfsCirclePath', [ 'startAngle', 180.0, 'clockwise', true, 'center', Point(), 'radius', Point(8, 8) ] ], [ 'wfsDynamicPoint', [ 'pointFromBus', true, 'u_fadeOut', 1.0 ] ])]).name_("rotating line"), 
 	UMarker(0.0, 2.0, "about", nil, "This score includes five examples of combinations of multiple points, both dynamic and static. They were created via the code in the 'point constellations.scd' file in the code examples folder.
 
-Open and enable the WFS Position Tracker window to see the constellations on your screen when they are running.")]).name_("constellations")
+Open and enable the WFS Position Tracker window to see the constellations on your screen when they are running.
+
+Note: in the 'swarm' example, sometimes one of the sources \"breaks loose\" from the rest. This is a bug. In that example the second unit in each chain holds a wfsRandomPath, and all have the same random seed. This should result in all of them following the exact same path, but apparently this sometimes fails. It may be a bug in SuperCollider, we need to investigate.")]).name_("constellations")
