@@ -1,5 +1,5 @@
 (
-c = WFSSpeakerConf.rect( 48, 48, 5, 5 );
+c = WFSSpeakerConf.default ?? { WFSSpeakerConf.rect( 48, 48, 5, 5 ); };
 m = \lines;
 a = \point;
 p = 0@7.5; // position

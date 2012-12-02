@@ -1,8 +1,6 @@
-// WFSPathView is a plotting and editing view for WFSPath2 objects
+// WFSPathGUI is a plotting and editing view for WFSPath2 objects
 
-a = WFSPathView();
-
-a.undoManager = UndoManager(); // add an undo manager
+a = WFSPathGUI();
 
 // modify zoom settings
 a.zoomToFit;
@@ -17,7 +15,7 @@ a.selectAll;
 a.selectNone;
 
 // edit from code (can also do by mouse)
-a.moveSelected( 2, -2 );
+a.moveSelected( 2, -2, ModKey(0) );
 a.scaleSelected( 0.5, -0.75 );
 a.rotateSelected( 0.125pi, 1.25 ); // rotate and scale
 
@@ -32,8 +30,9 @@ a.mouseMode = \record; // record a path (resets to \select after mouseUp)
 a.editMode = \move;
 a.editMode = \scale;
 a.editMode = \rotate;
-a.editMode = \rotateScale;
-a.editMode = \none; // editing disabled
+a.editMode = \rotateS;
+a.editMode = \elastic;
+a.editMode = \lock; // editing disabled
 
 
 // position display and animation
@@ -49,16 +48,5 @@ a.animationRate = 1; // normal speed
 // undo
 a.undo; // go to previous state
 a.undo(-1); // go to next state (if available)
-a.undoManager.post; // post all states
-
-
-// observe the update messages:
-b = { |...args| args.postln };
-
-a.addDependant( b );
-a.undoManager.addDependant( b ); // shows when a state is added
-
-a.removeDependant( b );
-a.undoManager.removeDependant( b );
 
 

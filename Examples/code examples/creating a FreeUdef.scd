@@ -22,7 +22,7 @@ d = FreeUdef( \testFree, [ \freq, 440, \amp, 0.1 ] )
 d.args;
 d.audioOuts; // show the outputs
 
-x = UChain( \testFree, \output ); // make a chain
+x = UChain( \testFree, \wfsStaticPoint ); // make a chain
 x.gui;
 
 (

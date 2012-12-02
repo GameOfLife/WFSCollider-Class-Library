@@ -1,0 +1,18 @@
+UScore(*[
+	UChain(0, 0, 10.0, [ 'sine', [ 'lag', 0.1 ] ], [ 'wfsStaticPoint', [ 'point', Point(-3.5545229911804, 8.11956346035) ] ]), 
+	UMarker(0.0, 2.0, "automation", { |marker, score| 
+	var dur = 10, start = 440, end = 880, res = 0.1;
+	{
+		((dur/res) + 1).ceil.do({ |i|
+			score[0][0].freq = 
+				i.linexp(0, (dur/res), start, end );
+			res.wait;
+		});
+	}.fork;
+}, "This example score demonstrates how simple automation can be performed using supercollider functions and markers in a score.
+
+The action function of this marker sets the frequency of the sine wave in this score graudally from 440 to 880 hz over a period of 10 seconds. 
+
+This only works if the first unit in the first object in this score has a 'freq' parameter. Also note that stopping the score will not stop the automation routine. To stop the routine you will need to type cmd-. .
+
+The settings (duration, start freq, end freq etc.) can be set in the variables of the function.")]).name_("simple automation")

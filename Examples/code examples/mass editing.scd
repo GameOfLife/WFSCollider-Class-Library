@@ -23,7 +23,7 @@ y = 10.collect({ |i|
 			[ \sine, [ \freq, 220 rrand: 880, \amp, 0.1 rrand: 0.5 ] ],
 			[ \whiteNoise, [ \amp, 0.1 rrand: 0.5 ] ]
 		].choose,
-		\output
+		[ \wfsStaticPoint, [ \point, (10.0@10.0).rand2 ] ]
 	)
 	.track_(i)
 	.dur_( 2 rrand: 10 )

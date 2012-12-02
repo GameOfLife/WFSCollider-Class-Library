@@ -1,46 +1,70 @@
-For Beta 2 - to be released in December before workshop ?
+WFS TODO / ideas (no particular order)
 
-Bugs:
- - Stuff not releasing correctly. pointing to empty array, should be nil.
-
-TODO:
- - Make UCHainGUI like GUI for UScore, to change startime of innerscore.
- - MassEdit - add and remove units.
- - MassUChain editor should allow to edit multiple paths, at least to be able to plot them. -W
- - UMixer for session
- - Documentation: schelp files for classes. STARTED
-
- Less priority:
- - cpu wfsservers view.
- - supernova. STARTED - CPU usage issues.
- - nested chains/ UChain groups
- - invent fixed extension names for Trajectory, and perhaps also for UEvent files.
- - Cut events - u_trimStart, u_trimEnd.
- - implement cutting sub-scores
- - Right-click menu
- - inner score looping.
- - Move WFSPath stuff into UTrajectory, etc. I really think we should do this, this is a great class, and it can be used by people using ambisonics and VBAP. It could easilly become the standard trajectory stuff for supercollider.
-
-Done:
- X- Multiple panners, where some only play on one server, sometimes don't free the chain on one server. This also affects Load balancing.
- X- make ScoreEditor redraw when duration or startTime of UChain changes.
- X- Cleanup: remove unused files. Check if there are unused methods. Check if there is code that can (easilly) be made more elegant.
- X- UDef code editing - allow forking code to new Udef.
- X- remove MetaUdef -M, W?
- X- audio solo button on mixer
- X- USessionGUI, UChainGroup, USessionList - make it more functional. Drag and Drop.
-   X - take elements from USession into score.
-   X - Reorder elements in USession
- X - Templates with Groups of Chains. -> UnitRack
- X - Mass editor - set infinite for all
- X - update cmake. - wait for Quark situation.
- X - offline panners.
- X - Move Unit stuff into a Quark, import the quark into WFSCollider (change cmake file).
-
-
-UnitRack -> a group of units with certain values set
-
-doesnt work...
-{ Out.ar( \bus.kr(0), Pan2.ar( (UGlobalEQ.ar( WhiteNoise.ar*0.1 ) * UEnv.kr), \pos.kr(0) ) ) }.play;
-works
-{ Out.ar( \bus.kr(0), Pan2.ar( (UGlobalEQ.ar( WhiteNoise.ar*0.1 ) * UEnv.kr).at(0), \pos.kr(0) ) ) }.play;
+- add TriggerSpec and use in various Udefs
+- infinite events: keep fade out time at stop
+- subwoofers
+- add Envelope spec / gui / udef (fixed/max number of points?)
+- Folder events / sub-scores:
+	- implement cutting sub-scores
+	- inner score looping.
+- MultiUdef: being able to select defs by index instead of defName
+	- HiddenUdef is then obsolete; it can simply use Udefs with addToAll:false
+- WFSServers: better gui
+	- button for loading al udefs
+	- working buttons for server management (now that the ssh problem is fixed)
+	- panic button (stop all - not kill)
+	- loaded buffers / synths indicator
+- WFSPath
+	- implement free spline wfspaths
+	- rename to WFSPath; subclass of Trajectory
+	- more generators:
+		- import SVG
+		- import MIDI
+		- more basic shapes
+	- export SVG
+	- export MIDI?
+	- WFSMultiPath: timeline display and better support
+	- save/read from WFSPathGUI
+	- unified save/read system (Buffer:write vs. SoundFile)
+	- add trigger option to wfsPathPlayer Udef
+- more elaborate osc / midi support (discuss with Miguel)
+	- ability to "tag" parameters and assign specific osc/midi commands to them
+	- should be saved with USession
+		- how to assign to specific objects? Via index? Via dependant-like system? Both?
+	- clean way of setting intelligent args (points, bufsndfiles, eqs etc)
+	- full gui
+	- midi specs / guis (also useful for WFSPathGenerators)
+- gui for RichBufferSpec
+- save WFSPathTransformDefs / -GeneratorDefs in separate files (UnitDef style)
+- UMixer for session
+- MassEdit:
+	- more options for wfspath massedit
+	- option for expanding group of units into new window
+	- MassUChain editor should allow to edit multiple paths, at least to be able to plot them.
+- core:
+	- allow change of units in chain during playback
+	- clear all option (in case buffers or synths are kept by mistake)
+	- handle buffer-not-found correctly (i.e. give user option to cancel playback)
+		- may require a do-on-failed action/method
+	- fix release problem for non-releaseself events
+- more documentation
+	
+- future ideas
+	- implement score position jumping during playback, without stopping the score (similar to pause)
+	- midi import
+	- mass generators for events
+	- pattern support for UChains built-in
+	- alternative timeline with tempo/meter
+		- all time setting gui's should be switcheable (or it could be a preference setting)
+		- option for midi import of timeline/meter settings
+	- multichannel unit (composed of an array of single-channel units)
+	- option to show waveforms in path editor 
+		- possibly as width of the trajectory line
+	- redirect args (extra args pointing to others via a function)
+		- standard sets for example for \freq and \amp
+	- clipboard (copy/paste) for WFSPathGUI
+	- dedicated generic Udef class for WFS (and other) panners
+		- including the multisynth/group/pause structure and redirecting of args to correct synth
+	- language-based automation
+	- Right-click menu
+	

@@ -1,9 +1,10 @@
 (
+// create a score with soundfiles
 z = UScore(
 	*12.collect({ |i|
 		var evt;
-		evt = BufSndFile("sounds/a11wlk01-44_1.aiff", 
-				rate: (i-6).midiratio, loop: [true,false].wrapAt(i) ).makeUChain
+		evt = BufSndFile("@resources/sounds/a11wlk01-44_1.aiff", 
+				rate: (i-6).midiratio, loop: [true,false].wrapAt(i) ).makeUChain( \wfsStaticPoint )
 				.releaseSelf_(true).startTime_(i/2).track_(i).fadeOut_(1).fadeIn_(1);
 		
 		if( evt.duration == inf ) {
@@ -17,10 +18,11 @@ y = UScoreEditorGUI(x);
 )
 
 (
+// create a score with sine waves
 z = UScore(
 	*12.collect({ |i|
 		var evt;
-		evt = UChain(i/2,i,rrand(3.0,10.0),false,\sine, \output).fadeOut_(1).fadeIn_(1);
+		evt = UChain(i/2,i,rrand(3.0,10.0),false,\sine, \wfsStaticPoint).fadeOut_(1).fadeIn_(1);
 		evt.units[0].set(\freq,rrand(200.0,600.0) );
 		evt;
 	})
