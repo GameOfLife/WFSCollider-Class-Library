@@ -27,6 +27,7 @@ def = FreeUdef( \wfsDynamicIndex, [
 			index = (\index.kr(index) * (1-indexFromBus)) + (UIn.kr(0,1) * indexFromBus);
 			
 			index = index - \startIndex.kr(0);
+			gain = gain * \i_gain.ir(0).dbamp;
 			gain = gain * \gain.kr(-6).dbamp;
 			maxIndex = NumOutputBuses.ir; // only output to hardware outs
 			
@@ -44,12 +45,13 @@ def = FreeUdef( \wfsDynamicIndex, [
 	.createSynthFunc_({ |unit, target, startPos = 0|
 		var startIndex;
 		startIndex = WFSSpeakerConf.default.firstSpeakerIndexOf( target.asTarget.server );
-		Synth( "wfsi_id", [ \startIndex, startIndex ] ++ unit.getArgsFor( target, startPos ), 
+		Synth( "wfsi_id", [ \startIndex, startIndex, \i_gain, WFSSpeakerConf.default.gain ] ++ unit.getArgsFor( target, startPos ), 
 			target, \addToTail );
 	})
 	.setControlInName( 0, 'index' );
 
 def.removeArgSpec( \startIndex ); // this is set by createSynthFunc
+def.removeArgSpec( \i_gain ); // this is set by createSynthFunc
 
 def
 )
