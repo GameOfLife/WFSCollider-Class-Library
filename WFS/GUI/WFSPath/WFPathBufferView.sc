@@ -27,8 +27,6 @@ WFSPathBufferView {
 	var <parent, <view, <views;
 	var <>action;
 	var <viewHeight = 14;
-	var <editor;
-	var updateEditor;
 	
 	*new { |parent, bounds, action, wfsPathBuffer|
 		^super.new.init( parent, bounds, action ).value_( wfsPathBuffer ).addToAll;
@@ -86,12 +84,7 @@ WFSPathBufferView {
 		views[ \loop ].value = inWFSPathBuffer.loop.binaryValue;
 		views[ \rate ].value = inWFSPathBuffer.rate;
 		if( inWFSPathBuffer.wfsPath.isWFSPath2 ) {
-			rect = inWFSPathBuffer.wfsPath.asRect;
-			if( rect.notNil ) {
-				views[ \miniPlot ].fromBounds = rect.scale(1@ -1).insetBy(-2,-2);
-			} {
-				views[ \miniPlot ].fromBounds = Rect(0,0,20,20);
-			};
+			views[ \miniPlot ].value = inWFSPathBuffer.wfsPath;
 			views[ \startSecond ].value = inWFSPathBuffer.startSecond;
 			{
 				if( inWFSPathBuffer.wfsPath.asWFSPath2.notNil ) {
@@ -105,9 +98,12 @@ WFSPathBufferView {
 					views[ \dur ].string = "--:--:--:--- (- pts)";
 				};
 			}.defer;
-			updateEditor.value;
 		};
 		views[ \startFrame ].value = inWFSPathBuffer.startFrame;
+		this.setWriteButtonColor( inWFSPathBuffer );
+	}
+	
+	setWriteButtonColor { |inWFSPathBuffer|
 		if( inWFSPathBuffer.wfsPath.dirty ) {
 			views[ \write ].background_( Color.red.alpha_(0.25) );
 		} {
@@ -172,88 +168,14 @@ WFSPathBufferView {
 		view = EZCompositeView( parent, bounds, gap: 4@4 );
 		bounds = view.asView.bounds;
 		view.onClose_({ 
-			this.remove; 
-			if( editor.notNil && { editor.isClosed.not }) {
-				editor.close;
-			};
+			this.remove;
 		}).resize_( resize ? 5 );
 		views = ();
 		
-		
-		updateEditor = {
-			if( editor.notNil && { editor.isClosed.not && {
-				editor.object != this.performWFSPathBuffer( \wfsPath );
-			}} ) {
-				editor.object = this.performWFSPathBuffer( \wfsPath );
-			};
-		};
-		
-		views[ \miniPlot ] = ScaledUserView( view, ((viewHeight * 2) + 4).asPoint )
-			.fromBounds_( Rect.aboutPoint( 0@0, 100, 100 ) )
-			.keepRatio_( true )
-			.background_( Color.gray(0.9) )
-			.drawFunc_({ |vw|
-				var path;
-				path = this.performWFSPathBuffer( \wfsPath );
-				if( path.isWFSPath2 && { path.exists } ) {
-					
-					Pen.width = 0.164;
-					Pen.color = Color.red(0.5, 0.5);
-					
-					//// draw configuration
-					(WFSSpeakerConf.default ?? {
-						WFSSpeakerConf.rect(48,48,5,5);
-					}).draw;
-					
-					path.asWFSPath2.draw( 1, pixelScale: vw.pixelScale * 1.5);
-				} {
-					Pen.font = Font( Font.defaultSansFace, 16 );
-					Pen.color = Color.red(0.66);
-					Pen.stringAtPoint( "?", 5@0 );
-				};
-			});
-		
-		views[ \miniPlot ].view
-			.canReceiveDragHandler_({ |sink|
-				var drg;
-				drg = View.currentDrag;
-				case { drg.isKindOf( WFSPath2 ) } 
-					{ true }
-					{ drg.isKindOf( WFSPathURL ) }
-					{ true }
-					{ drg.isString } 
-					{
-						{ drg.interpret }.try !? { |obj|
-							obj.isKindOf( WFSPath2 ) or: {
-								obj.isKindOf( WFSPathURL )
-							}
-						} ? false;
-					}
-					 /*
-					{ drg.isKindOf( WFSPathBuffer ) }
-					{ true } */
-					{ false }
-			})
-			.receiveDragHandler_({ |sink, x, y|
-					var interpreted;
-					case { View.currentDrag.isKindOf( WFSPath2 ) } {
-						if( wfsPathBuffer.wfsPath != View.currentDrag ) {
-							wfsPathBuffer.wfsPath = View.currentDrag.deepCopy;
-							updateEditor.value;
-						};
-						action.value( this );
-					} { View.currentDrag.isKindOf( WFSPathURL ) } {
-						wfsPathBuffer.wfsPath = View.currentDrag;
-						updateEditor.value;
-						action.value( this );
-					} { View.currentDrag.isString } {
-						wfsPathBuffer.wfsPath = View.currentDrag.interpret;
-						updateEditor.value;
-						action.value( this );
-					};
-			})
-			.beginDragAction_({ 
-					wfsPathBuffer.wfsPath;
+		views[ \miniPlot ] = WFSPathBox( view, ((viewHeight * 2) + 4).asPoint )
+			.action_({ |vw|
+				this.performWFSPathBuffer( \wfsPath_, vw.wfsPath );
+				this.setViews( wfsPathBuffer );
 			});
 			
 		views[ \buttonComp ] = CompositeView( view, 104@ ((viewHeight * 2) + 4) );
@@ -298,17 +220,7 @@ WFSPathBufferView {
 			.border_( 1 )
 			.label_( "edit" )
 			.action_({ |bt|
-				if( editor.isNil or: { editor.isClosed } ) {
-					editor = WFSPathGUI( object: wfsPathBuffer.wfsPath )
-						.action_({ |editor|
-							wfsPathBuffer.wfsPath = editor.object;
-							views[ \miniPlot ].refresh;
-							action.value( this );
-						})
-						.onClose_({ editor = nil });
-				} {
-					editor.front;
-				};
+				views[ \miniPlot ].openEditor;
 			});	
 		
 					
