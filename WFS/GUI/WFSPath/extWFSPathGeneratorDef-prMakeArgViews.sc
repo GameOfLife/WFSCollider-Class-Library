@@ -38,7 +38,7 @@
 			.font_( font.boldVariant )
 			.items_( this.class.all.keys.as( Array ).select({ |key|
 					this.class.all[ key ].class == this.class;
-				})
+				}).sort
 			)
 			.action_({ |pu|
 				f.defName = pu.item;

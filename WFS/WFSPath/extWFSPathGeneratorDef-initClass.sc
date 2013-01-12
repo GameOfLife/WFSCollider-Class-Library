@@ -135,6 +135,26 @@
 			.setSpec( \seed, PositiveIntegerSpec(12345) );
 			
 		WFSPathGeneratorDef(
+			\lineTime,
+			{ |f, path, n| 
+				var start, end, curve, dur, nx;
+				start = f.get( \start );
+				end = f.get( \end );
+				curve = f.get( \curve );
+				dur = path.times.sum;
+				nx = path.times.size - 1;
+				path.times = path.times.collect({ |item, i|
+					i.lincurve( 0, nx, start, end, curve ) * item			}).normalizeSum( dur ) * dur;
+			},
+			[ \start, 0.5, \end, 2, \curve, 0 ]
+		)
+			.changesX_( false )
+			.changesY_( false )
+			.setSpec( \start, [0.01, 100, \exp, 0, 0.5].asSpec )
+			.setSpec( \end, [0.01, 100, \exp, 0, 2].asSpec )
+			.setSpec( \curve, [-16, 16, \lin, 0, 0].asSpec );
+			
+		WFSPathGeneratorDef(
 			\brown,
 			{ |f, path, n| 
 				var center, radius, minRadius, angleStep, step;
@@ -188,5 +208,31 @@
 			.setSpec( \start, PointSpec( 200, 0.1@0.1 ) )
 			.setSpec( \end, PointSpec( 200, 0.1@0.1 ) )
 			.setSpec( \amp, [ -inf, inf, \lin, 0.125 ].asSpec );
+			
+		WFSPathGeneratorDef(
+			\lissajous,
+			{ |f, path, n| 
+				var startAngle, center, radius, periods;
+				var close, nn = n;
+				startAngle = (f.get( \startAngle ) / 360) * 2pi;
+				center = f.get( \center );
+				radius = f.get( \radius );
+				periods = f.get( \periods );
+				close = f.get( \close );
+				if( close ) { nn = n-1 };
+				path.positions = n.collect({ |i|
+					(((i.linlin(0,nn,0,2pi * periods)) + [0,0.5pi] + startAngle)
+						.sin.asPoint * radius) + center
+				});
+				path;
+			},
+			[ \periods, 1@1, \close, true, \startAngle, 0@0, \center, 0@0, \radius, 8@8 ]
+		)
+			.changesT_( false )
+			.setSpec( \periods, PointSpec( 100, 1@1 ))
+			.setSpec( \startAngle, PointSpec( 180, 0@0 ) )
+			.setSpec( \center, PointSpec( 200, 0.1@0.1 ) )
+			.setSpec( \radius, PointSpec( Rect(0,0,200,200), 0.1@0.1 ) );
+	
 	}
 }
