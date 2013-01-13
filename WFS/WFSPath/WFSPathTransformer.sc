@@ -20,17 +20,34 @@
 WFSPathTransformerDef : SimpleTransformerDef {
 	
 	classvar <>all;
+	classvar <>defsFolders, <>userDefsFolder;
 	
 	var <>useSelection = true;
+	
+	*initClass{
+		defsFolders = [ 
+			this.filenameSymbol.asString.dirname +/+ "WFSPathTransformerDefs"
+		];
+		userDefsFolder = Platform.userAppSupportDir ++ "/WFSPathTransformerDefs/";
+	}
 	
 	objectClass { ^WFSPathTransformer }
 }
 
 WFSPathGeneratorDef : WFSPathTransformerDef {
 	
+	classvar <>defsFolders, <>userDefsFolder;
+	
 	var <>changesX = true;
 	var <>changesY = true;
 	var <>changesT = true;
+	
+	*initClass{
+		defsFolders = [ 
+			this.filenameSymbol.asString.dirname +/+ "WFSPathGeneratorDefs"
+		];
+		userDefsFolder = Platform.userAppSupportDir ++ "/WFSPathGeneratorDefs/";
+	}
 	
 	defaultBypassFunc { 
 		^{ |f, obj|

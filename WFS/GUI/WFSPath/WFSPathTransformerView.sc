@@ -215,6 +215,8 @@ WFSPathGeneratorView : WFSPathTransformerView {
 	makeEditFuncs { |editDefs|
 		var prepfuncs;
 		
+		WFSPathGeneratorDef.loadOnceFromDefaultDirectory;
+		
 		if( editFuncs.notNil ) {
 			prepfuncs = editFuncs[..1];
 		} {

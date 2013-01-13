@@ -20,6 +20,7 @@
 SimpleTransformerDef : GenericDef {
 	
 	classvar <>all;
+	classvar <>defsFolders, <>userDefsFolder;
 	
 	var <>func;	
 	var >defaults;
@@ -31,8 +32,6 @@ SimpleTransformerDef : GenericDef {
 	*new { |name, func, args, defaults|
 		^super.new( name, args ).init( func, defaults );
 	}
-	
-	*getFromFile { ^nil; } // file write/read not supported for now
 	
 	objectClass { ^SimpleTransformer }
 	
@@ -69,7 +68,7 @@ SimpleTransformer : ObjectWithArgs {
 	
 	*fromDefName { |name, args|
 		var def;
-		def = this.defClass.all[ name ];
+		def = this.defClass.fromName( name );
 		if( def.notNil ) {
 			^def.objectClass.new( name, args );
 		} {
