@@ -145,27 +145,25 @@ WFSPathGUI {
 	
 	}
 	
-	openGeneratorView {
+	openGeneratorView { |parent, bounds|
 		var ctrl, ctrl2, ctrl3;
 		var myWindow, closeFunc;
 		var generatorWindow;
 		
 		if( generatorView.isNil or: { generatorView.view.isClosed } ) {
-			myWindow = view.findWindow;
-			generatorWindow = Window( 
-				"WFSPathGenerator", 
-				Rect( 
+			if( bounds.isNil ) {
+				myWindow = view.findWindow;
+				bounds = Rect( 
 					myWindow.bounds.right + 4,
 					myWindow.bounds.top,
-					220,
-					myWindow.bounds.height
-				),
-				scroll: true
-			).front;
+					200,
+					myWindow.bounds.height - 24
+				);
+			};
 			
 			generatorView = WFSPathGeneratorView( 
-				generatorWindow, 
-				200 @ (myWindow.bounds.height - 24),
+				parent, 
+				bounds,
 				pathView.object,
 				[ \circle, \random, \line ] 
 			);
