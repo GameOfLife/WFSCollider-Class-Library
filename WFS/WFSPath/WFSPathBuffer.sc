@@ -36,13 +36,15 @@ WFSPathBuffer : AbstractRichBuffer {
 	var <startFrame = 0, endFrame;
 	var <rate = 1;
 	var <loop = false;
+	var <delay = 0;
 	
 	*initClass {
 		writeServers = [ Server.default ];
 	}
 	
-	*new { |wfsPath, startFrame = 0, rate = 1, loop = false|
-		^super.new( nil, 9 ).wfsPath_( wfsPath ).startFrame_( startFrame ).rate_( rate ).loop_(loop);
+	*new { |wfsPath, startFrame = 0, rate = 1, loop = false, delay = 0|
+		^super.new( nil, 9 ).wfsPath_( wfsPath ).startFrame_( startFrame ).rate_( rate )
+			.loop_( loop ).delay_( delay );
 	}
 	
 	shallowCopy{
@@ -50,13 +52,15 @@ WFSPathBuffer : AbstractRichBuffer {
 	}
 	
 	asControlInputFor { |server, startPos = 0| 
-		var realStartFrame;
-		if( (startPos > 0) && { wfsPath.isWFSPath2 } ) {
+		var realStartPos, realStartFrame, realDelay;
+		realStartPos = (startPos * rate) - delay;
+		if( (realStartPos > 0) && { wfsPath.isWFSPath2 } ) {
 			realStartFrame = wfsPath.indexAtTime( 
-				(startPos * rate) + wfsPath.timeAtIndex( startFrame ) 
+				realStartPos + wfsPath.timeAtIndex( startFrame ) 
 			);
 		};
-	    ^[ this.currentBuffer(server), realStartFrame ? startFrame, rate, loop.binaryValue ] 
+		realDelay = (delay - startPos).max(0);
+	    ^[ this.currentBuffer(server), realStartFrame ? startFrame, rate, loop.binaryValue, realDelay ] 
 	 }
 	 
 	wfsPath_ { |new|
@@ -116,6 +120,12 @@ WFSPathBuffer : AbstractRichBuffer {
 	loop_ { |new|
 		loop = new ? false;
 		this.changed( \loop, loop );
+		this.unitSet;
+	}
+	
+	delay_ { |new|
+		delay = new ? delay;
+		this.changed( \delay, delay );
 		this.unitSet;
 	}
 	
@@ -261,7 +271,7 @@ WFSPathBuffer : AbstractRichBuffer {
 		}).add; 
 	}
 	
-	storeArgs { ^[ wfsPath, startFrame, rate, loop ] }
+	storeArgs { ^[ wfsPath, startFrame, rate, loop, delay ] }
 	
 }
 

@@ -19,8 +19,8 @@
 
 WFSPathPlayer {
 	
-	*kr { |bufnum = 0, startIndex = 0, ratio = 1, loop = 0, reset = 1, 
-			numDim = 2, waitTime = 0, doneAction = 0| // numDim: number of dimensions (x,y -> 2 dimensions)
+	*kr { |bufnum = 0, startIndex = 0, ratio = 1, loop = 0, delay = 0, reset = 1, 
+			numDim = 2, doneAction = 0| // numDim: number of dimensions (x,y -> 2 dimensions)
 		var phase, length, index, pos;
 		
 		// buffer format:
@@ -33,7 +33,7 @@ WFSPathPlayer {
 		length = Select.kr( loop, [ (BufFrames.kr( bufnum ) - startIndex.floor), inf ] );
 		phase = DemandEnvGen.kr( 
 				Dseq([ startIndex, startIndex, Dseries( startIndex.floor + 1, 1, length-1 )],1),
-				Dseq([ waitTime * ratio, Dbufrd( bufnum, Dseries( startIndex.floor, 1, length ) ) 
+				Dseq([ delay * ratio, Dbufrd( bufnum, Dseries( startIndex.floor, 1, length ) ) 
 					* Dseq([1-startIndex.frac, Dseq([1],length - 1)], 1)
 				],1),
 				timeScale: 1/ratio,
@@ -43,15 +43,15 @@ WFSPathPlayer {
 		^numDim.collect({ |i| pos[ (1..4) + (i*4) ].splineIntPart2( phase.wrap(0,1) ); });
 	}
 	
-	*ar { |bufnum = 0, startIndex = 0, ratio = 1, loop = 0, reset = 1, 
-			numDim = 2, waitTime = 0, doneAction = 0|
+	*ar { |bufnum = 0, startIndex = 0, ratio = 1, loop = 0, reset = 1, delay = 0,
+			numDim = 2, doneAction = 0|
 		var phase, length, index, pos;
 		
 		length = Select.kr( loop, [ (BufFrames.kr( bufnum ) - startIndex.floor), inf ] );
 		index = Dstutter( 2, Dseries( startIndex.floor, 1, length ));
 		phase = DemandEnvGen.ar( 
 				Dseq([ startIndex, startIndex, Dseries( startIndex.floor + 1, 1, length-1 )],1),
-				Dseq([ waitTime * ratio, Dbufrd( bufnum, Dseries( startIndex.floor, 1, length ) ) 
+				Dseq([ delay * ratio, Dbufrd( bufnum, Dseries( startIndex.floor, 1, length ) ) 
 					* Dseq([1-startIndex.frac, Dseq([1],length - 1)], 1)
 				],1),
 				timeScale: 1/ratio,
@@ -81,19 +81,19 @@ WFSPathPlayer {
 WFSPathBufferPlayer { // use this inside an Udef
 	
 	*getArgs { |key, trigger = 1, startPos = 0| 
-		var bufnum, rate, loop, startFrame;
+		var bufnum, rate, loop, delay, startFrame;
 		key = key ? 'wfsPath';
-		#bufnum, startFrame, rate, loop = key.asSymbol.kr( [ 0, 0, 1, 0 ] );
+		#bufnum, startFrame, rate, loop, delay = key.asSymbol.kr( [ 0, 0, 1, 0, 0 ] );
 		startFrame = startFrame + startPos;
-		^[ bufnum, startFrame, rate, loop, trigger, 2 ];
+		^[ bufnum, startFrame, rate, loop, delay, trigger, 2 ];
 	}
 	
-	*ar { |key, trigger = 1, startPos = 0, waitTime = 0, doneAction = 0|
-		^WFSPathPlayer.ar( *this.getArgs( key, trigger, startPos ) ++ [ waitTime, doneAction ] );
+	*ar { |key, trigger = 1, startPos = 0, doneAction = 0|
+		^WFSPathPlayer.ar( *this.getArgs( key, trigger, startPos ) ++ [ doneAction ] );
 	}
 	
-	*kr { |key, trigger = 1, startPos = 0, waitTime = 0, doneAction = 0|
-		^WFSPathPlayer.kr( *this.getArgs( key, trigger, startPos ) ++ [ waitTime, doneAction ] );
+	*kr { |key, trigger = 1, startPos = 0, doneAction = 0|
+		^WFSPathPlayer.kr( *this.getArgs( key, trigger, startPos ) ++ [ doneAction ] );
 	}
 	
 }

@@ -83,6 +83,7 @@ WFSPathBufferView {
 		views[ \filePath ].value = inWFSPathBuffer.filePath;
 		views[ \loop ].value = inWFSPathBuffer.loop.binaryValue;
 		views[ \rate ].value = inWFSPathBuffer.rate;
+		views[ \delay ].value = inWFSPathBuffer.delay;
 		if( inWFSPathBuffer.wfsPath.isWFSPath2 ) {
 			views[ \miniPlot ].value = inWFSPathBuffer.wfsPath;
 			views[ \startSecond ].value = inWFSPathBuffer.startSecond;
@@ -148,6 +149,8 @@ WFSPathBufferView {
 		views[ \startSecond ].font = font;
 		views[ \startLabel ].font = font;
 		views[ \rate ].font = font;
+		views[ \delayLabel ].font = font;
+		views[ \delay ].font = font;
 
 	}
 	
@@ -159,7 +162,7 @@ WFSPathBufferView {
 		};
 	}
 	
-	*viewNumLines { ^7 }
+	*viewNumLines { ^8 }
 	
 	makeView { |parent, bounds, resize|
 		
@@ -330,6 +333,20 @@ WFSPathBufferView {
 			
 		views[ \rate ].sliderView.centered_(true);
 		views[ \rate ].labelView.align_( \left );
+			
+		views[ \delayLabel ] = StaticText( view, 30 @ viewHeight )
+			.applySkin( RoundView.skin )
+			.align_( \left )
+			.string_( "delay" );
+		
+		views[ \delay ] = SMPTEBox( view, (bounds.width - 82) @ viewHeight )
+			.applySmoothSkin
+			.resize_( 5 )
+			.clipLo_( 0 )
+			.action_({ |nb|
+				this.performWFSPathBuffer( \delay_ , nb.value );
+				action.value( this );
+			});
 					
 		this.setFont;
 	}
