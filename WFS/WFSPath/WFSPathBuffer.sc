@@ -59,7 +59,7 @@ WFSPathBuffer : AbstractRichBuffer {
 				realStartPos + wfsPath.timeAtIndex( startFrame ) 
 			);
 		};
-		realDelay = (delay - startPos).max(0);
+		realDelay = delay - startPos;
 	    ^[ this.currentBuffer(server), realStartFrame ? startFrame, rate, loop.binaryValue, realDelay ] 
 	 }
 	 

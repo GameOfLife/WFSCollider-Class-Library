@@ -33,7 +33,8 @@ WFSPathPlayer {
 		length = Select.kr( loop, [ (BufFrames.kr( bufnum ) - startIndex.floor), inf ] );
 		phase = DemandEnvGen.kr( 
 				Dseq([ startIndex, startIndex, Dseries( startIndex.floor + 1, 1, length-1 )],1),
-				Dseq([ delay * ratio, Dbufrd( bufnum, Dseries( startIndex.floor, 1, length ) ) 
+				Dseq([ delay.max(0) * ratio, 
+					Dbufrd( bufnum, Dseries( startIndex.floor, 1, length ) ) 
 					* Dseq([1-startIndex.frac, Dseq([1],length - 1)], 1)
 				],1),
 				timeScale: 1/ratio,
