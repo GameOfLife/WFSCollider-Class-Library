@@ -123,7 +123,9 @@ WFSServers {
 	boot { if( masterServer.notNil )
 			{ masterServer.boot; };
 		multiServers.do({ |ms|
-			if( ms[0].options.device == "JackRouter" ) { 
+			if( ms[0].options.device == "JackRouter" or: { 
+					thisProcess.platform.class.asSymbol === 'LinuxPlatform'
+			} ) { 
 				{ 0.1.wait; ms.boot(10) }.fork 
 			} { 
 				ms.boot(0)
