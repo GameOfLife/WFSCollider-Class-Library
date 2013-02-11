@@ -234,11 +234,13 @@ WFSLib {
 			    UMenuBar();
 			    SCMenuItem.new(UMenuBar.viewMenu, "WFS Position tracker").action_({
 					WFSPositionTrackerGUI.newOrCurrent;
+					WFSPositionTracker.start;
 				});
 			} {
 				UMenuWindow();
 				UMenuWindow.viewMenu.tree.put( 'WFS Position tracker', {
 					WFSPositionTrackerGUI.newOrCurrent;
+					WFSPositionTracker.start;
 				});
 				UMenuWindow.viewMenu.tree.put( 'WFS Preferences...', {
 					WFSOptionsGUI.newOrCurrent;

@@ -5,6 +5,7 @@ WFSPositionTrackerGUI {
 	
 	var <parent, <composite, <startButton, <rateSlider, <showPathsButton, <view, <controller;
 	var <>task;
+	var <>wasActiveBefore = false;
 	
 	*new { |parent, bounds|
 		^super.newCopyArgs.init( parent, bounds );
@@ -22,6 +23,7 @@ WFSPositionTrackerGUI {
 	init {  |inParent, bounds|
 		parent = inParent;
 		
+		if( WFSPositionTracker.active ) { wasActiveBefore = true };
 		if( parent.isNil ) { 
 			parent = "WFSPositionTracker";
 		};
@@ -53,6 +55,7 @@ WFSPositionTrackerGUI {
 			if( current == this ) { current = nil };
 			this.stopTask;
 			CmdPeriod.remove( this );
+			if( wasActiveBefore.not ) { WFSPositionTracker.stop };
 		};
 		
 		startButton = SmoothButton( composite, 18@18 )
