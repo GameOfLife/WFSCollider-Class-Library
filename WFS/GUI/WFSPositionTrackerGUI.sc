@@ -1,8 +1,9 @@
 WFSPositionTrackerGUI {
 	
 	classvar <>current;
+	classvar <>showPaths = true;
 	
-	var <parent, <composite, <startButton, <rateSlider, <view, <controller;
+	var <parent, <composite, <startButton, <rateSlider, <showPathsButton, <view, <controller;
 	var <>task;
 	
 	*new { |parent, bounds|
@@ -68,7 +69,7 @@ WFSPositionTrackerGUI {
 			});
 		
 		rateSlider = EZSmoothSlider( 
-				composite, (composite.bounds.width - 22)@18, "rate", [1,100,\exp,1,10].asSpec 
+				composite, (composite.bounds.width - (22 + 84))@18, "rate", [1,100,\exp,1,10].asSpec 
 			)
 			.value_( WFSPositionTracker.sendPointRate )
 			.action_({ |sl|
@@ -77,9 +78,37 @@ WFSPositionTrackerGUI {
 			
 		rateSlider.view.resize_(2);
 		
+		showPathsButton = SmoothButton( composite, 80@18 )
+			.label_( [ "show paths", "show paths" ] )
+			.hiliteColor_( Color.green.alpha_(0.5) )
+			.radius_( 4 )
+			.value_( showPaths.binaryValue )
+			.resize_(3)
+			.action_({ |bt|
+				showPaths = bt.value.booleanValue;
+			});
+		
 		view = WFSMixedView( composite, composite.bounds.insetAll( 0, 22, 0, 0 ), [] )
 			.mouseMode_(\lock)
 			.showLabels_( false );
+			
+		view.drawFunc = { |vw|
+			var scale, paths;
+			if( showPaths ) {
+				paths = [];
+				WFSPositionTracker.positions.keys.do({ |chain|
+					chain.units.do({ |unit|
+						unit.values.do({ |value|
+							if( value.isKindOf( WFSPathBuffer ) ) {
+								paths = paths.add( value.wfsPath );
+							};
+						});
+					});
+				});
+				scale = 0.2/vw.scale.mean;
+				paths.do(_.draw(1, pixelScale: scale));
+			};
+		};
 			
 		controller = SimpleController( WFSPositionTracker )
 			.put( \active, {
