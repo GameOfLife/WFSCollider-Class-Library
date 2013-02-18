@@ -434,17 +434,9 @@ WFSSpeakerConf {
 	}
 	
 	divideArrays { |n| // split the arrayConfs into n equal (or not so equal) groups
-		var division, counter = 0, result = [];
 		n = n ? numSystems;
-		division = this.speakerCount / n;
-		n.do({ |i|
-			result = result ++ [ [ ] ];
-			while { (result[i].collect(_.n).sum < division) && { counter < arrayConfs.size } } {
-				result[i] = result[i] ++ arrayConfs[ counter ];
-				counter = counter + 1;
-			};
-		});
-		^result;
+		^arrayConfs.clump( arrayConfs.size / n );
+		
 	}
 	
 	getArrays { |i = 0, n| // arrays for single server (server i out of n)
