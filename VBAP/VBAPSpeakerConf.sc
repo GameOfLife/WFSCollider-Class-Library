@@ -44,14 +44,14 @@ VBAPSpeakerConf {
     }
 
 	*fivePointOne {
-		^VBAPSpeakerConf.fromAngles( [-30, 30, 0, -110, 110] )	}
+		^VBAPSpeakerConf( [-30, 30, 0, -110, 110] )	}
 
 	*eightChan {
-		^VBAPSpeakerConf.fromAngles( [0, 45, 90, 135, 180, -135, -90, -45] )
+		^VBAPSpeakerConf( [0, 45, 90, 135, 180, -135, -90, -45] )
 	}
 
 	*zigzagDome {
-		^VBAPSpeakerConf.fromAngles([ [-22.5, 14.97], [22.5, 14.97], [-67.5, 14.97], [67.5, 14.97],
+		^VBAPSpeakerConf([ [-22.5, 14.97], [22.5, 14.97], [-67.5, 14.97], [67.5, 14.97],
 		 [-112.5, 14.97], [112.5, 14.97], [-157.5, 14.97], [157.5, 14.97], [-45, 0], [45, 0], [-90, 0],
 		  [90, 0], [-135, 0], [135, 0], [0, 0], [180, 0] ])
 	}

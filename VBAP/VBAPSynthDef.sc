@@ -98,7 +98,7 @@ VBAPSynthDef {
             var point = point3DUgenFunc.value;
             var out = UIn.ar( 0 );
             out = prePanner.( out, point );
-            [point.theta/2pi*360.poll, point.phi/2pi*360].poll(1);
+            [point.theta/2pi*360.poll, point.phi/2pi*360];
             simpleOut.( out, point.theta/2pi*360.poll, point.phi/2pi*360 );
         } ),
 
