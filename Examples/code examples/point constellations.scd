@@ -85,7 +85,7 @@ d = UScore(
 				\freq, (44 + (i*2)).midicps,
 				\formant, 100 exprand: 1000,
 			] ], 
-			[ \tremolo, [ \speed, i.linlin(0,n-1,0.5,1.5), \smooth, 0 ] ],
+			[ \tremolo, [ \speed, i.linlin(0,n-1,0.5,1.5), \smooth, 0.05 ] ],
 			[ \wfsStaticPoint, [ \point, i.linlin( 0@0, (n-1)@(n-1), p, q ) ] ]
 		).duration_( 10 ).fadeOut_( 1 );
 	})
