@@ -28,7 +28,7 @@ Udef( \wfsRandomPath, { |
 	UMixOut.kr( 0, random );
 })
 	.category_( 'wfs_control' )
-	.setSpec( \speed, [ 0, 4, \lin, 0, 0.1 ].asSpec )
+	.setSpec( \speed, [ 0, 100, 8, 0, 0.1 ].asSpec )
 	.setSpec( \center, WFSPointSpec( 200, 0.1@0.1 ) )
 	.setSpec( \radius, PointSpec( Rect(0,0,200,200), 0.1@0.1 ) )
 	.setSpec( \seed, PositiveIntegerSpec(12345) )
