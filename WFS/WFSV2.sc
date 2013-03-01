@@ -80,8 +80,10 @@ WFS {
 		};			
 		   
     }
-		
-	*startup {
+	
+	*startup { ^WFSLib.startup }
+	
+	*startupOld {
 		var file, speakers,ip,name, dict, wfsConf;
 
 		Udef.userDefsFolder = File.getcwd +/+ "UnitDefs";		   
