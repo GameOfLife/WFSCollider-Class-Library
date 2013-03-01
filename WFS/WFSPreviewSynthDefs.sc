@@ -87,7 +87,7 @@ WFSPreviewSynthDefs : AbstractWFSSynthDefs {
 		dir = dir ? SynthDef.synthDefDir;
 		synthDefs = modes.collect({ |mode|
 			pannerFuncs.keys.as(Array).collect({ |type|
-				this.generateDef( type, mode ).writeDefFile( dir );
+				this.generateDef( type, mode ).justWriteDefFile( dir );
 			})
 		}).flatten(1);
 		action.value(this);

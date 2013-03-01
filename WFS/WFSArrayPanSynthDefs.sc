@@ -197,7 +197,7 @@ WFSArrayPanSynthDefs : AbstractWFSSynthDefs {
 			synthDefs = all.collect({ |item|
 				var out = this.allSizes.collect({ |size|
 					this.generateDef(size, *item )
-						.writeDefFile( dir );
+						.justWriteDefFile( dir );
 				});
 				waitTime.wait;
 				"  WFSArrayPanSynth synthdefs for % ready\n".postf( item.join("_") );
@@ -479,10 +479,10 @@ WFSPrePanSynthDefs : AbstractWFSSynthDefs {
 		synthDefs = crossfadeModes.collect({ |item|
 			if( modesThatNeedArrays.includes( item ) ) {
 				(maxArrays + 1).collect({ |i|
-					this.generateDef( i, item ).writeDefFile( dir );
+					this.generateDef( i, item ).justWriteDefFile( dir );
 				});
 			} {
-				[ this.generateDef( 0, item ).writeDefFile( dir ) ]
+				[ this.generateDef( 0, item ).justWriteDefFile( dir ) ]
 			};
 		});
 		action.value(this);
