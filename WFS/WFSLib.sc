@@ -120,7 +120,7 @@ WFSLib {
 		
 		Udef.loadOnInit = true;
 		
-		defs.do({|def| def.writeDefFile; });
+		defs.do({|def| def.justWriteDefFile; });
 		if( SyncCenter.mode == 'sample' ) {
 			SyncCenter.writeDefs;
 		};
