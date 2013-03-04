@@ -5,6 +5,7 @@ a = \point;
 p = 0@7.5; // position
 t = 5/344; // time
 l = 0@2; // listener position (optional)
+d = 0; // latencyComp
 ~win = Window("WFS preview", Rect(200,200,600,620)).front;
 ~win.addFlowLayout(0@0,0@0);
 w = ScaledUserView.withSliders(~win,  
@@ -66,7 +67,7 @@ w.drawFunc = {
 		
 		speakerLines = c.arrayConfs;
 		speakerPoints = speakerLines.collect(_.asPoints).collect(_.reverse);
-		prePan = WFSPrePan().ar( 1, p )[0];
+		prePan = WFSPrePan( latencyComp: d).ar( 1, p )[0];
 		
 		if( a === \point ) {
 			crossfader = WFSCrossfader( p, speakerLines );
@@ -145,6 +146,10 @@ t = -5/344; w.refresh;
 t = 0/344; w.refresh;
 t = 5/344; w.refresh;
 t = 10/344; w.refresh;
+
+// change latencyComp
+d = 1; w.refresh;
+d = 0; w.refresh;
 
 // animate time
 (
