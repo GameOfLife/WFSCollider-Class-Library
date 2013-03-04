@@ -91,6 +91,12 @@ WFSPathURL {
 		^all[ url ];
 	}
 	
+	draw { |drawMode = 0, selected, pos, showControls = false, pixelScale = 1|
+		if( this.wfsPath.notNil ) {
+			this.wfsPath.draw( drawMode, selected, pos, showControls, pixelScale );
+		};
+	}
+	
 	url_ { |url|
 		url = this.class.formatURL( url );
 		this.init;
