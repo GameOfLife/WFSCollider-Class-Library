@@ -50,6 +50,19 @@ WFSPreviewSynthDefs : AbstractWFSSynthDefs {
 				amplitudes = PanAz.kr( 4, 1, (point.angle - 0.5pi).neg / pi);
 				amplitudes = amplitudes.max( globalDist.linlin(0.5,1,1,0).clip(0,1) );
 				in * amplitudes;
+			},
+			\octo: { |in, point| // clockwise octophonic panning, first speaker straight front
+				var distances, globalDist, delays, amplitudes;
+				var radius = 0.3; // should be < 1
+				distances = ((2,1..-5)*2pi/8).collect({ |item|
+					Polar(radius,item).asPoint.dist( point )
+				});
+				globalDist = (0@0).dist( point );
+				delays = 0.06 + ((distances - globalDist) / WFSBasicPan.speedOfSound);
+				in = DelayC.ar( in, 0.12, delays );
+				amplitudes = PanAz.kr( 8, 1, (point.angle - 0.5pi).neg / pi, orientation: 0);
+				amplitudes = amplitudes.max( globalDist.linlin(0.5,1,1,0).clip(0,1) );
+				in * amplitudes;
 			}
 		);
 	}
