@@ -214,6 +214,11 @@ WFSLib {
 				[ 'wfsStaticPlane', [ 'point', Point(-6, -6), 'u_i_ar_0_bus', 2 ] ]
 				)
 			);
+			
+		PresetManager.all.do({ |pm|
+			pm.filePath = Platform.userConfigDir +/+ "default" ++ "." ++ pm.id ++ ".presets";
+			pm.readAdd( silent: true );
+		});
 		
 		ULib.servers = servers;
 		
