@@ -55,7 +55,7 @@ def = FreeUdef( \wfsStaticPlane, [
 		\u_globalGain,
 		\u_globalEQ_setting, \u_globalEQ_bypass,  
 	] )
-	.envPut( \init_wfsa, [ \arrayDbRollOff, \u_i_ar_0_bus, \point ] )
+	.envPut( \init_wfsa, [ \u_i_ar_0_bus, \point ] )
 	.addUEnv
 	.addUGlobalEQ
 	.setSpecMode( \latencyComp, \init, \point, \init )

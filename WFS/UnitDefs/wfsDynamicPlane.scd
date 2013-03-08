@@ -60,7 +60,7 @@ def = FreeUdef( \wfsDynamicPlane, [
 		\u_globalGain,
 		\u_globalEQ_setting, \u_globalEQ_bypass,  
 	] )
-	.envPut( \set_wfsa, [ \arrayDbRollOff, \u_i_ar_0_bus, 
+	.envPut( \set_wfsa, [ \u_i_ar_0_bus, 
 		\u_i_kr_0_bus, \u_i_kr_1_bus,  
 	] )
 	.addUEnv
