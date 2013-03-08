@@ -35,7 +35,7 @@ def = FreeUdef( \wfsDynamicPoint, [
 		[ \maxAmpRadius:	2,		[ 1, 5, \lin, 0, 2, "m" ].asSpec ],
 		[ \crossfadeLag:	0.2,		[ 0, 1, \lin, 0, 0.2 ].asSpec ],
 		[ \dontPause:		false,	BoolSpec( false ) ]
-	] ).category_( \wfs_panner )
+	], true ).category_( \wfs_panner )
 	// first a few general things
 	.envPut( \getArgsFor, { |evt, which, args, server, startPos = 0|
 		if( which.notNil ) {
@@ -68,12 +68,22 @@ def = FreeUdef( \wfsDynamicPoint, [
 		\u_globalEQ_setting, \u_globalEQ_bypass,  
 	] )
 	.envPut( \set_wfsa, [ \u_i_ar_0_bus, \u_i_kr_0_bus, \u_i_kr_1_bus ] )
-	.addUEnv
 	.addUGlobalEQ
 	.addUIO( UIn, \ar, 0, 1 )
 	.addUIO( UIn, \kr, 0, 2 )
-	.setSpecMode( \latencyComp, \init, \quality, \init )
-	.setControlInName( [0,1], ['x', 'y'] );
+	.setSpecMode( \latencyComp, \init, \quality, \nonsynth )
+	.setControlInName( [0,1], ['x', 'y'] )
+	.setSynthFunc_({ |unit ...keyValuePairs|
+		unit.synths.do({ |sn|
+			var server = sn.server;
+			var key = switch( sn.class, Group, \wfsa, Synth, \wfsp );
+			server.sendSyncedBundle( Server.default.latency, nil, 
+				*server.makeBundle( false, {
+		    			sn.set( *unit.def.env.getSetArgsFor( key, keyValuePairs, server ) )
+	    			})
+	    		);
+		})
+	});
 	
 if( WFSPreviewSynthDefs.pannerFuncs.keys.includes( WFSLib.previewMode ).not ) {
 // dynamic point wfs panner
@@ -156,17 +166,6 @@ if( WFSPreviewSynthDefs.pannerFuncs.keys.includes( WFSLib.previewMode ).not ) {
 		
 		prePanSynth;
 	})
-	.setSynthFunc_({ |unit ...keyValuePairs|
-		unit.synths.do({ |sn|
-			var server = sn.server;
-			var key = switch( sn.class, Group, \wfsa, Synth, \wfsp );
-			server.sendSyncedBundle( Server.default.latency, nil, 
-				*server.makeBundle( false, {
-		    			sn.set( *unit.def.env.getSetArgsFor( key, keyValuePairs, server ) )
-	    			})
-	    		);
-		})
-	})
 	.shouldPlayOnFunc_({ |unit, target|
 		WFSSpeakerConf.default.getArraysFor( target.asTarget.server ).size > 0;
 	});
@@ -177,6 +176,7 @@ if( WFSPreviewSynthDefs.pannerFuncs.keys.includes( WFSLib.previewMode ).not ) {
 		var server, n = 0;
 		var prePanSynth;
 		var previewSynth;
+		var arrayGroup;
 		
 		server = target.asTarget.server;
 		
@@ -187,28 +187,18 @@ if( WFSPreviewSynthDefs.pannerFuncs.keys.includes( WFSLib.previewMode ).not ) {
 			target, \addToTail
 		);
 		
+		arrayGroup = Group(target, addAction: \addToTail);
+		
 		previewSynth = Synth( 
 			WFSPreviewSynthDefs.getDefName( WFSLib.previewMode, \d ),
 			unit.def.env.getInitArgsFor( \wfsa, unit.args, server, startPos ),
-			target, \addToTail 
+			arrayGroup, \addToTail 
 		);
 		
-		previewSynth.freeAction_({ |synth| unit.removeSynth( synth ); });
-		unit.addSynth( previewSynth );
+		arrayGroup.freeAction_({ |synth| unit.removeSynth( synth ); });
+		unit.addSynth( arrayGroup );
 		
 		prePanSynth;
-	})
-	.setSynthFunc_({ |unit ...keyValuePairs|
-		unit.synths.do({ |sn|
-			var server = sn.server;
-			var key = switch( sn.defName.asString[..4].asSymbol, 
-				\wfsx_, \wfsa, \wfsp_, \wfsp );
-			server.sendSyncedBundle( Server.default.latency, nil, 
-				*server.makeBundle( false, {
-		    			sn.set( *unit.def.env.getSetArgsFor( key, keyValuePairs, server ) )
-	    			})
-	    		);
-		})
 	})
 	.shouldPlayOnFunc_({ |unit, target|
 		target.asTarget.server.isLocal; // safety measure: no output on wfs servers
