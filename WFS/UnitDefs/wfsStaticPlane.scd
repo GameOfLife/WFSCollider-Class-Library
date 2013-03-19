@@ -99,7 +99,7 @@ if( WFSPreviewSynthDefs.pannerFuncs.keys.includes( WFSLib.previewMode ).not ) {
 				planeSynths = planeSynths.add(							Synth( defName ++ ac.n, [ 
 							\gain, gain,
 							\arrayConf, ac, 
-							\outOffset, n,
+							\outOffset, n + WFSSpeakerConf.getOutputBusStartOffset( server ),
 							\amp, planeLevels[i]
 						] ++ unit.def.env.getInitArgsFor( \wfsa, unit.args, server, startPos ), 
 						arrayGroup, addAction: \addToTail 
@@ -152,7 +152,8 @@ def.createSynthFunc_({ |unit, target, startPos = 0|
 		
 		previewSynth = Synth( 
 			WFSPreviewSynthDefs.getDefName( WFSLib.previewMode, \s ),
-			unit.def.env.getInitArgsFor( \wfsa, unit.args, server, startPos ),
+			unit.def.env.getInitArgsFor( \wfsa, unit.args, server, startPos ) ++
+				[ \out, WFSSpeakerConf.getOutputBusStartOffset( target ) ],
 			target, \addToTail 
 		);
 				

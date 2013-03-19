@@ -88,9 +88,10 @@ WFSMasterOptionsGUI : AbstractWFSOptionsGUI {
 		specs = OEM(
 			\numInputBusChannels, IntegerSpec( 20, 8, 128 ),
 			\numOutputBusChannels, IntegerSpec( 20, 8, 128 ),
+			\outputBusStartOffset, IntegerSpec( 0, 0, 128 ),
 			\device, StringSpec(),
 			\useForWFS, BoolSpec(false),
-			\toServersBus, IntegerSpec( 14, 0, 127 )
+			\toServersBus, IntegerSpec( 14, 0, 127 ),
 		);
 	}
 
@@ -109,6 +110,7 @@ WFSServerOptionsGUI : AbstractWFSOptionsGUI {
 			\n, IntegerSpec( 8, 1, 16 ),
 			\numInputBusChannels, IntegerSpec( 8, 8, 128 ),
 			\numOutputBusChannels, IntegerSpec( 96, 8, 128 ),
+			\outputBusStartOffset, IntegerSpec( 0, 0, 128 ),
 			\device, StringSpec("JackRouter")
 		);
 	}

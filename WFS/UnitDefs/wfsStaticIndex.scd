@@ -52,7 +52,10 @@ def = FreeUdef( \wfsStaticIndex, [
 	.createSynthFunc_({ |unit, target, startPos = 0|
 		var startIndex;
 		startIndex = WFSSpeakerConf.default.firstSpeakerIndexOf( target.asTarget.server );
-		Synth( "wfsi_is", [ \startIndex, startIndex, \i_gain, WFSSpeakerConf.default.gain ] ++ 
+		Synth( "wfsi_is", [ 
+			\startIndex, startIndex - WFSSpeakerConf.getOutputBusStartOffset( target ), 
+			\i_gain, WFSSpeakerConf.default.gain 
+		] ++ 
 			unit.getArgsFor( target.asTarget.server, startPos ), 
 			target, \addToTail );
 	});

@@ -56,6 +56,7 @@ WFSMasterOptions : AbstractWFSOptions {
 	var <toServersBus = 14;
 	var <numOutputBusChannels = 20;
 	var <numInputBusChannels = 20;
+	var <outputBusStartOffset = 0;
 	var <device;
 	var <useForWFS = false;
 	
@@ -73,6 +74,7 @@ WFSServerOptions : AbstractWFSOptions {
 	var <n = 8;
 	var <numOutputBusChannels = 96;
 	var <numInputBusChannels = 8;
+	var <outputBusStartOffset = 0;
 	var <device = "JackRouter";
 	
 	

@@ -34,7 +34,10 @@ WFSLib {
 					WFSServers.default[ 0 ][ i ].options						.numInputBusChannels_(  item.numInputBusChannels )
 						.numOutputBusChannels_( item.numOutputBusChannels )
 						.blockSize_( 128 )
-						.device_( item.device )
+						.device_( item.device );
+					 WFSServers.default.multiServers[i].servers.do({ |srv|
+						 WFSSpeakerConf.setOutputBusStartOffset( srv, item.outputBusStartOffset );
+					 });
 				});
 				WFSPathBuffer.writeServers = WFSServers.default.multiServers.collect(_[0]);
 			} {
@@ -46,6 +49,7 @@ WFSLib {
 			o = wfsOptions.masterOptions;
 			WFSServers.pulsesOutputBus = o.toServersBus;
 			SyncCenter.outBus = o.toServersBus;
+			WFSSpeakerConf.setOutputBusStartOffset( WFSServers.default.m, o.outputBusStartOffset );
 			
 			if( o.useForWFS ) {
 				servers = [ WFSServers.default.m ];
@@ -64,6 +68,11 @@ WFSLib {
 				WFSPathBuffer.writeServers = WFSServers.default.multiServers.collect(_[0]);
 				Server.default = WFSServers.default.multiServers[0][0];
 				o = wfsOptions.serverOptions[0];
+				wfsOptions.serverOptions.do({ |item,i|
+					WFSServers.default.multiServers[i].servers.do({ |srv|
+						 WFSSpeakerConf.setOutputBusStartOffset( srv, item.outputBusStartOffset );
+					});
+				});
 			} {
 				"WFSLib:startup : can't startup".postln;
 				"\tWFSMasterOptions and WFSServerOptions are missing".postln;

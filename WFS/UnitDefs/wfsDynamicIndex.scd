@@ -45,7 +45,10 @@ def = FreeUdef( \wfsDynamicIndex, [
 	.createSynthFunc_({ |unit, target, startPos = 0|
 		var startIndex;
 		startIndex = WFSSpeakerConf.default.firstSpeakerIndexOf( target.asTarget.server );
-		Synth( "wfsi_id", [ \startIndex, startIndex, \i_gain, WFSSpeakerConf.default.gain ] ++ unit.getArgsFor( target, startPos ), 
+		Synth( "wfsi_id", [ 
+				\startIndex, startIndex - WFSSpeakerConf.getOutputBusStartOffset( target ), 
+				\i_gain, WFSSpeakerConf.default.gain 
+			] ++ unit.getArgsFor( target, startPos ), 
 			target, \addToTail );
 	})
 	.setControlInName( 0, 'index' );

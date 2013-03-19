@@ -256,6 +256,7 @@ WFSSpeakerConf {
 	classvar <numSystems, <>serverGroups;
 	classvar <>default;
 	classvar <>presetManager;
+	classvar <>outputBusStartOffsets;
 	
 	var <arrayConfs;
 	var <>arrayLimit = 1;
@@ -292,6 +293,7 @@ WFSSpeakerConf {
 		 	} );
 		
 		this.numSystems = 2; // create server library
+		outputBusStartOffsets = IdentityDictionary();
 	}
 	
 	*new { |...args|
@@ -482,10 +484,13 @@ WFSSpeakerConf {
 		});
 	}
 	
-	*addServer { |server, system = 0|
+	*addServer { |server, system = 0, outputBusStartOffset|
 		server = server.asCollection.collect(_.asTarget).collect(_.server);
 		server.do({ |server|
 			serverGroups[ system ].add( server );
+			if( outputBusStartOffset.notNil ) {
+				this.setOutputBusStartOffset( server, outputBusStartOffset );
+			};
 		});
 	}
 	
@@ -493,6 +498,7 @@ WFSSpeakerConf {
 		server = server.asCollection.collect(_.asTarget).collect(_.server);
 		server.do({ |server|
 			serverGroups.do(_.remove(server));
+			this.removeOutputBusStartOffset( server );
 		});
 	}
 	
@@ -510,6 +516,18 @@ WFSSpeakerConf {
 	*resetServers {
 		serverGroups = nil;
 		this.numSystems = this.numSystems;
+	}
+	
+	*setOutputBusStartOffset { |server, bus = 0|
+		outputBusStartOffsets.put( server.asTarget.server, bus );
+	}
+	
+	*getOutputBusStartOffset { |server|
+		^outputBusStartOffsets[ server.asTarget.server ] ? 0
+	}
+	
+	*removeOutputBusStartOffset { |server|
+		outputBusStartOffsets.put( server.asTarget.server, nil );
 	}
 	
 	// drawing

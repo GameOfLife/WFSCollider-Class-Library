@@ -91,7 +91,7 @@ WFSPreviewSynthDefs : AbstractWFSSynthDefs {
 				
 			input = UIn.ar(0, 1) * amp;
 			
-			Out.ar( 0, pannerFuncs[ type ].value( input, point ) );
+			Out.ar( \out.kr(0), pannerFuncs[ type ].value( input, point ) );
 		});
 		
 	}

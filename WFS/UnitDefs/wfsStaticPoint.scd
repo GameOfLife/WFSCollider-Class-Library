@@ -97,7 +97,7 @@ if( WFSPreviewSynthDefs.pannerFuncs.keys.includes( WFSLib.previewMode ).not ) {
 				normalSynths = normalSynths.add(							Synth( defNames[0] ++ ac.n, [ 
 							\gain, WFSSpeakerConf.default.gain.dbamp,
 							\arrayConf, ac, 
-							\outOffset, n,
+							\outOffset, n + WFSSpeakerConf.getOutputBusStartOffset( server ),
 							\amp, normalLevels[i],
 							\arrayLimit, WFSSpeakerConf.default.arrayLimit,
 						] ++ unit.def.env.getInitArgsFor( \wfsa, unit.args, server, startPos ), 
@@ -115,7 +115,7 @@ if( WFSPreviewSynthDefs.pannerFuncs.keys.includes( WFSLib.previewMode ).not ) {
 					focusSynths = focusSynths.add(							Synth( defNames[1] ++ ac.n, [ 
 								\gain, WFSSpeakerConf.default.gain.dbamp,
 								\arrayConf, ac, 
-								\outOffset, n,
+								\outOffset, n + WFSSpeakerConf.getOutputBusStartOffset( server ),
 								\amp, focusLevels[i],
 								\arrayLimit, WFSSpeakerConf.default.arrayLimit,
 							] ++ unit.def.env.getInitArgsFor( \wfsa, unit.args, server, startPos ), 
@@ -169,7 +169,8 @@ if( WFSPreviewSynthDefs.pannerFuncs.keys.includes( WFSLib.previewMode ).not ) {
 		
 		previewSynth = Synth( 
 			WFSPreviewSynthDefs.getDefName( WFSLib.previewMode, \s ),
-			unit.def.env.getInitArgsFor( \wfsa, unit.args, server, startPos ),
+			unit.def.env.getInitArgsFor( \wfsa, unit.args, server, startPos ) ++
+				[ \out, WFSSpeakerConf.getOutputBusStartOffset( target ) ],
 			target, \addToTail 
 		);
 				
