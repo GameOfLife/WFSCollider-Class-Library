@@ -165,8 +165,16 @@ WFSServers {
 		
 		if( window.notNil && { window.isClosed.not }) { window.front; ^this };
 		
-		window = Window("WFSServers", Rect(10, 10, 440, 8 +
-			( (ips.size * serversPerSystem)  * (22)) + (ips.size * 16 ) ), false).front;
+		window = Window("WFSServers", Rect(	
+				10, 
+				10 + ((this.isSingle && { Server.internal.window.notNil }).binaryValue * 250), 
+				390, 
+				8 + ( (ips.size * serversPerSystem) * 22) +
+					( this.hasMasterServer.binaryValue * 44 ) + 
+					( this.isMaster.binaryValue * 20 ) + 
+					(ips.size * 16 ) 
+			), false 
+		).front;
 		
 		window.onClose_({ widgets.do(_.remove) });
 		
@@ -176,7 +184,6 @@ WFSServers {
 		if( this.hasMasterServer )
 			{ 
 			//delayViews = syncDelays.copy;
-			window.bounds = window.bounds + Rect( 0, 0, 0, 45 + 20 );
 			
 			SmoothButton( window, Rect( 0, 0, 16, 16 ) )
 				.states_([["K", Color.black, Color.clear]])
@@ -198,12 +205,14 @@ WFSServers {
 				.font_( font )
 				.action_( { ServerRecordWindow( masterServer, 999 ); } );
 			
+			/*
 			SmoothButton(window, Rect(0,0, 16, 16))
 				.states_([["?", Color.black, Color.clear]])
 				.font_( font )
 				.action_( { WFS.openHelpFile } );
+			*/
 			
-			StaticText( window, Rect( 0, 0, 140, 15 ) )
+			StaticText( window, Rect( 0, 0, 108, 15 ) )
 				.string_( "master (" ++ ( NetAddr.myIP ? "127.0.0.1" ) ++ ")" )
 				.font_( font );
 
@@ -214,8 +223,6 @@ WFSServers {
 			window.view.decorator.nextLine;
 			masterServer.makeView( window ); 
 			if( this.isMaster ) {
-			
-				window.bounds = window.bounds + Rect( 0, 0, 0, 45 + 20 + 20 );
 				
 				SmoothButton( window, Rect( 0, 0, 116, 16 ) )
 					.states_( [["sync"]] )
@@ -339,29 +346,8 @@ WFSServers {
 					"killall -9 scsynth; sleep 2; killall -9 scsynth;"
 						.sshCmd( "gameoflife", NetAddr(ips[i]) );
 			} );
-			
-			SmoothButton( window, Rect( 0, 0, 12, 12 ) )
-				.states_([["x", Color.black, Color.red.alpha_(0.1)]])
-				.radius_(2)
-				.font_( font )
-				.action_( {
-					// kill synths and restart sc on remote
-					"killing scsynths on server % and rebooting sc in 10s"
-							.postf( ips[i].asString );
-					"killall -9 WFSCollider; 
-							killall -9 WFSCollider-Leiden; 
-							killall -9 scsynth ; 
-							killall -9 SuperCollider; 
-							killall -9 jackdmp; 
-							killall -9 JackPilot; 
-							open '/Applications/autostart jackosx intel.app'; 
-							sleep 10; 
-							open '%'"
-							.format( String.scDir.dirname.dirname )
-							.sshCmd( "gameoflife", NetAddr(ips[i]) );
-			} );
 					 
-			serverLabels[i] = StaticText( window, Rect( 0, 0, 196, 12 ) )
+			serverLabels[i] = StaticText( window, Rect( 0, 0, 200, 12 ) )
 				.string_("multi" ++ (i+1) ++ " (" ++ 
 					if( ips[i] == "127.0.0.1",
 						{ NetAddr.myIP ? "127.0.0.1" }, { ips[i] } )
@@ -369,7 +355,7 @@ WFSServers {
 				.font_( font );
 			
 			if( this.isMaster.not ) {	 
-				EZSmoothSlider(window, Rect(0,0,200,15),"Latency", [0.02,1,\exp,0,0.02].asSpec)
+				EZSmoothSlider(window, Rect(0,0,160,15),"Latency", [0.02,1,\exp,0,0.02].asSpec)
 				    .value_(multiServer[0].latency)
 				    .action_({ |v| multiServer[0].latency = v.value});
 			};
@@ -384,8 +370,6 @@ WFSServers {
 				});
 			});
 			
-		if( this.isSingle ) { window.bounds = window.bounds + Rect(0,240,0,45+20); };
-		
 		RoundView.popSkin
 		
 		//window.view.decorator.nextLine;
