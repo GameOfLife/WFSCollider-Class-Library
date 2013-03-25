@@ -278,6 +278,9 @@ WFSLib {
             		var allTypes, defs;
             		var servers;
             		servers = WFSServers.default.multiServers.collect(_.servers).flatten(1);
+            		if( WFSServers.default.m.notNil ) {
+	            		servers = servers ++ WFSServers.default.m;
+            		};
 	              while { 
 		            	servers.collect( _.serverRunning ).every( _ == true ).not; 
 		         } { 
@@ -286,7 +289,10 @@ WFSLib {
 	             "System ready".postln;
 	             if( wfsOptions.playSoundWhenReady ) {
 		             "playing lifesign".postln;
-		             "server ready".speak
+		             "server %, ready"
+		             	.format( 
+		             		WFSServers.default.multiServers.collect(_.hostName).join( ", ") 
+		             	).speak;
 	             };
 	             servers.do({ |srv| wfsOptions.serverAction.value( srv ) });
 		   }).play( AppClock );
