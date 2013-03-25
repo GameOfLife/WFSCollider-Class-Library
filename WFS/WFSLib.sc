@@ -268,7 +268,7 @@ WFSLib {
 	  wfsOptions.startupAction.value( this );
 		
 	  WFSSynthDefs.generateAllOnce({
-	  	WFSServers.default.boot;
+	  	StartUp.defer({ WFSServers.default.boot; })
 	  });
 	  
 	  CmdPeriod.add( this );
