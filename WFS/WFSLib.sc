@@ -6,6 +6,8 @@ WFSLib {
 		var defs, servers, o;
 		var bootFunc;
 		
+		WFSOptions.makeCurrentAtInit = true;
+		
 		this.loadOldPrefs;
 		this.loadPrefs;
 		
@@ -20,6 +22,8 @@ WFSLib {
 		};
 		
 		wfsOptions.makeCurrent;
+		
+		WFSOptions.makeCurrentAtInit = false;
 		
 		if( wfsOptions.masterOptions.notNil ) {
 			if( wfsOptions.serverOptions.size > 0 ) {
@@ -225,8 +229,10 @@ WFSLib {
 			);
 			
 		PresetManager.all.do({ |pm|
-			pm.filePath = Platform.userConfigDir +/+ "default" ++ "." ++ pm.id ++ ".presets";
-			pm.readAdd( silent: true );
+			if( pm.object != WFSOptions ) {
+				pm.filePath = Platform.userConfigDir +/+ "default" ++ "." ++ pm.id ++ ".presets";
+				pm.readAdd( silent: true );
+			};
 		});
 		
 		ULib.servers = servers;
@@ -360,8 +366,12 @@ WFSLib {
 			stream <<< WFSSpeakerConf.default << ".makeDefault;\n\n";
 		};
 		
+		WFSOptions.usePresetsForCS = true;
+		
 		stream << "//options:\n";
 		stream <<< WFSOptions.current << ";";
+		
+		WFSOptions.usePresetsForCS = false;
 		
 		if( WFSArrayPan.useFocusFades != true ) {
 			stream << "\n\nWFSArrayPan.useFocusFades = " << WFSArrayPan.useFocusFades << ";";

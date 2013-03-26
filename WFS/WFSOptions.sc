@@ -1,6 +1,7 @@
 AbstractWFSOptions {
 	
-	classvar <>usePresetsForCS = true;
+	classvar <>usePresetsForCS = false;
+	classvar <>makeCurrentAtInit = false;
 	
 	*fromPreset { |name| ^this.presets[ name ].deepCopy; }
 	
@@ -124,7 +125,7 @@ WFSOptions : AbstractWFSOptions {
 	*new { ^super.new.init; }
 	
 	init {
-		this.makeCurrent;
+		if( makeCurrentAtInit ) { this.makeCurrent; };
 	}
 	
 	makeCurrent {
