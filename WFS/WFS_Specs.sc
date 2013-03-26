@@ -368,6 +368,7 @@ WFSPointSpec : PointSpec {
 				if( vws[ \editor ].isNil or: { vws[ \editor ].isClosed } ) {
 					editor = this.editorClass.new( object: [ vws[ \val ] ] )
 						.canChangeAmount_( false )
+						.editMode_( 'move' )
 						.action_( editAction )
 						.onClose_({ 
 							if( vws[ \editor ] == editor ) {
