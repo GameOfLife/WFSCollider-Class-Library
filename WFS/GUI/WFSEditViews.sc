@@ -876,7 +876,7 @@ WFSPathXYView : WFSBasicEditView {
 		if( bool ) {
 			this.pos = pos ? startAt ? 0;
 			animationTask = Task({
-				while { pos.inclusivelyBetween(0, object.length) } {
+				while { pos.inclusivelyBetween(0, object.duration) } {
 					res.wait;
 					this.pos = pos + (res * animationRate);
 				};
@@ -1347,7 +1347,7 @@ WFSPointView : WFSBasicEditView {
 
 			Pen.scale(1,-1);
 			
-			points = object.asCollection.collect(_.asPoint);
+			points = this.points.asCollection.collect(_.asPoint);
 			
 			Pen.width = scale;
 		
@@ -1395,14 +1395,14 @@ WFSPointView : WFSBasicEditView {
 	getNearestIndex { |point, scaler| // returns nil if outside radius
 		var radius;
 		radius = scaler.asArray.mean * 7;
-		^object.asCollection.detectIndex({ |pt, i|
+		^this.points.detectIndex({ |pt, i|
 			pt.asPoint.dist( point ) <= radius
 		});
 	}
 	
 	getIndicesInRect { |rect|
 		var pts = [];
-		object.asCollection.do({ |pt, i|
+		this.points.do({ |pt, i|
 			if( rect.contains( pt.asPoint ) ) { pts = pts.add(i) };
 		});
 		^pts;					
@@ -1423,7 +1423,7 @@ WFSPointView : WFSBasicEditView {
 	resize_ { |resize| view.resize = resize }
 	
 	point_ { |point| this.object = (object ? [0]).asCollection[0] = point.asPoint }
-	point { ^object.asCollection[0] }
+	point { ^this.points[0] }
 	
 	points_ { |points|
 		if( points.isKindOf( WFSPath2 ) ) {
@@ -1442,11 +1442,11 @@ WFSPointView : WFSBasicEditView {
 	
 	points { ^object }
 	
-	at { |index| ^object.asCollection[index] }
+	at { |index| ^this.points[index] }
 	
 	zoomToFit { |includeCenter = true|
 		var x,y;
-		#x, y = object.collect({ |item| item.asArray }).flop;
+		#x, y = this.points.collect({ |item| item.asArray }).flop;
 		if( includeCenter ) { 
 			view.viewRect_( Rect.fromPoints( x.minItem @ y.minItem, x.maxItem @ y.maxItem )
 				.scale(1@ -1)
@@ -1465,14 +1465,14 @@ WFSPointView : WFSBasicEditView {
 			if( mod.ctrl && { selected.size == 1 } ) {
 				selected.do({ |index|
 					var pt;
-					pt = object.asCollection[ index ];
+					pt = this.points.asCollection[ index ];
 					pt.x = (pt.x + x).round(0.1);
 					pt.y = (pt.y + y).round(0.1);
 				});
 			} {
 				selected.do({ |index|
 					var pt;
-					pt = object.asCollection[ index ];
+					pt = this.points.asCollection[ index ];
 					pt.x = pt.x + x;
 					pt.y = pt.y + y;
 				});
@@ -1487,7 +1487,7 @@ WFSPointView : WFSBasicEditView {
 		if( selected.size > 0 ) {
 			selected.do({ |index|
 				var pt;
-				pt = object.asCollection[ index ];
+				pt = this.points.asCollection[ index ];
 				pt.x = pt.x * x;
 				pt.y = pt.y * y;
 			});
@@ -1500,7 +1500,7 @@ WFSPointView : WFSBasicEditView {
 		if( selected.size > 0 ) {
 			selected.do({ |index|
 				var pt, rpt;
-				pt = object.asCollection[ index ];
+				pt = this.points.asCollection[ index ];
 				rpt = pt.rotate( angle ) * scale;
 				pt.x = rpt.x;
 				pt.y = rpt.y;
@@ -1514,7 +1514,7 @@ WFSPointView : WFSBasicEditView {
 		var points;
 		if( canChangeAmount && { selected.size >= 1} ) {
 			selected = selected.sort;
-			points = object.asCollection[ selected ].collect(_.copy);
+			points = this.points.asCollection[ selected ].collect(_.copy);
 			selected = object.size + (..points.size-1);
 			object = object ++ points;
 			this.refresh;
@@ -1524,7 +1524,7 @@ WFSPointView : WFSBasicEditView {
 	
 	removeSelected {
 		if( canChangeAmount && { object.size > selected.size } ) {
-			object = object.asCollection.select({ |item, i|
+			object = this.points.select({ |item, i|
 				selected.includes(i).not;
 			});
 			selected = [];
@@ -1539,7 +1539,7 @@ WFSPointView : WFSBasicEditView {
 	
 	select { |...indices|
 		if( indices[0] === \all ) { 
-			indices = object.asCollection.collect({ |item, i| i }).flat; 
+			indices = this.points.asCollection.collect({ |item, i| i }).flat; 
 		} { 
 			indices = indices.flat;
 		};
@@ -1552,7 +1552,7 @@ WFSPointView : WFSBasicEditView {
 	
 	selectNoUpdate { |...index|
 		if( index[0] === \all ) { 
-			index = object.asCollection.collect({ |item, i| i }).flat 
+			index = this.points.asCollection.collect({ |item, i| i }).flat 
 		} {
 			index = index.flat;
 		};
@@ -1590,7 +1590,7 @@ WFSPlaneView : WFSPointView {
 			
 			Pen.scale(1,-1);
 			
-			points = object.asCollection.collect(_.asPoint);
+			points = this.points.asCollection.collect(_.asPoint);
 			
 			Pen.width = scale;
 		
@@ -1685,7 +1685,7 @@ WFSMixedView : WFSPointView {
 			
 			Pen.scale(1,-1);
 			
-			points = object.asCollection;
+			points = this.points.asCollection;
 			types = this.type.asCollection.wrapExtend(points.size);
 			
 			Pen.width = scale;
@@ -1744,3 +1744,52 @@ WFSMixedView : WFSPointView {
 	}
 		
 }
+
+
+//////// POINT GROUP EDITOR /////////////////////////////////////////////////////////////////
+
+WFSPointGroupView : WFSMixedView {
+	
+	points { ^(object !? _.positions) ? [] }
+	
+	points_ { |points|
+		points = points.asWFSPointGroup;
+		if( this.object.isNil ) {
+			this.object = points;
+		} {
+			if( canChangeAmount ) {
+				this.object.positions = points.positions;
+			} {
+				this.object.positions = this.object.positions.collect({ |item, i|
+					points[i] ?? { object[i] };
+				});
+			};
+		};
+	}
+
+	duplicateSelected { 
+		var points;
+		if( canChangeAmount && { selected.size >= 1} ) {
+			selected = selected.sort;
+			points = this.points.asCollection[ selected ].collect(_.copy);
+			selected = object.size + (..points.size-1);
+			this.points = object.positions ++ points;
+			this.refresh;
+			this.edited( \duplicateSelected );
+		};
+	}
+	
+	removeSelected {
+		if( canChangeAmount && { object.size > selected.size } ) {
+			this.points = object.positions.select({ |item, i|
+				selected.includes(i).not;
+			});
+			selected = [];
+		} {
+			"WFSPointView-removeSelected : should leave at least one point".warn;
+		};
+		this.refresh;
+		this.edited( \removeSelected );
+	}
+}
+
