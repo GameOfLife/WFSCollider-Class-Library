@@ -134,7 +134,7 @@ WFSPointGroup {
 	}
 }
 
-+ WFSPath {
++ WFSPath_Old {
 	asWFSPointGroup {
 		^WFSPointGroup( this.positions.collect(_.asPoint) );
 	}

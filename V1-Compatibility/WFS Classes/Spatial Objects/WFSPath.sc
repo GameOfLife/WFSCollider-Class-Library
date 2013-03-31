@@ -20,7 +20,7 @@
 // 3 dimensional time paths in meters and seconds
 // contains array of WFSPoints, an array of delta-times and a name (String or Symbol)
 
-WFSPath {
+WFSPath_Old {
 
 	classvar <>defaultTime = 1;  // default delta-time
 	classvar <>azMax = 360; // more WFS Classes use this

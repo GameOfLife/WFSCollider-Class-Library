@@ -31,7 +31,7 @@
 + Collection {
 	asWFSPoint { ^WFSPoint(*this) }
 	asWFSSpeaker { ^WFSSpeaker(*this) }
-	asWFSPath { ^WFSPath( this.collect( _.asWFSPoint ) ) }
+	asWFSPath { ^WFSPath_Old( this.collect( _.asWFSPoint ) ) }
 	asWFSPointArray { ^WFSPointArray.with( *this ) }
 	asWFSPathArray { ^WFSPathArray.with(*this) }
 	asWFSSpeakerArray { ^WFSSpeakerArray.with(*this) }

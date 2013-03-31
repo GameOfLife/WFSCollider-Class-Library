@@ -17,7 +17,7 @@
     along with GameOfLife WFSCollider.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-+ WFSPath {
++ WFSPath_Old {
 	asDOMElement { arg d, root;
 		 	// var wfsPath;
 			var wfsPathString = "", wfsPathTag;
@@ -106,7 +106,7 @@
 		wfsPaths = 
 			(document.getDocumentElement.getElementsByTagName("path") ++
 			 document.getDocumentElement.getElementsByTagName("movement"))
-			 	.collect({ |tag| WFSPath.fromDOMElement( tag ) });
+			 	.collect({ |tag| WFSPath_Old.fromDOMElement( tag ) });
 		^super.with(*wfsPaths)
 		}
 		
@@ -143,7 +143,7 @@
 		super.with( *(
 			tag.getElementsByTagName("path") ++ 
 			tag.getElementsByTagName("movement"))
-			 	.collect({ |subtag| WFSPath.fromDOMElement( subtag ) }) );
+			 	.collect({ |subtag| WFSPath_Old.fromDOMElement( subtag ) }) );
 		}
 		
 	}
@@ -338,7 +338,7 @@
 			{ defName = "WFS_" ++ defName; };
 			
 		case { ( defName.wfsIntType === 'linear') or: ( defName.wfsIntType === 'cubic')}
-			{ wfsPath = WFSPath.fromDOMElement( tag.getElement( "path" ) ); }
+			{ wfsPath = WFSPath_Old.fromDOMElement( tag.getElement( "path" ) ); }
 			{ ( defName.wfsIntType === 'static') }
 			{ wfsPath = WFSPoint.fromDOMElement( tag.getElement( "point" ) ); }
 			{ ( defName.wfsIntType === 'plane') }

@@ -558,7 +558,7 @@ WFSPath2 : WFSPointGroup {
 	isWFSPath2 { ^false }
 }
 
-+ WFSPath {
++ WFSPath_Old {
 	asWFSPath2 {
 		^WFSPath2( this.positions.collect(_.asPoint), this.times, \cubic )
 			.name_( this.name );
