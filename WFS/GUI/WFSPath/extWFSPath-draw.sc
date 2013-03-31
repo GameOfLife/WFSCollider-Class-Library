@@ -125,7 +125,7 @@
 			
 			// show position
 			if( pos.notNil ) {
-				pospt = this.atTime2( pos, 'hermite', loop: false ).asPoint;
+				pospt = this.atTime( pos ).asPoint;
 				Pen.color = Color.black.alpha_(0.5);
 				Pen.moveTo( pospt );
 				Pen.addArc( pospt , 5 * scale, 0, 2pi );

@@ -17,9 +17,9 @@
     along with GameOfLife WFSCollider.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-WFSPath2 {
+WFSPath2 : WFSPointGroup {
 	
-	var <positions, >times;
+	var >times;
 	var <type = \bspline; // \bspline, \cubic, \linear (future; add \quad, \step?)
 	var <>curve = 1; // curve = 1: hermite
 	var <clipMode = 'clip'; // 'clip', 'wrap', 'fold' // TODO for bspline
@@ -132,29 +132,12 @@ WFSPath2 {
 	
 	
 /// POSITIONS ////////////////////////////////////////
-
-	positions_ { |pos| positions = pos.as( Array ).collect(_.asPoint); } // make sure it is valid
-	
-	// methods from old WFSPath
-	x { ^positions.collect(_.x) }
-	y { ^positions.collect(_.y) }
-	
-	distances { ^positions[1..].collect({ |pt, i| pt.dist( positions[i] );  }) } // between points
 	
 	// dimensions include controls:
 	left { ^this.x.minItem.min( this.controls.flat.collect(_.x).minItem ) } 
 	back { ^this.y.minItem.min( this.controls.flat.collect(_.y).minItem ) } // is top
 	right { ^this.x.maxItem.max( this.controls.flat.collect(_.x).maxItem ) } 
 	front { ^this.y.maxItem.max( this.controls.flat.collect(_.y).maxItem ) } // is bottom
-	width { ^this.right - this.left }
-	depth { ^this.front - this.back }
-	
-	asRect { ^Rect( this.left, this.back, this.width, this.depth ) 
-		// note the reversed y axis; 
-		}
-		
-	size { ^positions.size }
-		
 		
 /// TIMES ////////////////////////////////////////
 
@@ -316,20 +299,12 @@ WFSPath2 {
 //// COMPAT WITH OLD WFSPATH VERSION ////////////////////////////////////////
 
 	forceTimes { |timesArray| times = timesArray.asCollection; }
-	length { ^this.duration } 
-	atTime2 { |time = 0, loop = true| ^this.atTime( time ); }
 	
 	asWFSPath {
 		^WFSPath( positions.collect(_.asWFSPoint), times.clipAt( (0..positions.size-2) ) );
 	}
 	
 	asWFSPath2 { ^this }
-	
-	// these are still used in WFSPathEditor2
-	intType { ^type }
-	intClipMode { ^clipMode }
-	intType_ { |type| this.type = type }
-	intClipMode_ { |mode| this.clipMode = mode }
 	
 //// STORING AND POSTING ////////////////////////////////////////
 
@@ -572,6 +547,8 @@ WFSPath2 {
     //// VARIOUS //////////////////////////////////////
     
     isWFSPath2 { ^true }
+    
+    asWFSPointGroup { ^WFSPointGroup( positions.deepCopy ) }
     
     exists { ^true }
 	
