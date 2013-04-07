@@ -82,15 +82,21 @@ WFSCrossfader {
 			
 			// focused active
 			if( WFSArrayPan.useFocusFades ) {
-				focusedActive = [ arrayConfs[i].firstPoint.angle, arrayConfs[i].lastPoint.angle ]
+				focusedActive = [ 
+					arrayConfs[i].firstPoint.angle,
+					arrayConfs[i].centerPoint.angle,
+					arrayConfs[i].lastPoint.angle 
+				]
 					.collect({ |item|
 						((item - globalAngle).wrap(-pi,pi).abs < (fadeArea + 0.03pi)).binaryValue; 
 				});
 			} {
-				focusedActive = [1,1];
+				focusedActive = [1,1,1];
 			};
 			
-			[ arr[0].product.sqrt, arr[1].product, max( focusedActive[0], focusedActive[1] ) ];
+			[ arr[0].product.sqrt, arr[1].product,
+				focusedActive[0].max( focusedActive[1] ).max( focusedActive[2] )
+			];
 
 		});		
 
