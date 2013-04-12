@@ -57,11 +57,7 @@ WFSPointGroupGUI {
 		pathView = WFSPointGroupEditView( view, 
 			bounds.copy.width_( bounds.width - (editWidth + 4) ), object );
 		
-		WFSPathGeneratorDef.loadOnceFromDefaultDirectory;
-		
-		editView = WFSPathTransformerView( view, editWidth @ bounds.height, object,
-			[ \circle, \line, \move, \scale, \rotate ]
-		);
+		editView = WFSPointGroupTransformerView( view, editWidth @ bounds.height, object );
 		
 		editView.resize_(3);
 		

@@ -237,3 +237,25 @@ WFSPathGeneratorView : WFSPathTransformerView {
 	}
 	
 }
+
+WFSPointGroupTransformerView : WFSPathTransformerView {
+	
+	revertObject { 
+		object.positions = objectCopy.positions.deepCopy;
+	}
+	
+	makeObjectCopy {
+		objectCopy = object.deepCopy;
+	}
+	
+	makeEditFuncs { |editDefs|
+		
+		WFSPathGeneratorDef.loadOnceFromDefaultDirectory;
+		
+		^(editDefs ?? { [ \circle, \line, \move, \scale, \rotate ] })			.asCollection 
+			.collect(_.asWFSPathTransformer)
+			.select(_.notNil);
+	}
+	
+	
+}
