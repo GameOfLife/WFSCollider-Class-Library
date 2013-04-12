@@ -301,7 +301,7 @@ WFSPath2 : WFSPointGroup {
 	forceTimes { |timesArray| times = timesArray.asCollection; }
 	
 	asWFSPath {
-		^WFSPath( positions.collect(_.asWFSPoint), times.clipAt( (0..positions.size-2) ) );
+		^WFSPath_Old( positions.collect(_.asWFSPoint), times.clipAt( (0..positions.size-2) ) );
 	}
 	
 	asWFSPath2 { ^this }
