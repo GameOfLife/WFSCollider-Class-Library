@@ -47,19 +47,10 @@ WFSPointGroup {
 	positions_ { |pos| 
 		positions = pos.as( Array ).collect(_.asPoint); // make sure it is valid
 		this.changed( \positions );
-	} 	
+	}
 	
-	times { ^positions.collect(1) }
-	times_ { }
-	
-	type { ^\notImplemented }
-	type_ { }
-	
-	curve { ^1 }
-	curve_ { }
-	
-	clipMode { ^\notImplemented }
-	clipMode_ { }
+	times_ { "%:times_ - a WFSPointGroup can not store time data\n".postf( this.class ); }
+	times { ^1!positions.size }
 	
 	// methods from old WFSPath
 	x { ^positions.collect(_.x) }
