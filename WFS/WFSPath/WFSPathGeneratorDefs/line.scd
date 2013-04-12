@@ -6,9 +6,11 @@ WFSPathGeneratorDef(
 		end = f.get( \end );
 		curve = f.get( \curve );
 		path.positions = n.collect({ |i|
-			(i@i).performOnEach( \lincurve, 0, n-1, start, end, curve );
+			Point(
+				i.lincurve(0,n-1,start.x,end.x,curve.x),
+				i.lincurve(0,n-1,start.y,end.y,curve.y),
+			);
 		});
-		path;
 	},
 	[ \start, 0@0, \end, 5@5, \curve, 0@0 ]
 )	
