@@ -530,7 +530,7 @@ WFSMultiPointSpec : PointSpec {
 
 				
 		editAction = { |vw|
-			vws[ \val ] = vw.object;
+			vws[ \val ] = vw.points;
 			action.value( vws, vws[ \val ] );
 		};
 		
@@ -542,7 +542,7 @@ WFSMultiPointSpec : PointSpec {
 			.action_({
 				var editor;
 				if( vws[ \editor ].isNil or: { vws[ \editor ].isClosed } ) {
-					editor = this.editorClass.new( object: vws[ \val ] )
+					editor = this.makeEditor( vws[ \val ] )
 						.canChangeAmount_( false )
 						.action_( editAction )
 						.onClose_({ 
@@ -569,18 +569,24 @@ WFSMultiPointSpec : PointSpec {
 	setView { |view, value, active = false|
 		view[ \val ] = value.deepCopy;
 		view[ \editor ] !? {
-			view[ \editor ].object_( value, active ); 
+			view[ \editor ].points_( value, false ); 
 		};
 	}
 	
-	editorClass { ^WFSPointView }
+	makeEditor { |object|
+		^WFSPointGroupGUI( object: WFSPointGroup( object ) );
+	}
 }
 
 WFSMultiPlaneSpec : WFSMultiPointSpec {
 	
 	classvar <>defaultMode = \deg_cw;
 	
-	editorClass { ^WFSPlaneView }
+	makeEditor { |object|
+		^WFSPointGroupGUI( object: WFSPointGroup( object ) )
+			.type_( \plane )
+			.editMode_( \rotateS );
+	}
 }
 
 
