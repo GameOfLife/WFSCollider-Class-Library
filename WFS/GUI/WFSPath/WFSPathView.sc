@@ -256,7 +256,7 @@ WFSPathView_TopBar {
 		views[ \editMode ] = PopUpMenu( view, 60 @ bounds.height )
 			.font_( font )
 			.canFocus_( false )
-			.items_( [ \move, \scale, \rotate, \rotateS, \elastic, \lock ] )
+			.items_( [ \move, \scale, \rotate, \rotateS, \elastic, \twirl, \chain, \lock ] )
 			.action_({ |pu|
 				object.editMode = pu.item;
 			}); 
