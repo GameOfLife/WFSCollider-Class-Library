@@ -1382,7 +1382,7 @@ WFSPointView : WFSBasicEditView {
 		switch( editMode,
 			\move,  { 
 				pt = (newPoint.round(round) - lastPoint.round(round)) * (1@(-1));
-				this.moveSelected( pt.x, pt.y, mod, false );
+				this.moveSelected( pt.x, pt.y, mod, \no_undo );
 			},
 			\scale, { 
 				pt = [ lastPoint.round(round).abs.max(0.001) * 
@@ -1395,14 +1395,14 @@ WFSPointView : WFSBasicEditView {
 						}).asPoint
 				]; // prevent inf/nan
 				pt = pt[1] / pt[0];
-				this.scaleSelected( pt.x, pt.y, mod, false ); 
+				this.scaleSelected( pt.x, pt.y, mod, \no_undo ); 
 			},
 			\rotate, { 
 				this.rotateSelected( 
 					lastPoint.angle - newPoint.angle, 
 					1, 
 					mod,
-					false
+					\no_undo
 				);
 			},
 			\rotateS, { 
@@ -1622,7 +1622,7 @@ WFSPointView : WFSBasicEditView {
 				});
 			};
 			this.refresh; 
-			this.edited( \edit, \move );
+			this.edited( \edit, \move, *moreArgs  );
 		};
 	}
 	
