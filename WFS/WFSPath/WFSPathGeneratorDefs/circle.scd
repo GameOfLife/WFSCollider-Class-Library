@@ -16,7 +16,7 @@ WFSPathGeneratorDef(
 		});
 		path;
 	},
-	[ \periods, 1, \close, true, \startAngle, 0, 
+	[ \periods, 1, \close, false, \startAngle, 0, 
 		\clockwise, true, \center, 0@0, \radius, 8@8 
 	]
 )
