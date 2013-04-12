@@ -312,7 +312,7 @@ WFSPointGroupView_TopBar {
 		
 		if( bounds.isNumber ) { height = bounds; bounds = nil };
 		
-		bounds = bounds ?? { (((height + 2) * 5) + ((60) * 2)) @ height };
+		bounds = bounds ?? { (((height + 2) * 5) + ((60 + 2) * 2)) @ height };
 	
 		view = CompositeView( parent, bounds );
 		view.addFlowLayout( 0@0, 2@2 );
