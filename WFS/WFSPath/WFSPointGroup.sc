@@ -49,6 +49,18 @@ WFSPointGroup {
 		this.changed( \positions );
 	} 	
 	
+	times { ^positions.collect(1) }
+	times_ { }
+	
+	type { ^\notImplemented }
+	type_ { }
+	
+	curve { ^1 }
+	curve_ { }
+	
+	clipMode { ^\notImplemented }
+	clipMode_ { }
+	
 	// methods from old WFSPath
 	x { ^positions.collect(_.x) }
 	y { ^positions.collect(_.y) }

@@ -33,7 +33,6 @@ WFSPathTransformerView {
 	
 	init { |parent, bounds, inObject, editDefs|
 		object = inObject ? object;
-		object = object.asWFSPath2;
 		this.makeObjectCopy;
 		editFuncs = this.makeEditFuncs( editDefs );
 		this.makeView( parent, bounds );	

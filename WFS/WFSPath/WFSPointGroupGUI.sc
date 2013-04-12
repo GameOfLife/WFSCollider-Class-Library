@@ -54,8 +54,6 @@ WFSPointGroupGUI {
 		bounds = view.asView.bounds;
 		view.addFlowLayout(0@0, 2@2);
 		
-		object = object.asWFSPath2;
-		
 		pathView = WFSPointGroupEditView( view, 
 			bounds.copy.width_( bounds.width - (editWidth + 4) ), object );
 		
@@ -93,8 +91,6 @@ WFSPointGroupGUI {
 			generatorView !? { generatorView.object = pathView.object };
 			action.value(this);
 		};
-		
-		view.view.decorator.shift(editWidth.neg + 67, editView.view.bounds.height );
 		
 		pathView.action = { 
 			action.value( this );
