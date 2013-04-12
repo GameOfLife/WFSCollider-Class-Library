@@ -571,6 +571,18 @@ WFSPath2 : WFSPointGroup {
 	}
 }
 
++ Collection {
+	asWFSPath2{
+		^WFSPath2( this.collectAs(_.asPoint, Array) );
+	}
+}
+
++ Symbol {
+	asWFSPath2 { |size = 20, dur = 5|
+		^WFSPath2.generate( size, dur, this );
+	}
+}
+
 + Nil {
 	asWFSPath2 { 
 		^WFSPath2( { |i| Polar( 8, i.linlin(0,15,0,2pi) ).asPoint  } ! 15, [0.5], \bspline )
