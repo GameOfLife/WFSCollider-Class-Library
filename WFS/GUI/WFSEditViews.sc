@@ -713,6 +713,21 @@ WFSPathXYView : WFSBasicEditView {
 		if( changed ) { this.changed( \pos ); };
 	}
 	
+	points { ^(object !? _.positions) ? [] }
+	
+	points_ { |points, edited = true|
+		points = points.asCollection.collect(_.asPoint);
+		if( this.object.isNil ) {
+			this.object = WFSPath2( points );
+		} {
+			this.object.positions = points;
+		};
+		if( edited ) { 
+			this.refresh;
+			this.edited( \points );
+		};
+	}
+	
 	// changing the object
 	
 	moveSelected { |x = 0,y = 0, mod ...moreArgs|
