@@ -42,12 +42,18 @@ WFSPathTransformerView {
 	
 	rebuildViews {
 		var tempOnClose, parent, bounds;
+		var resizeMode;
 		tempOnClose = onClose;
 		onClose = nil;
 		parent = view.parent;
 		bounds = view.bounds;
+		resizeMode = view.resize;
 		view.remove;
+		if( parent.asView.decorator.notNil ) {
+			parent.asView.decorator.reFlow( parent.asView );
+		};
 		this.makeView( parent, bounds );
+		view.resize_( resizeMode );
 		onClose = tempOnClose;
 	}
 	
