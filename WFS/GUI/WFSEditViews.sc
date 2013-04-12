@@ -1440,7 +1440,7 @@ WFSPointView : WFSBasicEditView {
 					drg.collect(_.asPoint).every(_.isKindOf( Point ) );
 				} { drg.isKindOf( Point ) } {
 					true
-				} { drg.isKindOf( WFSPath2 ) } {
+				} { drg.respondsTo(\asWFSPointGroup) && {drg.isArray.not} } {
 					true
 				} {
 					false;
@@ -1451,7 +1451,14 @@ WFSPointView : WFSBasicEditView {
 				if( drg.isString ) {
 					drg = drg.interpret;
 				};
-				this.points = drg;
+				case { drg.isKindOf( WFSPointGroup ) } {
+					this.points = drg.positions;
+				} { drg.isKindOf( Point ) } {
+					this.points = [ drg ];
+				} { drg.isArray } {
+					this.points = drg;
+				} { this.points = drg.asWFSPointGroup };
+				this.edited( \drag_dropped_points );
 			});
 	 }
 
@@ -1570,7 +1577,7 @@ WFSPointView : WFSBasicEditView {
 	point { ^this.points[0] }
 	
 	points_ { |points|
-		if( points.isKindOf( WFSPath2 ) ) {
+		if( points.isKindOf( WFSPointGroup ) ) {
 			points = points.positions.deepCopy;
 		} {
 			points = points.asCollection.collect(_.asPoint);
