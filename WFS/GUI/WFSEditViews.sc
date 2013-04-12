@@ -1397,6 +1397,18 @@ WFSPointView : WFSBasicEditView {
 					mod, 
 					false
 				);
+			},
+			\elastic, {
+				pt = (newPoint.round(round) - lastPoint.round(round)) * (1@(-1));
+				this.moveElastic( pt.x, pt.y, mod, \no_undo );
+			},
+			\twirl, {
+				pt = (newPoint.round(round) - lastPoint.round(round)) * (1@(-1));
+				this.moveTwirl( pt.x, pt.y, mod, \no_undo );
+			},
+			\chain, {
+				pt = (newPoint.round(round) - lastPoint.round(round)) * (1@(-1));
+				this.moveChain( pt.x, pt.y, mod, \no_undo );
 			}
 		);
 	}
@@ -1596,6 +1608,155 @@ WFSPointView : WFSBasicEditView {
 			};
 			this.refresh; 
 			this.edited( \edit, \move );
+		};
+	}
+	
+	moveElastic { |x = 0,y = 0, mod ...moreArgs|
+		var selection;
+		if( selected.size > 0 ) {
+			
+			selection = (selected.minItem..selected.maxItem);
+			
+			selection.do({ |index|
+				var pt;
+				pt = this.points[ index ];
+				if( pt.notNil ) {
+					pt.x = pt.x + x;
+					pt.y = pt.y + y;
+				};
+			});
+			
+			2.do({ |ii|
+				var rest, restSize;
+				if( ii == 0 ) {
+					rest = (..selection[0]);
+				} {
+					rest = (selection.last..this.points.size-1).reverse;
+				};
+				rest = rest[..rest.size-2];
+				restSize = rest.size;
+				rest.do({ |index, i|
+					var pt, factor;
+					pt = this.points[ index ];
+					if( pt.notNil ) {
+						factor = (i/restSize);
+						pt.x = pt.x + (x * factor);
+						pt.y = pt.y + (y * factor);
+					};
+				});	
+			});
+			
+			this.refresh; 
+			this.edited( \edit, \move, *moreArgs );
+		};
+	}
+	
+	moveTwirl { |x = 0,y = 0, mod ...moreArgs|
+		var selection, angles, rhos, firstPoint, lastPoint;
+		if( selected.size > 0 ) {
+			
+			selection = (selected.minItem..selected.maxItem);
+			
+			firstPoint = this.points[selection[0]];
+			lastPoint = this.points[selection.last]; 
+			
+			angles = [ 
+				(firstPoint + (x@y)).angle - firstPoint.angle,
+				(lastPoint + (x@y)).angle - lastPoint.angle
+			].wrap(-pi, pi);
+			
+			rhos = [ 
+				(firstPoint + (x@y)).rho - firstPoint.rho,
+				(lastPoint + (x@y)).rho - lastPoint.rho
+			];
+			
+			selection.do({ |index|
+				var pt;
+				pt = this.points[ index ];
+				if( pt.notNil ) {
+					pt.x = pt.x + x;
+					pt.y = pt.y + y;
+				};
+			});
+			
+			2.do({ |ii|
+				var rest, restSize;
+				if( ii == 0 ) {
+					rest = (..selection[0]);
+				} {
+					rest = (selection.last..this.points.size-1).reverse;
+				};
+				rest = rest[..rest.size-2];
+				restSize = rest.size;
+				rest.do({ |index, i|
+					var pt, factor, newPoint;
+					pt = this.points[ index ];
+					if( pt.notNil ) {
+						factor = (i/restSize);
+						newPoint = pt.asPolar;
+						newPoint.theta = newPoint.theta + (angles[ii] * factor);
+						newPoint.rho = (newPoint.rho + (rhos[ii] * factor)).abs;
+						newPoint = newPoint.asPoint;
+						pt.x = newPoint.x;
+						pt.y = newPoint.y;
+					};
+				});	
+			});
+			
+			this.refresh; 
+			this.edited( \edit, \move, *moreArgs );
+		};
+	}
+	
+	moveChain { |x = 0,y = 0, mod ...moreArgs|
+		var selection, data;
+		// keeps fixed distances between points
+		if( selected.size > 0 ) {
+			
+			selection = (selected.minItem..selected.maxItem);
+			
+			data = 2.collect({ |ii|
+				var rest, restSize, distance;
+				if( ii == 0 ) {
+					rest = (..selection[0]).reverse;
+				} {
+					rest = (selection.last..this.points.size-1);
+				};
+				
+				distance = rest[1..].collect({ |item, i|
+					this.points[item].dist( this.points[rest[i]] );
+				});
+				
+				[ rest, distance ];
+			});
+			
+			selection.do({ |index|
+				var pt;
+				pt = this.points[ index ];
+				if( pt.notNil ) {
+					pt.x = pt.x + x;
+					pt.y = pt.y + y;
+				};
+			});
+			
+			data.do({ |data|
+				var rest, distances;
+				#rest, distances = data;
+				rest[1..].do({ |index, i|
+					var pt, polar;
+					pt = this.points[ index ];
+					if( pt.notNil ) {
+						polar = (pt - this.points[rest[i]]).asPolar;
+						polar.rho = distances[i];
+						polar = polar.asPoint + this.points[rest[i]];
+						pt.x = polar.x;
+						pt.y = polar.y;
+					};
+				});	
+			});
+			
+			this.refresh; 
+			this.edited( \edit, \move, *moreArgs );
 		};
 	}
 	
