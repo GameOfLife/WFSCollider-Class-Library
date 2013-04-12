@@ -782,7 +782,7 @@ WFSPathXYView : WFSBasicEditView {
 	}
 	
 	moveTwirl { |x = 0,y = 0, mod ...moreArgs|
-		var selection, angles, scales, firstPoint, lastPoint;
+		var selection, angles, rhos, firstPoint, lastPoint;
 		if( selected.size > 0 ) {
 			
 			selection = (selected.minItem..selected.maxItem);
@@ -792,12 +792,12 @@ WFSPathXYView : WFSBasicEditView {
 			
 			angles = [ 
 				(firstPoint + (x@y)).angle - firstPoint.angle,
-				(lastPoint + (x@y)).angle - (lastPoint.angle)
+				(lastPoint + (x@y)).angle - lastPoint.angle
 			].wrap(-pi, pi);
 			
-			scales = [ 
-				firstPoint.rho / (firstPoint + (x@y)).rho,
-				lastPoint.rho / (lastPoint + (x@y)).rho
+			rhos = [ 
+				(firstPoint + (x@y)).rho - firstPoint.rho,
+				(lastPoint + (x@y)).rho - lastPoint.rho
 			];
 			
 			selection.do({ |index|
@@ -823,8 +823,10 @@ WFSPathXYView : WFSBasicEditView {
 					pt = object.positions[ index ];
 					if( pt.notNil ) {
 						factor = (i/restSize);
-						newPoint = pt.rotate( angles[ii] * factor );
-						newPoint = newPoint / (scales[ii].blend(1, 1-factor));
+						newPoint = pt.asPolar;
+						newPoint.theta = newPoint.theta + (angles[ii] * factor);
+						newPoint.rho = (newPoint.rho + (rhos[ii] * factor)).abs;
+						newPoint = newPoint.asPoint;
 						pt.x = newPoint.x;
 						pt.y = newPoint.y;
 					};
