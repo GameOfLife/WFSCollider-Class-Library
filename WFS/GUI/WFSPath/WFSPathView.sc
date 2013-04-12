@@ -19,6 +19,77 @@
 
 //////// COMBINED TIME AND XY EDITOR ////////////////////////////////////////////////////
 
+WFSPointGroupEditView {
+	
+	var <view, <xyView, <topBar, <undoView, <undoManager;
+	
+	*new { |parent, bounds, object, addUndoManager = true|
+		^super.new.init( parent, bounds, object )
+			.addUndoManager( addUndoManager );
+	}
+	
+	init { |parent, bounds, object|
+		
+		if( parent.isNil ) { 
+			bounds = bounds ?? { 420 @ 460 }; 
+		} {
+			bounds = bounds ? parent.asView.bounds;
+		};
+		
+		view = EZCompositeView( parent, bounds, gap: 2@2, margin: 2@2 );
+		view.resize_(5);
+		bounds = view.asView.bounds;
+		view.addFlowLayout(0@0, 2@2);
+		
+		topBar = WFSPointGroupView_TopBar( view, 16 );
+		undoView = UndoView( view, 16 );
+		
+		view.view.decorator.nextLine;
+		view.view.decorator.shift( 0, 2 ); // needed for some reason
+		
+		
+		xyView = WFSPointGroupView( view, bounds.copy.height_( bounds.height - 18), object );
+		
+		// xyView is the master view
+		topBar.object = xyView;
+		undoView.object = xyView;
+	}
+	
+	addUndoManager { |bool = true|
+		if( bool ) { this.undoManager = UndoManager() };
+	}
+	
+	undoManager_ { |um|
+		xyView.undoManager = um;
+		undoView.undoManager = um;
+	}
+	
+	undo { |...args|
+		xyView.undo( *args );
+	}
+	
+	refresh { 
+		xyView.refresh;
+	}
+	
+	object { ^xyView.object; }
+	
+	object_ { |new, update = true|
+		xyView.object_( new, update );
+	}
+	
+	resize_ { |resize|
+		view.resize_(resize);
+	}
+	
+	doesNotUnderstand { |selector ...args|
+		var res;
+		res = xyView.perform( selector, *args );
+		if( res != xyView ) { ^res }
+	}
+	
+}
+
 WFSPathView {
 	
 	var <view, <xyView, <timeView, <topBar, <undoView, <undoManager;
@@ -137,14 +208,14 @@ WFSPathView {
 	
 }
 
-
-WFSPathView_TopBar {
+WFSPointGroupView_TopBar {
 	
 	classvar <>icons;
 	
 	var <object, <ctrl;
 	var <view, <views;
 	
+	var bounds;
 	
 	*new { |parent, bounds, object|
 		^super.newCopyArgs( object ).makeView( parent, bounds );
@@ -192,11 +263,12 @@ WFSPathView_TopBar {
 		);	
 	}
 	
+	*mouseModes { ^[ \select, \move, \zoom ] }
+	
+	*editModes { ^[ \move, \scale, \rotate, \rotateS, \elastic, \twirl, \chain, \lock ] }
+	
 	setMouseModeViews { |mode|
-		var modes;
-		modes = [ \select, \move, \zoom, \record ];
-		
-		modes.do({ |item|
+		this.class.mouseModes.do({ |item|
 			if( item === mode ) {
 				views[ item ].value = 1;
 			} {
@@ -207,42 +279,40 @@ WFSPathView_TopBar {
 	
 	setEditModeView { |mode|
 		{ 
-			views[ \editMode ].value = views[ \editMode ].items.indexOf( mode );
+			views[ \editMode ].value = views[ \editMode ].items.indexOf( mode ) ??
+				{ views[ \editMode ].items.size - 1 };
 		}.defer;
 	}
 	
+	makeCtrl {
+		ctrl.remove;
+		ctrl = SimpleController( object )
+			.put( \mouseMode, { this.setMouseModeViews( object.mouseMode ) })
+			.put( \editMode, { this.setEditModeView( object.editMode ) });
+	}
+		
 	object_ { |newObj|
 		
 		ctrl.remove;
 		
 		object = newObj;
 		
-		ctrl = SimpleController( object )
-			.put( \mouseMode, { this.setMouseModeViews( object.mouseMode ) })
-			.put( \editMode, { this.setEditModeView( object.editMode ) })
-			.put( \animate, { |obj, what, value|
-				if( value == true ) { 
-					views[ \play ].value = 1 
-				} { 
-					views[ \play ].value = 0 
-				};
-			})
-			.put( \pos, { 
-				views[ \pos ].value = (object.pos ? 0).linlin( 0, object.object.dur, 0, 1 );
-			});
+		this.makeCtrl;
 		
 		this.setMouseModeViews( object.mouseMode );
 		this.setEditModeView( object.editMode );	
 	}
 	
-	makeView { |parent, bounds|
+	makeView { |parent, inBounds|
 		
-		var font, ctrl;
+		var font;
 		var height = 16;
+		
+		bounds = inBounds;
 		
 		if( bounds.isNumber ) { height = bounds; bounds = nil };
 		
-		bounds = bounds ?? { (((height + 2) * 5) + ((60 + 2) * 2)) @ height };
+		bounds = bounds ?? { (((height + 2) * 5) + ((60) * 2)) @ height };
 	
 		view = CompositeView( parent, bounds );
 		view.addFlowLayout( 0@0, 2@2 );
@@ -256,13 +326,13 @@ WFSPathView_TopBar {
 		views[ \editMode ] = PopUpMenu( view, 60 @ bounds.height )
 			.font_( font )
 			.canFocus_( false )
-			.items_( [ \move, \scale, \rotate, \rotateS, \elastic, \twirl, \chain, \lock ] )
+			.items_( this.class.editModes )
 			.action_({ |pu|
 				object.editMode = pu.item;
 			}); 
 		
 		// mouse modes
-		[ \select, \move, \zoom, \record ].do({ |item|
+		this.class.mouseModes.do({ |item|
 			views[ item ] = SmoothButton( view, bounds.height @ bounds.height )
 				.radius_(2)
 				.border_(1)
@@ -276,6 +346,40 @@ WFSPathView_TopBar {
 					object.mouseMode = item;
 				});
 		});
+		
+		this.makeCtrl;
+		
+		view.onClose_({ ctrl.remove });	
+	}
+}
+
+
+WFSPathView_TopBar : WFSPointGroupView_TopBar {
+	
+	*new { |parent, bounds, object|
+		^super.new( parent, bounds, object ).makePlayView;
+	}
+	
+	*mouseModes { ^[ \select, \move, \zoom, \record ] }
+	
+	makeCtrl {
+		ctrl.remove;
+		ctrl = SimpleController( object )
+			.put( \mouseMode, { this.setMouseModeViews( object.mouseMode ) })
+			.put( \editMode, { this.setEditModeView( object.editMode ) })
+			.put( \animate, { |obj, what, value|
+				if( value == true ) { 
+					views[ \play ].value = 1 
+				} { 
+					views[ \play ].value = 0 
+				};
+			})
+			.put( \pos, { 
+				views[ \pos ].value = (object.pos ? 0).linlin( 0, object.object.dur, 0, 1 );
+			});
+	}
+	
+	makePlayView {
 		
 		views[ \play ] = SmoothButton( view, bounds.height @ bounds.height )
 			.radius_(2)
@@ -308,8 +412,6 @@ WFSPathView_TopBar {
 						object.animate( false );
 					};
 				});
-			
-		view.onClose_({ ctrl.remove });	
 	}
 }
 
