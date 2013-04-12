@@ -1633,7 +1633,7 @@ WFSPointView : WFSBasicEditView {
 			selected = selected.sort;
 			points = this.points.asCollection[ selected ].collect(_.copy);
 			selected = object.size + (..points.size-1);
-			object = object ++ points;
+			this.points = this.points ++ points;
 			this.refresh;
 			this.edited( \duplicateSelected );
 		};
@@ -1641,7 +1641,7 @@ WFSPointView : WFSBasicEditView {
 	
 	removeSelected {
 		if( canChangeAmount && { object.size > selected.size } ) {
-			object = this.points.select({ |item, i|
+			this.points = this.points.select({ |item, i|
 				selected.includes(i).not;
 			});
 			selected = [];
@@ -1882,31 +1882,6 @@ WFSPointGroupView : WFSMixedView {
 				});
 			};
 		};
-	}
-
-	duplicateSelected { 
-		var points;
-		if( canChangeAmount && { selected.size >= 1} ) {
-			selected = selected.sort;
-			points = this.points.asCollection[ selected ].collect(_.copy);
-			selected = object.size + (..points.size-1);
-			this.points = object.positions ++ points;
-			this.refresh;
-			this.edited( \duplicateSelected );
-		};
-	}
-	
-	removeSelected {
-		if( canChangeAmount && { object.size > selected.size } ) {
-			this.points = object.positions.select({ |item, i|
-				selected.includes(i).not;
-			});
-			selected = [];
-		} {
-			"WFSPointView-removeSelected : should leave at least one point".warn;
-		};
-		this.refresh;
-		this.edited( \removeSelected );
 	}
 }
 
