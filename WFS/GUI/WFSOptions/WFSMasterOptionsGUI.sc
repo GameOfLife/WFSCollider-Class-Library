@@ -89,7 +89,7 @@ WFSMasterOptionsGUI : AbstractWFSOptionsGUI {
 			\numInputBusChannels, IntegerSpec( 20, 8, 128 ),
 			\numOutputBusChannels, IntegerSpec( 20, 8, 128 ),
 			\outputBusStartOffset, IntegerSpec( 0, 0, 128 ),
-			\device, StringSpec(),
+			\device, AudioDeviceSpec(),
 			\useForWFS, BoolSpec(false),
 			\toServersBus, IntegerSpec( 14, 0, 127 ),
 		);
@@ -111,7 +111,7 @@ WFSServerOptionsGUI : AbstractWFSOptionsGUI {
 			\numInputBusChannels, IntegerSpec( 8, 8, 128 ),
 			\numOutputBusChannels, IntegerSpec( 96, 8, 128 ),
 			\outputBusStartOffset, IntegerSpec( 0, 0, 128 ),
-			\device, StringSpec("JackRouter")
+			\device, AudioDeviceSpec("JackRouter")
 		);
 	}
 
