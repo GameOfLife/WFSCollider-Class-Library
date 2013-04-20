@@ -496,6 +496,8 @@ WFSMultiPointSpec : PointSpec {
 		^this.constrain( value ).linlin( rect.leftTop, rect.rightBottom, 0, 1, \none );
 	}
 	
+	massEditSpec { ^nil }
+	
 	makeView { |parent, bounds, label, action, resize|
 		var vws, view, labelWidth;
 		var localStep;
@@ -530,7 +532,7 @@ WFSMultiPointSpec : PointSpec {
 
 				
 		editAction = { |vw|
-			vws[ \val ] = vw.points;
+			vws[ \val ] = this.getPointsFromEditor(vw);
 			action.value( vws, vws[ \val ] );
 		};
 		
@@ -566,10 +568,15 @@ WFSMultiPointSpec : PointSpec {
 		^vws;
 	}
 	
+	getPointsFromEditor { |editor|
+		 ^editor.points;
+	}
+	
 	setView { |view, value, active = false|
 		view[ \val ] = value.deepCopy;
 		view[ \editor ] !? {
 			view[ \editor ].points_( value, false ); 
+			view[ \editor ].refresh;
 		};
 	}
 	
@@ -589,6 +596,50 @@ WFSMultiPlaneSpec : WFSMultiPointSpec {
 	}
 }
 
+WFSPointGroupSpec : WFSMultiPointSpec {
+	var <>type = \point;
+	
+	*new { |default, type = \point|
+		^super.new.default_( default ).type_( type );
+	}
+	
+	*testObject { |obj|
+		^obj.isKindOf( WFSPointGroup );
+	}
+	
+	constrain { |value|
+		^value.asWFSPointGroup;
+	}
+	
+	map { |value|
+		^this.constrain( value );
+	}
+	
+	unmap { |value|
+		^this.constrain( value );
+	}
+		
+	setView { |view, value, active = false|
+		view[ \val ] = value.asWFSPointGroup;
+		view[ \editor ] !? {
+			view[ \editor ].points_( view[ \val ] ); 
+			view[ \editor ].refresh;
+		};
+	}
+	
+	getPointsFromEditor { |editor|
+		 ^editor.object;
+	}
+	
+	makeEditor { |object|
+		var gui;
+		gui = WFSPointGroupGUI( object: object ).type_( type );
+		if( type == \plane ) {
+			gui.editMode_( \rotateS )
+		};
+		^gui;
+	}
+}
 
 WFSRectSpec : RectSpec {
 	
