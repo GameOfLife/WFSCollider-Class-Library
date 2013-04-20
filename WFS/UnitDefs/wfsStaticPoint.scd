@@ -20,6 +20,7 @@ var def;
 def = FreeUdef( \wfsStaticPoint, [
 		[ \point: 		0@0,  	WFSPointSpec( 200, 0.1 ) ],
 		[ \latencyComp:  	0,		[0,1].asSpec ],
+		[ \distanceFilter:	0,		[0,2,\lin,0,1].asSpec ],
 		[ \dbRollOff:		-6,		[ -24, 0, \lin, 1, -6 ].asSpec ],
 		[ \maxAmpRadius:	2,		[ 1, 5, \lin, 0, 2, "m" ].asSpec ],
 	] )
@@ -47,7 +48,7 @@ def = FreeUdef( \wfsStaticPoint, [
 	})
 	.envPut( \init_wfsp, [ \latencyComp, \u_dur, \point ] ) // controls only set at init
 	.envPut( \set_wfsp, [ // controls that can always be set
-		\dbRollOff, \maxAmpRadius,
+		\distanceFilter, \dbRollOff, \maxAmpRadius,
 		\u_i_ar_0_bus, 
 		\u_doneAction, \u_gain, \u_gate, \u_mute,
 		\u_fadeIn, \u_fadeOut,

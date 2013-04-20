@@ -298,6 +298,12 @@ WFSPrePanSynthDefs : AbstractWFSSynthDefs {
 			input = UGlobalEQ.ar( input );
 			input = (input / 4).softclip * 4; // 6dB headroom, then softclip to 12dB
 			input = Line.kr(0,1,\u_fadeIn.kr(0)) * input;
+			input = OnePole.ar( input, ( -2pi * (
+		 			(
+			 			100000 / ( point.rho * \distanceFilter.kr(0).cubed )
+			 		).clip(0,10000000) / SampleRate.ir) 
+		 		).exp 
+			);
 			output = panner.ar( input, point );
 			output = output * UEnv.kr( extraSilence: 0.2, ignoreFadeIn: true );
 			

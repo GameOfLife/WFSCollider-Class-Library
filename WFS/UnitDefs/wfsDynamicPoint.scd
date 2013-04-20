@@ -30,6 +30,7 @@ def = FreeUdef( \wfsDynamicPoint, [
 		[ \point: 		0@0,  	WFSPointSpec( 200, 0.1 ) ],
 		[ \pointLag:		0,		[ 0, 5, \lin, 0, 0 ].asSpec ], // lagtime for point
 		[ \quality:		0,		ListSpec([ \good, \better ], 0 ) ], // \l or \c
+		[ \distanceFilter:	0,		[0,2,\lin,0,1].asSpec ],
 		[ \latencyComp:  	0,		[0,1].asSpec ],
 		[ \dbRollOff:		-6,		[ -24, 0, \lin, 1, -6 ].asSpec ],
 		[ \maxAmpRadius:	2,		[ 1, 5, \lin, 0, 2, "m" ].asSpec ],
@@ -59,7 +60,7 @@ def = FreeUdef( \wfsDynamicPoint, [
 	})
 	.envPut( \init_wfsp, [ \latencyComp, \u_dur ] )
 	.envPut( \set_wfsp, [ 
-		\pointFromBus, \point, \pointLag, \dbRollOff, 
+		\pointFromBus, \point, \pointLag, \distanceFilter, \dbRollOff, 
 		\maxAmpRadius, \crossfadeLag, \dontPause,
 		\u_i_ar_0_bus, \u_i_kr_0_bus, \u_i_kr_1_bus, 
 		\u_doneAction, \u_gain, \u_gate, \u_mute,
