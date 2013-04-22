@@ -72,7 +72,7 @@ WFSArrayPanSynthDefs : AbstractWFSSynthDefs {
 	might not need one of those (or only for the env and gain)
 	*/
 	
-	classvar <>minSize = 8, <>maxSize = 64, <>division = 8; 
+	classvar <>minSize = 1, <>maxSize = 64, <>division = 8;
 		// if we get > 64 we might want to combine multiple
 	classvar <>types, <>modes, <>intTypes;
 	
@@ -84,7 +84,11 @@ WFSArrayPanSynthDefs : AbstractWFSSynthDefs {
 		intTypes = [ \n, \l, \c ];  // non-int, linear, cubic
 	}
 	
-	*allSizes { ^( minSize, minSize + division .. maxSize ) }
+	*allSizes { 
+		^((maxSize/division).asInt + 1).collect({ |i|
+			((i * division) + (0,(2**i)..division-1)).asInt
+		}).flat.select(_ >= minSize);
+	}
 	
 	*getDefName { |size = 8, type = \u, mode = \s, int = \n|
 		
@@ -224,7 +228,7 @@ WFSPrePanSynthDefs : AbstractWFSSynthDefs {
 	// we have an UEnv and a WFSLevelBus in here as well
 	// should we throw in global eqhere too?
 	
-	classvar <>maxArrays = 12; // should do for now
+	classvar <>minSize = 0, <>maxSize = 24, <>division = 6; 
 	
 	classvar <>crossfadeModes, <>modesThatNeedArrays;
 	
@@ -232,6 +236,12 @@ WFSPrePanSynthDefs : AbstractWFSSynthDefs {
 	*initClass {
 		crossfadeModes = [ \d, \u, \p, \n ];  // dual, uni, plane, none (none: static sources)
 		modesThatNeedArrays = [ \d, \u, \p ];
+	}
+	
+	*allSizes { 
+		^((maxSize/division).asInt + 1).collect({ |i|
+			((i * division) + (0,(2**i)..division-1)).asInt
+		}).flat.select(_ >= minSize);
 	}
 	
 	*getDefName { |numArrays = 1, crossfadeMode = \d|
@@ -484,7 +494,7 @@ WFSPrePanSynthDefs : AbstractWFSSynthDefs {
 		dir = dir ? SynthDef.synthDefDir;
 		synthDefs = crossfadeModes.collect({ |item|
 			if( modesThatNeedArrays.includes( item ) ) {
-				(maxArrays + 1).collect({ |i|
+				this.allSizes.collect({ |i|
 					this.generateDef( i, item ).justWriteDefFile( dir );
 				});
 			} {
