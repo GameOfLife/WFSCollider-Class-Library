@@ -22,8 +22,9 @@ numPaths: the total number of paths. This may range from 2 to 8. The actual valu
 this is an Udef definition file
 part of the WFSCollider Class Library default Udefs set
 */
-
-d = (2..8).collect({ |n|
+(
+var defs, def;
+defs = (2..8).collect({ |n|
 	var def;
 	def = HiddenUdef( ("wfsPathSequencer" ++ n).asSymbol, {
 		var sig, sweep, startPos;
@@ -61,8 +62,9 @@ d = (2..8).collect({ |n|
 	def;
 });
 
-x = MultiUdef( \wfsPathSequencer, d, \wfs_control, \numPaths, false );
+def = MultiUdef( \wfsPathSequencer, defs, \wfs_control, \numPaths, false );
 
-x.argSpecs.last.spec.labels = (2..8).collect(_.asSymbol);
+def.argSpecs.last.spec.labels = (2..8).collect(_.asSymbol);
 
-x
+def
+)
