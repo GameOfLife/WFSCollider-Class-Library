@@ -90,6 +90,11 @@ WFSLib {
 		
 		WFSLib.previewMode = wfsOptions.previewMode;
 		
+		UEvent.renderNumChannels = { 
+			WFSPreviewSynthDefs.pannerFuncs[ WFSLib.previewMode ].value(0,0@0) !? _.size ?
+				WFSSpeakerConf.default.speakerCount;
+		};
+		
 		servers = servers ++ WFSServers.default.multiServers.collect({ |ms|
 			LoadBalancer( *ms.servers ) 
 		});
