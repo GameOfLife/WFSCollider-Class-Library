@@ -128,8 +128,6 @@ WFSLib {
 		);
 				
 		GlobalPathDict.put( \wfs, "/WFSSoundFiles" );
-		GlobalPathDict.put( \resources, String.scDir );
-		
 		
 		Udef.loadOnInit = false;
 		
