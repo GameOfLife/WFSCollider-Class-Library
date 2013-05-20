@@ -270,6 +270,8 @@ WFSPointSpec : PointSpec {
 			
 		vws[ \comp2 ] = CompositeView( view, 60 @ (bounds.height) );
 		
+		view.decorator.left = bounds.width - 60 - 2 - 40;
+		
 		vws[ \mode ] = PopUpMenu( view, 60 @ (bounds.height) )
 			.font_( font )
 			.applySkin( RoundView.skin ? () )
