@@ -9,6 +9,6 @@ UnitRack(\wfsSimpleReverb, [\wfsPoint]++
 		.setAudioIn(0,i+1)
 		.point_(~points[i])
 ]
-}.flat++[U(\wfsDynamicPoint).pointFromBus_(true)]
+}.flop.flat++[U(\wfsDynamicPoint).pointFromBus_(true)]
 ).category_( \wfs)
 )
