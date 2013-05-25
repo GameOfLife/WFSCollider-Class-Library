@@ -36,7 +36,7 @@ w.drawFunc = {
 	var corners, polar, p1, p2, clip = true;
 	var showWaveFronts = true, showListener = false;
 	c.draw(m);
-	corners = c.arrayConfs.collect(_.cornerPoints).flop[0];
+	corners = c.uniqueCorners;
 	focusMul = c.focusDetector.kr( p );
 	
 	Pen.use({ 
