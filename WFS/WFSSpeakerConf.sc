@@ -319,7 +319,7 @@ WFSSpeakerConf {
 			conf.adjustCorner2To( sortedConfs.wrapAt( i+1 ) );
 		});
 		
-		focusDetector = WFSFocusDetector( arrayConfs.collect({ |item| item.cornerPoints[0] }) );
+		focusDetector = WFSFocusDetector( this.uniqueCorners );
 		
 		this.changed( \init );
 	}
@@ -480,6 +480,27 @@ WFSSpeakerConf {
 		} {
 			^nil; // nil if not found
 		};
+	}
+	
+	uniqueCorners {
+		var allCorners, uniqueCorners;
+		allCorners = this.arrayConfs.collect(_.cornerPoints).flatten(1);
+		uniqueCorners = [];
+		allCorners.do({ |a|
+			if( uniqueCorners.any({ |b| 
+				b = b.asArray;
+				a.asArray.every({ |item, i|
+					if( item.isFloat ) {
+						item.equalWithPrecision( b[i] );
+					} {
+						item == b[i];
+					};
+				});
+			}).not ) {
+				uniqueCorners = uniqueCorners.add( a );
+			};
+		});
+		^uniqueCorners;
 	}
 	
 	// Server management
