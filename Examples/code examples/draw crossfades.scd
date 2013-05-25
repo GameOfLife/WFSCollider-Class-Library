@@ -1,5 +1,5 @@
 (
-c = WFSSpeakerConf.rect( 48, 48, 5, 5 );
+c = WFSSpeakerConf.default ? WFSSpeakerConf.rect( 48, 48, 5, 5 );
 m = \lines;
 a = \point;
 p = (0@0);
@@ -9,11 +9,10 @@ w = ScaledUserView.window( "WFSSpeakerConf",
 );
 w.keepRatio = true;
 w.drawFunc = { 
-	var fader, crossfades, lines, focusMul;
+	var fader, crossfades, lines, focusMul = 1;
 	c.draw(m); 
 	Pen.addArc( p * (1 @ -1), 0.3/2, 0, 2pi ).fill; 
-	focusMul = c.focusDetector.kr( p );
-	
+	if( a == \point ) { focusMul = c.focusDetector.kr( p ); };
 	// draw corns as blue points
 	Pen.color = Color.blue;
 	c.arrayConfs.collect(_.cornerPoints).do({ |pts|
