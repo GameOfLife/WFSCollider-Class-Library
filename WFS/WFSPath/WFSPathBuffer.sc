@@ -205,19 +205,7 @@ WFSPathBuffer : AbstractRichBuffer {
 		var array, buf, sendFunc;
 		if( wfsPath.isWFSPath2 ) {	
 			array = wfsPath.asBufferArray( forWriting );
-			sendFunc = { |buf|
-				// use 0.02 wait time to remain sending at high traffic 
-				// (only relevant for > 180 point wfsPaths)
-				{ buf.sendCollection( array, 0, 0.02, action ); }.fork;
-			};
-			buf = Buffer.alloc( server, array.size / 9, 9, nil, bufnum );
-			OSCresponderNode( server.addr, '/done', { |time, resp, msg, addr|
-				if( msg == [ '/done', '/b_alloc', buf.bufnum ] ) {
-					resp.remove;
-					sendFunc.value( buf );
-				};
-			}).add;
-			^buf;
+			^Buffer.uSendCollection( server, array, 9, 0.02, action );
 		} {
 			"WFSPathBuffer:sendBuffer - can't send, WFSPath2 unknown".postln;
 			"\twill try to read the buffer instead from %\n".postf( wfsPath );
