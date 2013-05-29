@@ -112,11 +112,16 @@ VBAPSynthDef {
         ]
 	}
 
-	*generateAll { |maxNumSpeakers = 55, dir|
+	*writeAll { |maxNumSpeakers = 55, dir|
         dir = dir ? SynthDef.synthDefDir;
         (4..maxNumSpeakers).collect { |i|
             this.generateDefs( i ).do{ |def| def.writeDefFile( dir ) };
         }
     }
+
+	*writeDefs { |n=32, dir|
+		dir = dir ? SynthDef.synthDefDir;
+		this.generateDefs( n ).do{ |def| def.writeDefFile( dir ) }
+	}
 
 }
