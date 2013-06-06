@@ -109,6 +109,7 @@ WFSPointGroup {
 	asWFSPath2 { ^WFSPath2( positions.deepCopy ) }
 	
 	asControlInput { ^positions.collect(_.asArray).flat }
+	asOSCArgEmbeddedArray { | array| ^this.asControlInput.asOSCArgEmbeddedArray(array) }
 	
 	archiveAsCompileString { ^true }
 	
