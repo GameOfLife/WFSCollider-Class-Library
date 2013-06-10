@@ -118,9 +118,14 @@ WFSLib {
 		};
 		
 		Udef.userDefsFolder = File.getcwd +/+ "UnitDefs";
+		UMapDef.userDefsFolder = File.getcwd +/+ "UMapDefs";
 	   
 		Udef.defsFolders = Udef.defsFolders.add( 
 			WFSArrayPan.filenameSymbol.asString.dirname +/+ "UnitDefs"
+		);
+		
+		UMapDef.defsFolders = UMapDef.defsFolders.add( 
+			WFSArrayPan.filenameSymbol.asString.dirname +/+ "UMapDefs"
 		);
 			
 		UnitRack.defsFolders = UnitRack.defsFolders.add( 
@@ -132,6 +137,7 @@ WFSLib {
 		Udef.loadOnInit = false;
 		
 		defs = Udef.loadAllFromDefaultDirectory.collect(_.synthDef).flat.select(_.notNil);
+		defs = defs ++ UMapDef.loadAllFromDefaultDirectory.collect(_.synthDef).flat.select(_.notNil);
 		UnitRack.loadAllFromDefaultDirectory;
 		
 		Udef.loadOnInit = true;
