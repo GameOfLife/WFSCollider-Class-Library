@@ -125,7 +125,7 @@ WFSSpeakerConfEditor {
 			.resize_( 7 );
 			
 		speakerCount = SmoothNumberBox( composite, 50@14 )
-			.clipLo_(8 * speakerConf.size )
+			.clipLo_(WFSArrayConfGUI.specs.n.step * speakerConf.size )
 			.step_(8)
 			.scroll_step_(8)
 			.value_( speakerConf.speakerCount )
@@ -146,10 +146,19 @@ WFSSpeakerConfEditor {
 			.clipHi_(8)
 			.step_(1)
 			.scroll_step_(1)
-			.value_(8)
+			.value_( WFSArrayConfGUI.specs.n.step )
 			.action_({ |nb|
 				speakerCount.step = nb.value;
 				speakerCount.scroll_step = nb.value;
+				WFSArrayConfGUI.specs.n.step = nb.value;
+				WFSArrayConfGUI.specs.n.minval = nb.value;
+				arrayConfGUIs.do({ |gui|
+					var box;
+					box = gui.views[\n].views.box;
+					box.step = nb.value;
+					box.scroll_step = nb.value;
+					box.clipLo = nb.value;
+				});
 				speakerCount.valueAction = speakerCount.value.round(nb.value);
 			})
 			.resize_( 7 );
@@ -258,10 +267,11 @@ WFSSpeakerConfEditor {
 		
 		controller.put( \init, { 
 			speakerCount.value = speakerConf.speakerCount;
-			speakerCount.clipLo = 8 * speakerConf.size;
+			speakerCount.clipLo = WFSArrayConfGUI.specs.n.step * speakerConf.size;
 			numArraysBox.string = speakerConf.size;
 			gain.value = speakerConf.gain;
 			arrayLimit.value = speakerConf.arrayLimit;
+			focusWidth.value = speakerConf.focusWidth/pi;
 		}); 
 	}
 	
