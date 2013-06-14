@@ -76,7 +76,9 @@ if( WFSPreviewSynthDefs.pannerFuncs.keys.includes( WFSLib.previewMode ).not ) {
 		server = target.asTarget.server;
 		
 		arrayConfs = WFSSpeakerConf.default.getArraysFor( server );
-		crossfader = WFSCrossfader( unit.get( \point ), arrayConfs );
+		crossfader = WFSCrossfader( 
+			unit.get( \point ), arrayConfs, focusWidth: WFSSpeakerConf.default.focusWidth 
+		);
 		focusMul = WFSSpeakerConf.default.focusDetector.kr( unit.get( \point ) );
 		
 		arrayGroup = Group(target, addAction: \addToTail);
@@ -119,6 +121,7 @@ if( WFSPreviewSynthDefs.pannerFuncs.keys.includes( WFSLib.previewMode ).not ) {
 								\outOffset, n + WFSSpeakerConf.getOutputBusStartOffset( server ),
 								\amp, focusLevels[i],
 								\arrayLimit, WFSSpeakerConf.default.arrayLimit,
+								\focusWidth, WFSSpeakerConf.default.focusWidth,
 							] ++ unit.def.env.getInitArgsFor( \wfsa, unit.args, server, startPos ), 
 							arrayGroup, addAction: \addToTail 
 						) 

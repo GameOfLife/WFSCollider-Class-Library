@@ -127,7 +127,8 @@ if( WFSPreviewSynthDefs.pannerFuncs.keys.includes( WFSLib.previewMode ).not ) {
 				\focusLevelBuses, focusLevelBuses,
 				\normalIDs, normalSynths.collect(_.nodeID),
 				\focusIDs, focusSynths.collect(_.nodeID),
-				\sendPointRate, WFSPositionTracker.getRate
+				\sendPointRate, WFSPositionTracker.getRate,
+				\focusWidth, WFSSpeakerConf.default.focusWidth
 			] ++ unit.def.env.getInitArgsFor( \wfsp, unit.args, server, startPos ),
 			arrayGroup, addAction: \addBefore
 		);
@@ -141,7 +142,8 @@ if( WFSPreviewSynthDefs.pannerFuncs.keys.includes( WFSLib.previewMode ).not ) {
 					\arrayConf, arrayConfs[i], 
 					\levelBus, normalLevelBuses[i],
 					\outOffset, n + WFSSpeakerConf.getOutputBusStartOffset( server ),
-					\arrayLimit, WFSSpeakerConf.default.arrayLimit
+					\arrayLimit, WFSSpeakerConf.default.arrayLimit,
+					\focusWidth, WFSSpeakerConf.default.focusWidth
 				] ++ unit.def.env.getInitArgsFor( \wfsa, unit.args, server, startPos ), 
 				\addToTail ) 
 			);

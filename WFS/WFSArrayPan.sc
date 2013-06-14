@@ -20,11 +20,11 @@
 WFSCrossfader {
 	// handles the crossfading between arrays, for point sources
 	var <>arrayConfs;
-	var <>point;
+	var <>point;	
+	var <focusWidth = 0.5pi;
 	var <cornerPoints, <crossfadeData;
 	
-	
-	*new { |point = (0@0), arrays, cornerArrays|
+	*new { |point = (0@0), arrays, cornerArrays, focusWidth = 0.5pi|
 		
 		// feed me with: 
 		//   arrays: an array of WFSArrayConfs, or an array of arrays that can be 
@@ -39,7 +39,7 @@ WFSCrossfader {
 			arrays[i].fromCornersArray( item );
 		});
 		
-		^super.newCopyArgs( arrays, point.asPoint ).init;
+		^super.newCopyArgs( arrays, point.asPoint, focusWidth ).init;
 	}
 	
 	init {
@@ -48,12 +48,13 @@ WFSCrossfader {
 		
 		// for the focusFades
 		globalAngle = point.angle;
-		fadeArea = point.rho.linlin(0.5,1,pi,0.25pi,\none).clip(0.25pi,pi); 
+		fadeArea = point.rho.linlin(0.5,1,pi,focusWidth/2,\none).clip(focusWidth/2,pi); 
 		
 		cornerPoints = arrayConfs.collect( _.cornerPoints );
 		
 		crossfadeData = cornerPoints.collect({ |pts, i|
 			var angle, arr, focusedActive;
+			var rotatedAngle, firstAngle, lastAngle, angleIsPositive;
 			
 			angle = arrayConfs[i].angle;
 			
@@ -82,24 +83,31 @@ WFSCrossfader {
 			
 			// focused active
 			if( WFSArrayPan.useFocusFades ) {
-				focusedActive = [ 
-					arrayConfs[i].firstPoint.angle,
-					arrayConfs[i].centerPoint.angle,
-					arrayConfs[i].lastPoint.angle 
-				]
-					.collect({ |item|
-						((item - globalAngle).wrap(-pi,pi).abs < (fadeArea + 0.03pi)).binaryValue; 
-				});
+				
+				rotatedAngle = (globalAngle - angle).wrap(-pi,pi);
+				firstAngle = (arrayConfs[i].lastPoint.angle - angle).wrap(-pi,pi);
+				lastAngle = (arrayConfs[i].firstPoint.angle - angle).wrap(-pi,pi);
+				angleIsPositive = (rotatedAngle > 0).binaryValue;
+
+				focusedActive = [
+					((rotatedAngle - fadeArea) < firstAngle).binaryValue,
+					((rotatedAngle + fadeArea) > lastAngle).binaryValue,
+				] * [ angleIsPositive, 1 - angleIsPositive ];
+				
+				focusedActive = focusedActive[0].max( focusedActive[1] );
 			} {
-				focusedActive = [1,1,1];
+				focusedActive = 1;
 			};
 			
-			[ arr[0].product.sqrt, arr[1].product,
-				focusedActive[0].max( focusedActive[1] ).max( focusedActive[2] )
-			];
+			[ arr[0].product.sqrt, arr[1].product, focusedActive ];
 
 		});		
 
+	}
+	
+	focusWidth_ { |new = 0.5pi|
+		focusWidth = new;
+		this.init;
 	}
 	
 	kr {
@@ -387,6 +395,7 @@ WFSArrayPan : WFSBasicArrayPan {
 	var <>focus; // nil, true or false
 	var <>dbRollOff = -9; // per speaker roll-off
 	var <>limit = 1; // in m, clipping amplitude from here to prevent inf
+	var <>focusWidth = 0.5pi;
 	
 	ar { |source, inPos, int, mul = 1, add = 0| // inPos: Point or Polar
 		var difx, dify, sqrdifx, inFront, crossing, delayOffset;
@@ -444,7 +453,7 @@ WFSArrayPan : WFSBasicArrayPan {
 		if( useFocusFades && { focus != false } ) { // disabled when forced unfocused
 			globalAngle = pos.angle;
 			speakerAngleRange = [ (dist@speakerArray[0]).angle, (dist@speakerArray.last).angle ];
-			fadeArea = globalDist.linlin(0.5,1,pi,0.25pi,\none).clip(0.25pi,pi); 
+			fadeArea = globalDist.linlin(0.5,1,pi,focusWidth/2,\none).clip(focusWidth/2,pi); 
 			focusFades = speakerArray.collect({ |item, i|
 				(i.linlin(0,n-1,*speakerAngleRange) - globalAngle).wrap(-pi,pi)
 					.abs.linlin(fadeArea, fadeArea + 0.03pi,1,0,\none).clip(0,1); 

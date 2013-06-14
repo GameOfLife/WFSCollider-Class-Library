@@ -72,7 +72,7 @@ WFSArrayPanSynthDefs : AbstractWFSSynthDefs {
 	might not need one of those (or only for the env and gain)
 	*/
 	
-	classvar <>minSize = 1, <>maxSize = 64, <>division = 8;
+	classvar <>minSize = 1, <>maxSize = 96, <>division = 8;
 		// if we get > 64 we might want to combine multiple
 	classvar <>types, <>modes, <>intTypes;
 	
@@ -159,6 +159,7 @@ WFSArrayPanSynthDefs : AbstractWFSSynthDefs {
 					.addDelay_( addDelay )
 					.dbRollOff_( arrayRollOff )
 					.limit_( arrayLimit )
+					.focusWidth_( \focusWidth.ir( 0.5pi ) )
 					.focus_( switch( type, \f, { true }, \n, { false }, { nil } ) );
 			};
 			
@@ -168,7 +169,7 @@ WFSArrayPanSynthDefs : AbstractWFSSynthDefs {
 		});
 	}
 	
-	*generateAll { |action, dir, estimatedTime = 27| // and write to disk
+	*generateAll { |action, dir, estimatedTime = 60| // and write to disk
 		
 		// this takes about 30 seconds in normal settings
 		// can be stopped via cmd-.
@@ -342,7 +343,9 @@ WFSPrePanSynthDefs : AbstractWFSSynthDefs {
 					// once we know if it sounds correctly it should be
 					// made less verbose
 					
-					crossfader = WFSCrossfader( point, arrayConfs, cornerPoints );
+					crossfader = WFSCrossfader( 
+						point, arrayConfs, cornerPoints, \focusWidth.ir( 0.5pi ) 
+					);
 							
 					cornerfades = crossfader.cornerfades;
 					

@@ -6,7 +6,7 @@ WFSSpeakerConfEditor {
 	var <>action, <>onClose;
 	var <presetManagerGUI;
 	var <rotateSlider, <scaleSlider, <rotateVal = 0, <scaleVal = 1;
-	var <gain, <arrayLimit;
+	var <gain, <arrayLimit, <focusWidth;
 	var <speakerCount, <speakersUnits, <numArraysInc, <numArraysDec, <numArraysBox, <slideInc, <slideDec;
 	
 	
@@ -27,7 +27,7 @@ WFSSpeakerConfEditor {
 		if( parent.class == String ) {
 			parent = Window(
 				parent, 
-				bounds = bounds ?? { Rect(128 rrand: 256, 64 rrand: 128, 342, 380) }, 
+				bounds = bounds ?? { Rect(128 rrand: 256, 64 rrand: 128, 342, 400) }, 
 				scroll: false
 			).front;
 		};
@@ -63,7 +63,7 @@ WFSSpeakerConfEditor {
 		composite.onClose = { |vw| controller.remove; onClose.value( this ); };
 		
 		scrollView = ScrollView( composite, 
-			composite.bounds.width @  (composite.bounds.height - ((6 * 18)))
+			composite.bounds.width @  (composite.bounds.height - ((7 * 18)))
 		).resize_(5);
 		
 		scrollView.addFlowLayout( margin, gap );
@@ -104,6 +104,19 @@ WFSSpeakerConfEditor {
 			})
 			.resize_( 7 );
 
+		composite.decorator.nextLine;
+		
+		focusWidth = EZSmoothSlider( composite, composite.bounds.width@14, "focusWidth", 
+			[0.5,2,\lin,0.01,0.5,"pi"].asSpec, 
+			{ |sl| 
+				speakerConf.focusWidth_( sl.value * pi );
+			}, labelWidth: 50, unitWidth: 30
+		).value_( speakerConf.focusWidth / pi);
+		
+		focusWidth.labelWidth = 50;
+		focusWidth.labelView.align = \left;
+		focusWidth.view.resize_( 7 );
+		
 		composite.decorator.nextLine;
 		
 		StaticText( composite, 50@14 )

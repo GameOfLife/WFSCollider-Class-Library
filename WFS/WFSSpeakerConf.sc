@@ -144,7 +144,7 @@ WFSArrayConf { // configuration for one single speaker array
 		};
 	}
 	
-	n_ { |newN| n = newN; this.changed( \n, n ); }
+	n_ { |newN| n = newN.asInt; this.changed( \n, n ); }
 	dist_ { |newDist| 
 		dist = newDist; 
 		this.changed( \dist, dist );
@@ -267,6 +267,7 @@ WFSSpeakerConf {
 	
 	var <arrayConfs;
 	var <>arrayLimit = 1;
+	var <>focusWidth = 0.5pi;
 	
 	var <>focusDetector;
 	
@@ -287,13 +288,14 @@ WFSSpeakerConf {
 				[ 24, 2.83, 0.5pi, 0, 0.17 ], 
 				[ 32, 2.2958816567648, 0.024722222222222pi, 0.17867399847052, 0.17 ]
 			),
-		 	'sampl', WFSSpeakerConf([32, 5, 0.5pi, 0, 0.1275]).arrayLimit_(0.3)
+		 	'sampl', WFSSpeakerConf([32, 5, 0.5pi, 0, 0.1275]).arrayLimit_(0.3).focusWidth_(2pi)
 		 ];
 		 presetManager.applyFunc_( { |object, preset|
 			 	if( object === WFSSpeakerConf ) {
 				 	preset.deepCopy;
 			 	} {	
 				 	object.arrayLimit = preset.arrayLimit;
+				 	object.focusWidth = preset.focusWidth;
 				 	object.gain = preset.gain;
 				 	object.arrayConfs = preset.arrayConfs.deepCopy;
 				 }
@@ -582,6 +584,9 @@ WFSSpeakerConf {
 		};
 		if( gain != 0 ) {
 			stream << ".gain_( " <<< gain << " )";
+		};
+		if( focusWidth != 0.5pi ) {
+			stream << ".focusWidth_( " <<< (focusWidth/pi) << "pi )";
 		};
 	}
 }
