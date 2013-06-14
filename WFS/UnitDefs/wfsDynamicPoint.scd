@@ -157,7 +157,8 @@ if( WFSPreviewSynthDefs.pannerFuncs.keys.includes( WFSLib.previewMode ).not ) {
 					\arrayConf, arrayConfs[i], 
 					\levelBus, focusLevelBuses[i],
 					\outOffset, n + WFSSpeakerConf.getOutputBusStartOffset( server ),
-					\arrayLimit, WFSSpeakerConf.default.arrayLimit
+					\arrayLimit, WFSSpeakerConf.default.arrayLimit,
+					\focusWidth, WFSSpeakerConf.default.focusWidth
 				] ++ unit.def.env.getInitArgsFor( \wfsa, unit.args, server, startPos ), 
 				\addToTail ) 
 			);
