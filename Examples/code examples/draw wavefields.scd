@@ -32,7 +32,7 @@ w.mouseMoveAction = { |vw, x, y|
 (
 w.drawFunc = { 
 	var speakerLines, speakerPoints, prePan, crossfader, crossfades, arrayPan;
-	var focusMul;
+	var focusMul = 1;
 	var corners, polar, p1, p2, clip = true;
 	var showWaveFronts = true, showListener = false;
 	c.draw(m);
@@ -70,11 +70,11 @@ w.drawFunc = {
 		prePan = WFSPrePan( latencyComp: d).ar( 1, p )[0];
 		
 		if( a === \point ) {
-			crossfader = WFSCrossfader( p, speakerLines );
+			crossfader = WFSCrossfader( p, speakerLines, focusWidth: c.focusWidth );
 			crossfades = (crossfader.cornerfades * crossfader.arraysShouldRun( false ))
 				.max( crossfader.arraysShouldRun( true ) * focusMul );
 			arrayPan = speakerLines.collect({ |line|
-				WFSArrayPan( *line.asArray ).focus_(nil).ar( 1, p ) + [-0.06 + prePan,0];
+				WFSArrayPan( *line.asArray ).focusWidth_( c.focusWidth ).focus_(nil).ar( 1, p ) + [-0.06 + prePan,0];
 			});
 		} {	
 			crossfades = WFSCrossfaderPlane( p, speakerLines ).crossfades;

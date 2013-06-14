@@ -23,7 +23,7 @@ w.drawFunc = {
 	
 	// draw normal as blue lines behind arrays
 	if( a === \point ) {
-		fader = WFSCrossfader( p, c.arrayConfs );
+		fader = WFSCrossfader( p, c.arrayConfs, focusWidth: c.focusWidth );
 		crossfades = fader.cornerfades;
 		lines = c.asLines;
 		Pen.use({
