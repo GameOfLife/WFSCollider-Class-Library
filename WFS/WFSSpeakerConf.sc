@@ -22,6 +22,7 @@ WFSArrayConf { // configuration for one single speaker array
 	var <n = 48, <dist = 5, <angle = 0.5pi, <offset = 0, <spWidth;
 	var <>corners;
 	var <>cornerAngles; // angle to next array
+	var <>oppositeDist = -inf;
 	
 	/*
 	
@@ -128,6 +129,18 @@ WFSArrayConf { // configuration for one single speaker array
 		}; 
 	}
 	
+	findOppositeDist { |wfsSpeakerConf|
+		var oppositeArray, myAngle;
+		myAngle = angle.wrap(-pi,pi);
+		oppositeArray = wfsSpeakerConf.arrayConfs.detect({ |item|
+			(item.angle + pi).wrap(-pi,pi).equalWithPrecision( myAngle )
+		});
+		if( oppositeArray.notNil ) {
+			oppositeDist = oppositeArray.dist.neg;
+		} {
+			oppositeDist = -inf;
+		};
+	}
 	
 	asArray { ^[ n, dist, angle, offset, spWidth ] }
 	asCornersArray { ^(corners ++ cornerAngles); }
@@ -319,6 +332,10 @@ WFSSpeakerConf {
 		sortedConfs.do({ |conf, i|
 			conf.adjustCorner1To( sortedConfs.wrapAt( i-1 ) );
 			conf.adjustCorner2To( sortedConfs.wrapAt( i+1 ) );
+		});
+		
+		arrayConfs.do({ |item|
+			item.findOppositeDist( this );
 		});
 		
 		focusDetector = WFSFocusDetector( this.uniqueCorners );
