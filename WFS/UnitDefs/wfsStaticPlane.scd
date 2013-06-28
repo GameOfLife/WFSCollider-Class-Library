@@ -55,11 +55,23 @@ def = FreeUdef( \wfsStaticPlane, [
 		\u_globalGain,
 		\u_globalEQ_setting, \u_globalEQ_bypass,  
 	] )
-	.envPut( \init_wfsa, [ \u_i_ar_0_bus, \point ] )
+	.envPut( \init_wfsa, [ \point ] )
+	.envPut( \set_wfsa, [ \u_i_ar_0_bus ] )
 	.addUEnv
 	.addUGlobalEQ
 	.setSpecMode( \latencyComp, \init, \point, \init )
-	.addUIO( UIn, \ar, 0, 1 );
+	.addUIO( UIn, \ar, 0, 1 )
+	.setSynthFunc_({ |unit ...keyValuePairs|
+		unit.synths.do({ |sn|
+			var server = sn.server;
+			var key = switch( sn.class, Group, \wfsa, Synth, \wfsp );
+			server.sendSyncedBundle( Server.default.latency, nil, 
+				*server.makeBundle( false, {
+		    			sn.set( *unit.def.env.getSetArgsFor( key, keyValuePairs, server ) )
+	    			})
+	    		);
+		})
+	});
 	
 if( WFSPreviewSynthDefs.pannerFuncs.keys.includes( WFSLib.previewMode ).not ) {
 	def.createSynthFunc_({ |unit, target, startPos = 0|
@@ -114,17 +126,6 @@ if( WFSPreviewSynthDefs.pannerFuncs.keys.includes( WFSLib.previewMode ).not ) {
 		
 		prePanSynth;
 	})
-	.setSynthFunc_({ |unit ...keyValuePairs|
-		unit.synths.do({ |sn|
-			var server = sn.server;
-			var key = switch( sn.class, Group, \wfsa, Synth, \wfsp );
-			server.sendSyncedBundle( Server.default.latency, nil, 
-				*server.makeBundle( false, {
-		    			sn.set( *unit.def.env.getSetArgsFor( key, keyValuePairs, server ) )
-	    			})
-	    		);
-		})
-	})
 	.shouldPlayOnFunc_({ |unit, target|
 		var arrays, crossfader;
 		arrays = WFSSpeakerConf.default.getArraysFor( target.asTarget.server );
@@ -141,6 +142,7 @@ def.createSynthFunc_({ |unit, target, startPos = 0|
 		var server, n = 0;
 		var prePanSynth;
 		var previewSynth;
+		var arrayGroup;
 		
 		server = target.asTarget.server;
 					
@@ -150,29 +152,19 @@ def.createSynthFunc_({ |unit, target, startPos = 0|
 			target, \addToTail
 		);
 		
+		arrayGroup = Group(target, addAction: \addToTail);
+		
 		previewSynth = Synth( 
 			WFSPreviewSynthDefs.getDefName( WFSLib.previewMode, \s ),
 			unit.def.env.getInitArgsFor( \wfsa, unit.args, server, startPos ) ++
 				[ \out, WFSSpeakerConf.getOutputBusStartOffset( target ) ],
-			target, \addToTail 
+			arrayGroup, \addToTail 
 		);
 				
-		previewSynth.freeAction_({ |synth| unit.removeSynth( synth ); });
-		unit.synths = unit.synths.add( previewSynth );
+		arrayGroup.freeAction_({ |synth| unit.removeSynth( synth ); });
+		unit.synths = unit.synths.add( arrayGroup );
 		
 		prePanSynth;
-	})
-	.setSynthFunc_({ |unit ...keyValuePairs|
-		unit.synths.do({ |sn|
-			var server = sn.server;
-			var key = switch( sn.defName.asString[..4].asSymbol, 
-				\wfsx_, \wfsa, \wfsp_, \wfsp );
-			server.sendSyncedBundle( Server.default.latency, nil, 
-				*server.makeBundle( false, {
-		    			sn.set( *unit.def.env.getSetArgsFor( key, keyValuePairs, server ) )
-	    			})
-	    		);
-		})
 	})
 	.shouldPlayOnFunc_({ |unit, target|
 		target.asTarget.server.isLocal; // safety measure: no output on wfs servers
