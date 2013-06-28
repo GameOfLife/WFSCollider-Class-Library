@@ -84,14 +84,17 @@ if( WFSPreviewSynthDefs.pannerFuncs.keys.includes( WFSLib.previewMode ).not ) {
 		var defNames;
 		var crossfader;
 		var focusMul;
+		var point;
 		
 		server = target.asTarget.server;
 		
+		point = unit.get( \point ).value.asPoint;
+		
 		arrayConfs = WFSSpeakerConf.default.getArraysFor( server );
 		crossfader = WFSCrossfader( 
-			unit.get( \point ), arrayConfs, focusWidth: WFSSpeakerConf.default.focusWidth 
+			point, arrayConfs, focusWidth: WFSSpeakerConf.default.focusWidth 
 		);
-		focusMul = WFSSpeakerConf.default.focusDetector.kr( unit.get( \point ) );
+		focusMul = WFSSpeakerConf.default.focusDetector.kr( point );
 		
 		arrayGroup = Group(target, addAction: \addToTail);
 		
@@ -152,7 +155,7 @@ if( WFSPreviewSynthDefs.pannerFuncs.keys.includes( WFSLib.previewMode ).not ) {
 		var arrays, crossfader;
 		arrays = WFSSpeakerConf.default.getArraysFor( target.asTarget.server );
 		(arrays.size > 0) && {
-			crossfader = WFSCrossfader( unit.get( \point ), arrays );
+			crossfader = WFSCrossfader( unit.get( \point ).uPrepareValue.asPoint, arrays );
 			[(crossfader.cornerfades * crossfader.arraysShouldRun( false )).maxItem,
 			 crossfader.arraysShouldRun( true ).maxItem ].maxItem > 0
 		};

@@ -84,11 +84,14 @@ if( WFSPreviewSynthDefs.pannerFuncs.keys.includes( WFSLib.previewMode ).not ) {
 		var defName;
 		var crossfader;
 		var gain;
+		var point;
 		
 		server = target.asTarget.server;
 		
+		point = unit.get( \point ).value.asPoint;
+		
 		arrayConfs = WFSSpeakerConf.default.getArraysFor( server );
-		crossfader = WFSCrossfaderPlane( unit.get( \point ), arrayConfs );
+		crossfader = WFSCrossfaderPlane( point, arrayConfs );
 		
 		arrayGroup = Group(target, addAction: \addToTail);
 		
@@ -130,7 +133,7 @@ if( WFSPreviewSynthDefs.pannerFuncs.keys.includes( WFSLib.previewMode ).not ) {
 		var arrays, crossfader;
 		arrays = WFSSpeakerConf.default.getArraysFor( target.asTarget.server );
 		(arrays.size > 0) && {
-			crossfader = WFSCrossfaderPlane( unit.get( \point ), arrays );
+			crossfader = WFSCrossfaderPlane( unit.get( \point ).uPrepareValue.asPoint, arrays );
 			crossfader.crossfades.maxItem > 0;
 		};
 	});
