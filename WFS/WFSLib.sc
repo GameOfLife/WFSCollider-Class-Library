@@ -193,7 +193,7 @@ WFSLib {
 				UChain(  
 					\bufSoundFile,
 					[ \wfsDynamicPoint, [
-						\point, UMap( 'wfsPathPlayer', [ \wfsPath, 
+						\point, UMap( 'trajectory', [ \trajectory, 
 							WFSPathBuffer( 
 								WFSPath2.generate( 5, 2.4380952380952, 
 									[ \random, [\seed, 100000.rand, \radius, 10@10] ] 
