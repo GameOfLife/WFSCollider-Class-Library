@@ -183,21 +183,25 @@ WFSLib {
 						\soundFile, BufSndFile.newBasic("@resources/sounds/a11wlk01-44_1.aiff", 
 							107520, 1, 44100, 0, nil, 1, true) 
 					] ],
-					[ \wfsCirclePath, [ \speed, 0.4 ] ],
-					[ \wfsDynamicPoint, [ \pointFromBus, true, \quality, \better ] ]
+					[ \wfsDynamicPoint, [ 
+						\point, UMap( \point_circle, [ \speed, 0.4 ] ),
+						\quality, \better 
+					] ]
 				).useSndFileDur 
 			})
 			.putRaw( \wfsPath, {
 				UChain(  
 					\bufSoundFile,
-					[ \wfsPathPlayer, [ \wfsPath, 
-						WFSPathBuffer( 
-							WFSPath2.generate( 5, 2.4380952380952, 
-								[ \random, [\seed, 100000.rand, \radius, 10@10] ] 
-							), 0, 1, true
-						), 
-					] ],
-					[ \wfsDynamicPoint, [ \pointFromBus, true, \quality, \better ] ]
+					[ \wfsDynamicPoint, [
+						\point, UMap( 'wfsPathPlayer', [ \wfsPath, 
+							WFSPathBuffer( 
+								WFSPath2.generate( 5, 2.4380952380952, 
+									[ \random, [\seed, 100000.rand, \radius, 10@10] ] 
+								), 0, 1, true
+							)
+						] ),
+						\quality, \better 
+					] ]
 				).useSndFileDur
 			})
 			.putRaw( \sinewave, { UChain( 
