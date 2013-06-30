@@ -34,8 +34,8 @@ def = FreeUdef( \wfsDynamicPoint, [
 		[ \latencyComp:  	0,		[0,1].asSpec ],
 		[ \dbRollOff:		-6,		[ -24, 0, \lin, 1, -6 ].asSpec ],
 		[ \maxAmpRadius:	2,		[ 1, 5, \lin, 0, 2, "m" ].asSpec ],
-		[ \crossfadeLag:	0.2,		[ 0, 1, \lin, 0, 0.2 ].asSpec ],
-		[ \dontPause:		false,	BoolSpec( false ) ]
+		[ \crossfadeLag:	0.2,		[ 0, 1, \lin, 0, 0.2 ].asSpec, true ],
+		[ \dontPause:		false,	BoolSpec( false ), true ]
 	], true ).category_( \wfs_panner )
 	// first a few general things
 	.envPut( \getArgsFor, { |evt, which, args, server, startPos = 0|

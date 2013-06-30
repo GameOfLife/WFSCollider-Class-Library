@@ -26,7 +26,7 @@ def = FreeUdef( \wfsDynamicPlane, [
 		[ \latencyComp:  	0,		[0,1].asSpec ],
 		[ \dbRollOff:		0,		[ -24, 0, \lin, 1, 0 ].asSpec ],
 		[ \maxAmpRadius:	2,		[ 1, 5, \lin, 0, 2, "m" ].asSpec ],
-		[ \dontPause:		false,	BoolSpec( false ) ]
+		[ \dontPause:		false,	BoolSpec( false ), true ]
 	] )
 	.category_( \wfs_panner )
 	// first a few general things
