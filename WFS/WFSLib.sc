@@ -189,7 +189,7 @@ WFSLib {
 					] ]
 				).useSndFileDur 
 			})
-			.putRaw( \wfsPath, {
+			.putRaw( \trajectory, {
 				UChain(  
 					\bufSoundFile,
 					[ \wfsDynamicPoint, [
