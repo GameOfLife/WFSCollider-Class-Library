@@ -1,9 +1,12 @@
 WFS TODO / ideas (no particular order)
 
-- add TriggerSpec and use in various Udefs
-- infinite events: keep fade out time at stop
+- re-invent preview system; 
+	- generic panners with settings for different spatialization methods
+	- new interface for point sources and plane waves
+ 	- move trajectory etc to Unit Lib
+
 - subwoofers
-- add Envelope spec / gui / udef (fixed/max number of points?)
+- directional point sources
 - Folder events / sub-scores:
 	- implement cutting sub-scores
 	- inner score looping.
@@ -39,8 +42,6 @@ WFS TODO / ideas (no particular order)
 - UMixer for session
 - MassEdit:
 	- more options for wfspath massedit
-	- option for expanding group of units into new window
-	- MassUChain editor should allow to edit multiple paths, at least to be able to plot them.
 - core:
 	- allow change of units in chain during playback
 	- clear all option (in case buffers or synths are kept by mistake)
@@ -54,17 +55,12 @@ WFS TODO / ideas (no particular order)
 	- midi import
 	- mass generators for events
 	- pattern support for UChains built-in
-	- alternative timeline with tempo/meter
-		- all time setting gui's should be switcheable (or it could be a preference setting)
-		- option for midi import of timeline/meter settings
-	- multichannel unit (composed of an array of single-channel units)
+	- option for midi import of timeline/meter settings
 	- option to show waveforms in path editor 
 		- possibly as width of the trajectory line
 	- redirect args (extra args pointing to others via a function)
 		- standard sets for example for \freq and \amp
 	- clipboard (copy/paste) for WFSPathGUI
-	- dedicated generic Udef class for WFS (and other) panners
-		- including the multisynth/group/pause structure and redirecting of args to correct synth
 	- language-based automation
 	- Right-click menu
 	
