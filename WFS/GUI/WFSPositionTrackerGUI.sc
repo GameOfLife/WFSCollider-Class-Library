@@ -106,6 +106,13 @@ WFSPositionTrackerGUI {
 								paths = paths.add( value.wfsPath );
 							};
 						});
+						unit.getAllUMaps.do({ |umap|
+							umap.values.do({ |value|
+								if( value.isKindOf( WFSPathBuffer ) ) {
+									paths = paths.add( value.wfsPath );
+								};
+							});
+						});
 					});
 				});
 				scale = 0.2/vw.scale.mean;
