@@ -368,8 +368,7 @@ WFSPointSpec : PointSpec {
 			.action_({
 				var editor;
 				if( vws[ \editor ].isNil or: { vws[ \editor ].isClosed } ) {
-					editor = this.editorClass.new( object: [ vws[ \val ] ] )
-						.canChangeAmount_( false )
+					editor = this.makeEditor( [ vws[ \val ] ] )						.canChangeAmount_( false )
 						.editMode_( 'move' )
 						.action_( editAction )
 						.onClose_({ 
@@ -447,7 +446,7 @@ WFSPointSpec : PointSpec {
 		if( active ) { view[ \x ].doAction };
 	}
 	
-	editorClass { ^WFSPointView }
+	makeEditor { |object| ^WFSPointView( object: object ) }
 	
 	mapSetView { |view, value, active = false|
 		this.setView( view, this.map( value ), active );
@@ -471,10 +470,19 @@ WFSPlaneSpec : WFSPointSpec {
 	
 	classvar <>defaultMode = \deg_cw;
 	
-	editorClass { ^WFSPlaneView }
+	makeEditor { |object| ^WFSPlaneView( object: object ) }
 	
 	massEditSpec { |inArray|
 		^WFSMultiPlaneSpec( rect, step, inArray, units, mode ); 
+	}
+}
+
+WFSRadiusSpec : WFSPointSpec {
+	
+	makeEditor { |object| ^WFSMixedView( object: object ).type_( \radius ) }
+	
+	massEditSpec { |inArray|
+		^WFSMultiRadiusSpec( rect, step, inArray, units, mode ); 
 	}
 }
 
@@ -595,6 +603,14 @@ WFSMultiPlaneSpec : WFSMultiPointSpec {
 		^WFSPointGroupGUI( object: WFSPointGroup( object ) )
 			.type_( \plane )
 			.editMode_( \rotateS );
+	}
+}
+
+WFSMultiRadiusSpec : WFSMultiPointSpec {
+	
+	makeEditor { |object|
+		^WFSPointGroupGUI( object: WFSPointGroup( object ) )
+			.type_( \radius );
 	}
 }
 

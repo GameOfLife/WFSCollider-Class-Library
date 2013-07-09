@@ -1964,6 +1964,15 @@ WFSMixedView : WFSPointView {
 				Pen.line( p1 + p2, p1 - p2 ).stroke;
 				p2 = Polar( scale * 15, polar.angle ).asPoint;
 				Pen.arrow( p1 + p2, p1 - p2, scale * 5 );
+			},
+			\radius, {
+				Pen.moveTo( p );
+				Pen.addArc( p, 3 * scale, 0, 2pi );
+				Pen.line(p - ((3*scale) @ 0), p * (-1 @  1) );
+				Pen.lineTo( p * (-1 @ -1) );
+				Pen.lineTo( p * ( 1 @ -1) );
+				Pen.lineTo( p - (0 @ (3*scale) ) );
+				Pen.stroke;
 		});
 	}
 
