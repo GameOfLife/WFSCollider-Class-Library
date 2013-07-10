@@ -140,20 +140,37 @@ VBAPLib {
 	*cmdPeriod { Server.freeAllRemote( false ); }
 
     *loadDefs { |options|
-        var defs;
+        //makes this less messy please !
+		var defs;
+		var default = Udef.loadOnInit;
+		Udef.loadOnInit_(options.sendSynthDefsAtStartup);
+		this.loadUDefsFromDisk(options);
+		Udef.loadOnInit_(default);
 
-		Udef.defsFolders = if(options.loadDefsAtStartup){ Udef.defsFolders }{[]} ++ [
-            WFSArrayPan.filenameSymbol.asString.dirname +/+ "UnitDefs"
-		] ++ options.extraDefFolders;
-
-		Udef.userDefsFolder = File.getcwd +/+ "UnitDefs";
-
-		Udef.defsFolders.add(
-            VBAPLib.filenameSymbol.asString.dirname +/+ "UnitDefs"
-        );
-
-       Udef.loadAllFromDefaultDirectory
+		(options.extraDefFolders ++ [Udef.userDefsFolder]).collect({ |path|
+            (path ++ "/*.scd").pathMatch.collect({ |path| path.load.loadSynthDef })
+        })
 
     }
+
+	*writeDefaultSynthDefs {
+		Udef.defsFolders = Udef.defsFolders ++ [
+            WFSArrayPan.filenameSymbol.asString.dirname +/+ "UnitDefs",
+			VBAPLib.filenameSymbol.asString.dirname +/+ "UnitDefs"
+		];
+
+		Udef.loadAllFromDefaultDirectory.do(_.writeDefFile)
+	}
+
+	*loadUDefsFromDisk { |options|
+		Udef.defsFolders = if(options.loadDefsAtStartup){ Udef.defsFolders }{[]} ++ [
+            WFSArrayPan.filenameSymbol.asString.dirname +/+ "UnitDefs",
+			VBAPLib.filenameSymbol.asString.dirname +/+ "UnitDefs"
+		] ++ options.extraDefFolders;
+
+		Udef.userDefsFolder = Platform.userExtensionDir +/+ "../UnitDefs";
+
+		Udef.loadAllFromDefaultDirectory
+	}
 
 }

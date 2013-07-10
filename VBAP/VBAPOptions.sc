@@ -23,6 +23,7 @@ VBAPOptions {
 	var <>angles;
 	var <>distances;
 	var <>loadDefsAtStartup = true;
+	var <>sendSynthDefsAtStartup = false;
 	var <>loadUdefViaRemoteFolder = false;
 	var <>remoteFolderForLoading;
 	var <>isSlave = false;
@@ -32,7 +33,7 @@ VBAPOptions {
 	*initClass {
 		presets = (
 			\soniclab: VBAPOptions(
-				8.collect{ |i| ["slave "++(i+1),"192.168.1.100", 57456 + i] },
+				8.collect{ |i| ["slave "++(i+1),"192.168.2.1", 57456 + i] },
 				"HDSPe MADI (Slot-2)",
 				48,
 				[
@@ -77,6 +78,7 @@ VBAPOptions {
 					6.0235952719, 6.0655832366
 				],
 				true,
+				false,
 				false,
 				"",
 				false
@@ -128,6 +130,7 @@ VBAPOptions {
 				],
 				true,
 				false,
+				false,
 				"",
 				false
 			),
@@ -138,6 +141,7 @@ VBAPOptions {
 				nil,
 				nil,
 				true,
+				false,
 				false,
 				"",
 				true
@@ -150,6 +154,7 @@ VBAPOptions {
 				nil,
 				true,
 				false,
+				false,
 				nil,
 				false
 			),
@@ -161,6 +166,7 @@ VBAPOptions {
 				nil,
 				true,
 				false,
+				false,
 				nil,
 				false
 			),
@@ -171,6 +177,7 @@ VBAPOptions {
 				[-45, 45, -135, 135],
 				nil,
 				true,
+				false,
 				false,
 				nil,
 				false
