@@ -16,7 +16,7 @@ FreeUdef( \vbap2D_Panner, [
 
         delays !? { |delays|
             Synth( ("VBAP_2D_DistComp_"++n).asSymbol,
-                unit.getArgsFor( target ) ++ [\u_bufnum,buf.bufnum, \speakerDelays, delays]
+                unit.getArgsFor( target, startPos ) ++ [\u_bufnum,buf.bufnum, \speakerDelays, delays]
                 , target, \addToTail );
         } ?? {
             Synth( ("VBAP_2D_"++n).asSymbol,

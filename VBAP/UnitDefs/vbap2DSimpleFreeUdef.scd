@@ -11,7 +11,7 @@ FreeUdef( \vbap2D_Simple_Panner, [
 		var n = conf.numSpeakers;
 
 		Synth( ("VBAP_SIMPLE_2D_"++n).asSymbol,
-		    unit.getArgsFor( target ) ++ [\u_bufnum,buf.bufnum]
+		    unit.getArgsFor( target, startPos ) ++ [\u_bufnum,buf.bufnum]
 		    , target, \addToTail );
     })
     .category_(\spatialization)

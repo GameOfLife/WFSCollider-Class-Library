@@ -13,11 +13,11 @@ FreeUdef( \vbap3D_Simple_Panner, [
 
     delays !? { |delays|
         Synth( ("VBAP_SIMPLE_3D_DistComp_"++n).asSymbol,
-            unit.getArgsFor( target ) ++ [\u_bufnum,buf.bufnum, \u_delays, delays]
+            unit.getArgsFor( target, startPos ) ++ [\u_bufnum,buf.bufnum, \u_delays, delays]
             , target, \addToTail );
     } ?? {
         Synth( ("VBAP_3D_SIMPLE_"++n).asSymbol,
-            unit.getArgsFor( target ) ++ [\u_bufnum,buf.bufnum]
+            unit.getArgsFor( target, startPos ) ++ [\u_bufnum,buf.bufnum]
             , target, \addToTail );
     }
 })
