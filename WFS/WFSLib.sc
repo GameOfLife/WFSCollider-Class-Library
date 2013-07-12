@@ -91,8 +91,17 @@ WFSLib {
 		WFSLib.previewMode = wfsOptions.previewMode;
 		
 		UEvent.renderNumChannels = { 
-			WFSPreviewSynthDefs.pannerFuncs[ WFSLib.previewMode ].value(0,0@0) !? _.size ?
-				WFSSpeakerConf.default.speakerCount;
+			var num;
+			num = WFSPreviewSynthDefs.pannerFuncs[ WFSLib.previewMode ].value(0,0@0) !? _.size;
+			num = num ?? {
+				WFSSpeakerConf.default.getArraysFor( 
+					ULib.servers[0].asTarget.server 
+				).collect(_.n).sum
+			};
+			if( num == 0 ) {
+				"\ncan't export audio file with this setting.\nPlease try again with a different previewMode.".postln;
+			};
+			num;
 		};
 		
 		servers = servers ++ WFSServers.default.multiServers.collect({ |ms|
