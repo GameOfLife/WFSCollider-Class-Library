@@ -99,7 +99,7 @@ WFSLib {
 				).collect(_.n).sum
 			};
 			if( num == 0 ) {
-				"\ncan't export audio file with this setting.\nPlease try again with a different previewMode.".postln;
+				SCAlert( "Can't export audio file with current setting. Please try again with a different previewMode.", [ "open prefs", "ok" ], [ { WFSOptionsGUI.newOrCurrent }, { } ] );
 			};
 			num;
 		};
