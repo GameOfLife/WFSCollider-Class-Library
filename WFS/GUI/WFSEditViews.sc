@@ -1944,28 +1944,28 @@ WFSPlaneView : WFSPointView {
 
 WFSMixedView : WFSPointView {
 	
+	classvar <>typeDrawFuncs;
+	
 	var <>type = \point;
 	var <>colors;
 	
-	drawType { |which, p, scale = 1|
-		var polar, p1, p2;
-		
-		switch( which,
-			\point, { 
+	*initClass {
+		typeDrawFuncs = (
+			\point: { |evt, p, scale|
 				Pen.moveTo( p );
 				Pen.addArc( p, 3 * scale, 0, 2pi );
 				Pen.line( p - ((5 * scale)@0), p + ((5 * scale)@0));
 				Pen.line( p - (0@(5 * scale)), p + (0@(5 * scale)));
 			},
-			\plane, {
-				polar = (p * (1@ 1)).asPolar;
-				p1 = polar.asPoint;
-				p2 = Polar( 50, polar.angle-0.5pi).asPoint;
+			\plane: { |evt, p, scale|
+				var polar = (p * (1@ 1)).asPolar;
+				var p1 = polar.asPoint;
+				var p2 = Polar( 50, polar.angle-0.5pi).asPoint;
 				Pen.line( p1 + p2, p1 - p2 ).stroke;
 				p2 = Polar( scale * 15, polar.angle ).asPoint;
 				Pen.arrow( p1 + p2, p1 - p2, scale * 5 );
 			},
-			\radius, {
+			\radius: { |evt, p, scale|
 				Pen.moveTo( p );
 				Pen.addArc( p, 3 * scale, 0, 2pi );
 				Pen.line(p - ((3*scale) @ 0), p * (-1 @  1) );
@@ -1973,7 +1973,12 @@ WFSMixedView : WFSPointView {
 				Pen.lineTo( p * ( 1 @ -1) );
 				Pen.lineTo( p - (0 @ (3*scale) ) );
 				Pen.stroke;
-		});
+			}
+		);
+	}
+	
+	drawType { |which, p, scale = 1|
+		typeDrawFuncs.perform( which, p, scale );
 	}
 
 	drawContents { |scale = 1|
