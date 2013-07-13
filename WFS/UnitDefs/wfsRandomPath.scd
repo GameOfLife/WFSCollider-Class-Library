@@ -32,7 +32,7 @@ Udef( \wfsRandomPath, { |
 	.category_( 'wfs_control' )
 	.setSpec( \speed, [ 0, 100, 99.squared.log, 0, 0.1 ].asSpec )
 	.setSpec( \center, WFSPointSpec( 200, 0.1@0.1 ) )
-	.setSpec( \radius, PointSpec( Rect(0,0,200,200), 0.1@0.1 ) )
+	.setSpec( \radius, WFSRadiusSpec( 200, 0.1@0.1 ) )
 	.setSpec( \lag, [ 0, 1, \lin, 0, 0].asSpec )
 	.setSpec( \seed, PositiveIntegerSpec(12345) )
 	.setControlOutName( [0,1], ['x', 'y'] )
