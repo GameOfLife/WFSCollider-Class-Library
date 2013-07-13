@@ -12,7 +12,6 @@ part of the WFSCollider Class Library default Udefs set
 (
 var def;
 def = FreeUdef( \wfsDynamicIndex, [	
-		[ \indexFromBus: 	false,	BoolSpec( false ) ],
 		[ \index: 		0,  		PositiveIntegerSpec() ],
 		[ \gain:			-6,		[ -96, 0, \db, 1, -6].asSpec ],
 ] )
@@ -23,8 +22,7 @@ def = FreeUdef( \wfsDynamicIndex, [
 			var gain = -10.dbamp;
 			var index = 0, indexFromBus = 0;
 			
-			indexFromBus = \indexFromBus.kr(indexFromBus);
-			index = (\index.kr(index) * (1-indexFromBus)) + (UIn.kr(0,1) * indexFromBus);
+			index = \index.kr(index);
 			
 			index = index - \startIndex.kr(0);
 			gain = gain * \i_gain.ir(0).dbamp;

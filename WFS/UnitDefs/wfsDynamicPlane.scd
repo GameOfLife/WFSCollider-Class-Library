@@ -19,13 +19,13 @@ part of the WFSCollider Class Library default Udefs set
 var def;
 
 def = FreeUdef( \wfsDynamicPlane, [	
-		[ \pointFromBus: 	false,	BoolSpec( false ) ],
 		[ \point: 		0@0,  	WFSPlaneSpec( 200, 0.1 ) ],
 		[ \pointLag:		0,		[ 0, 5, \lin, 0, 0 ].asSpec ], // lagtime for point
 		[ \quality:		0,		ListSpec([ \normal, \better ], 0 ) ], // for \l or \c
 		[ \latencyComp:  	0,		[0,1].asSpec ],
 		[ \dbRollOff:		0,		[ -24, 0, \lin, 1, 0 ].asSpec ],
 		[ \maxAmpRadius:	2,		[ 1, 5, \lin, 0, 2, "m" ].asSpec ],
+		[ \pointFromBus: 	false,	BoolSpec( false ) ],
 		[ \dontPause:		false,	BoolSpec( false ), true ]
 	] )
 	.category_( \wfs_panner )

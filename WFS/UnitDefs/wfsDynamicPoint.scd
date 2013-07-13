@@ -26,7 +26,6 @@ part of the WFSCollider Class Library default Udefs set
 var def;
 
 def = FreeUdef( \wfsDynamicPoint, [	
-		[ \pointFromBus: 	false,	BoolSpec( false ) ],
 		[ \point: 		0@0,  	WFSPointSpec( 200, 0.1 ) ],
 		[ \pointLag:		0,		[ 0, 5, \lin, 0, 0 ].asSpec ], // lagtime for point
 		[ \quality:		0,		ListSpec([ \good, \better ], 0 ) ], // \l or \c
@@ -35,6 +34,7 @@ def = FreeUdef( \wfsDynamicPoint, [
 		[ \dbRollOff:		-6,		[ -24, 0, \lin, 1, -6 ].asSpec ],
 		[ \maxAmpRadius:	2,		[ 1, 5, \lin, 0, 2, "m" ].asSpec ],
 		[ \crossfadeLag:	0.2,		[ 0, 1, \lin, 0, 0.2 ].asSpec, true ],
+		[ \pointFromBus: 	false,	BoolSpec( false ) ],
 		[ \dontPause:		false,	BoolSpec( false ), true ]
 	], true ).category_( \wfs_panner )
 	// first a few general things
