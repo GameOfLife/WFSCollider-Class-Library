@@ -1,18 +1,6 @@
-UScore(*[
-	UChain(0, 0, 10.0, [ 'sine', [ 'lag', 0.1 ] ], [ 'wfsStaticPoint', [ 'point', Point(-3.5545229911804, 8.11956346035) ] ]), 
+UScore(
+	UChain(0, 0, 10.0, [ 'sine', [ 'freq', UMap('envelope', [ 'env', EnvM([ 440.0, 880.0, 440.0 ], [ 5.0, 5.0 ]) ]), 'lag', 0.1 ] ], [ 'wfsStaticPoint', [ 'point', Point(-3.5545229911804, 8.11956346035) ] ]), 
 	UMarker(0.0, 2.0, "automation", { |marker, score| 
-	var dur = 10, start = 440, end = 880, res = 0.1;
-	{
-		((dur/res) + 1).ceil.do({ |i|
-			score[0][0].freq = 
-				i.linexp(0, (dur/res), start, end );
-			res.wait;
-		});
-	}.fork;
-}, "This example score demonstrates how simple automation can be performed using supercollider functions and markers in a score.
+}, "This example score demonstrates how simple automation can be performed.
 
-The action function of this marker sets the frequency of the sine wave in this score graudally from 440 to 880 hz over a period of 10 seconds. 
-
-This only works if the first unit in the first object in this score has a 'freq' parameter. Also note that stopping the score will not stop the automation routine. To stop the routine you will need to type cmd-. .
-
-The settings (duration, start freq, end freq etc.) can be set in the variables of the function.")]).name_("simple automation")
+The sine unit in the event in the score uses an UMap for it's frequency. The UMap is of type 'envelope', and holds an envelope that makes the frequency change from 440 to 880 Hz, and back to 440 again in 10 seconds. The envelope can be edited by clicking the 'edit' button in UChain editor.")).name_("simple automation")

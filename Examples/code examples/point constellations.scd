@@ -31,12 +31,12 @@ b = UScore(
 				\freq, 100.0 rrand: 120,
 				\formant, 130 exprand: 1200,
 			] ], 
-			[ \wfsCirclePath, [ 
-				\speed, 0.1, 
-				\startAngle, i.linlin(0,n,-180,180),
-				\radius, r@r 
-			] ],
-			[ \wfsDynamicPoint, [ \pointFromBus, true ] ]
+			[ \wfsDynamicPoint, [ \point, UMap( \circle_trajectory, [ 
+					\speed, 0.1, 
+					\startAngle, i.linlin(0,n,-pi,pi),
+					\radius, r@r 
+				 ] ) 
+			] ]
 		).duration_( 10 ).fadeOut_( 1 );
 	})
 );
@@ -54,19 +54,17 @@ c = UScore(
 				\freq, 600.0 rrand: 1000,
 				\formant, 1400 exprand: 2000,
 			] ], 
-			[ \wfsRandomPath, [ 
-				\speed, 0.7,
-				\radius, r@r,
-				\seed, 1234
-			] ],
-			[ \wfsRandomPath, [ 
-				\speed, 2,
-				\radius, 2@2,
-				\seed, 1000 + i,
-				\u_o_kr_0_lvl, 1.0, // set input level of bus 0 and 1 to
-				\u_o_kr_1_lvl, 1.0  // mix the two wfsRandomPaths together 
-			] ],
-			[ \wfsDynamicPoint, [ \pointFromBus, true ] ]
+			[ \wfsDynamicPoint, [ \point, UMap( \random_trajectory, [
+					\speed, 0.7,
+					\radius, r@r,
+					\seed, 1234,
+					\center, UMap( \random_trajectory, [
+						\speed, 2,
+						\radius, 2@2,
+						\seed, 1000 + i
+					] )
+				] ) 
+			] ]
 		).duration_( 10 ).fadeOut_( 1 ).gain_( -6 );
 	})
 );
@@ -104,12 +102,12 @@ e = UScore(
 				\freq, 160.0 rrand: 280,
 				\formant, 280 exprand: 2000,
 			] ], 
-			[ \wfsCirclePath, [ 
-				\speed, 0.1,
-				\startAngle, if( i < (n/2) ) { 0 } { 180 },
-				\radius, i.linlin(0,n-1,r.neg,r).abs 
-			] ],
-			[ \wfsDynamicPoint, [ \pointFromBus, true ] ]
+			[ \wfsDynamicPoint, [ \point, UMap( \circle_trajectory, [
+					\speed, 0.1,
+					\startAngle, if( i < (n/2) ) { 0 } { pi },
+					\radius, i.linlin(0,n-1,r.neg,r).abs.asPoint 
+				] )
+			] ]
 		).duration_( 10 ).fadeOut_( 1 );
 	})
 );
