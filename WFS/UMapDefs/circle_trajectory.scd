@@ -1,5 +1,5 @@
 /*
-\circle_point
+\circle_trajectory
 
 Creates an UMap for generating a circular or elliptical trajectory for modulatable point parameters.
 
@@ -17,7 +17,7 @@ this is an UMapDef definition file
 part of the WFSCollider Class Library default UMapDefs set
 */
 
-UMapDef( \circle_point, { |
+UMapDef( \circle_trajectory, { |
 		speed = 0.1, 
 		startAngle = 0,
 		clockwise = 1, 

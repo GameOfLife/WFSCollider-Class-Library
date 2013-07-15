@@ -1,5 +1,5 @@
 /*
-\noise_point
+\random_trajectory
 
 Creates an UMap for generating a random trajectory for modulatable point parameters.
 
@@ -20,7 +20,7 @@ this is an UMapDef definition file
 part of the WFSCollider Class Library default UMapDefs set
 */
 
-UMapDef( \noise_point, { |
+UMapDef( \random_trajectory, { |
 		speed = 0.1,
 		center = #[0.5,0.5],
 		radius = #[0.525,0.525],

@@ -193,7 +193,7 @@ WFSLib {
 							107520, 1, 44100, 0, nil, 1, true) 
 					] ],
 					[ \wfsDynamicPoint, [ 
-						\point, UMap( \circle_point, [ \speed, 0.4 ] ),
+						\point, UMap( \circle_trajectory, [ \speed, 0.4 ] ),
 						\quality, \better 
 					] ]
 				).useSndFileDur 
