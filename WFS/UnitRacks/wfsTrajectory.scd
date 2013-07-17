@@ -1,3 +1,3 @@
 UnitRack(\wfsPathPlayerTrack,
-[U(\wfsPathPlayer), U(\wfsDynamicPoint).pointFromBus_(true) ]
+[ U(\wfsDynamicPoint, [ \point, UMap( \trajectory ) ] ) ]
 ).category_(\wfs)
