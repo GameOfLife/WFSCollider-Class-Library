@@ -268,6 +268,14 @@ WFSLib {
 			thisProcess.preferencesAction = { WFSOptionsGUI.newOrCurrent; };
 		};
 		
+		UScore.openFunc = { |path|
+			if( File(path,"r").readAllString[..8] == "<xml:wfs>") {
+				WFSScore.readWFSFile(path).asUEvent;
+			} {
+				UScore.readTextArchive( path );
+			};
+		};
+		
 		if( wfsOptions.showGUI ) {
 			
 			if(thisProcess.platform.class.asSymbol === 'OSXPlatform' && {
