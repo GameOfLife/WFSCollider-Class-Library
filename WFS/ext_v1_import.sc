@@ -46,29 +46,31 @@
 			}
 		);
 		
-		if( [ \linear, \cubic ].includes( this.intType ) ) {
-			units.add( U( \wfsPathPlayer, [ \wfsPath, WFSPathBuffer( wfsPath.asWFSPath2 ) ] ) );
-		};
-		
 		switch( this.intType,
 			\linear, {
-				units.add( U( \wfsDynamicPoint, [ \pointFromBus, true ] ) );
+				units.add( 
+					U( \wfsDynamicPoint, [ 
+						\point, UMap( \trajectory, [ \trajectory, WFSPathBuffer( wfsPath.asWFSPath2 ) ] ),
+						\distanceFilter, 1
+					] ) 
+				);
 			},
 			\cubic, {
 				units.add( 
-					U( \wfsDynamicPoint, [ 
-							\pointFromBus, true,
-							\quality, \better
-						] 
-					) 
+					U( \wfsDynamicPoint, [
+						\point, UMap( \trajectory, [ \trajectory, WFSPathBuffer( wfsPath.asWFSPath2 ) ] ), 
+						\distanceFilter, 1,
+						\quality, \better
+					] ) 
 				);
 			}, 
 			\static, {
-				units.add( U( \wfsStaticPoint, [ \point, wfsPath.asPoint ] ) );
+				units.add( U( \wfsStaticPoint, [ \point, wfsPath.asPoint, \distanceFilter, 1 ] ) );
 			},
 			\plane, {
 				units.add( U( \wfsStaticPlane, [ 
 					\point, wfsPath.distance_(wfsPath.distance.max(1.0e-12)).asPoint,
+					\distanceFilter, 1,
 					\dbRollOff, -6 // this mimicks the old behaviour
 				] ) );
 			},
