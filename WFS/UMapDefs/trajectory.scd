@@ -16,7 +16,7 @@ UMapDef( \trajectory, {
 	sig = sig + \addPoint.kr([0,0]);
 	UMapOut.kr( sig, false );
 }, [ [ \trajectory, nil, WFSPathSpec() ], [ \addPoint, 0@0, WFSPointSpec(200, 0.1@0.1) ]])
-	.category_( \point )
+	.category_( \trajectory )
 	.canUseUMapFunc_({ |unit, key, umapdef|
 		unit.getSpec( key ).isKindOf( PointSpec );
 	});
