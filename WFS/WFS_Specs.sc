@@ -261,6 +261,7 @@ WFSPointSpec : PointSpec {
 				var newVal, theta;
 				tempVal = tempVal ?? { vws[ \val ].copy };
 				newVal = tempVal + (xy.value * localStep * (1 @ -1));
+				newVal = this.constrain( newVal );
 				this.setView( vws, newVal );
 				action.value( vws, newVal );
 			})
@@ -356,7 +357,7 @@ WFSPointSpec : PointSpec {
 			.value_(0);
 			
 		editAction = { |vw|
-			this.setView( vws, vw.object[0].copy );
+			this.setView( vws, this.constrain( vw.object[0].copy ) );
 			action.value( vws, vws[ \val ]  );
 		};
 			
