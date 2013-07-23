@@ -28,5 +28,5 @@ FuncUMapDef( \random_point, { |
 		"% @ %".format(point.x, point.y ) 
 	}) )
 	.setDefault( \value, 0.0@0.0 )
-	.setSpec( \center, WFSPointSpec() )
-	.setSpec( \radius, WFSRadiusSpec() );
+	.setSpec( \center, WFSPointSpec(200) )
+	.setSpec( \radius, WFSRadiusSpec(200) );

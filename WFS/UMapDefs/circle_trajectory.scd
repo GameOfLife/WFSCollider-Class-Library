@@ -39,6 +39,6 @@ UMapDef( \circle_trajectory, { |
 	.setSpec( \speed, [ 0, 100, 99.squared.log, 0, 0.1 ].asSpec )
 	.setSpec( \startAngle, AngleSpec() )
 	.setSpec( \clockwise, BoolSpec( true ) )
-	.setSpec( \center, WFSPointSpec() )
-	.setSpec( \radius, WFSRadiusSpec() )
+	.setSpec( \center, WFSPointSpec(200) )
+	.setSpec( \radius, WFSRadiusSpec(200) )
 	.setSpec( \lag, [ 0, 1, \lin, 0, 0].asSpec );

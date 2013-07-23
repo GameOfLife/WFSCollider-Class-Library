@@ -41,8 +41,8 @@ UMapDef( \random_trajectory, { |
 		unit.getSpec( key ).isKindOf( PointSpec );
 	})
 	.setSpec( \speed, [ 0, 100, 99.squared.log, 0, 0.1 ].asSpec )
-	.setSpec( \center, WFSPointSpec() )
-	.setSpec( \radius, WFSRadiusSpec() )
+	.setSpec( \center, WFSPointSpec(200) )
+	.setSpec( \radius, WFSRadiusSpec(200) )
 	.setSpec( \type, [0,2,\lin,1,0].asSpec )
 	.setSpec( \lag, [0,10,\lin,0,1].asSpec )
 	.setSpec( \seed, PositiveIntegerSpec(12345), \init );

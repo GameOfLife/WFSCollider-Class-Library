@@ -42,8 +42,8 @@ UMapDef( \line_trajectory, { |
 	.canUseUMapFunc_({ |unit, key, umapdef|
 		unit.getSpec( key ).isKindOf( PointSpec );
 	})
-	.setSpec( \a, WFSPointSpec() )
-	.setSpec( \b, WFSPointSpec() ) 
+	.setSpec( \a, WFSPointSpec(200) )
+	.setSpec( \b, WFSPointSpec(200) ) 
 	.setSpec( \curve, WFSPointSpec(16, 0.1) )
 	.setSpec( \easeIn, [-1,1,\lin,0,0].asSpec )
 	.setSpec( \easeOut, [-1,1,\lin,0,0].asSpec )

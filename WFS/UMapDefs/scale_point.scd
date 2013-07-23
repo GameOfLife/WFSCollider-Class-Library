@@ -27,6 +27,6 @@ UMapDef( \scale_point, { |
 	.canUseUMapFunc_({ |unit, key, umapdef|
 		unit.getSpec( key ).isKindOf( PointSpec );
 	})
-	.setSpec( \point, WFSPointSpec() )
-	.setSpec( \scale, WFSPointSpec() )
-	.setSpec( \move, WFSPointSpec() );
+	.setSpec( \point, WFSPointSpec(200) )
+	.setSpec( \scale, WFSPointSpec(200) )
+	.setSpec( \move, WFSPointSpec(200) );

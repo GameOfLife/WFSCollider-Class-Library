@@ -20,7 +20,7 @@ UMapDef( \rotate_point, { |point = #[0.0,0.0], rotate = 0.0, scale = 1.0, lag = 
 	point = point.rotate( rotate.neg ) * [scale,scale];
 	UMapOut.kr(point.asArray, false);
 })
-	.setSpec( \point, WFSPointSpec() )
+	.setSpec( \point, WFSPointSpec(200) )
 	.setSpec( \rotate, AngleSpec() )
 	.setSpec( \scale, [0.25,4,\exp,0,1].asSpec )
 	.category_( 'point' )

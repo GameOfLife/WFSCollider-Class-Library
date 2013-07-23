@@ -48,8 +48,8 @@ UMapDef( \clip_point, { |
 	point = point.linlin( -1, 1, radius.neg, radius, \none ) + center;
 	UMapOut.kr(point, false);
 })
-	.setSpec( \point, WFSPointSpec() )
-	.setSpec( \center, WFSPointSpec() )
+	.setSpec( \point, WFSPointSpec(200) )
+	.setSpec( \center, WFSPointSpec(200) )
 	.setSpec( \radius, WFSRadiusSpec(Rect(0,0,200,200)) )
 		.setSpec( \clipMode, ListSpec( (..7), 0, [ 
 		\clip, \fold, \wrap, \tanh, \softclip, \distort, \wrap_sine, \none 

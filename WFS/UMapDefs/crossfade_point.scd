@@ -25,5 +25,5 @@ UMapDef( \crossfade_point, { |
 	.canUseUMapFunc_({ |unit, key, umapdef|
 		unit.getSpec( key ).isKindOf( PointSpec );
 	})
-	.setSpec( \a, WFSPointSpec() )
-	.setSpec( \b, WFSPointSpec() );
+	.setSpec( \a, WFSPointSpec(200) )
+	.setSpec( \b, WFSPointSpec(200) );
