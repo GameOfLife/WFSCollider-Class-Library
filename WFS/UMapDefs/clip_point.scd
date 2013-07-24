@@ -10,11 +10,8 @@ clipMode: can be one of the following modes (Symbol):
 	'clip' (default): clip values outside fromRange
 	'fold': fold values outside fromRange
 	'wrap': wrap around values outside fromRange
-	'tanh': distort values to range with a tanh function
-	'softclip': softclip values outside fromRange
-	'distort': use a non-linear distortion curve to keep all values within range
-	'wrap_sine': wrap values around fromRange, and then map them to a sine curve. This means that values at the borders of fromRange will return at the center of toRange.
 	'none': no clipping applied (values can go outside toRange)
+clipSoftness: softens the edges of 'clip' and 'fold' modes.
 lag: lag time for the center and radius values
 
 The value arg range is mapped to that of the parameter to which the UMap is connected.
@@ -30,19 +27,17 @@ UMapDef( \clip_point, { |
 		center = #[0.0, 0.0], 
 		radius = #[10.0, 10.0], 
 		clipMode = 0,
+		clipSoftness = 0.1,
 		lag = 0.0|
 	center = LPFLag.kr( center, lag );
 	radius = LPFLag.kr( radius, lag ).max(1.0e-10);
 	point = point - center;
 	point = point.linlin( radius.neg, radius, -1, 1, \none );
 	point = Select.kr( clipMode, [
-		point.clip2(1),
-		point.fold2(1),
+		point.softclip2(1, clipSoftness ),
+		point.softfold2(1, clipSoftness ),
 		point.wrap2(1),
-		point.tanh,
 		point.softclip,
-		point.distort,
-		(point.wrap2(1) * pi).sin,
 		point
 	]);
 	point = point.linlin( -1, 1, radius.neg, radius, \none ) + center;
@@ -51,10 +46,8 @@ UMapDef( \clip_point, { |
 	.setSpec( \point, WFSPointSpec(200) )
 	.setSpec( \center, WFSPointSpec(200) )
 	.setSpec( \radius, WFSRadiusSpec(Rect(0,0,200,200)) )
-		.setSpec( \clipMode, ListSpec( (..7), 0, [ 
-		\clip, \fold, \wrap, \tanh, \softclip, \distort, \wrap_sine, \none 
-		] ) 
-	)
+	.setSpec( \clipMode, ListSpec( (..3), 0, [ \clip, \fold, \wrap, \none ] ) )
+	.setSpec( \clipSoftness, [0,1,\lin,0,0.1].asSpec )
 	.category_( 'point' )
 	.canUseUMapFunc_({ |unit, key, umapdef|
 		unit.getSpec( key ).isKindOf( PointSpec );

@@ -35,6 +35,7 @@ UMapDef( \motion_trajectory, { |
 		center = #[0.0, 0.0], 
 		radius = #[10.0, 10.0], 
 		clipMode = 1,
+		clipSoftness = 0.1,
 		lag = 0.0|
 	var point, speed;
 	var reset;
@@ -51,13 +52,9 @@ UMapDef( \motion_trajectory, { |
 	point = point - center;
 	point = point.linlin( radius.neg, radius, -1, 1, \none );
 	point = Select.kr( clipMode, [
-		point.clip2(1),
-		point.fold2(1),
+		point.softclip2(1, clipSoftness),
+		point.softfold2(1, clipSoftness),
 		point.wrap2(1),
-		point.tanh,
-		point.softclip,
-		point.distort,
-		(point.wrap2(1) * pi).sin,
 		point
 	]);
 	point = point.linlin( -1, 1, radius.neg, radius, \none ) + center;
@@ -68,10 +65,8 @@ UMapDef( \motion_trajectory, { |
 	.setSpec( \acceleration, WFSPointSpec(200) )
 	.setSpec( \center, WFSPointSpec(200) )
 	.setSpec( \radius, WFSRadiusSpec(Rect(0,0,200,200)) )
-		.setSpec( \clipMode, ListSpec( (..7), 1, [ 
-		\clip, \fold, \wrap, \tanh, \softclip, \distort, \wrap_sine, \none 
-		] ) 
-	)
+	.setSpec( \clipMode, ListSpec( (..3), 1, [ \clip, \fold, \wrap, \none ] ) )
+	.setSpec( \clipSoftness, [0,1,\lin,0,0.1].asSpec )
 	.category_( 'trajectory' )
 	.canUseUMapFunc_({ |unit, key, umapdef|
 		unit.getSpec( key ).isKindOf( PointSpec );
