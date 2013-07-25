@@ -6,12 +6,12 @@ Creates an UMap for applying clipping, wrapping, folding (mirroring) and more on
 point: the point to clip
 center: the center of the clipping area
 radius: the radius of the clipping area
-clipMode: can be one of the following modes (Symbol):
-	'clip' (default): clip values outside fromRange
-	'fold': fold values outside fromRange
-	'wrap': wrap around values outside fromRange
-	'none': no clipping applied (values can go outside toRange)
-clipSoftness: softens the edges of 'clip' and 'fold' modes.
+clipMode: can be one of the following modes:
+	0 - 'clip' (default): clip coordinates outside clipping area
+	1 - 'fold': fold/mirror coordinates outside clipping area
+	2 - 'wrap': wrap around coordinates outside clipping area
+	3 - 'none': no clipping applied (values can go outside  clipping area)
+clipSoftness: softens the edges of 'clip' and 'fold' modes (0-1).
 lag: lag time for the center and radius values
 
 The value arg range is mapped to that of the parameter to which the UMap is connected.

@@ -8,15 +8,12 @@ startSpeed: initial speed, can be changed over time to produce relative speed ch
 acceleration: (in m/s^2) amount of acceleration over x and y axes
 center: the center of the clipping area
 radius: the radius of the clipping area
-clipMode: can be one of the following modes (Symbol):
-	'clip': clip values outside fromRange
-	'fold' (default): fold values outside fromRange - this produces a typical hard wall bounce
-	'wrap': wrap around values outside fromRange
-	'tanh': distort values to range with a tanh function
-	'softclip': softclip values outside fromRange
-	'distort': use a non-linear distortion curve to keep all values within range
-	'wrap_sine': wrap values around fromRange, and then map them to a sine curve. This means that values at the borders of fromRange will return at the center of toRange.
-	'none': no clipping applied (values can go outside toRange)
+clipMode: can be one of the following modes:
+	0 - 'clip': clip coordinates outside clipping area
+	1 - 'fold' (default): fold/mirror coordinates outside clipping area - this produces a typical hard wall bounce
+	2 - 'wrap': wrap around coordinates outside clipping area
+	3 - 'none': no clipping applied (values can go outside  clipping area)
+clipSoftness: softens the edges of 'clip' and 'fold' modes.
 lag: lag time for the startPoint, startSpeed, center and radius values
 reset: jump to startPoint/startSpeed
 
