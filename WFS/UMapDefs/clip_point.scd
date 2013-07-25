@@ -37,7 +37,6 @@ UMapDef( \clip_point, { |
 		point.softclip2(1, clipSoftness ),
 		point.softfold2(1, clipSoftness ),
 		point.wrap2(1),
-		point.softclip,
 		point
 	]);
 	point = point.linlin( -1, 1, radius.neg, radius, \none ) + center;
