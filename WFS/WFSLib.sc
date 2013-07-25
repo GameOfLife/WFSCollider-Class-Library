@@ -143,119 +143,124 @@ WFSLib {
 				
 		GlobalPathDict.put( \wfs, "/WFSSoundFiles" );
 		
-		Udef.loadOnInit = false;
-		
-		defs = Udef.loadAllFromDefaultDirectory.collect(_.synthDef).flat.select(_.notNil);
-		defs = defs ++ UMapDef.loadAllFromDefaultDirectory.collect(_.synthDef).flat.select(_.notNil);
-		UnitRack.loadAllFromDefaultDirectory;
-		
-		Udef.loadOnInit = true;
-		
-		defs.do({|def| def.justWriteDefFile; });
 		if( SyncCenter.mode == 'sample' ) {
 			SyncCenter.writeDefs;
 		};
 		
-		UChain.makeDefaultFunc = {	
-			UChain( \bufSoundFile, 
-				[ \wfsStaticPoint, 
-					[ \point, 5.0.rand2@(5.0 rrand: 10) ] // always behind array
-				]
-			).useSndFileDur
-		};
-		
-		UChain.presetManager
-			.putRaw( \dynamicPoint, { 
-				UChain( 
-					[ \bufSoundFile, [ 
-						\soundFile, BufSndFile.newBasic("@resources/sounds/a11wlk01-44_1.aiff", 
-							107520, 1, 44100, 0, nil, 1, true) 
-					] ],
-					[ \wfsDynamicPoint, 
-						[  
-							\point, 5.0.rand2@(5.0 rrand: 10),
-							\pointLag, 1,
-							\quality, \better
-						] // always behind array
-					]
-				).useSndFileDur 
-			})
-			.putRaw( \staticPlane, { 
-				UChain( 
-					\bufSoundFile, 
-					[ \wfsStaticPlane, [  \point, 5.0.rand2@(5.0 rrand: 10) ] ]
-				).useSndFileDur 
-			})
-			.putRaw( \circlePath, {
-				UChain(  
-					[ \bufSoundFile, [ 
-						\soundFile, BufSndFile.newBasic("@resources/sounds/a11wlk01-44_1.aiff", 
-							107520, 1, 44100, 0, nil, 1, true) 
-					] ],
-					[ \wfsDynamicPoint, [ 
-						\point, UMap( \circle_trajectory, [ \speed, 0.4 ] ),
-						\quality, \better 
-					] ]
-				).useSndFileDur 
-			})
-			.putRaw( \trajectory, {
-				UChain(  
-					\bufSoundFile,
-					[ \wfsDynamicPoint, [
-						\point, UMap( 'trajectory', [ \trajectory, 
-							WFSPathBuffer( 
-								WFSPath2.generate( 5, 2.4380952380952, 
-									[ \random, [\seed, 100000.rand, \radius, 10@10] ] 
-								), 0, 1, true
-							)
-						] ),
-						\quality, \better 
-					] ]
-				).useSndFileDur
-			})
-			.putRaw( \sinewave, { UChain( 
-				\sine,
-				[ \wfsDynamicPoint, 
-						[  
-							\point, 5.0.rand2@(5.0 rrand: 10),
-							\pointLag, 1,
-							\quality, \better
-						] // always behind array
-					]
-				).useSndFileDur
-			})
-			.putRaw( \noiseband, { UChain( 
-				\pinkNoise,
-				[ \cutFilter, [ 
-					\freq, 1.0.rand.linexp( 0,1, 200, 2000 ).round(200) + [0,200]
-				] ],
-				[ \wfsDynamicPoint, [  
-					\point, 5.0.rand2@(5.0 rrand: 10),
-					\pointLag, 1,
-					\quality, \better
-				] ]
-				).useSndFileDur
-			})
-			.putRaw( \dualdelay, UChain( 
-				'bufSoundFile', 
-				[ 'delay', 
-					[ 'time', 0.3, 'maxTime', 0.3, 'dry', 0.0, 'amp', 0.5, 'u_o_ar_0_bus', 1 ] 
-				],
-				[ 'delay', 
-					[ 'time', 0.5, 'maxTime', 0.5, 'dry', 0.0, 'amp', 0.5, 'u_o_ar_0_bus', 2 ] 
-				], 
-				[ 'wfsStaticPoint', [ 'point', Point(-6, 6) ] ], 
-				[ 'wfsStaticPlane', [ 'point', Point(6, 6), 'u_i_ar_0_bus', 1 ] ],
-				[ 'wfsStaticPlane', [ 'point', Point(-6, -6), 'u_i_ar_0_bus', 2 ] ]
-				)
-			);
+		if( WFSOptions.current.showGUI ) {	
 			
-		PresetManager.all.do({ |pm|
-			if( pm.object != WFSOptions ) {
-				pm.filePath = Platform.userConfigDir +/+ "default" ++ "." ++ pm.id ++ ".presets";
-				pm.readAdd( silent: true );
+				Udef.loadOnInit = false;
+				
+				defs = Udef.loadAllFromDefaultDirectory.collect(_.synthDef).flat.select(_.notNil);
+				defs = defs ++ UMapDef.loadAllFromDefaultDirectory.collect(_.synthDef).flat.select(_.notNil);
+				UnitRack.loadAllFromDefaultDirectory;
+				
+				Udef.loadOnInit = true;
+			
+			defs.do({|def| def.justWriteDefFile; });
+			
+			UChain.makeDefaultFunc = {	
+				UChain( \bufSoundFile, 
+					[ \wfsStaticPoint, 
+						[ \point, 5.0.rand2@(5.0 rrand: 10) ] // always behind array
+					]
+				).useSndFileDur
 			};
-		});
+			
+			UChain.presetManager
+				.putRaw( \dynamicPoint, { 
+					UChain( 
+						[ \bufSoundFile, [ 
+							\soundFile, BufSndFile.newBasic("@resources/sounds/a11wlk01-44_1.aiff", 
+								107520, 1, 44100, 0, nil, 1, true) 
+						] ],
+						[ \wfsDynamicPoint, 
+							[  
+								\point, 5.0.rand2@(5.0 rrand: 10),
+								\pointLag, 1,
+								\quality, \better
+							] // always behind array
+						]
+					).useSndFileDur 
+				})
+				.putRaw( \staticPlane, { 
+					UChain( 
+						\bufSoundFile, 
+						[ \wfsStaticPlane, [  \point, 5.0.rand2@(5.0 rrand: 10) ] ]
+					).useSndFileDur 
+				})
+				.putRaw( \circlePath, {
+					UChain(  
+						[ \bufSoundFile, [ 
+							\soundFile, BufSndFile.newBasic("@resources/sounds/a11wlk01-44_1.aiff", 
+								107520, 1, 44100, 0, nil, 1, true) 
+						] ],
+						[ \wfsDynamicPoint, [ 
+							\point, UMap( \circle_trajectory, [ \speed, 0.4 ] ),
+							\quality, \better 
+						] ]
+					).useSndFileDur 
+				})
+				.putRaw( \trajectory, {
+					UChain(  
+						\bufSoundFile,
+						[ \wfsDynamicPoint, [
+							\point, UMap( 'trajectory', [ \trajectory, 
+								WFSPathBuffer( 
+									WFSPath2.generate( 5, 2.4380952380952, 
+										[ \random, [\seed, 100000.rand, \radius, 10@10] ] 
+									), 0, 1, true
+								)
+							] ),
+							\quality, \better 
+						] ]
+					).useSndFileDur
+				})
+				.putRaw( \sinewave, { UChain( 
+					\sine,
+					[ \wfsDynamicPoint, 
+							[  
+								\point, 5.0.rand2@(5.0 rrand: 10),
+								\pointLag, 1,
+								\quality, \better
+							] // always behind array
+						]
+					).useSndFileDur
+				})
+				.putRaw( \noiseband, { UChain( 
+					\pinkNoise,
+					[ \cutFilter, [ 
+						\freq, 1.0.rand.linexp( 0,1, 200, 2000 ).round(200) + [0,200]
+					] ],
+					[ \wfsDynamicPoint, [  
+						\point, 5.0.rand2@(5.0 rrand: 10),
+						\pointLag, 1,
+						\quality, \better
+					] ]
+					).useSndFileDur
+				})
+				.putRaw( \dualdelay, UChain( 
+					'bufSoundFile', 
+					[ 'delay', 
+						[ 'time', 0.3, 'maxTime', 0.3, 'dry', 0.0, 'amp', 0.5, 'u_o_ar_0_bus', 1 ] 
+					],
+					[ 'delay', 
+						[ 'time', 0.5, 'maxTime', 0.5, 'dry', 0.0, 'amp', 0.5, 'u_o_ar_0_bus', 2 ] 
+					], 
+					[ 'wfsStaticPoint', [ 'point', Point(-6, 6) ] ], 
+					[ 'wfsStaticPlane', [ 'point', Point(6, 6), 'u_i_ar_0_bus', 1 ] ],
+					[ 'wfsStaticPlane', [ 'point', Point(-6, -6), 'u_i_ar_0_bus', 2 ] ]
+					)
+				);
+				
+			PresetManager.all.do({ |pm|
+				if( pm.object != WFSOptions ) {
+					pm.filePath = Platform.userConfigDir +/+ "default" ++ "." ++ pm.id ++ ".presets";
+					pm.readAdd( silent: true );
+				};
+			});
+			
+		};
 		
 		ULib.servers = servers;
 		
