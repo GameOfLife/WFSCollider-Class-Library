@@ -236,6 +236,8 @@ WFSServers {
 					.font_( Font( "Monaco", 9 ) )
 					.action_( { this.openHosts; } ); 
 				*/
+				
+				window.view.decorator.shift(270,0);
 					
 				SmoothButton( window, Rect( 0, 0, 110, 16 ) )
 					.states_( [["shut down hosts"]] )
