@@ -214,6 +214,7 @@ WFSServers {
 
 			EZSmoothSlider(window, Rect(0,0,180,15),"Latency", [0.02,1,\exp,0,0.02].asSpec)
 			    .value_(masterServer.latency)
+			    .font_( font )
 			    .action_({ |v| masterServer.latency = v.value});
 
 			window.view.decorator.nextLine;
