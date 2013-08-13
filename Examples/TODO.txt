@@ -44,9 +44,8 @@ WFS TODO / ideas (no particular order)
 	
 - future ideas
 	- implement score position jumping during playback, without stopping the score (similar to pause)
+	- pattern-like generator interface for events
 	- midi import
-	- mass generators for events
-	- pattern support for UChains built-in
 	- option for midi import of timeline/meter settings
 	- option to show waveforms in path editor 
 		- possibly as width of the trajectory line
