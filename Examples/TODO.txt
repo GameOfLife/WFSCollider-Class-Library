@@ -19,6 +19,7 @@ WFS TODO / ideas (no particular order)
 	- loaded buffers / synths indicator
 - WFSPath
 	- implement free spline wfspaths
+	- create preset system for WFSPaths ("path banks")
 	- rename to WFSPath; subclass of Trajectory
 	- more generators:
 		- import SVG
