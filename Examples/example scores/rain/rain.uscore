@@ -1,0 +1,9 @@
+UScore(
+	UChain([ 'rainHF', [ 'seed', 16777216 ] ], [ 'wfsStaticPoint', [ 'point', Point(-7, -7), 'u_fadeIn', 4.0, 'u_fadeOut', 4.0 ] ]), 
+	UChain(0.0, 1.0, 'rainHF', [ 'wfsStaticPoint', [ 'point', Point(-7, 7), 'u_fadeIn', 4.0, 'u_fadeOut', 4.0 ] ]), 
+	UChain(0.0, 2.0, [ 'rainHF', [ 'seed', 10895237 ] ], [ 'wfsStaticPoint', [ 'point', Point(7, -7), 'u_fadeIn', 4.0, 'u_fadeOut', 4.0 ] ]), 
+	UChain(0.0, 3.0, [ 'rainHF', [ 'seed', 80900 ] ], [ 'wfsStaticPoint', [ 'point', Point(7, 7), 'u_fadeIn', 4.0, 'u_fadeOut', 4.0 ] ]), 
+	UChain(0.0, 4.0, 'rainLF', [ 'wfsStaticPlane', [ 'point', Point(-7), 'u_fadeIn', 4.0, 'u_fadeOut', 4.0 ] ]).displayColor_(Color(0.0, 0.0, 0.76381232071254)), 
+	UChain(0.0, 5.0, [ 'rainLF', [ 'seed', 12334628 ] ], [ 'wfsStaticPlane', [ 'point', Point(0, -7), 'u_fadeIn', 4.0, 'u_fadeOut', 4.0 ] ]).displayColor_(Color(0.0, 0.0, 0.76381232071254)), 
+	UChain(0.0, 6.0, [ 'rainLF', [ 'seed', 16777216 ] ], [ 'wfsStaticPlane', [ 'point', Point(0, 7), 'u_fadeIn', 4.0, 'u_fadeOut', 4.0 ] ]).displayColor_(Color(0.0, 0.0, 0.76381232071254)), 
+	UChain(0.0, 7.0, [ 'rainLF', [ 'seed', 10437824 ] ], [ 'wfsStaticPlane', [ 'point', Point(7), 'u_fadeIn', 4.0, 'u_fadeOut', 4.0 ] ]).displayColor_(Color(0.0, 0.0, 0.76381232071254))).name_("rain")
