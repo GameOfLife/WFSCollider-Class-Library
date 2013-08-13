@@ -30,15 +30,7 @@ WFS TODO / ideas (no particular order)
 	- save/read from WFSPathGUI
 	- unified save/read system (Buffer:write vs. SoundFile)
 	- add trigger option to wfsPathPlayer Udef
-- more elaborate osc / midi support (discuss with Miguel)
-	- ability to "tag" parameters and assign specific osc/midi commands to them
-	- should be saved with USession
-		- how to assign to specific objects? Via index? Via dependant-like system? Both?
-	- clean way of setting intelligent args (points, bufsndfiles, eqs etc)
-	- full gui
-	- midi specs / guis (also useful for WFSPathGenerators)
 - gui for RichBufferSpec
-- save WFSPathTransformDefs / -GeneratorDefs in separate files (UnitDef style)
 - UMixer for session
 - MassEdit:
 	- more options for wfspath massedit
@@ -58,9 +50,6 @@ WFS TODO / ideas (no particular order)
 	- option for midi import of timeline/meter settings
 	- option to show waveforms in path editor 
 		- possibly as width of the trajectory line
-	- redirect args (extra args pointing to others via a function)
-		- standard sets for example for \freq and \amp
 	- clipboard (copy/paste) for WFSPathGUI
-	- language-based automation
 	- Right-click menu
 	
