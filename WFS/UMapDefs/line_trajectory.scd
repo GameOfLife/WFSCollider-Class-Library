@@ -8,8 +8,10 @@ b: the end point of the line
 curve: a curve value (x,y) for the line. A 0 (zero) curve creates a linear line, a positive curve value makes the line tend towards the low value, and v.v.
 easeIn: a positive value makes the movement start slow, a negative value makes it start fast
 easeOut: a positive value makes the movement end slow, a negative value makes it end fast
-duration: duration of the line in seconds
+duration: duration of the line in seconds (can be modulated)
+loop: loopmode (0: off, 1: loop, 2: alternate)
 delay: delay time before the line starts
+trigger: a trigger that restarts the line
 
 --
 this is an UMapDef definition file
@@ -22,10 +24,9 @@ UMapDef( \line_trajectory, { |
 		curve = #[0.0,0.0],
 		easeIn = 0.0,
 		easeOut = 0.0
-		duration = 10, 
-		delay = 0|
+		duration = 10|
 	var line;
-	line = UEnvGen.kr( Env([0,0,1],[delay, duration],\lin) );
+	line = ULine.kr( 0, 1, duration, \loop, \delay, \trigger );
 	line = [0,1].splineIntFunction( line, 
 		easeIn.linlin(-1,1,2/3,0), 
 		easeOut.linlin(-1,1,1/3,1)

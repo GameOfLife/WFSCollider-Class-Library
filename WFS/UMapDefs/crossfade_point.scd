@@ -19,7 +19,7 @@ UMapDef( \crossfade_point, { |
 		crossfade = 0.5, 
 		lag = 0.0|
 	crossfade = LPFLag.kr( crossfade, lag );
-	UMapOut.kr( (a * (1-crossfade)) + (b * crossfade) );
+	UMapOut.kr( (a * (1-crossfade)) + (b * crossfade), false );
 })
 	.category_( 'point' )
 	.canUseUMapFunc_({ |unit, key, umapdef|
