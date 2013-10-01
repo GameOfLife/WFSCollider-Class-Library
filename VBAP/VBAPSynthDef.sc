@@ -112,6 +112,40 @@ VBAPSynthDef {
         ]
 	}
 
+	*previewDefs {
+		var c = 2*pi/360;
+		^[
+		//copy paste from stereoOutput Udef
+		SynthDef("VBAP_preview_stereo", {
+				|angles = #[0,0]|
+				var sig = UIn.ar( 0 );
+
+				var panned = Pan2.ar( sig, UnitSpherical(angles[0]*c, angles[1]*c).asCartesian.x );
+
+				Out.ar( 0, UGlobalEQ.ar( panned ) * UEnv.kr  );
+		}),
+
+		SynthDef("VBAP_preview_quad", {
+				|angles = #[0,0]|
+				var sig = UIn.ar( 0 );
+
+				var panned = Pan4.ar( sig, UnitSpherical(angles[0]*c, angles[1]*c).asCartesian.x, UnitSpherical(angles[0]*c, angles[1]*c).asCartesian.y );
+
+				Out.ar( 0, UGlobalEQ.ar( panned ) * UEnv.kr  );
+		}),
+
+		SynthDef("VBAP_preview_octo", {
+				|angles = #[0,0]|
+				var sig = UIn.ar( 0 );
+
+				var panned = PanAz.ar( 8, sig, angles[0]/180, orientation:0.5 );
+
+				Out.ar( 0, UGlobalEQ.ar( panned ) * UEnv.kr  );
+		})
+
+		]
+	}
+
 	*writeAll { |maxNumSpeakers = 55, dir|
         dir = dir ? SynthDef.synthDefDir;
         (4..maxNumSpeakers).collect { |i|
@@ -122,6 +156,10 @@ VBAPSynthDef {
 	*writeDefs { |n=32, dir|
 		dir = dir ? SynthDef.synthDefDir;
 		this.generateDefs( n ).do{ |def| def.writeDefFile( dir ) }
+	}
+
+	*writePreviewDefs {
+		this.previewDefs.do(_.writeDefFile)
 	}
 
 }

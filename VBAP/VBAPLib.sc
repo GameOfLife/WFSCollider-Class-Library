@@ -27,10 +27,12 @@ VBAPLib.startupR(\soniclabSlave)
 
 (
 UScore(*[
-	UChain([ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/usr/local/share/SuperCollider/sounds/a11wlk01-44_1.aiff", 107520, 1, 44100, 0, nil, 1, true) ] ], [ 'vbap2D_Simple_Panner', [ 'point', Point(-2.1, 16.6), 'lag', 2.0 ] ])]).gui
+UChain([ 'bufSoundFile', [ 'soundFile', BufSndFile.newBasic("/usr/local/share/SuperCollider/sounds/a11wlk01-44_1.aiff", 107520, 1, 44100, 0, nil, 1, true) ] ], [ 'vbap2D_Simple_Panner', [ 'point', Point(-2.1, 16.6), 'lag', 2.0 ] ])]).gui
 )
 */
 VBAPLib {
+	//stereo, quad, octo
+	classvar <>previewMode;
 
 	*startupR { |options|
 
@@ -77,14 +79,15 @@ VBAPLib {
 		Server.default = servers[0];
 		thisProcess.interpreter.s = servers[0];
 
-        "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n".postln;
-		ULib.serversWindow;
+		"\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n".postln;
+		if( options.serverDescs.size > 1 ) {
+			//this needs to be here and not somewhere else for some misterious reason I can't remember
+			ULib.serversWindow;
+		};
 		//client and single startup
 		if(options.isSlave.not) {
 
 			VBAPSpeakerConf.default = VBAPSpeakerConf(options.angles, options.distances);
-
-
 
 			"*** Will start waiting for servers".postln;
 			ULib.waitForServersToBoot;
@@ -104,18 +107,18 @@ VBAPLib {
 	}
 
 	*prStartupGUIs {
-        if( (thisProcess.platform.class.asSymbol == 'OSXPlatform') && {
-				thisProcess.platform.ideName.asSymbol === \scapp
+		if( (thisProcess.platform.class.asSymbol == 'OSXPlatform') && {
+			thisProcess.platform.ideName.asSymbol === \scapp
 		}) {
 			UMenuBar();
 		} {
 			UMenuWindow();
 		};
 
-        UGlobalGain.gui;
-        UGlobalEQ.gui;
-        //ULib.serversWindow;
-    }
+		UGlobalGain.gui;
+		UGlobalEQ.gui;
+		//ULib.serversWindow;
+	}
 
 	*serverOptions { |numOutputChannels, device|
 		^ServerOptions()
@@ -125,22 +128,22 @@ VBAPLib {
 		.outDevice_(device)
 		.inDevice_(device)
 		.numOutputBusChannels_(numOutputChannels)
-    }
+	}
 
 	//only needs to be run once.
 	*writeDefs { |n = 32|
-        Udef
+		Udef
 		.loadAllFromDefaultDirectory
 		.collect(_.synthDef)
 		.flat.select(_.notNil)
 		.do({|def| def.writeDefFile; });
-        VBAPSynthDef.writeDefs(n);
+		VBAPSynthDef.writeDefs(n);
 	}
 
 	*cmdPeriod { Server.freeAllRemote( false ); }
 
-    *loadDefs { |options|
-        //makes this less messy please !
+	*loadDefs { |options|
+		//make this less messy please !
 		var defs;
 		var default = Udef.loadOnInit;
 		var defaultMap = UMapDef.loadOnInit;
@@ -150,15 +153,19 @@ VBAPLib {
 		Udef.loadOnInit_(default);
 		UMapDef.loadOnInit_(defaultMap);
 
+		//load the user synthdefs.
 		(options.extraDefFolders ++ [Udef.userDefsFolder]).collect({ |path|
-            (path ++ "/*.scd").pathMatch.collect({ |path| path.load.loadSynthDef })
-        })
+			(path ++ "/*.scd").pathMatch.collect({ |path|
+				"Loading Udef at %".format(path).postln;
+				path.load
+			})
+		})
 
-    }
+	}
 
 	*writeDefaultSynthDefs {
 		Udef.defsFolders = Udef.defsFolders ++ [
-            WFSArrayPan.filenameSymbol.asString.dirname +/+ "UnitDefs",
+			WFSArrayPan.filenameSymbol.asString.dirname +/+ "UnitDefs",
 			VBAPLib.filenameSymbol.asString.dirname +/+ "UnitDefs"
 		];
 
@@ -172,7 +179,7 @@ VBAPLib {
 
 	*loadUDefsFromDisk { |options|
 		Udef.defsFolders = if(options.loadDefsAtStartup){ Udef.defsFolders }{[]} ++ [
-            WFSArrayPan.filenameSymbol.asString.dirname +/+ "UnitDefs",
+			WFSArrayPan.filenameSymbol.asString.dirname +/+ "UnitDefs",
 			VBAPLib.filenameSymbol.asString.dirname +/+ "UnitDefs"
 		] ++ options.extraDefFolders;
 
