@@ -123,11 +123,16 @@ WFSPositionTracker {
 		var objects;
 		positions.keysValuesDo({  |uchain, points|
 			points.do({ |point, i|
+				var color;
+				color = uchain.getTypeColor;
+				if( color.isKindOf( Color ).not ) {
+					color = Color.blue(0.5,0.75); 
+				};
 				objects = objects.add( [
 					point,  
 					uchain.name ++ [ i ].asString, 
 					types[ uchain ][i], // and source types
-					uchain.getTypeColor // and display colors
+					color // and display colors
 				] );
 			});
 		});
