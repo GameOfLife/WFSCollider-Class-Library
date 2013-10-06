@@ -143,9 +143,12 @@ VBAPLib {
         //makes this less messy please !
 		var defs;
 		var default = Udef.loadOnInit;
+		var defaultMap = UMapDef.loadOnInit;
 		Udef.loadOnInit_(options.sendSynthDefsAtStartup);
+		UMapDef.loadOnInit_(options.sendSynthDefsAtStartup);
 		this.loadUDefsFromDisk(options);
 		Udef.loadOnInit_(default);
+		UMapDef.loadOnInit_(defaultMap);
 
 		(options.extraDefFolders ++ [Udef.userDefsFolder]).collect({ |path|
             (path ++ "/*.scd").pathMatch.collect({ |path| path.load.loadSynthDef })
@@ -159,7 +162,12 @@ VBAPLib {
 			VBAPLib.filenameSymbol.asString.dirname +/+ "UnitDefs"
 		];
 
-		Udef.loadAllFromDefaultDirectory.do(_.writeDefFile)
+		UMapDef.defsFolders = UMapDef.defsFolders.add(
+            WFSArrayPan.filenameSymbol.asString.dirname +/+ "UMapDefs"
+        );
+
+		Udef.loadAllFromDefaultDirectory.do(_.writeDefFile);
+		UMapDef.loadAllFromDefaultDirectory.do(_.writeDefFile);
 	}
 
 	*loadUDefsFromDisk { |options|
@@ -168,9 +176,14 @@ VBAPLib {
 			VBAPLib.filenameSymbol.asString.dirname +/+ "UnitDefs"
 		] ++ options.extraDefFolders;
 
+		UMapDef.defsFolders = UMapDef.defsFolders.add(
+            WFSArrayPan.filenameSymbol.asString.dirname +/+ "UMapDefs"
+        );
+
 		Udef.userDefsFolder = Platform.userExtensionDir +/+ "../UnitDefs";
 
-		Udef.loadAllFromDefaultDirectory
+		Udef.loadAllFromDefaultDirectory;
+		UMapDef.loadAllFromDefaultDirectory;
 	}
 
 }
