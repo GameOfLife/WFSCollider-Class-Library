@@ -25,7 +25,11 @@ def = MultiChannelUdef( \wfsServerIn, { |bus = 0| // same as soundIn, but only p
 }, channels: (1..8))
 	.category_( \wfs_io )
 	.shouldPlayOnFunc_({ |unit, target|
-		WFSSpeakerConf.includesServer( target.asTarget.server );
+		if( WFSSpeakerConf.includesServer( target.asTarget.server ) ) {
+			nil;
+		} {
+			false;
+		};
 	});
 
 def.udefs.do({ |item|
