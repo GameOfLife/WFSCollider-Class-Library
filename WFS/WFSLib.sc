@@ -6,6 +6,9 @@ WFSLib {
 		var defs, servers, o;
 		var bootFunc;
 		
+		WFSOptions.presetManager.filePath = Platform.userConfigDir +/+ "default" ++ "." ++ WFSOptions.presetManager.id ++ ".presets";
+		WFSOptions.presetManager.readAdd( silent: true );
+		
 		WFSOptions.makeCurrentAtInit = true;
 		
 		this.loadOldPrefs;
