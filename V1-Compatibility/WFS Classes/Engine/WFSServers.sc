@@ -188,12 +188,7 @@ WFSServers {
 			SmoothButton( window, Rect( 0, 0, 16, 16 ) )
 				.states_([["K", Color.black, Color.clear]])
 				.font_( font )
-				.action_( { Server.killAll;
-					if(this.isMaster) {
-						"ssh gameoflife@192.168.2.11 \"killall -9 scsynth\"".systemCmd;
-						"ssh gameoflife@192.168.2.12 \"killall -9 scsynth\"".systemCmd;
-					}
-				} );
+				.action_( { "killall -9 scsynth".unixCmd; } );
 			
 			if( SyncCenter.mode === \sample ) {
 				SmoothButton( window, Rect( 0, 0, 36, 16 ) )
