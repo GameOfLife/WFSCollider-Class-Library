@@ -205,12 +205,16 @@ WFSServers {
 				.string_( "master (" ++ ( NetAddr.myIP ? "127.0.0.1" ) ++ ")" )
 				.font_( font );
 				
-			window.view.decorator.shift( window.view.decorator.indentedRemaining.width - 184, 0 );
+			window.view.decorator.shift( window.view.decorator.indentedRemaining.width - 104, 0 );
 
-			EZSmoothSlider(window, Rect(0,0,180,15),"Latency", [0.02,1,\exp,0,0.02].asSpec)
+			EZSmoothSlider(window, Rect(0,0,100,15),nil, [0.02,1,\exp,0,0.02].asSpec)
 			    .value_(masterServer.latency)
 			    .font_( font )
-			    .action_({ |v| masterServer.latency = v.value});
+			    .action_({ |v| masterServer.latency = v.value})
+			    .numberWidth_( 40 )
+			    .sliderView
+			    		.string_("Latency")
+			    		.knobColor_( Color.black.alpha_(0.25) );
 
 			window.view.decorator.nextLine;
 			masterServer.makeView( window ); 
