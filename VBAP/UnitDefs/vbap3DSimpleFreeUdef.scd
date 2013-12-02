@@ -25,7 +25,7 @@ FreeUdef( \vbap3D_Simple_Panner, [
 		}
 	}
 })
-.category_(\spatialization)
+.category_(\vbap_panner)
 .addUEnv
 .addUGlobalEQ
 .addUIO( UIn, \ar, 0, 1 )

@@ -1,3 +1,4 @@
+
 VBAPSynthDef {
      /*
      Simple - The virtual point can only move in the surfaces defined by the speakerss.
@@ -9,6 +10,12 @@ VBAPSynthDef {
      not the case then then they should be delayed by (D - d)/c where D is the distance
      of the speaker farthest away, d is the distance of each speaker and c is the speed
      of sound in the air.
+
+	VBAP panners use a different coordinate system from UnitSpherical.
+	In VBAP coordinates positve angles go right (facing to 0 degrees), or clockwise
+	UnitSpherical coordinates positive angles go left (facing 0 degrees), or anti-clockwise
+	if UnitSpherical(0,0) is to map to (0,0) in vbap coordinats then x=1, y=0,z=0 is front.
+	Because of this the theta angle needs to be negated
      */
 	*generateDefs { |numSpeakers|
 
@@ -91,15 +98,15 @@ VBAPSynthDef {
             var speakerDelays = \u_delays.ir( numSpeakers.collect{0.0} );
             var out = UIn.ar( 0 );
             out = prePanner.( out, point );
-            out = distCompOut.(out, point.theta/2pi*360, 0, speakerDelays);
+            out = distCompOut.(out, point.theta/2pi*360.neg, 0, speakerDelays);
         } ),
 
         SynthDef(("VBAP_3D_"++numSpeakers).asSymbol, {
             var point = point3DUgenFunc.value;
             var out = UIn.ar( 0 );
             out = prePanner.( out, point );
-            [point.theta/2pi*360.poll, point.phi/2pi*360];
-            simpleOut.( out, point.theta/2pi*360.poll, point.phi/2pi*360 );
+            [point.theta/2pi*360.neg, point.phi/2pi*360];
+            simpleOut.( out, point.theta/2pi*360.neg, point.phi/2pi*360 );
         } ),
 
         SynthDef(("VBAP_3D_DistComp_"++numSpeakers).asSymbol, {
@@ -107,7 +114,7 @@ VBAPSynthDef {
             var speakerDelays = \u_delays.ir( numSpeakers.collect{0.0} );
             var out = UIn.ar( 0 );
             out = prePanner.( out, point );
-            out = distCompOut.(out, point.theta/2pi*360, point.phi/2pi*360, speakerDelays);
+            out = distCompOut.(out, point.theta/2pi*360.neg, point.phi/2pi*360, speakerDelays);
                 } )
         ]
 	}
@@ -127,11 +134,14 @@ VBAPSynthDef {
 
 		SynthDef("VBAP_preview_quad", {
 				|angles = #[0,0]|
+
 				var sig = UIn.ar( 0 );
 
-				var panned = Pan4.ar( sig, UnitSpherical(angles[0]*c, angles[1]*c).asCartesian.x, UnitSpherical(angles[0]*c, angles[1]*c).asCartesian.y );
+				var panned = PanAz.ar( 4, sig, angles[0]/180, orientation:0.5 );
 
-				Out.ar( 0, UGlobalEQ.ar( panned ) * UEnv.kr  );
+				var out = UGlobalEQ.ar( panned ) * UEnv.kr;
+
+				Out.ar( 0, [0, 1, 3, 2].collect{ |n| out.at(n) } );
 		}),
 
 		SynthDef("VBAP_preview_octo", {
@@ -140,7 +150,9 @@ VBAPSynthDef {
 
 				var panned = PanAz.ar( 8, sig, angles[0]/180, orientation:0.5 );
 
-				Out.ar( 0, UGlobalEQ.ar( panned ) * UEnv.kr  );
+				var out = UGlobalEQ.ar( panned ) * UEnv.kr;
+
+				Out.ar( 0, [0, 1, 7, 2, 6, 3, 5, 4].collect{ |n| out.at(n) } );
 		})
 
 		]

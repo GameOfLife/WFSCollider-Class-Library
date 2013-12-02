@@ -24,7 +24,7 @@ FreeUdef( \vbap2D_Panner, [
                 , target, \addToTail );
         }
     })
-    .category_(\spatialization)
+    .category_(\vbap_panner)
     .addUEnv
     .addUGlobalEQ
     .addUIO( UIn, \ar, 0, 1 )

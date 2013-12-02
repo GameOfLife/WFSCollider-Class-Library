@@ -94,15 +94,14 @@ VBAPLib {
 			"*** Servers booted\n".postln;
 
 			//Udef SYNTHEDEFS
-			"*** Sending synthDefs".postln;
 			this.loadDefs(options);
-			"*** SynthDefs Sent\n".postln;
 
-
-			//VBAP BUFFERS
-			"*** Creating vbap buffers".postln;
-			VBAPSpeakerConf.default.sendBuffer(servers);
-			"*** VBAP buffers created\n".postln;
+			if( VBAPLib.previewMode.isNil ) {
+				//VBAP BUFFERS
+				"*** Creating vbap buffers".postln;
+				VBAPSpeakerConf.default.sendBuffer(servers);
+				"*** VBAP buffers created\n".postln;
+			}
 		}
 	}
 
@@ -147,19 +146,23 @@ VBAPLib {
 		var defs;
 		var default = Udef.loadOnInit;
 		var defaultMap = UMapDef.loadOnInit;
+
+		"*** Loading system Udefs ***".postln;
 		Udef.loadOnInit_(options.sendSynthDefsAtStartup);
 		UMapDef.loadOnInit_(options.sendSynthDefsAtStartup);
 		this.loadUDefsFromDisk(options);
 		Udef.loadOnInit_(default);
 		UMapDef.loadOnInit_(defaultMap);
+		"*** system Udefs loaded *** \n".postln;
 
-		//load the user synthdefs.
+		"*** Loading user Udefs ***".postln;
 		(options.extraDefFolders ++ [Udef.userDefsFolder]).collect({ |path|
 			(path ++ "/*.scd").pathMatch.collect({ |path|
 				"Loading Udef at %".format(path).postln;
 				path.load
 			})
-		})
+		});
+		"*** User Udefs loaded ***\n".postln;
 
 	}
 

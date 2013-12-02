@@ -14,7 +14,7 @@ FreeUdef( \vbap2D_Simple_Panner, [
 		    unit.getArgsFor( target, startPos ) ++ [\u_bufnum,buf.bufnum]
 		    , target, \addToTail );
     })
-    .category_(\spatialization)
+    .category_(\vbap_panner)
     .addUEnv
     .addUGlobalEQ
     .addUIO( UIn, \ar, 0, 1 )
