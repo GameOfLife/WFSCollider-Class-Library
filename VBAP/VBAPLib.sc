@@ -34,7 +34,7 @@ VBAPLib {
 	//stereo, quad, octo
 	classvar <>previewMode;
 
-	*startupR { |options|
+	*startupR { |options, serverOptions|
 
 		var defs;
 
@@ -46,7 +46,7 @@ VBAPLib {
 			UChain( \bufSoundFile, \stereoOutput ).useSndFileDur
 		};
 
-		this.prStartupServers(options);
+		this.prStartupServers(options, serverOptions);
 
 		if(options.isSlave.not) {
 			this.prStartupGUIs;
@@ -54,23 +54,23 @@ VBAPLib {
 		}
 	}
 
-	*startup { |options|
+	*startup { |options, serverOptions|
 		Routine({
-			VBAPLib.startup(options)
+			VBAPLib.startupR(options, serverOptions)
 		}).play(AppClock)
 	}
 
-	*prStartupServers{ |options| //servers, send = true, allDefs = true|
+	*prStartupServers{ |options, serverOptions| //servers, send = true, allDefs = true|
 
-		var serverOptions = this.serverOptions( options.numOutputChannels, options.device );
+		var serverOptions2 = serverOptions ?? { this.serverOptions( options ) };
 
 		var servers = options.serverDescs.collect{ |desc|
-			Server(desc[0], NetAddr(desc[1], desc[2] ), serverOptions )
+			Server(desc[0], NetAddr(desc[1], desc[2] ), serverOptions2 )
 		};
 
 		servers.do{ |s|
 			if(s.isLocal){
-				2.0.wait;
+				1.0.wait;
 				s.boot;
 			}
 		};
@@ -102,7 +102,10 @@ VBAPLib {
 				VBAPSpeakerConf.default.sendBuffer(servers);
 				"*** VBAP buffers created\n".postln;
 			}
+		} {
+			ULib.waitForServersToBoot;
 		}
+
 	}
 
 	*prStartupGUIs {
@@ -119,14 +122,24 @@ VBAPLib {
 		//ULib.serversWindow;
 	}
 
-	*serverOptions { |numOutputChannels, device|
-		^ServerOptions()
-		.memSize_(8192*16)
-		.numWireBufs_(64*2)
-		.numPrivateAudioBusChannels_(1024)
-		.outDevice_(device)
-		.inDevice_(device)
-		.numOutputBusChannels_(numOutputChannels)
+	*serverOptions { |options, serverOptions|
+		var serverOptions2 = serverOptions !? _.deepCopy ?? {
+			ServerOptions()
+			.memSize_(8192*16)
+			.numWireBufs_(64*2)
+			.numPrivateAudioBusChannels_(1024)
+			.maxSynthDefs_(2048)
+			.maxNodes_(4*1024)
+		};
+
+		options.device !? { |dev|
+			serverOptions2.outDevice_(dev);
+			serverOptions2.inDevice_(dev);
+		};
+		options.numOutputChannels !? serverOptions2.numOutputBusChannels_(_);
+		options.numInputChannels !? serverOptions2.numInputBusChannels_(_);
+
+		^serverOptions2
 	}
 
 	//only needs to be run once.

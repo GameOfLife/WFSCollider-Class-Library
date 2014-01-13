@@ -20,6 +20,7 @@ VBAPOptions {
 
 	var <>serverDescs; // Array[Array[ip,port]]
 	var <>device;
+	var <>numInputChannels;
 	var <>numOutputChannels;
 	var <>angles;
 	var <>distances;
@@ -84,7 +85,8 @@ VBAPOptions {
 			\soniclab: VBAPOptions(
 				serverDescs: 8.collect{ |i| ["slave "++(i+1),"192.168.2.1", 57456 + i] },
 				device: "HDSPe MADI (Slot-2)",
-				numOutputChannels: 48,
+				numInputChannels: 32,
+				numOutputChannels: 32,
 				angles: speakerPresets[\soniclab][\angles],
 				distances: speakerPresets[\soniclab][\dists],
 				loadDefsAtStartup: true,
@@ -97,7 +99,22 @@ VBAPOptions {
 			\soniclabTest: VBAPOptions(
 				serverDescs: 4.collect{ |i| ["slave "++(i+1),"localhost", 57456 + i] },
 				device: nil,
-				numOutputChannels: 48,
+				numInputChannels: 0,
+				numOutputChannels: 32,
+				angles: speakerPresets[\soniclab][\angles],
+				distances: speakerPresets[\soniclab][\dists],
+				loadDefsAtStartup: true,
+				loadUdefViaRemoteFolder: false,
+				remoteFolderForLoading: "",
+				isSlave: false,
+				extraDefFolders: nil
+			),
+
+			\soniclabSingle: VBAPOptions(
+				serverDescs: 8.collect{ |i| ["slave "++(i+1),"localhost", 57456 + i] },
+				device: nil,
+				numInputChannels: 0,
+				numOutputChannels: 32,
 				angles: speakerPresets[\soniclab][\angles],
 				distances: speakerPresets[\soniclab][\dists],
 				loadDefsAtStartup: true,
@@ -109,10 +126,11 @@ VBAPOptions {
 
 			\soniclabSlave: VBAPOptions(
 				serverDescs: 8.collect{ |i| ["slave "++(i+1),"localhost", 57456 + i] },
-				device: "HDSPe MADI (Slot-2)",
-				numOutputChannels: 48,
-				angles: nil,
-				distances:nil,
+				device: "JackRouter",//"HDSPe MADI (Slot-2)",
+				numInputChannels: 32,
+				numOutputChannels: 32,
+				angles: speakerPresets[\soniclab][\angles],
+				distances:speakerPresets[\soniclab][\angles],
 				loadDefsAtStartup: true,
 				loadUdefViaRemoteFolder: false,
 				remoteFolderForLoading: "",
@@ -165,10 +183,10 @@ VBAPOptions {
 		^presets.at(key)
 	}
 
-	*new { | serverDescs, device, numOutputChannels = 32, angles, distances, loadDefsAtStartup = true,
+	*new { | serverDescs, device, numInputChannels = 0, numOutputChannels = 32, angles, distances, loadDefsAtStartup = true,
 		sendSynthDefsAtStartup = false, loadUdefViaRemoteFolder = false, remoteFolderForLoading,
 		isSlave = false, extraDefFolders|
-		^super.newCopyArgs(serverDescs, device, numOutputChannels, angles, distances, loadDefsAtStartup,
-		sendSynthDefsAtStartup, loadUdefViaRemoteFolder, remoteFolderForLoading, isSlave = false, extraDefFolders ? [])
+		^super.newCopyArgs(serverDescs, device, numInputChannels, numOutputChannels, angles, distances, loadDefsAtStartup,
+		sendSynthDefsAtStartup, loadUdefViaRemoteFolder, remoteFolderForLoading, isSlave, extraDefFolders ? [])
 	}
 }
