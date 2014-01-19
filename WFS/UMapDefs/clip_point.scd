@@ -18,7 +18,7 @@ The value arg range is mapped to that of the parameter to which the UMap is conn
 
 --
 this is an UMapDef definition file
-part of the Unit lib default UMapDefs set
+part of the WFSCollider Class Library default UMapDefs set
 */
 
 
