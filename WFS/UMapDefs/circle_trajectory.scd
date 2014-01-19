@@ -33,6 +33,7 @@ UMapDef( \circle_trajectory, { |
 	UMapOut.kr( circle, false );
 })
 	.category_( 'trajectory' )
+	.canInsert_( false )
 	.canUseUMapFunc_({ |unit, key, umapdef|
 		unit.getSpec( key ).isKindOf( PointSpec );
 	})

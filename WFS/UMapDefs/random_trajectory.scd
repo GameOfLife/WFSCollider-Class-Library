@@ -40,6 +40,7 @@ UMapDef( \random_trajectory, { |
 	.canUseUMapFunc_({ |unit, key, umapdef|
 		unit.getSpec( key ).isKindOf( PointSpec );
 	})
+	.canInsert_( false )
 	.setSpec( \speed, [ 0, 100, 99.squared.log, 0, 0.1 ].asSpec )
 	.setSpec( \center, WFSPointSpec(200) )
 	.setSpec( \radius, WFSRadiusSpec(200) )
