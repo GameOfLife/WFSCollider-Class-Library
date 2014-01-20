@@ -179,8 +179,12 @@ WFSLib {
 						] ],
 						[ \wfsDynamicPoint, 
 							[  
-								\point, 5.0.rand2@(5.0 rrand: 10),
-								\pointLag, 1,
+								\point, [
+									\lag_point, [
+										\point, 5.0.rand2@(5.0 rrand: 10),
+										\time, 1
+									]
+								],
 								\quality, \better
 							] // always behind array
 						]
@@ -224,7 +228,6 @@ WFSLib {
 					[ \wfsDynamicPoint, 
 							[  
 								\point, 5.0.rand2@(5.0 rrand: 10),
-								\pointLag, 1,
 								\quality, \better
 							] // always behind array
 						]
