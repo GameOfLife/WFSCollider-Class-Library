@@ -81,6 +81,9 @@ def = FreeUdef( \wfsDynamicPlane, [
 		})
 	});
 
+// these are to be removed later
+def.getArgSpec( \pointLag ).private = true;
+
 if( WFSPreviewSynthDefs.pannerFuncs.keys.includes( WFSLib.previewMode ).not ) {
 	// dynamic plane wfs panner
 	def.createSynthFunc_({ |unit, target, startPos = 0|
