@@ -18,7 +18,7 @@ UMapDef( \shared_in_point, { |id = 0|
 	UMapOut.kr(sig, false);
 })
 	.setSpec( \id, IntegerSpec( 0, 0, 99 ) )
-	.category_( 'point' )
+	.category_( 'point_utility' )
 	.canUseUMapFunc_({ |unit, key, umapdef|
 		unit.getSpec( key ).isKindOf( PointSpec );
 	});

@@ -21,7 +21,7 @@ UMapDef( \crossfade_point, { |
 	crossfade = LPFLag.kr( crossfade, lag );
 	UMapOut.kr( (a * (1-crossfade)) + (b * crossfade), false );
 })
-	.category_( 'point' )
+	.category_( 'point_utility' )
 	.canUseUMapFunc_({ |unit, key, umapdef|
 		unit.getSpec( key ).isKindOf( PointSpec );
 	})

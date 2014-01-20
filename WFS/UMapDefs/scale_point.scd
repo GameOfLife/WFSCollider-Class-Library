@@ -23,7 +23,7 @@ UMapDef( \scale_point, { |
 	move = LPFLag.kr( move, lag );
 	UMapOut.kr( (point * scale) + move, false );
 })
-	.category_( 'point' )
+	.category_( 'point_utility' )
 	.canUseUMapFunc_({ |unit, key, umapdef|
 		unit.getSpec( key ).isKindOf( PointSpec );
 	})

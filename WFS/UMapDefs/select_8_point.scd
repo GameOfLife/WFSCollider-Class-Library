@@ -31,7 +31,7 @@ UMapDef( \select_8_point, {
 		]
 	);
 	UMapOut.kr( sig, false );
-}).category_( \point )
+}).category_( \point_utility )
 	.setSpec( \interpolation, [0,1].asSpec )
 	.setSpec( \index, [0,7].asSpec )
 	.setSpec( \point0, WFSPointSpec(200, 0.1) )

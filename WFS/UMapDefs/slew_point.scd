@@ -21,7 +21,7 @@ UMapDef( \slew_point, { |
 })
 	.setSpec( \point, WFSPointSpec(200, 0.1) )
 	.setSpec( \maxSpeed, [0,344,8].asSpec )
-	.category_( 'point' )
+	.category_( 'point_filter' )
 	.canUseUMapFunc_({ |unit, key, umapdef|
 		unit.getSpec( key ).isKindOf( PointSpec );
 	})

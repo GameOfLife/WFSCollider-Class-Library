@@ -47,7 +47,7 @@ UMapDef( \clip_point, { |
 	.setSpec( \radius, WFSRadiusSpec(Rect(0,0,200,200)) )
 	.setSpec( \clipMode, ListSpec( (..3), 0, [ \clip, \fold, \wrap, \none ] ) )
 	.setSpec( \clipSoftness, [0,1,\lin,0,0.1].asSpec )
-	.category_( 'point' )
+	.category_( 'point_utility' )
 	.canUseUMapFunc_({ |unit, key, umapdef|
 		unit.getSpec( key ).isKindOf( PointSpec );
 	})

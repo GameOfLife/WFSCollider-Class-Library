@@ -21,7 +21,7 @@ UMapDef( \shared_out_point, { |point = #[0.0, 0.0], id = 0|
 })
 	.setSpec( \point, WFSPointSpec(200, 0.1) )
 	.setSpec( \id, IntegerSpec( 0, 0, 99 ) )
-	.category_( 'point' )
+	.category_( 'point_utility' )
 	.canUseUMapFunc_({ |unit, key, umapdef|
 		unit.getSpec( key ).isKindOf( PointSpec );
 	});
