@@ -272,7 +272,9 @@ WFSLib {
 		};
 		
 		UMenuBar.remove;
-		if( thisProcess.platform.class.asSymbol === 'OSXPlatform' ) {
+		if( thisProcess.platform.class.asSymbol === 'OSXPlatform' && {
+			Platform.ideName == "scapp";
+		} ) {
 			thisProcess.preferencesAction = { WFSOptionsGUI.newOrCurrent; };
 		};
 		
