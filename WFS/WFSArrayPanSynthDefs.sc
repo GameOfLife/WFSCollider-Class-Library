@@ -228,8 +228,8 @@ WFSPrePanSynthDefs : AbstractWFSSynthDefs {
 	
 	*prefix { ^"wfsp" }
 	*initClass {
-		crossfadeModes = [ \d, \u, \p, \n ];  // dual, uni, plane, none (none: static sources)
-		modesThatNeedArrays = [ \d, \u, \p ];
+		crossfadeModes = [ \d, \p, \n ];  // dual, uni, plane, none (none: static sources)
+		modesThatNeedArrays = [ \d, \p ];
 	}
 	
 	*allSizes { 
@@ -306,7 +306,9 @@ WFSPrePanSynthDefs : AbstractWFSSynthDefs {
 			
 			// crossfading: manage the array panners
 			if( numArrays > 0 ) {	
-				case { [ \d, \u ].includes(crossfadeMode) } { 
+				switch( crossfadeMode, \d, {
+					var normalIDs, focusIDs;
+					var normalLevelBuses, focusLevelBuses, dontPause = 0;
 					
 					// Point sources //
 					
@@ -352,85 +354,47 @@ WFSPrePanSynthDefs : AbstractWFSSynthDefs {
 					normalShouldRun = Slew.kr( normalShouldRun, *(1/crossfadeLag).dup ).sqrt;
 						
 					normalLevels = crossfader.cornerfades * normalShouldRun;
-					 
-					switch( crossfadeMode,
-						\d, {  // dual mode
-							
-							{	// embed function to prevent inlining warning
-								var normalIDs, focusIDs;
-								var normalLevelBuses, focusLevelBuses, dontPause = 0;
 								
-								dontPause = \dontPause.kr(dontPause); // if 1 never pause
-								
-								// id's of synths to pause (998 for none) 
-								normalIDs = \normalIDs.ir( 998.dup(numArrays) ).asCollection;
-								focusIDs = \focusIDs.ir( 998.dup(numArrays) ).asCollection;
-								
-								// level buses (-1 for none)
-								normalLevelBuses = \normalLevelBuses.kr( -1.dup(numArrays) ).asCollection;
-								focusLevelBuses = \focusLevelBuses.kr( -1.dup(numArrays) ).asCollection;
-								
-								// output levels to appropriate buses (replace existing)
-								normalLevelBuses.do({ |bus, i|
-									ReplaceOut.kr( bus, normalLevels[i] );
-								});
-								
-								focusLevelBuses.do({ |bus, i|
-									ReplaceOut.kr( bus, focusShouldRun[i] );
-								});
-								
-								// pause non-sounding panners
-								normalIDs.do({ |id, i|
-									var pause;
-									pause = (normalLevels[i] > 0);
-									pause = Slew.kr( pause, inf, 1/pauseLag ) > 0;
-									pause = pause.max(dontPause);
-									Pause.kr( pause, id );
-								});
-								
-								focusIDs.do({ |id, i|
-									var pause;
-									pause = (focusShouldRun[i] > 0);
-									pause = Slew.kr( pause, inf, 1/pauseLag ) > 0;
-									Pause.kr( pause.max(dontPause), id );
-								});
-								
-							}.value
-						},
-						\u, { // unified mode (focused and normal in one array panner)
-							{
-								var uniIDs;
-								var uniLevelBuses;
-								var uniLevels;
-								var dontPause = 0;
-								
-								dontPause = \dontPause.kr(dontPause);
-								
-								// id's of synths to pause (-1 for none)
-								uniIDs = \uniIDs.ir( -1.dup(numArrays) ).asCollection;
-								
-								// level buses (-1 for none)
-								uniLevelBuses = \uniLevelBuses.kr( -1.dup(numArrays) ).asCollection;
-								
-								uniLevels = normalLevels.max( focusShouldRun );
-								
-								// output levels to appropriate buses (replace existing)
-								uniLevelBuses.collect({ |bus, i|
-									ReplaceOut.kr( bus, uniLevels[i] );
-								});
-								
-								// pause non-sounding panners
-								uniIDs.collect({ |id, i|
-									var pause;
-									pause = (uniLevels[i] > 0);
-									pause = Slew.kr( pause, inf, 1/pauseLag ) > 0;
-									Pause.kr( pause.max(dontPause), id );
-								});
-							}.value;					
-						}
-					);
+					dontPause = \dontPause.kr(dontPause); // if 1 never pause
 					
-				} { crossfadeMode === \p  } {
+					// id's of synths to pause (998 for none) 
+					normalIDs = \normalIDs.ir( 998.dup(numArrays) ).asCollection;
+					focusIDs = \focusIDs.ir( 998.dup(numArrays) ).asCollection;
+					
+					// level buses (-1 for none)
+					normalLevelBuses = \normalLevelBuses.kr( -1.dup(numArrays) ).asCollection;
+					focusLevelBuses = \focusLevelBuses.kr( -1.dup(numArrays) ).asCollection;
+					
+					// output levels to appropriate buses (replace existing)
+					normalLevelBuses.do({ |bus, i|
+						ReplaceOut.kr( bus, normalLevels[i] );
+					});
+					
+					focusLevelBuses.do({ |bus, i|
+						ReplaceOut.kr( bus, focusShouldRun[i] );
+					});
+					
+					// pause non-sounding panners
+					normalIDs.do({ |id, i|
+						var pause;
+						pause = (normalLevels[i] > 0);
+						pause = Slew.kr( pause, inf, 1/pauseLag ) > 0;
+						pause = pause.max(dontPause);
+						Pause.kr( pause, id );
+					});
+					
+					focusIDs.do({ |id, i|
+						var pause;
+						pause = (focusShouldRun[i] > 0);
+						pause = Slew.kr( pause, inf, 1/pauseLag ) > 0;
+						Pause.kr( pause.max(dontPause), id );
+					});
+					
+				}, \p, {
+					var planeIDs;
+					var planeLevelBuses;
+					var planeLevels;
+					var dontPause = 0;
 					
 					// Plane wave //
 					
@@ -440,37 +404,30 @@ WFSPrePanSynthDefs : AbstractWFSSynthDefs {
 					});
 					
 					crossfader = WFSCrossfaderPlane( point, arrayConfs );
+						
+					dontPause = \dontPause.kr(dontPause);
 					
-					{
-						var planeIDs;
-						var planeLevelBuses;
-						var planeLevels;
-						var dontPause = 0;
-						
-						dontPause = \dontPause.kr(dontPause);
-						
-						// id's of synths to pause (-1 for none)
-						planeIDs = \planeIDs.ir( -1.dup(numArrays) ).asCollection;
-						
-						// level buses (-1 for none)
-						planeLevelBuses = \planeLevelBuses.kr( -1.dup(numArrays) ).asCollection;
-						
-						planeLevels = crossfader.crossfades;
-						
-						// output levels to appropriate buses (replace existing)
-						planeLevelBuses.collect({ |bus, i|
-							ReplaceOut.kr( bus, planeLevels[i] );
-						});
-						
-						// pause non-sounding panners
-						planeIDs.collect({ |id, i|
-							var pause;
-							pause = (planeLevels[i] > 0);
-							pause = Slew.kr( pause, inf, 1/pauseLag ) > 0;
-							Pause.kr( pause.max(dontPause), id );
-						});
-					}.value;
-				};
+					// id's of synths to pause (-1 for none)
+					planeIDs = \planeIDs.ir( -1.dup(numArrays) ).asCollection;
+					
+					// level buses (-1 for none)
+					planeLevelBuses = \planeLevelBuses.kr( -1.dup(numArrays) ).asCollection;
+					
+					planeLevels = crossfader.crossfades;
+					
+					// output levels to appropriate buses (replace existing)
+					planeLevelBuses.collect({ |bus, i|
+						ReplaceOut.kr( bus, planeLevels[i] );
+					});
+					
+					// pause non-sounding panners
+					planeIDs.collect({ |id, i|
+						var pause;
+						pause = (planeLevels[i] > 0);
+						pause = Slew.kr( pause, inf, 1/pauseLag ) > 0;
+						Pause.kr( pause.max(dontPause), id );
+					});
+				});
 			};
 		});
 		
