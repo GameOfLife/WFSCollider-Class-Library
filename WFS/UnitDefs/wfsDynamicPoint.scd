@@ -27,14 +27,12 @@ var def;
 
 def = FreeUdef( \wfsDynamicPoint, [	
 		[ \point: 		0@0,  	WFSPointSpec( 200, 0.1 ) ],
-		[ \pointLag:		0,		[ 0, 5, \lin, 0, 0 ].asSpec ], // lagtime for point
 		[ \quality:		0,		ListSpec([ \good, \better ], 0 ) ], // \l or \c
 		[ \distanceFilter:	0,		[0,2,\lin,0,1].asSpec ],
 		[ \latencyComp:  	0,		[0,1].asSpec ],
 		[ \dbRollOff:		-6,		[ -24, 0, \lin, 1, -6 ].asSpec ],
 		[ \maxAmpRadius:	2,		[ 1, 5, \lin, 0, 2, "m" ].asSpec ],
 		[ \crossfadeLag:	0.2,		[ 0, 1, \lin, 0, 0.2 ].asSpec, true ],
-		[ \pointFromBus: 	false,	BoolSpec( false ) ],
 		[ \dontPause:		false,	BoolSpec( false ), true ]
 	], true ).category_( \wfs_panner )
 	// first a few general things
@@ -60,20 +58,18 @@ def = FreeUdef( \wfsDynamicPoint, [
 	})
 	.envPut( \init_wfsp, [ \latencyComp, \u_dur ] )
 	.envPut( \set_wfsp, [ 
-		\pointFromBus, \point, \pointLag, \distanceFilter, \dbRollOff, 
+		\point, \distanceFilter, \dbRollOff, 
 		\maxAmpRadius, \crossfadeLag, \dontPause,
-		\u_i_ar_0_bus, \u_i_kr_0_bus, \u_i_kr_1_bus, 
+		\u_i_ar_0_bus,
 		\u_doneAction, \u_gain, \u_gate, \u_mute,
 		\u_fadeIn, \u_fadeOut,
 		\u_globalGain,
 		\u_globalEQ_setting, \u_globalEQ_bypass,  
 	] )
-	.envPut( \set_wfsa, [ \u_i_ar_0_bus, \u_i_kr_0_bus, \u_i_kr_1_bus ] )
+	.envPut( \set_wfsa, [ \point, \u_i_ar_0_bus ] )
 	.addUGlobalEQ
 	.addUIO( UIn, \ar, 0, 1 )
-	.addUIO( UIn, \kr, 0, 2 )
 	.setSpecMode( \latencyComp, \init, \quality, \nonsynth )
-	.setControlInName( [0,1], ['x', 'y'] )
 	.setSynthFunc_({ |unit ...keyValuePairs|
 		unit.synths.do({ |sn|
 			var server = sn.server;
@@ -85,10 +81,6 @@ def = FreeUdef( \wfsDynamicPoint, [
 	    		);
 		})
 	});
-	
-// these are to be removed later
-def.getArgSpec( \pointLag ).private = true;
-def.getArgSpec( \pointFromBus ).private = true;
 
 // ensure backwards compatibility
 def.prepareArgsFunc = { |argPairs|

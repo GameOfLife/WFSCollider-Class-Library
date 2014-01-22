@@ -84,7 +84,7 @@ WFSPreviewSynthDefs : AbstractWFSSynthDefs {
 			
 			// depending on mode
 			if( mode === \d ) {
-				point = UIn.kr(0,2).asPoint;
+				point = \point.kr([0,0]).asPoint;
 			} {
 				point = \point.ir([0,0]).asPoint;
 			};

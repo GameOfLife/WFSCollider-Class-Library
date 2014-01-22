@@ -134,7 +134,7 @@ WFSArrayPanSynthDefs : AbstractWFSSynthDefs {
 			
 			// depending on mode
 			if( mode === \d ) {
-				point = UIn.kr(0,2).asPoint;
+				point = \point.kr([0,0]).asPoint;
 			} {
 				point = \point.ir([0,0]).asPoint;
 			};
@@ -269,21 +269,11 @@ WFSPrePanSynthDefs : AbstractWFSSynthDefs {
 			var normalLevels, normalShouldRun, focusShouldRun;
 			var sendPointRate = 0;
 			
+			point = \point.kr( point.asArray );
+			
 			if( crossfadeMode != \n ) {	
-				
-				pointFromBus = \pointFromBus.kr( pointFromBus );
-				point = (\point.kr( point.asArray ) * (1-pointFromBus)) 
-					+ ( UIn.kr(0,2) * pointFromBus );
-				pointLag = \pointLag.kr( pointLag );
-				point = LPFLag.kr( point, pointLag );
-				
 				SendReply.kr( Impulse.kr( \sendPointRate.kr(sendPointRate) ), '/point', point );
-				
-				// pass the point on to the panners
-				ReplaceOut.kr( UIn.firstBusFor( \kr ) + \u_i_kr_0_bus.kr, point[0] );
-				ReplaceOut.kr( UIn.firstBusFor( \kr ) + \u_i_kr_1_bus.kr, point[1] );
 			} {
-				point = \point.kr( point.asArray );
 				SendReply.kr( Impulse.kr( 0 ), '/point', point );
 			};
 			
