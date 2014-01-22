@@ -176,15 +176,11 @@ WFSArrayPanSynthDefs : AbstractWFSSynthDefs {
 		all = #[ // these are the all types we'll probably need
 			[ uni, static, n ],    // use this for any static
 			[ normal, static, n ], // use this for normal static
-			[ uni, dynamic, n ],
-			[ uni, dynamic, l ], // perhaps we should add a fadeout or narrow-down at crosspoint
-			[ uni, dynamic, c ], // for these two
 			[ focus, dynamic, l ],
 			[ normal, dynamic, l ],
 			[ focus, dynamic, c ],
 			[ normal, dynamic, c ],
 			[ plane, static, n ],
-			[ plane, dynamic, n ],
 			[ plane, dynamic, l ],
 			[ plane, dynamic, c ] 
 		];
