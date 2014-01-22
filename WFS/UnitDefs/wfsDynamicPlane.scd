@@ -83,6 +83,38 @@ def = FreeUdef( \wfsDynamicPlane, [
 
 // these are to be removed later
 def.getArgSpec( \pointLag ).private = true;
+def.getArgSpec( \pointFromBus ).private = true;
+
+// ensure backwards compatibility
+def.prepareArgsFunc = { |argPairs|
+	var point;
+	if( argPairs.notNil) {
+		if( argPairs.pairsAt( \pointFromBus ) == true ) {
+			if( argPairs.includes( \u_i_kr_0_bus ) or: { argPairs.includes( \u_i_kr_1_bus ) } ) {				argPairs = [ \point, [ \map_control_point, [ 
+								\bus_x, argPairs.pairsAt( \u_i_kr_0_bus ) ? 0,
+								\bus_y, argPairs.pairsAt( \u_i_kr_1_bus ) ? 1
+						] 
+					],
+				  \pointFromBus, false
+				] ++	argPairs;	
+			} {
+				argPairs = [ \point, \map_control_point, \pointFromBus, false ] ++ argPairs;
+			};
+		};
+		if( argPairs.pairsAt( \pointLag ).notNil ) {
+			if( argPairs.pairsAt( \point ).notNil ) {
+				argPairs = [ \point, [ \lag_point, [ 
+					\point, argPairs.pairsAt( \point ),
+					\time, argPairs.pairsAt( \pointLag ),
+				] ] ] ++ argPairs;
+			} {
+				argPairs = [ \point, [ \lag_point, [ \time, argPairs.pairsAt( \pointLag ) ] ] ] 
+					++ argPairs;
+			};
+		};
+		argPairs;
+	};
+};
 
 if( WFSPreviewSynthDefs.pannerFuncs.keys.includes( WFSLib.previewMode ).not ) {
 	// dynamic plane wfs panner
