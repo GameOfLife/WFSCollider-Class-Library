@@ -21,14 +21,13 @@ UMapDef( \circle_trajectory, { |
 		clockwise = 1, 
 		center = #[0.0,0.0],
 		radius = #[10.0,10.0],
-		lag = 0,
 		u_startPos = 0|
 	var circle;
 	circle = SinOsc.kr(  
 		speed * clockwise.linlin(0,1,-1,1), 
-		[ 0, 0.5pi ] + ((LPFLag.kr( startAngle, lag )) + (u_startPos * speed * 2pi).wrap(0,2pi)),
-		LPFLag.kr( radius, lag ),
-		LPFLag.kr( center, lag )
+		[ 0, 0.5pi ] + (startAngle + (u_startPos * speed * 2pi).wrap(0,2pi)),
+		radius,
+		center
 	);
 	UMapOut.kr( circle, false );
 })

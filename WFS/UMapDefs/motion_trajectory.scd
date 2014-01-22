@@ -32,16 +32,11 @@ UMapDef( \motion_trajectory, { |
 		center = #[0.0, 0.0], 
 		radius = #[10.0, 10.0], 
 		clipMode = 1,
-		clipSoftness = 0.1,
-		lag = 0.0|
+		clipSoftness = 0.1|
 	var point, speed;
 	var reset;
 	reset = \reset.utr + Impulse.kr(0);
-	
-	startPoint = LPFLag.kr( startPoint, lag );
-	startSpeed = startSpeed.lag( lag );
-	center = LPFLag.kr( center, lag );
-	radius = LPFLag.kr( radius, lag ).max(1.0e-10);
+	radius = radius.max(1.0e-10);
 	
 	speed = Sweep.kr( reset, acceleration ) + startSpeed;
 	point = Sweep.kr( reset, speed ) + startPoint;

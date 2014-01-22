@@ -28,11 +28,11 @@ UMapDef( \random_trajectory, { |
 	var random, trigger;
 	URandSeed.ir(seed);
 	random = [
-		LPFLag.kr( LFDNoise0.kr( speed.dup ), lag ),
+		LFDNoise0.kr( speed.dup ).lag3( lag ),
 		LFDNoise1.kr( speed.dup ),
 		LFDNoise3.kr( speed.dup )
 	];
-	random = LinSelectX.kr( type.lag(lag), random );
+	random = LinSelectX.kr( type, random );
 	random = random.madd( radius, center );
 	UMapOut.kr( random, false );
 })
@@ -45,5 +45,5 @@ UMapDef( \random_trajectory, { |
 	.setSpec( \center, WFSPointSpec(200) )
 	.setSpec( \radius, WFSRadiusSpec(200) )
 	.setSpec( \type, [0,2,\lin,1,0].asSpec )
-	.setSpec( \lag, [0,10,\lin,0,1].asSpec )
+	.setSpec( \lag, [0,10,\lin,0,0.1].asSpec )
 	.setSpec( \seed, PositiveIntegerSpec(12345), \init );
