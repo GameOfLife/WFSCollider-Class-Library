@@ -28,4 +28,4 @@ Udef( \furseDistanceFilter, {
 }).category_( \filter )
 	.setSpec( \amount, [0,2,\lin,0,1].asSpec )
 	.setSpec( \point, WFSPointSpec(200) )
-	.setSpec( \pointFromBus, BoolSpec(false) );
+	.setSpec( \pointFromBus, BoolSpec(false), private: true );
