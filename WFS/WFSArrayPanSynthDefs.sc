@@ -135,19 +135,19 @@ WFSArrayPanSynthDefs : AbstractWFSSynthDefs {
 			// depending on mode
 			if( mode === \d ) {
 				point = UIn.kr(0,2).asPoint;
-				amp = In.kr( \levelBus.kr(2000) );
 				if( type != \p ) { // only for points, not planes
 					arrayRollOff = \arrayDbRollOff.kr( arrayRollOff );
 					arrayLimit = \arrayLimit.kr( arrayLimit );
 				};			
 			} {
 				point = \point.ir([0,0]).asPoint;
-				amp = \amp.kr(amp);
 				if( type != \p ) {
 					arrayRollOff = \arrayRollOff.ir( arrayRollOff );
 					arrayLimit = \arrayLimit.ir( arrayLimit );
 				};
 			};
+			
+			amp = \amp.kr(amp);
 			
 			gain = \gain.kr( gain );
 			input = UIn.ar(0, 1) * gain * amp;

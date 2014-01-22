@@ -161,7 +161,7 @@ if( WFSPreviewSynthDefs.pannerFuncs.keys.includes( WFSLib.previewMode ).not ) {
 			server.sendMsg( *sn.newMsg( arrayGroup, [ 
 					\gain, gain, 
 					\arrayConf, arrayConfs[i], 
-					\levelBus, planeLevelBuses[i],
+					\amp, ("c" ++planeLevelBuses[i]).asSymbol,
 					\outOffset, n +  WFSSpeakerConf.getOutputBusStartOffset( server )
 				] ++ unit.def.env.getInitArgsFor( \wfsa, unit.args, server, startPos ), 
 				\addToTail ) 

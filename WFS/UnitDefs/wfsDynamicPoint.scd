@@ -175,7 +175,7 @@ if( WFSPreviewSynthDefs.pannerFuncs.keys.includes( WFSLib.previewMode ).not ) {
 			server.sendMsg( *sn.newMsg( arrayGroup, [ 
 					\gain, WFSSpeakerConf.default.gain.dbamp,
 					\arrayConf, arrayConfs[i], 
-					\levelBus, normalLevelBuses[i],
+					\amp, ("c" ++ normalLevelBuses[i]).asSymbol,
 					\outOffset, n + WFSSpeakerConf.getOutputBusStartOffset( server ),
 					\arrayLimit, WFSSpeakerConf.default.arrayLimit,
 					\focusWidth, WFSSpeakerConf.default.focusWidth
@@ -190,7 +190,7 @@ if( WFSPreviewSynthDefs.pannerFuncs.keys.includes( WFSLib.previewMode ).not ) {
 			server.sendMsg( *sn.newMsg( arrayGroup, [ 
 					\gain, WFSSpeakerConf.default.gain.dbamp,
 					\arrayConf, arrayConfs[i], 
-					\levelBus, focusLevelBuses[i],
+					\amp, ("c" ++ focusLevelBuses[i]).asSymbol,
 					\outOffset, n + WFSSpeakerConf.getOutputBusStartOffset( server ),
 					\arrayLimit, WFSSpeakerConf.default.arrayLimit,
 					\focusWidth, WFSSpeakerConf.default.focusWidth
