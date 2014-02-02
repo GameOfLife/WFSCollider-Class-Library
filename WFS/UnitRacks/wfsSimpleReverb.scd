@@ -1,14 +1,43 @@
 (
-~points = all {: Point(6*x,6*y),  x <- [-1,1], y <- [-1,1]};
-UnitRack(\wfsSimpleReverb, [\wfsPoint]++
-4.collect{|i|[
-	U(\simpleReverb)
-		.setAudioOut(0,i+1)
-		.set(\amp,0.8),
-	U(\wfsStaticPlane)
-		.setAudioIn(0,i+1)
-		.point_(~points[i])
-]
-}.flop.flat++[U(\wfsDynamicPoint).pointFromBus_(true)]
-).category_( \wfs)
+// a position-dependant reverb scheme
+var points;
+points = [-6,6].collect({ |x| [-6,6].collect(x@_) }).flat;
+
+UnitRack(\wfsSimpleReverb, [	
+		\shared_point,
+		[ \multiply, [ 
+			'mul', [ 'point_distance', [ 
+				'point1', 'shared_point_in', 
+				'fromRange', [ 0.0, 15 ], 
+				'toRange', [ 0.0, 0.5 ] ] 
+			], 
+			'u_o_ar_0_bus', 1
+		] ],
+		[ 'delay', [ 
+			'time', [ 'point_distance', [ 
+				'point1', 'shared_point_in', 
+				'fromRange', [ 0.0, 10.0 ], 
+				'toRange', [ 0.0, 0.29 ], 
+				'clipMode', 3 ] 
+			], 'timeScale', 0.1, 'dry', 0.0, 'amp', 1.0, 
+			'u_i_ar_0_bus', 1, 'u_o_ar_0_bus', 1 
+		] ], 
+		[ 'duplicateChannel', [ 'u_i_ar_0_bus', 1, 'numChannels', 4 ] ++
+			4.collect({ |i| [ "u_o_ar_%_bus".format(i).asSymbol, i+1 ] }).flat
+		],
+	] ++ 4.collect({ |i| 
+		U( \freeverb, [ 
+			'mix', 1.0, 'room', i.linlin(0,3,0.47,0.53), 'damp', [ 
+				'point_distance', [ 
+					'point1', 'shared_point_in', 
+					'fromRange', [ 0.0, 8.0 ] 
+				] ], 'u_i_ar_0_bus', 1.0, 'u_o_ar_0_bus', 1 
+			] 
+		)
+	}) ++ points.collect({ |pt,i| 
+		U( 'wfsStaticPlane', [ 'point', pt, 'u_i_ar_0_bus', i+1 ] )
+	}) ++ [ 
+		[ 'wfsDynamicPoint', [ 'point', 'shared_point_in' ] ] 
+	]
+).category_( \wfs );
 )
