@@ -62,7 +62,7 @@ defs = (2..8).collect({ |n|
 	def;
 });
 
-def = MultiUdef( \wfsPathSequencer, defs, \wfs_control, \numPaths, false );
+def = MultiUdef( \wfsPathSequencer, defs, 'wfs_control (deprecated)', \numPaths, false );
 
 def.argSpecs.last.spec.labels = (2..8).collect(_.asSymbol);
 

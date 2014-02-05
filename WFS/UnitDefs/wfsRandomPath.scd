@@ -29,7 +29,7 @@ Udef( \wfsRandomPath, { |
 	);
 	UMixOut.kr( 0, random );
 })
-	.category_( 'wfs_control' )
+	.category_( 'wfs_control (deprecated)' )
 	.setSpec( \speed, [ 0, 100, 99.squared.log, 0, 0.1 ].asSpec )
 	.setSpec( \center, WFSPointSpec( 200, 0.1@0.1 ) )
 	.setSpec( \radius, WFSRadiusSpec( 200, 0.1@0.1 ) )

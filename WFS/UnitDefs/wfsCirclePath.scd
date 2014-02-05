@@ -30,7 +30,7 @@ Udef( \wfsCirclePath, { |
 	);
 	UMixOut.kr( 0, circle );
 })
-	.category_( 'wfs_control' )
+	.category_( 'wfs_control (deprecated)' )
 	.setSpec( \speed, [ 0, 100, 99.squared.log, 0, 0.1 ].asSpec )
 	.setSpec( \startAngle, [-180,180,\lin,1,0].asSpec )
 	.setSpec( \clockwise, BoolSpec( true ) )

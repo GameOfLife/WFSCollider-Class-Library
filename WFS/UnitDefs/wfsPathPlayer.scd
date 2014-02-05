@@ -17,5 +17,5 @@ Udef( \wfsPathPlayer, {
 	sig = WFSPathBufferPlayer.kr( \wfsPath );
 	UMixOut.kr( 0, sig );
 }, [ [ \wfsPath, nil, WFSPathSpec() ] ] )
-	.category_( \wfs_control )
+	.category_( 'wfs_control (deprecated)' )
 	.setControlOutName( [0,1], ['x', 'y'] );
