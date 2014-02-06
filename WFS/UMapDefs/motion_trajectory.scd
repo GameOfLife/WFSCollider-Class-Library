@@ -14,7 +14,6 @@ clipMode: can be one of the following modes:
 	2 - 'wrap': wrap around coordinates outside clipping area
 	3 - 'none': no clipping applied (values can go outside  clipping area)
 clipSoftness: softens the edges of 'clip' and 'fold' modes.
-lag: lag time for the startPoint, startSpeed, center and radius values
 reset: jump to startPoint/startSpeed
 
 note: There may be floating precision issues when running this for a very long time.

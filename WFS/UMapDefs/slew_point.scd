@@ -1,11 +1,10 @@
 /*
 \slew_point
 
-Creates an UMap for applying a lagging filter to point input. It's main purpose is to reduce unwanted doppler shift effects.
+Creates an UMap for applying a speed limit to point input.
 
 point: the point to lag
-time: the time it will take for the point to travel to a new location
-linear: if true the lag will be a linear (ramp), if false (default) the lag is applied using a 3th order filter. The latter will produce less unnatural doppler shift changes.
+maxSpeed: maximum speed in m/s
 
 --
 this is an UMapDef definition file

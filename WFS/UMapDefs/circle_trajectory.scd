@@ -8,7 +8,6 @@ startAngle: starting angle of the path in degrees.
 clockwise: select to turn clockwise, otherwise the path turns anti-clockwise.
 center: the center of the circle (Point).
 radius: x and y radius of the circle/ellipse (Point).
-lag: a smoothing time for changes in the startAngle, center and radius. This uses a second-order filter, which may cause slight oscillations at beginnings and endings of movements. Changing the lag time during playback may cause audible artifacts.
 
 --
 this is an UMapDef definition file
