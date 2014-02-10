@@ -10,7 +10,7 @@ type: the type of noise used:
 	0: step or sample-and-hold noise; hard jumps at each value change
 	1: linear interpolated noise
 	2: cubic interpolated noise
-lag: a smoothing time for changes in the center and radius, and of the path itself if 'type' == 0. This uses a second-order filter, which may cause slight oscillations at beginnings and endings of movements. Changing the lag time during playback may cause audible artifacts.
+lag: a smoothing time for changes if 'type' == 0.
 seed: Use this to generate a different random path. Paths with the same seed are exactly the same.
 
 --
