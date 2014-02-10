@@ -20,7 +20,7 @@ UMapDef( \shared_point_out, { |point = #[0.0, 0.0], id = 0|
 	UMapOut.kr(point, false);
 })
 	.setSpec( \point, WFSPointSpec(200, 0.1) )
-	.setSpec( \id, IntegerSpec( 0, 0, 99 ) )
+	.setSpec( \id, PositiveIntegerSpec( 0, 0, 99 ) )
 	.category_( 'point_utility' )
 	.canUseUMapFunc_({ |unit, key, umapdef|
 		unit.getSpec( key ).isKindOf( PointSpec );
