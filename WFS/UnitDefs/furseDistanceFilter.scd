@@ -1,6 +1,8 @@
 /*
 \furseDistanceFilter
 
+** if a furseDistanceFilter is used in combination with a wfsDynamicPoint or wfsStaticPoint in a chain, the next time the score is opened it will be removed and replaced by a 'distanceFilter' setting in on the panner unit **
+
 The furseDistanceFilter is a filter that applies distance filtering according to a formula by Richard W. Furse (http://www.muse.demon.co.uk/vspace/model.html): 
 
 cutoff = 100000 / distance
@@ -42,5 +44,30 @@ Udef( \furseDistanceFilter, {
 			};
 		};
 	})
+	.uchainInitFunc_({	 |unit, chain|
+		var removeMe = false;
+		
+		chain.units.select({ |item| 
+			([ \wfsDynamicPoint, \wfsStaticPoint ].includes( item.defName )) && {
+				if( item.point.isUMap && unit.point.isUMap ) {
+					(item.point.defName == unit.point.defName) && {
+						item.point.args == unit.point.args;
+					};
+				} {
+					item.point == unit.point;
+				};
+			} && {
+				unit.getAudioOut(0) == item.getAudioIn(0)
+			}
+		}).do({ |item|
+			item.distanceFilter = unit.amount;
+			removeMe = true;
+		});
+					
+		if( removeMe ) { 
+			chain.units.remove( unit );
+			chain.units = chain.units; // update GUI / re-init
+		};
+	})
 	.setSpec( \amount, [0,2,\lin,0,1].asSpec )
-	.setSpec( \point, WFSPointSpec(200) );
+	.setSpec( \point, WFSPointSpec(200, 0.1) );
