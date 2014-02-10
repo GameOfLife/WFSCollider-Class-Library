@@ -37,11 +37,16 @@ Udef( \wfsCirclePath, { |
 		// this function removes or replaces the wfsCirclePath unit in the chain
 		// by the currently used UMaps at load time.
 		var outputs, removeMe = false;
-		var umaps, copy;	
+		var umaps, copy;
+		var newUMap, mixOut;		
 		
 		outputs = unit.controlOuts.collect({ |item|
 			unit.getControlOut( item );
 		}).asInt;
+		
+		mixOut = unit.controlOuts.collect({ |item|
+			unit.getControlMixOutLevel( item );
+		});
 		
 		umaps = chain.units.collect({ |unit| 
 			(unit.getAllUMaps ? []).select({ |umap| 
@@ -56,6 +61,7 @@ Udef( \wfsCirclePath, { |
 			umaps.do({ |umap|
 				umap.def = \circle_trajectory.asUdef(UMapDef);
 				umap.set( *unit.storeArgs[1] );
+				newUMap = umap;
 				removeMe = true;
 			});
 		} {
@@ -74,6 +80,19 @@ Udef( \wfsCirclePath, { |
 			unit.def = \shared_point.asUdef;
 			unit.point = [ \circle_trajectory, copy.storeArgs[1] ];
 			unit.id = outputs[0] / 2;
+			newUMap = unit.point;
+		};
+		
+		case { mixOut == [1,1] && { newUMap.center == (0@0) } } {
+			newUMap.center = [ \map_control_point, 
+				[ \bus_x, outputs[0], \bus_y, outputs[1] ] 
+			];
+		} { mixOut.any(_ != 0) } {
+			newUMap.center = [ \scale_point, [
+				\scale, mixOut.asPoint,
+				\move, newUMap.center,
+				\point, [ \map_control_point, [ \bus_x, outputs[0], \bus_y, outputs[1] ] ]
+			] ];
 		};
 	})
 	.setSpec( \speed, [ 0, 100, 99.squared.log, 0, 0.1 ].asSpec )
