@@ -16,11 +16,7 @@ part of the WFSCollider Class Library default UMapDefs set
 UMapDef( \scale_point, { |
 		point = #[0.0, 0.0],
 		scale = #[1.0,1.0],
-		move = #[0.0,0.0]
-		lag = 0.0|
-		
-	scale = LPFLag.kr( scale, lag );
-	move = LPFLag.kr( move, lag );
+		move = #[0.0,0.0]|
 	UMapOut.kr( (point * scale) + move, false );
 })
 	.category_( 'point_utility' )
