@@ -1,6 +1,8 @@
 /*
 \wfsRandomPath
 
+** wfsRandomPath is deprecated and will be removed at some point. Please use the \random_trajectory UMapDef instead. This Udef has a built-in function which makes it replace itself by a \random_trajectory UMap which is automaticaly inserted at the correct places, when it is found in a saved .uscore file or created via code **
+
 a Udef generating a random trajectory as a control signal.
 
 This signal can be used by the wfsDynamicPoint and wfsDynamicPlane udefs, by checking their 'pointFromBus' argument.
@@ -30,6 +32,54 @@ Udef( \wfsRandomPath, { |
 	UMixOut.kr( 0, random );
 })
 	.category_( 'wfs_control (deprecated)' )
+	.uchainInitFunc_({ |unit, chain|
+		// this function removes or replaces the wfsRandomPath unit in the chain
+		// by the currently used UMaps at load time.
+		var outputs, removeMe = false;
+		var umaps, args;	
+		
+		outputs = unit.controlOuts.collect({ |item|
+			unit.getControlOut( item );
+		}).asInt;
+		args = [ 
+			\speed, unit.speed, 
+			\center, unit.center, 
+			\radius, unit.radius, 
+			\seed, unit.seed 
+		];
+		
+		umaps = chain.units.collect({ |unit| 
+			(unit.getAllUMaps ? []).select({ |umap| 
+				(umap.defName === \map_control_point) && { 
+					[umap.bus_x, umap.bus_y].asInt == outputs; 
+				}
+			})
+		}).flatten(1);
+		
+		if( umaps.size < 2 ) {
+			// if only used once, directly insert at that spot
+			umaps.do({ |umap|
+				umap.def = \random_trajectory.asUdef(UMapDef);
+				umap.set( *args );
+				removeMe = true;
+			});
+		} {
+			// if used multiple times, use a \shared_point
+			umaps.do({ |umap|
+				umap.def = \shared_point_in.asUdef(UMapDef);
+				umap.id = outputs[0] / 2;
+			});
+		};
+		
+		if( removeMe ) { 
+			chain.units.remove( unit );
+			chain.units = chain.units; // update GUI / re-init
+		} {
+			unit.def = \shared_point.asUdef;
+			unit.point = [ \random_trajectory, args ];
+			unit.id = outputs[0] / 2;
+		};
+	})
 	.setSpec( \speed, [ 0, 100, 99.squared.log, 0, 0.1 ].asSpec )
 	.setSpec( \center, WFSPointSpec( 200, 0.1@0.1 ) )
 	.setSpec( \radius, WFSRadiusSpec( 200, 0.1@0.1 ) )

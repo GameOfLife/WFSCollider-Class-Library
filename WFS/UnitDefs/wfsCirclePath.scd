@@ -1,6 +1,8 @@
 /*
 \wfsCirclePath
 
+** wfsCirclePath is deprecated and will be removed at some point. Please use the \circle_trajectory UMapDef instead. This Udef has a built-in function which makes it replace itself by a \circle_trajectory UMap which is automaticaly inserted at the correct places, when it is found in a saved .uscore file or created via code **
+
 Generates a circular or elliptical control signal.
 
 This signal can be used by the wfsDynamicPoint and wfsDynamicPlane udefs, by checking their 'pointFromBus' argument.
@@ -31,6 +33,49 @@ Udef( \wfsCirclePath, { |
 	UMixOut.kr( 0, circle );
 })
 	.category_( 'wfs_control (deprecated)' )
+	.uchainInitFunc_({	 |unit, chain|
+		// this function removes or replaces the wfsCirclePath unit in the chain
+		// by the currently used UMaps at load time.
+		var outputs, removeMe = false;
+		var umaps, copy;	
+		
+		outputs = unit.controlOuts.collect({ |item|
+			unit.getControlOut( item );
+		}).asInt;
+		
+		umaps = chain.units.collect({ |unit| 
+			(unit.getAllUMaps ? []).select({ |umap| 
+				(umap.defName === \map_control_point) && { 
+					[umap.bus_x, umap.bus_y].asInt == outputs; 
+				}
+			})
+		}).flatten(1);
+		
+		if( umaps.size < 2 ) {
+			// if only used once, directly insert at that spot
+			umaps.do({ |umap|
+				umap.def = \circle_trajectory.asUdef(UMapDef);
+				umap.set( *unit.storeArgs[1] );
+				removeMe = true;
+			});
+		} {
+			// if used multiple times, use a \shared_point
+			umaps.do({ |umap|
+				umap.def = \shared_point_in.asUdef(UMapDef);
+				umap.id = outputs[0] / 2;
+			});
+		};
+		
+		if( removeMe ) { 
+			chain.units.remove( unit );
+			chain.units = chain.units; // update GUI / re-init
+		} {
+			copy = unit.deepCopy; // in any case, replace by a \shared_point
+			unit.def = \shared_point.asUdef;
+			unit.point = [ \circle_trajectory, copy.storeArgs[1] ];
+			unit.id = outputs[0] / 2;
+		};
+	})
 	.setSpec( \speed, [ 0, 100, 99.squared.log, 0, 0.1 ].asSpec )
 	.setSpec( \startAngle, [-180,180,\lin,1,0].asSpec )
 	.setSpec( \clockwise, BoolSpec( true ) )
