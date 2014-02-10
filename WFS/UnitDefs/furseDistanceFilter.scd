@@ -17,15 +17,30 @@ part of the WFSCollider Class Library default Udefs set
 */
 
 Udef( \furseDistanceFilter, { 
-	var sig, point = (0@0), pointFromBus = 0, freq;
-	pointFromBus = \pointFromBus.kr( pointFromBus );
-	point = (\point.kr( point.asArray ) * (1-pointFromBus)) 
-		+ ( UIn.kr(0,2) * pointFromBus ).asPoint;
+	var sig, point = (0@0), freq;
+	point = \point.kr( point.asArray ).asPoint;
 	sig = UIn.ar(0);
 	freq = (100000 / ( point.rho * \amount.kr(1).cubed )).clip(0,100000);
 	sig = OnePole.ar( sig, ( -2pi * (freq / SampleRate.ir) ).exp );
 	UOut.ar( 0, sig );
 }).category_( \filter )
+	.prepareArgsFunc_({ |argPairs|
+		var point;
+		if( argPairs.notNil) {
+			if( argPairs.pairsAt( \pointFromBus ) == true ) {
+				if( argPairs.includes( \u_i_kr_0_bus ) or: { 
+					argPairs.includes( \u_i_kr_1_bus ) 
+				} ) {
+					argPairs = [ \point, [ \map_control_point, [ 
+						\bus_x, argPairs.pairsAt( \u_i_kr_0_bus ) ? 0,
+						\bus_y, argPairs.pairsAt( \u_i_kr_1_bus ) ? 1
+						] 
+					], \pointFromBus, false ] ++ argPairs;
+				} {
+					argPairs = [ \point, \map_control_point, \pointFromBus, false ] ++ argPairs;
+				};
+			};
+		};
+	})
 	.setSpec( \amount, [0,2,\lin,0,1].asSpec )
-	.setSpec( \point, WFSPointSpec(200) )
-	.setSpec( \pointFromBus, BoolSpec(false), private: true );
+	.setSpec( \point, WFSPointSpec(200) );
