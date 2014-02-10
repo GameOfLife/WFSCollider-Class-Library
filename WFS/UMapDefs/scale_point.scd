@@ -6,7 +6,6 @@ Creates an UMap for scaling and moving a point. The point can also be UMaps.
 point: the first point
 scale: a multiplier for x/y
 move: a point to add to the point
-lag: a lag to smoothen changes to scale and move.
 
 --
 this is an UMapDef definition file

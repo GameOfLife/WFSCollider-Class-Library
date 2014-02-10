@@ -12,7 +12,6 @@ clipMode: can be one of the following modes:
 	2 - 'wrap': wrap around coordinates outside clipping area
 	3 - 'none': no clipping applied (values can go outside  clipping area)
 clipSoftness: softens the edges of 'clip' and 'fold' modes (0-1).
-lag: lag time for the center and radius values
 
 The value arg range is mapped to that of the parameter to which the UMap is connected.
 
@@ -27,10 +26,8 @@ UMapDef( \clip_point, { |
 		center = #[0.0, 0.0], 
 		radius = #[10.0, 10.0], 
 		clipMode = 0,
-		clipSoftness = 0.1,
-		lag = 0.0|
-	center = LPFLag.kr( center, lag );
-	radius = LPFLag.kr( radius, lag ).max(1.0e-10);
+		clipSoftness = 0.1|
+	radius = radius.max(1.0e-10);
 	point = point - center;
 	point = point.linlin( radius.neg, radius, -1, 1, \none );
 	point = Select.kr( clipMode, [

@@ -6,7 +6,6 @@ Creates an UMap for crossfading between two points via linear interpolation. The
 a: the first point
 b: the second point
 crossfade: (0-1) the crossfading position (a to b)
-lag: a lag time, applied to the crossfade position
 
 --
 this is an UMapDef definition file
@@ -16,9 +15,7 @@ part of the WFSCollider Class Library default UMapDefs set
 UMapDef( \crossfade_point, { |
 		a = #[0.0, 0.0],
 		b = #[10.0,10.0],
-		crossfade = 0.5, 
-		lag = 0.0|
-	crossfade = LPFLag.kr( crossfade, lag );
+		crossfade = 0.5|
 	UMapOut.kr( (a * (1-crossfade)) + (b * crossfade), false );
 })
 	.category_( 'point_utility' )

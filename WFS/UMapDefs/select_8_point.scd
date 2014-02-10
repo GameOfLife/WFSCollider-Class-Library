@@ -4,7 +4,6 @@
 Creates an UMap that can select one from 8 points.
 
 index: the index of the point (0-7)
-lag: a lag time for index
 interpolation: interpolation type (0:step, 1:linear) // cubic: todo
 point0 - point7: the values of the steps (can be UMaps)
 
@@ -15,11 +14,9 @@ part of the Unit lib default UMapDefs set
 
 UMapDef( \select_8_point, {
 	var points, interpolation;
-	var index, lag, sig;
+	var index, sig;
 	index = \index.kr(0);
-	lag = \lag.kr(0.0);
-	index = LPFLag.kr( index, lag );
-	interpolation = \interpolation.kr(1.0).lag(lag);
+	interpolation = \interpolation.kr(1.0);
 	points = 8.collect({ |i|
 		("point"++i).asSymbol.kr([0.0,0.0]);
 	});
