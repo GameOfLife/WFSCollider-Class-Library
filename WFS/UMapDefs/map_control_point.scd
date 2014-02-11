@@ -25,4 +25,4 @@ FuncUMapDef( \map_control_point, { |unit, bus_x = 0, bus_y = 1|
 	.canUseUMapFunc_({ |unit, key, umapdef|
 		unit.getSpec( key ).isKindOf( PointSpec )
 	})
-	.category_( 'input' )
+	.category_( 'private' )
