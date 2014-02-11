@@ -1,6 +1,8 @@
 /*
 \simpleReverb
 
+** simpleReverb is deprecated, please use FreeVerb and UMaps instead **
+
 This reverb has to be used together with a wfs_control, like wfsPoint. The control busses of wfsPoint have to be connected to the control busses of simpleReverb. To connect the busses, click on i/o in the toolbar. 
 The distance of the point from the center of the speaker arrays is used to calculate the damping of the reverb. The maximum damping occurs at a distance of 8 metres. The distance is static and stays the same after the reverb is started.
 To mix the reverb with the original signal, another wfs-panner is needed, like wfsStaticPoint. This Udef needs to be placed directly behind the source that goes into simpleReverb.
