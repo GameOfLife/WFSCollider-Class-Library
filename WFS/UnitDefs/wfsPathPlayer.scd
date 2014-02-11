@@ -19,7 +19,7 @@ Udef( \wfsPathPlayer, {
 	sig = WFSPathBufferPlayer.kr( \wfsPath );
 	UMixOut.kr( 0, sig );
 }, [ [ \wfsPath, nil, WFSPathSpec() ] ] )
-	.category_( 'wfs_control (deprecated)' )
+	.category_( 'private' )
 	.uchainInitFunc_({	 |unit, chain|
 		// this function removes or replaces the wfsPathPlayer unit in the chain
 		// by the currently used UMaps at load time.

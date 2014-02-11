@@ -31,7 +31,7 @@ Udef( \wfsRandomPath, { |
 	);
 	UMixOut.kr( 0, random );
 })
-	.category_( 'wfs_control (deprecated)' )
+	.category_( 'private' )
 	.uchainInitFunc_({ |unit, chain|
 		// this function removes or replaces the wfsRandomPath unit in the chain
 		// by the currently used UMaps at load time.

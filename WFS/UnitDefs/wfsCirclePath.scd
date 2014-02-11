@@ -32,7 +32,7 @@ Udef( \wfsCirclePath, { |
 	);
 	UMixOut.kr( 0, circle );
 })
-	.category_( 'wfs_control (deprecated)' )
+	.category_( 'private' )
 	.uchainInitFunc_({	 |unit, chain|
 		// this function removes or replaces the wfsCirclePath unit in the chain
 		// by the currently used UMaps at load time.

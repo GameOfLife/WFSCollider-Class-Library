@@ -23,7 +23,7 @@ Udef(\wfsPoint,
     [ \point: 0@0, WFSPointSpec( 200, 0.1 ) ],
     [ \lag: 0, [ 0, 1, \lin, 0, 0].asSpec ]
 ]
-).category_( 'wfs_control (deprecated)' )
+).category_( 'private' )
 	.uchainInitFunc_({ |unit, chain|
 		// this function replaces the wfsPoint unit in the chain
 		// by a \shared_point, and any of \map_control_point UMaps

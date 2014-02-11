@@ -65,7 +65,7 @@ defs = (2..8).collect({ |n|
 	def;
 });
 
-def = MultiUdef( \wfsPathSequencer, defs, 'wfs_control (deprecated)', \numPaths, false );
+def = MultiUdef( \wfsPathSequencer, defs, 'private', \numPaths, false );
 
 makeUMap = { |unit|
 	// function to convert a \wfsPathSequencer to appropriate UMap
