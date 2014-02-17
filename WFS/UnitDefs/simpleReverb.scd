@@ -13,14 +13,27 @@ this is an Udef definition file
 part of the WFSCollider Class Library default Udefs set
 */
 
-Udef( \simpleReverb, { |time = 0.1, room = 0.5, amp = 0.2|
-	var in, rev, point, dist;
+Udef( \simpleReverb, { |point = #[0,0], time = 0.1, room = 0.5, amp = 0.2|
+	var in, rev, dist;
 	in = UIn.ar( 0, 1 );
-	point = UIn.kr(0,2).asPoint;
-	dist = point.rho;
+	dist = point.asPoint.rho;
 	rev = FreeVerb.ar( in, 1, room, dist.linlin(0.0,8.0,0.0,1.0) ) * amp * dist.linlin(0.0,8.0,0.0,1.0);
 	UOut.ar( 0, rev )
 } )
 	.category_( \private )
+	.prepareArgsFunc_({ |argPairs|
+		argPairs = argPairs.asCollection;
+		if( argPairs.includes( \u_i_kr_0_bus ) or: { argPairs.includes( \u_i_kr_1_bus ) } ) {				argPairs = [ \point, [ \map_control_point, [ 
+						\bus_x, argPairs.pairsAt( \u_i_kr_0_bus ) ? 0,
+						\bus_y, argPairs.pairsAt( \u_i_kr_1_bus ) ? 1
+					] 
+				],
+			] ++	argPairs;	
+		} {
+			argPairs = [ \point, \map_control_point ] ++ argPairs;
+		};
+		argPairs;
+	})
+	.setSpec( \point, WFSPointSpec(200,0.1) )
 	.setSpec( \room, [ 0, 1, \lin, 0, 0.5 ] )
 	.setSpec( \amp, [0,1,\lin, 0.2], \normal )
