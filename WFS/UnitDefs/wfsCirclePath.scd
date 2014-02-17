@@ -61,6 +61,7 @@ Udef( \wfsCirclePath, { |
 			umaps.do({ |umap|
 				umap.def = \circle_trajectory.asUdef(UMapDef);
 				umap.set( *unit.storeArgs[1] );
+				umap.set( \startAngle, unit.startAngle.linlin(-180,180,-pi,pi) );
 				newUMap = umap;
 				removeMe = true;
 			});
@@ -79,6 +80,7 @@ Udef( \wfsCirclePath, { |
 			copy = unit.deepCopy; // in any case, replace by a \shared_point
 			unit.def = \shared_point.asUdef;
 			unit.point = [ \circle_trajectory, copy.storeArgs[1] ];
+			unit.point.set( \startAngle, copy.startAngle.linlin(-180,180,-pi,pi) );
 			unit.id = outputs[0] / 2;
 			newUMap = unit.point;
 		};
