@@ -23,14 +23,16 @@ Udef( \simpleReverb, { |point = #[0,0], time = 0.1, room = 0.5, amp = 0.2|
 	.category_( \private )
 	.prepareArgsFunc_({ |argPairs|
 		argPairs = argPairs.asCollection;
-		if( argPairs.includes( \u_i_kr_0_bus ) or: { argPairs.includes( \u_i_kr_1_bus ) } ) {				argPairs = [ \point, [ \map_control_point, [ 
-						\bus_x, argPairs.pairsAt( \u_i_kr_0_bus ) ? 0,
-						\bus_y, argPairs.pairsAt( \u_i_kr_1_bus ) ? 1
-					] 
-				],
-			] ++	argPairs;	
-		} {
-			argPairs = [ \point, \map_control_point ] ++ argPairs;
+		if( argPairs.includes( \point ).not ) {
+			if( argPairs.includes( \u_i_kr_0_bus ) or: { argPairs.includes( \u_i_kr_1_bus ) } ) {				argPairs = [ \point, [ \map_control_point, [ 
+							\bus_x, argPairs.pairsAt( \u_i_kr_0_bus ) ? 0,
+							\bus_y, argPairs.pairsAt( \u_i_kr_1_bus ) ? 1
+						] 
+					],
+				] ++	argPairs;	
+			} {
+				argPairs = [ \point, \map_control_point ] ++ argPairs;
+			};
 		};
 		argPairs;
 	})
