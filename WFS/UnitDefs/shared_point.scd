@@ -20,4 +20,4 @@ Udef( \shared_point, { |point = #[0.0, 0.0], id = 0|
 })
 	.setSpec( \point, WFSPointSpec(200, 0.1) )
 	.setSpec( \id, PositiveIntegerSpec( 0, 0, 99 ) )
-	.category_( 'utility' );
+	.category_( 'shared_io' );
