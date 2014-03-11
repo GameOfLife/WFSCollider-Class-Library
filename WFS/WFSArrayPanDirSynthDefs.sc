@@ -21,7 +21,7 @@ WFSArrayPanDirSynthDefs : WFSArrayPanSynthDefs {
 			// synth args:
 			var arrayConf, outOffset = 0, addDelay = 0;
 			var point = 0@0, amp = 1, arrayRollOff = -9, arrayLimit = 1;
-			var pattern = [0,1,0,1], direction = 0;
+			var radiation = [0,1,0,1], direction = 0;
 			
 			// local variables
 			var gain = 0.dbamp; // hard-wired for now
@@ -44,6 +44,9 @@ WFSArrayPanDirSynthDefs : WFSArrayPanSynthDefs {
 			arrayRollOff = \arrayDbRollOff.ir( arrayRollOff );
 			arrayLimit = \arrayLimit.ir( arrayLimit );
 			
+			radiation = \radiation.kr( radiation );
+			direction = \direction.kr( direction );
+			
 			gain = \gain.kr( gain );
 			input = UIn.ar(0, 1) * gain * amp;
 			
@@ -57,13 +60,13 @@ WFSArrayPanDirSynthDefs : WFSArrayPanSynthDefs {
 			Out.ar( outOffset, 
 				panner.ar( 
 					input, point, int, 
-					direction, pattern[..2], pattern[3]
+					direction, radiation[..2], radiation[3]
 				)
 			); 
 		});
 	}
 	
-	*generateAll { |action, dir, estimatedTime = 60| // and write to disk
+	*generateAll { |action, dir, estimatedTime = 90| // and write to disk
 		
 		// this takes about 30 seconds in normal settings
 		// can be stopped via cmd-.
@@ -84,7 +87,7 @@ WFSArrayPanDirSynthDefs : WFSArrayPanSynthDefs {
 		{	
 			var started;
 			started = Main.elapsedTime;
-			"started generating WFSArrayPanSynth synthdefs".postln;
+			"started generating WFSArrayPanSynthDefs".postln;
 			" this may take % seconds or more\n".postf( estimatedTime );
 			synthDefs = all.collect({ |item|
 				var out = this.allSizes.collect({ |size|
@@ -92,10 +95,10 @@ WFSArrayPanDirSynthDefs : WFSArrayPanSynthDefs {
 						.justWriteDefFile( dir );
 				});
 				waitTime.wait;
-				"  WFSArrayPanSynth synthdefs for % ready\n".postf( item.join("_") );
+				"  WFSArrayPanDirSynthDefs synthdefs for % ready\n".postf( item.join("_") );
 				out;
 			});
-			"done generating WFSArrayPanSynth synthdefs in %s\n"
+			"done generating WFSArrayPanDirSynthDefs in %s\n"
 				.postf( (Main.elapsedTime - started).round(0.001) );
 			action.value( synthDefs );
 		}.fork(AppClock);
