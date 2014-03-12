@@ -15,7 +15,7 @@ RadiationPatternSpec : Spec {
 		if( value.size != 4 ) {
 			value = value.extend( 4, 0 );
 		};
-		^value.clip([-1,-1,-1, 1], [1, 1, 1, 8]).round([0,0,0,1]);
+		^value.clip([0,0,0,1], [1, 1, 1, 8]).round([0,0,0,1]);
 	}
 	
 	map { |value|
@@ -68,14 +68,13 @@ RadiationPatternSpec : Spec {
 			vws[ name ] = EZSmoothSlider( view, 
 				subViewBounds + Rect(0, i * subViewHeight, 0, 0 ),
 				name.asString[0].asString, 
-				[-1,1].asSpec, 
+				[0,1].asSpec, 
 				{ |vw|
 					vws[ \val ][ i ] = vw.value;
 		        		action.value( vws, vws[ \val ] );
 		    		},
 		    		vws[ \val ][ i ]
 			).labelWidth_( 10 );
-			vws[ name ].sliderView.centered = true;
 			vws[ name ].view.resize = 2;
 			view.view.decorator.nextLine;
 			view.view.decorator.shift( labelWidth + 2 );
