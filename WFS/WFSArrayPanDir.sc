@@ -22,13 +22,13 @@ WFSArrayPanDir : WFSArrayPan {
 		// ------- calculate directional amplitudes ------
 		adifx = difx.excess(1) + ((difx > 0).binaryValue * 2 - 1 ); // limit distance to 1m
 		
-		angles = atan2( dify, adifx ).wrap(-0.5pi,0.5pi) + angle - direction;
+		angles = atan2( dify, adifx ).wrap(0.5pi,1.5pi) + (angle - direction);
 		
 		sines = sines / sines.abs.sum.max(1e-12); // normalize abs sum of sines
 		
 		angleAmplitudes = angles.collect({ |angle|
 			sines[0] + sines[1..].collect({ |sine, i|
-				(angle * (i+1) * sineMul).cos * sine.neg;
+				(angle * (i+1) * sineMul).cos * sine;
 			}).sum;
 		});
 		
