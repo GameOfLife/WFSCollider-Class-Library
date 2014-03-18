@@ -73,11 +73,11 @@ RadiationPatternSpec : Spec {
 		vws[ \plot ] = UserView( view, (subViewHeight@subViewHeight) * 3 )
 			.background_( Color.gray(0.5) )
 			.drawFunc_({ |vw|
-				var radius, points, pos, n = 100;
+				var radius, points, pos, n = 64;
 				radius = (vw.bounds.width / 2) - 2;
 				#points, pos = n.collect({ |i|
 					var value;
-					i = i.linlin(0,n-1,0,2pi);
+					i = i.linlin(0,n,0,2pi);
 					value = getPoint.( i );
 					[
 						Polar( value.abs * radius, i ).asPoint,
