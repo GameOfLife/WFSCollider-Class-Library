@@ -360,6 +360,7 @@ WFSLib {
 	
 	*setServerOptions{ |numOuts=96|
 		Server.default.options
+			.maxSynthDefs_(2048)
 			.numPrivateAudioBusChannels_(256)
 			.numOutputBusChannels_(numOuts)
 			.numInputBusChannels_(20)
