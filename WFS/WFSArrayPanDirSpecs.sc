@@ -38,6 +38,8 @@ RadiationPatternSpec : Spec {
 		var view, vws, stp, labelWidth;
 		var subViewHeight, subViewWidth;
 		var getPoint;
+		var angle = 0, angleCtrl, direction, currentUnit;
+		
 		vws = ();
 		
 		vws[ \val ] = default.copy;
@@ -60,13 +62,33 @@ RadiationPatternSpec : Spec {
 		subViewHeight = bounds.height / 4;
 		subViewWidth = bounds.width - (labelWidth + 4) - (subViewHeight * 3) - 2;
 		
-		getPoint = { |angle = 0|
+		currentUnit = UGUI.nowBuildingUnit;
+		
+		if( currentUnit.notNil ) {
+			direction = currentUnit.get( \direction );
+			if( direction.notNil ) {
+				if( direction.isUMap.not ) { angle = direction; };
+				angleCtrl = SimpleController( currentUnit )
+					.put( \direction, { 
+						direction = currentUnit.get( \direction );
+						if( direction.isUMap.not ) { 
+							angle = direction; 
+						} {
+							angle = 0;
+						};
+						{ vws[ \plot ].refresh }.defer;
+					});
+			};
+			view.onClose_( { angleCtrl.remove } );
+		};
+		
+		getPoint = { |inAngle = 0|
 			var values, n;
 			values = vws[ \val ][..2];
 			values = values / values.abs.sum.max(1.0e-12);
 			n = vws[ \val ][3];
 			values[0] + values[1..].collect({ |sine, i|
-				(angle * (i+1) * n).cos * sine;
+				((inAngle + angle) * (i+1) * n).cos * sine;
 			}).sum;
 		};
 		
