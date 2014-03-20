@@ -61,6 +61,7 @@ WFSPositionTracker {
 			if( [ 
 					\wfsStaticPoint, 
 					\wfsDynamicPoint, 
+					\wfsDynamicDirectional,
 				].includes( unit.name ) ) {
 				pannerUnits = pannerUnits.add( unit );
 				typeDict[ i ] = \point;
