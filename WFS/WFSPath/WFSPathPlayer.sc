@@ -85,6 +85,9 @@ WFSPathBufferPlayer { // use this inside an Udef
 		var bufnum, rate, loop, delay, startFrame;
 		key = key ? 'wfsPath';
 		#bufnum, startFrame, rate, loop, delay = key.asSymbol.kr( [ 0, 0, 1, 0, 0 ] );
+		if( trigger.isKindOf( Symbol ) ) {
+			trigger = trigger.tr(1);
+		};
 		startFrame = startFrame + startPos;
 		^[ bufnum, startFrame, rate, loop, delay, trigger, 2 ];
 	}
