@@ -1,11 +1,16 @@
 /*
 \wfsDynamicDirectional
 
-This udef creates a dynamic point source on the WFS system. The position of the source can be changed in realtime (dynamic).
+This udef creates a dynamic point source on the WFS system, with a directional radiation pattern. The position of the source can be changed in realtime (dynamic).
 
-pointFromBus: (Boolean) set to true if you want to set the plane wave from the input of another unit in the chain (such as \wfsPathPlayer or another from the wfs_control category).
 point: This point represents the absolute location of the point source.
-pointLag: damps the movement of the point. This is useful if your controller has a low resolution or the point is changed manually. This uses a second-order filter, which may cause slight oscillations at beginnings and endings of movements. Changing the lag time during playback may cause audible artifacts.
+direction: the direction of the radiation pattern
+radiation: defines the radiation pattern in 4 values; [o,d,q,n]
+	- o: omnidirectional component (0-1)
+	- d: dipole component (0-1)
+	- q: quadrupole component (0-1)
+	- n: pole multiplier (1-8)
+	the graphic interface shows a directional amplitude plot of the currently set values
 quality: (i) (\normal or \better) setting for the interpolation quality of the delays.
 	normal = linear interpolation
 	better = cubic interpolation
