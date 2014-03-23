@@ -3,6 +3,8 @@
 
 This udef creates a dynamic point source on the WFS system, with a directional radiation pattern. The position of the source can be changed in realtime (dynamic).
 
+*This feature of WFSCollider is currently under development, please test and report your findings*
+
 point: This point represents the absolute location of the point source.
 direction: the direction of the radiation pattern
 radiation: defines the radiation pattern in 4 values; [o,d,q,n]
