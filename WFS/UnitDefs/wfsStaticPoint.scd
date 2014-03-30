@@ -46,11 +46,11 @@ def = FreeUdef( \wfsStaticPoint, [
 	.envPut( \getSetArgsFor, { |evt, defName, args, server, startPos = 0|
 		evt.getArgsFor( evt[ ("set_" ++ defName).asSymbol ], args, server, startPos );
 	})
-	.envPut( \init_wfsp, [ \latencyComp, \u_dur, \point ] ) // controls only set at init
+	.envPut( \init_wfsp, [ \latencyComp, \u_dur, \point, \u_doneAction ] ) // controls only set at init
 	.envPut( \set_wfsp, [ // controls that can always be set
 		\distanceFilter, \dbRollOff, \maxAmpRadius,
 		\u_i_ar_0_bus, 
-		\u_doneAction, \u_gain, \u_gate, \u_mute,
+		\u_gain, \u_gate, \u_mute,
 		\u_fadeIn, \u_fadeOut,
 		\u_globalGain,
 		\u_globalEQ_setting, \u_globalEQ_bypass, 
@@ -67,7 +67,11 @@ def = FreeUdef( \wfsStaticPoint, [
 			var key = switch( sn.class, Group, \wfsa, Synth, \wfsp );
 			server.sendSyncedBundle( Server.default.latency, nil, 
 				*server.makeBundle( false, {
-		    			sn.set( *unit.def.env.getSetArgsFor( key, keyValuePairs, server ) )
+					var args;
+					args = unit.def.env.getSetArgsFor( key, keyValuePairs, server );
+					if( args.size > 0 ) {
+		    				sn.set( *unit.def.env.getSetArgsFor( key, keyValuePairs, server ) )
+					};
 	    			})
 	    		);
 		})
@@ -182,7 +186,7 @@ if( WFSPreviewSynthDefs.pannerFuncs.keys.includes( WFSLib.previewMode ).not ) {
 			WFSPreviewSynthDefs.getDefName( WFSLib.previewMode, \s ),
 			unit.def.env.getInitArgsFor( \wfsa, unit.args, server, startPos ) ++
 				[ \out, WFSSpeakerConf.getOutputBusStartOffset( target ) ],
-			target, \addToTail 
+			arrayGroup, \addToTail 
 		);
 				
 		arrayGroup.freeAction_({ |synth| unit.removeSynth( synth ); });
