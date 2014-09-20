@@ -70,9 +70,9 @@
 		
 	*fromDOMElement { arg tag;
 		^this.new( 
-			tag.getAttribute("x").interpret,
-			tag.getAttribute("y").interpret, 
-			tag.getAttribute("z").interpret );
+			tag.getAttribute("x").interpret ? 0,
+			tag.getAttribute("y").interpret ? 0, 
+			tag.getAttribute("z").interpret ? 0 );
 		}
 	}
 		
@@ -88,8 +88,8 @@
 	
 	*fromDOMElement { arg tag;
 		    	^this.new(
-		    		tag.getAttribute("angle").interpret,
-				tag.getAttribute("distance").interpret
+		    		tag.getAttribute("angle").interpret ? 0,
+				tag.getAttribute("distance").interpret ? 0
 		    		);
 			}
 			
