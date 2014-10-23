@@ -74,7 +74,7 @@
 					.align_( \right );
 				views[ key ] = PopUpMenu( composite, 
 						(composite.bounds.width - labelWidth - 4) @ viewHeight )
-					.items_([ 'bypass', 'replace', '+', '-', '*', 'min', 'max' ])
+					.items_([ 'bypass', 'replace', 'lin_xfade', '+', '-', '*', 'min', 'max' ])
 					.applySkin( RoundView.skin ? () )
 					.action_({ |pu|
 						f.perform( mode.asSetter, pu.item );

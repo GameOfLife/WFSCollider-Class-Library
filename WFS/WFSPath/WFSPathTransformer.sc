@@ -117,6 +117,7 @@ WFSPathGenerator : WFSPathTransformer {
 	applyFunc { |obj, def|
 		var copy, result;
 		var newX, newY, newT;
+		var size;
 		copy = obj.deepCopy;
 		def = def ?? { this.def };
 		if( polar ) {
@@ -133,12 +134,17 @@ WFSPathGenerator : WFSPathTransformer {
 		
 		if( def.changesX ) {
 			newX = result.positions.collect(_.x);
+			size = newX.size;
 			obj.positions.do({ |item, i|
 				var x;
 				switch( modeX,
 					\replace, { 
 						x = newX[i]; 
 						item.x = item.x.blend( x, blend );
+					},
+					\lin_xfade, {
+						x = newX[i];
+						item.x = item.x.blend( x, blend * (i/(size-1)) );
 					},
 					\bypass, { },
 					{
@@ -159,6 +165,10 @@ WFSPathGenerator : WFSPathTransformer {
 						y = newY[i]; 
 						item.y = item.y.blend( y, blend );
 					},
+					\lin_xfade, {
+						y = newY[i];
+						item.y = item.y.blend( y, blend * (i/(size-1)) );
+					},
 					\bypass, { },
 					{
 						y = item.y.perform( modeY, newY[i] );
@@ -176,6 +186,10 @@ WFSPathGenerator : WFSPathTransformer {
 					\replace, { 
 						t = newT[i]; 
 						item.blend( t, blend );
+					},
+					\lin_xfade, {
+						t = newT[i];
+						item.blend( t, blend * (i/(size-1)) );
 					},
 					\bypass, { item },
 					{
