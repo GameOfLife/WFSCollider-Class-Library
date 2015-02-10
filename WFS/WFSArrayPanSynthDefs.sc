@@ -291,7 +291,7 @@ WFSPrePanSynthDefs : AbstractWFSSynthDefs {
 			input = LeakDC.ar( input, 0.997 );
 			input = UGlobalEQ.ar( input );
 			input = (input / 4).softclip * 4; // 6dB headroom, then softclip to 12dB
-			input = Line.kr(0,1,\u_fadeIn.kr(0)) * input;
+			input = Env([0,1],[\u_fadeIn.kr(0)], \u_fadeInCurve.kr(0) ).kr * input;
 			input = OnePole.ar( input, ( -2pi * (
 		 			(
 			 			100000 / ( point.rho * \distanceFilter.kr(0).cubed )

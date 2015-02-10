@@ -55,6 +55,7 @@ def = FreeUdef( \wfsDynamicPlane, [
 		\u_i_ar_0_bus,
 		\u_doneAction, \u_gain, \u_gate, \u_mute,
 		\u_fadeIn, \u_fadeOut,
+		\u_fadeInCurve, \u_fadeOutCurve,
 		\u_globalGain,
 		\u_globalEQ_setting, \u_globalEQ_bypass,  
 	] )
