@@ -19,7 +19,7 @@ FreeUdef( \vbap3D_Simple_Panner, [
 				unit.getArgsFor( target, startPos, buses ) ++ [\u_bufnum,buf.bufnum, \u_delays, delays]
 				, target, \addToTail );
 		} ?? {
-			Synth( ("VBAP_3D_SIMPLE_"++n).asSymbol,
+			Synth( ("VBAP_SIMPLE_3D_"++n).asSymbol,
 				unit.getArgsFor( target, startPos, buses ) ++ [\u_bufnum,buf.bufnum]
 				, target, \addToTail );
 		}
