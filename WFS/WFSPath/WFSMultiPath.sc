@@ -37,7 +37,7 @@ WFSMultiPath {
 	}
 	
 	positions_ { |positions|
-		positions.clumps( paths.collect(_.positions.size) ).do({ |item, i|
+		positions.clumps( paths.collect({|item|item.positions.size}) ).do({ |item, i|
 			paths[i].positions = item;
 		});	
 	}
@@ -45,9 +45,22 @@ WFSMultiPath {
 	times {
 		var times = [];
 		paths.do({ |pth|
-			times ++ pth.times ++ [fillTime]
+			times = times ++ pth.times
 		});
-		^times;
+		times;
+		^[]
+	}
+	
+	times_ { |newTimes|
+		
+	}
+	
+	distances {
+		^[]
+	}
+	
+	speeds {
+		^[]
 	}
 
 	forceTimes {
@@ -65,5 +78,28 @@ WFSMultiPath {
 			Rect(0,0,0,0);
 		}
 	}
+	
+	name { ^"" }
+	name_ { }
+	
+	type { ^\bspline }
+	type_ { }
+	
+	curve { ^1 }
+	curve_ { }
+	
+	clipMode { ^\clip }
+	clipMode_ { }
+	
+	duration { ^this.paths.collect(_.duration).mean }
+	duration_ { |dur|
+		var oldDur;
+		oldDur = this.duration;
+		this.paths.do({ |item|
+			item.duration = item.duration * ( dur / oldDur )
+		});
+	}
+	
+	asWFSPath2 { ^this }
 	
 }
