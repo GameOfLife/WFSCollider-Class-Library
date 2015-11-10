@@ -2,6 +2,7 @@ WFSPathTransformerDef( \sort,
 	{ |f, path| 
 		var sortedPos, oldPos, type;
 		type = f.get( \sort );
+		if( type != \scramble ) { f.environment[ \seed ] = nil; };
 		switch( type,
 			\distance, {
 				sortedPos = path.positions.deepCopy.sort({ |a,b|
@@ -12,6 +13,13 @@ WFSPathTransformerDef( \sort,
 				sortedPos = path.positions.deepCopy.sort({ |a,b|
 					a.theta <= b.theta;
 				});
+			},
+			\scramble, {
+				if( f.environment[ \seed ].isNil ) {
+					f.environment[ \seed ] = 1569325056.rand;
+				};
+				thisThread.randSeed = f.environment[ \seed ];
+				sortedPos = path.positions.deepCopy.scramble;
 			},
 			\nearest, {
 				oldPos = path.positions.reverse;
@@ -65,4 +73,4 @@ WFSPathTransformerDef( \sort,
 	}, 
 	[ \sort, \off ]
 )
-	.setSpec( \sort, ListSpec( [ \off, \distance, \angle, \nearest, \rel_angle, \x, \y, \mean_xy ] ) );
+	.setSpec( \sort, ListSpec( [ \off, \distance, \angle, \scramble, \nearest, \rel_angle, \x, \y, \mean_xy ] ) );
