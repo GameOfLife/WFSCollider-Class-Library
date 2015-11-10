@@ -23,7 +23,7 @@ WFSPathGUI {
 	
 	var <view, <pathView, <editView;
 	var <generatorView;
-	var <editWidth = 177;
+	var <editWidth = 210;
 	var <>action;
 	var <>onClose;
 	
@@ -156,7 +156,7 @@ WFSPathGUI {
 				bounds = Rect( 
 					myWindow.bounds.right + 4,
 					myWindow.bounds.top,
-					200,
+					editWidth + 8,
 					myWindow.bounds.height - 24
 				);
 			};
