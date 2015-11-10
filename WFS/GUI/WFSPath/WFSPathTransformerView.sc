@@ -194,7 +194,7 @@ WFSPathTransformerView {
 	
 	makeEditFuncs { |editDefs|
 		^(editDefs ?? { [ 
-			\name, \type, \move, \scale, \rotate, \smooth, \size, \sort, \duration, \equal, \reverse 
+			\name, \type, \move, \scale, \rotate, \smooth, \size, \clip, \sort, \duration, \equal, \reverse 
 		] })	
 			.asCollection 
 			.collect(_.asWFSPathTransformer)
@@ -252,7 +252,7 @@ WFSPointGroupTransformerView : WFSPathTransformerView {
 		
 		WFSPathGeneratorDef.loadOnceFromDefaultDirectory;
 		
-		^(editDefs ?? { [ \circle, \line, \move, \scale, \rotate, \sort ] })			.asCollection 
+		^(editDefs ?? { [ \circle, \line, \move, \scale, \rotate, \clip, \sort ] })			.asCollection 
 			.collect(_.asWFSPathTransformer)
 			.select(_.notNil);
 	}
