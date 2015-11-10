@@ -30,7 +30,7 @@ WFSBasicEditView {
 	
 	var <object, <view;
 	
-	var <selected, <allSelected = false;
+	var <selected;
 	
 	var <>action, <>onClose;
 	
