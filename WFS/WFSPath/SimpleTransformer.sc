@@ -59,6 +59,7 @@ SimpleTransformer : ObjectWithArgs {
 	var <>makeCopy = false;
 	
 	var <>changeDefNameAction;
+	var <>environment;
 	
 	*new { |defName, args|
 		^super.new.init( defName, args ? [] )
@@ -93,6 +94,7 @@ SimpleTransformer : ObjectWithArgs {
 			//defName = inName;
 			"% defName '%' not found".format(this.class.defClass, inName).warn; 
 		};
+		environment = ();
 		this.changed( \init );
 	}
 	
