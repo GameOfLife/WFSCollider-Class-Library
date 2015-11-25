@@ -8,7 +8,7 @@ ArrayGeneratorDef( \sine, { |f, n = 1|
 		(i.linlin(0,n-close,0,2pi * periods) + phase).sin.linlin(-1,1,*range);
 	});
 	
-}, [ \range, [0.0,1.0], \periods, 1, \phase, 0, \close, false ], { |f, obj|
+}, [ \range, [0.0,1.0], \periods, 1, \phase, 0, \close, true ], { |f, obj|
 	[ \range, [ obj.minItem, obj.maxItem ], \periods, f.get( \periods ), \phase,  f.get( \phase ), \close, f.get( \close ) ]
 } )
 	.setSpec( \periods, [0, inf, \lin, 0.125].asSpec )

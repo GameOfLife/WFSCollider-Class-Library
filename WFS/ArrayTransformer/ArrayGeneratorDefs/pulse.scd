@@ -1,13 +1,14 @@
 ArrayGeneratorDef( \pulse, { |f, n = 1|
-	var phase, width, periods, range, close;
+	var phase, width, periods, range, close, size;
 	periods = f.get( \periods );	
-	width = f.get( \width ).linlin(0,1,1,-1);
-	phase = f.get( \phase );
+	width = f.get( \width );
+	phase = f.get( \phase ) / 2;
 	range = f.get( \range );
 	close = f.get( \close ).not.binaryValue;
 	n.collect({ |i|
-		((i.linlin(0,n-close,0,2 * periods) + phase + width).wrap(-1,1) > width)
-			.binaryValue.linlin(0,1,*range);
+		((((i * periods) / (n-close)) + phase).wrap(0,1) < width )
+			.binaryValue
+			.linlin(0,1,*range);
 	});
 	
 }, [ \range, [0.0,1.0], \periods, 1, \width, 0.5, \phase, 0, \close, true ], { |f, obj|
