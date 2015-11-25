@@ -4,18 +4,35 @@ ArrayEditView : WFSBasicEditView {
 	var <spec;
 	
 	// object is an array of points
+	
+	*new { |parent, bounds, object, spec|
+		^this.newCopyArgs(object).init.makeView( parent, bounds ).setDefaults( spec );
+	}
 
 	defaultObject	{ ^(0,0.1..1)	}
 	defaultSpec { ^ControlSpec(0,1); }
 	
-	setDefaults {
+	setDefaults { |inSpec|
 		object = object ?? { this.defaultObject };
+		spec = (inSpec ?? spec ?? { this.defaultSpec }).asSpec;
 		view
 			.keepRatio_(false)
 			.gridLines_([0,0])
 			.maxZoom_(8)
 			.scale_([1,1])
-			.move_([0.5,0.5]);
+			.move_([0.5,0.5])
+			.drawFunc_( { |vw|	
+				this.drawContents(  vw.pixelScale );
+				Pen.use({ this.drawFunc.value( vw ); });
+			});
+	}
+	
+	value { ^spec.map( object ) }
+	value_ { |inArray| this.object = spec.unmap( inArray ); }
+	
+	spec_ { |newSpec|
+		spec = newSpec.asSpec;
+		view.refresh;
 	}
 	
 	mouseEditSelected { |newPoint, mod|
@@ -111,33 +128,60 @@ ArrayEditView : WFSBasicEditView {
 		var points, controls;
 		var selectColor = Color.yellow;
 		var spc;
-		
-		//scale = scale.asArray.mean;
+		var size;
+		var mean;
+		var ud;
 		
 		spc = spec ? this.defaultSpec;
+		ud = spec.unmap( spec.default );
 		
-		view.fromBounds = Rect( 0, 1.1, this.object.size, -1.2 );
+		size = this.object.size;
+		
+		view.fromBounds = Rect( 0, 1.1 ,size, -1.2 );
 		
 		Pen.use({	
 			
 			points = this.points.asCollection.collect(_.asPoint);
 			
-			Pen.color = Color.blue(0.5,0.05);
-			Pen.fillRect( Rect(0,0,this.object.size,1) );
+			mean = object.mean;
+			
+			Pen.color = Color.gray(0.5,0.5);
+			
+			[ 0@0, "%", 0@1, "%", 0@ud, "%", 
+				20@(object.minItem), "min: %",
+				80@(object.maxItem), "max: %",
+				140@mean, "mean: %",
+			]
+				.pairsDo({ |pos, name|
+					Pen.fillRect( 
+						Rect( 0, pos.y-(0.5 * scale.y), size, scale.y );
+					);
+					Pen.use({
+						Pen.translate( view.viewRect.left, pos.y );
+							Pen.scale( *(scale.asArray) );
+							Pen.stringAtPoint( name.format( spec.map( pos.y ).round(0.001) ), 
+								(pos.x + 5) @ -13 );
+					});
+				});
 			
 			Pen.color = Color.blue(0.5,0.33);
 			points.do({ |item|
 					Pen.addRect( 
-						Rect( item.x-0.5, 0.5, 1, item.y - 0.5 );
+						Rect( item.x-0.5, ud, 1, item.y - ud );
 					);
 			});
 			Pen.fill;	
 		
 			Pen.color = Color.blue(0.5,0.75);
-			points.do({ |item|
-					Pen.addOval( Rect.aboutPoint( item, scale.x * 5, scale.y * 5 ) );
-			});
-			Pen.fill;	
+			Pen.width = 1;
+			points.do({ |item, i|
+				Pen.use({
+					Pen.translate( *item.asArray );
+					Pen.scale( *(scale.asArray) );
+					Pen.addOval( Rect.aboutPoint( 0@0, 5, 5 ) );
+					Pen.stroke;
+				});
+			});	
 		
 			// selected
 			Pen.use({	
@@ -224,7 +268,7 @@ ArrayEditView : WFSBasicEditView {
 		rect = rect ?? { 
 			object.asRect.union( Rect(0,0,0,0) ).insetBy(-1,-1) 
 		};
-		view.viewRect = rect;
+		view.viewRect = rect.scale( 1@ -1);
 	}
 		
 	// changing the object
