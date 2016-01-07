@@ -19,5 +19,5 @@ Udef( \shared_point, { |point = #[0.0, 0.0], id = 0|
 	ReplaceOut.kr(id + 1201, point[1]);
 })
 	.setSpec( \point, WFSPointSpec(200, 0.1) )
-	.setSpec( \id, PositiveIntegerSpec( 0, 0, 99 ) )
+	.setSpec( \id, SharedPointIDSpec() )
 	.category_( 'shared_io' );

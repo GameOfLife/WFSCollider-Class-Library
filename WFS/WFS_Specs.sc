@@ -889,5 +889,8 @@ WFSRectSpec : RectSpec {
 		};
 		if( active ) { view[ \x ].doAction };
 	}
-	
+}
+
+SharedPointIDSpec : SharedValueIDSpec {
+	 *umap_name { ^'shared_point_in' }
 }

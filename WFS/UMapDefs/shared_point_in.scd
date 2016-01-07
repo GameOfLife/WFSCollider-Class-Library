@@ -17,7 +17,7 @@ UMapDef( \shared_point_in, { |id = 0|
 	sig = In.kr((id * 2) + [1200,1201]);
 	UMapOut.kr(sig, false);
 })
-	.setSpec( \id, PositiveIntegerSpec( 0, 0, 99 ) )
+	.setSpec( \id, SharedPointIDSpec( 0 ) )
 	.category_( 'shared_io' )
 	.canUseUMapFunc_({ |unit, key, umapdef|
 		unit.getSpec( key ).isKindOf( PointSpec );
