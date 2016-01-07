@@ -1,7 +1,8 @@
-ArrayEditView : WFSBasicEditView {
+ArrayEditView : UBasicEditView {
 	
 	var <>canChangeAmount = true;
 	var <spec;
+	var <objectBackup, <lineIndices, <lineStartEnd, <lastDrawIndex;
 	
 	// object is an array of points
 	
@@ -15,17 +16,16 @@ ArrayEditView : WFSBasicEditView {
 	setDefaults { |inSpec|
 		object = object ?? { this.defaultObject };
 		spec = (inSpec ?? spec ?? { this.defaultSpec }).asSpec;
+	}
+	
+	setViewProperties {
 		view
 			.keepRatio_(false)
 			.gridLines_([0,0])
 			.maxZoom_(8)
 			.scale_([1,1])
 			.move_([0.5,0.5])
-			.drawFunc_( { |vw|	
-				this.drawContents(  vw.pixelScale );
-				Pen.use({ this.drawFunc.value( vw ); });
-			});
-	}
+	}	
 	
 	value { ^spec.map( object ) }
 	value_ { |inArray| this.object = spec.unmap( inArray ); }
@@ -43,7 +43,7 @@ ArrayEditView : WFSBasicEditView {
 		};
 		switch( editMode,
 			\move,  { 
-				pt = (newPoint.round(round) - lastPoint.round(round)) * (1@(1));
+				pt = newPoint.round(round) - lastPoint.round(round);
 				this.moveSelected( pt.x, pt.y, mod, \no_undo );
 			},
 			\scale, { 
@@ -59,50 +59,135 @@ ArrayEditView : WFSBasicEditView {
 				pt = pt[1] / pt[0];
 				this.scaleSelected( pt.x, pt.y, mod, \no_undo ); 
 			},
-			\rotate, { 
-				this.rotateSelected( 
-					lastPoint.angle - newPoint.angle, 
-					1, 
-					mod,
-					\no_undo
-				);
-			},
-			\rotateS, { 
-				this.rotateSelected( 
-					lastPoint.theta - newPoint.theta, 
-					newPoint.rho.max(0.001) / lastPoint.rho.max(0.001),
-					mod, 
-					false
-				);
-			},
 			\elastic, {
-				pt = (newPoint.round(round) - lastPoint.round(round)) * (1@(-1));
+				pt = newPoint.round(round) - lastPoint.round(round);
 				this.moveElastic( pt.x, pt.y, mod, \no_undo );
 			},
-			\twirl, {
-				pt = (newPoint.round(round) - lastPoint.round(round)) * (1@(-1));
-				this.moveTwirl( pt.x, pt.y, mod, \no_undo );
+			\sine, {
+				pt = newPoint.round(round) - lastPoint.round(round);
+				this.moveSine( pt.x, pt.y, mod, \no_undo );
 			},
-			\chain, {
-				pt = (newPoint.round(round) - lastPoint.round(round)) * (1@(-1));
-				this.moveChain( pt.x, pt.y, mod, \no_undo );
+		);
+	}
+	
+	performMouseDown { |vw, x,y, mod, oX, oY, isInside, bn, cc|
+		switch( mouseMode,
+			\line, {
+				objectBackup = this.object.copy;
+				lineIndices = [ x.floor.clip(0, this.object.size-1) ];
+				lineStartEnd = [ y, y ];
+				this.prSetLine( lineIndices, lineStartEnd );
+				this.edited( \mouse_edit, mouseMode, \no_undo );
+			},
+			\draw, {
+				lastDrawIndex = x.floor.clip(0, this.object.size-1);
+				this.object[ lastDrawIndex ] = y;
+				this.refresh;
+				this.edited( \mouse_edit, mouseMode, \no_undo );
+			},
+			{
+				super.performMouseDown( vw, x,y, mod, oX, oY, isInside, bn, cc );
 			}
 		);
 	}
 	
+	performMouseMove { | vw, x, y, mod, oX, oY |
+		var newIndex, changed = false;
+		switch( mouseMode,
+			\line, {
+				newIndex = x.floor.clip(0, this.object.size-1);
+				lineIndices = ( lineIndices[0] .. newIndex );
+				if( lineIndices[0] == newIndex ) {
+					lineStartEnd[0] = y;
+				};
+				lineStartEnd[1] = y;
+				this.prSetLine( lineIndices, lineStartEnd );
+				this.refresh;
+				this.edited( \mouse_edit, mouseMode, \no_undo );
+			},
+			\draw, {
+				newIndex = x.floor.clip(0, this.object.size-1);
+				if( selected.size > 0 ) {
+					if( lastDrawIndex == newIndex && { selected.includes( newIndex.asInt ) } ) {
+						this.object[ lastDrawIndex ] = y;
+						changed = true;
+					} {	
+						(lastDrawIndex..newIndex).do({ |item, i|
+							if( selected.includes( item.asInt ) ) {
+								this.object[item] = this.object[lastDrawIndex]
+									.blend( y, i/((newIndex - lastDrawIndex).abs).max(1) );
+								changed = true;
+							};
+						});
+						lastDrawIndex = newIndex;
+					};
+				} {	
+					if( lastDrawIndex == newIndex ) {
+						this.object[ lastDrawIndex ] = y;
+					} {	
+						(lastDrawIndex..newIndex).do({ |item, i|
+							this.object[item] = this.object[lastDrawIndex]
+								.blend( y, i/((newIndex - lastDrawIndex).abs).max(1) );
+						});
+						lastDrawIndex = newIndex;
+					};
+					changed = true;
+				};
+				if( changed ) {
+					this.refresh;
+					this.edited( \mouse_edit, mouseMode, \no_undo );
+				};
+			},
+			{
+				super.performMouseMove( vw, x, y, mod, oX, oY );
+			}
+		);
+	}
+	
+	performMouseUp { | vw, x, y, mod, oX, oY |
+		switch( mouseMode,
+			\line, {
+				lineIndices = nil;
+				objectBackup = nil;
+				this.edited( \mouse_edit, mouseMode );
+				hitPoint = nil;
+			},
+			\draw, {
+				lastDrawIndex = nil;
+				this.edited( \mouse_edit, mouseMode );
+			},
+			{
+				super.performMouseUp( vw, x, y, mod, oX, oY );
+			}
+		);
+	}
+	
+	prSetLine { |indices, startEnd|
+		var newObject = objectBackup.copy;
+		if( selected.size > 0 ) {
+			indices.do({ |index, i|
+				if( selected.includes( index.asInt ) ) {
+					newObject[index] = startEnd[0].blend( startEnd[1], i/(indices.size-1).max(1) );
+				};
+			});
+		} {	
+			indices.do({ |index, i|
+				newObject[index] = startEnd[0].blend( startEnd[1], i/(indices.size-1).max(1) )
+			});
+		};
+		this.object.do({ |item,i| this.object[i] = newObject[i]; });
+		this.refresh;
+	}
+	
 	setDragHandlers {
 		view.view
-			.beginDragAction_({ object })
+			.beginDragAction_({ spec.map( object ) })
 			.canReceiveDragHandler_({ |vw|
 				var drg = View.currentDrag;
 				if( drg.isString ) {
 					drg = { drg.interpret }.try;
 				};
 				case { drg.isArray } {
-					drg.collect(_.asPoint).every(_.isKindOf( Point ) );
-				} { drg.isKindOf( Point ) } {
-					true
-				} { drg.respondsTo(\asWFSPointGroup) && {drg.isArray.not} } {
 					true
 				} {
 					false;
@@ -113,14 +198,10 @@ ArrayEditView : WFSBasicEditView {
 				if( drg.isString ) {
 					drg = drg.interpret;
 				};
-				case { drg.isKindOf( WFSPointGroup ) } {
-					this.points = drg.positions;
-				} { drg.isKindOf( Point ) } {
-					this.points = [ drg ];
-				} { drg.isArray } {
-					this.points = drg;
-				} { this.points = drg.asWFSPointGroup };
-				this.edited( \drag_dropped_points );
+				if { drg.isKindOf( Array ) } {
+					this.object = spec.unmap( drg );
+					this.edited( \drag_dropped_points );
+				};
 			});
 	 }
 	
@@ -129,7 +210,7 @@ ArrayEditView : WFSBasicEditView {
 		var selectColor = Color.yellow;
 		var spc;
 		var size;
-		var mean;
+		var mean, median, center;
 		var ud;
 		
 		spc = spec ? this.defaultSpec;
@@ -149,8 +230,10 @@ ArrayEditView : WFSBasicEditView {
 			
 			[ 0@0, "%", 0@1, "%", 0@ud, "%", 
 				20@(object.minItem), "min: %",
-				80@(object.maxItem), "max: %",
-				140@mean, "mean: %",
+				90@(object.maxItem), "max: %",
+				160@mean, "mean: %",
+				250@(object.median), "median: %",
+				340@([object.minItem, object.maxItem].mean), "center: %",
 			]
 				.pairsDo({ |pos, name|
 					Pen.fillRect( 
@@ -182,6 +265,16 @@ ArrayEditView : WFSBasicEditView {
 					Pen.stroke;
 				});
 			});	
+			
+			if( lineIndices.notNil ) {
+				Pen.color = Color.gray(0.33,0.33);
+				Pen.width = 0.01;
+				Pen.line( 
+					(lineIndices[0] + 0.5) @ lineStartEnd[0], 
+					(lineIndices.last + 0.5) @ lineStartEnd[1] 
+				);
+				Pen.stroke;
+			};
 		
 			// selected
 			Pen.use({	
@@ -230,9 +323,6 @@ ArrayEditView : WFSBasicEditView {
 	
 	// general methods
 	
-	resize { ^view.resize }
-	resize_ { |resize| view.resize = resize }
-	
 	point_ { |point| this.object = (object ? [0]).asCollection[0] = point.asPoint }
 	point { ^this.points[0] }
 	
@@ -242,6 +332,7 @@ ArrayEditView : WFSBasicEditView {
 		} {
 			points = points.asCollection.collect(_.asPoint);
 		};
+		points = points.sort({ |a,b| a.x <= b.x }).collect(_.y);
 		if( canChangeAmount ) {
 			this.object = points;
 		} {
@@ -252,11 +343,11 @@ ArrayEditView : WFSBasicEditView {
 	}
 	
 	points { ^object.collect({ |item,i|
-			(i+0.5) @ item.clip(0,1);
+			(i+0.5) @ ( spec.unmap( spec.map( item ) ) );
 		});
 	}
 	
-	at { |index| ^this.points[index] }
+	at { |index| ^this.object[index] }
 	
 	zoomToFit { |includeCenter = true|
 		view.scale = [1,1];
@@ -290,6 +381,50 @@ ArrayEditView : WFSBasicEditView {
 	}
 	
 	moveElastic { |x = 0,y = 0, mod ...moreArgs|
+		var index, next, start, middle, end;
+		index = hitIndex ? selected[0];
+		
+		if( index.notNil ) {
+			middle = [ index ];
+			next = selected.detect({ |item| item == (index + 1) });
+			while { next.notNil } {
+				middle = middle ++ [ next ];
+				next = selected.detect({ |item| item == (next + 1) });
+			};
+			next = selected.detect({ |item| item == (index - 1) });
+			while { next.notNil } {
+				middle = [ next ] ++ middle;
+				next = selected.detect({ |item| item == (next - 1) });
+			};
+			start = (selected.select({ |item| item < middle[0] }).sort.last ? 0..(middle[0]-1));
+			end = ((selected.select({ |item| item > middle.last }).sort.first 
+				?? {this.object.size-1})..(middle.last+1));
+				
+			[ start, end ].do({ |item|
+				var size; 
+				size = item.size;
+				item[1..].do({ |index, i|
+					var val, factor;
+					val = this.object[ index ];
+					if( val.notNil ) {
+						factor = (i+1)/size;
+						val = val + (y * factor);
+						this.object[ index ] = val;
+					};
+				});	
+	
+			});
+			
+			middle.do({ |index|
+				this.object[ index ] = this.object[ index ] + y;
+			});
+			
+			this.refresh; 
+			this.edited( \edit, \move, *moreArgs );
+		};
+	}
+	
+	moveSine { |x = 0,y = 0, mod ...moreArgs|
 		var selection;
 		if( selected.size > 0 ) {
 			
@@ -297,11 +432,7 @@ ArrayEditView : WFSBasicEditView {
 			
 			selection.do({ |index|
 				var pt;
-				pt = this.points[ index ];
-				if( pt.notNil ) {
-					pt.x = pt.x + x;
-					pt.y = pt.y + y;
-				};
+				this.object[ index ] = this.object[index] + y;
 			});
 			
 			2.do({ |ii|
@@ -314,121 +445,12 @@ ArrayEditView : WFSBasicEditView {
 				rest = rest[..rest.size-2];
 				restSize = rest.size;
 				rest.do({ |index, i|
-					var pt, factor;
-					pt = this.points[ index ];
-					if( pt.notNil ) {
-						factor = (i/restSize);
-						pt.x = pt.x + (x * factor);
-						pt.y = pt.y + (y * factor);
-					};
-				});	
-			});
-			
-			this.refresh; 
-			this.edited( \edit, \move, *moreArgs );
-		};
-	}
-	
-	moveTwirl { |x = 0,y = 0, mod ...moreArgs|
-		var selection, angles, rhos, firstPoint, lastPoint;
-		if( selected.size > 0 ) {
-			
-			selection = (selected.minItem..selected.maxItem);
-			
-			firstPoint = this.points[selection[0]];
-			lastPoint = this.points[selection.last]; 
-			
-			angles = [ 
-				(firstPoint + (x@y)).angle - firstPoint.angle,
-				(lastPoint + (x@y)).angle - lastPoint.angle
-			].wrap(-pi, pi);
-			
-			rhos = [ 
-				(firstPoint + (x@y)).rho - firstPoint.rho,
-				(lastPoint + (x@y)).rho - lastPoint.rho
-			];
-			
-			selection.do({ |index|
-				var pt;
-				pt = this.points[ index ];
-				if( pt.notNil ) {
-					pt.x = pt.x + x;
-					pt.y = pt.y + y;
-				};
-			});
-			
-			2.do({ |ii|
-				var rest, restSize;
-				if( ii == 0 ) {
-					rest = (..selection[0]);
-				} {
-					rest = (selection.last..this.points.size-1).reverse;
-				};
-				rest = rest[..rest.size-2];
-				restSize = rest.size;
-				rest.do({ |index, i|
-					var pt, factor, newPoint;
-					pt = this.points[ index ];
-					if( pt.notNil ) {
-						factor = (i/restSize);
-						newPoint = pt.asPolar;
-						newPoint.theta = newPoint.theta + (angles[ii] * factor);
-						newPoint.rho = (newPoint.rho + (rhos[ii] * factor)).abs;
-						newPoint = newPoint.asPoint;
-						pt.x = newPoint.x;
-						pt.y = newPoint.y;
-					};
-				});	
-			});
-			
-			this.refresh; 
-			this.edited( \edit, \move, *moreArgs );
-		};
-	}
-	
-	moveChain { |x = 0,y = 0, mod ...moreArgs|
-		var selection, data;
-		// keeps fixed distances between points
-		if( selected.size > 0 ) {
-			
-			selection = (selected.minItem..selected.maxItem);
-			
-			data = 2.collect({ |ii|
-				var rest, restSize, distance;
-				if( ii == 0 ) {
-					rest = (..selection[0]).reverse;
-				} {
-					rest = (selection.last..this.points.size-1);
-				};
-				
-				distance = rest[1..].collect({ |item, i|
-					this.points[item].dist( this.points[rest[i]] );
-				});
-				
-				[ rest, distance ];
-			});
-			
-			selection.do({ |index|
-				var pt;
-				pt = this.points[ index ];
-				if( pt.notNil ) {
-					pt.x = pt.x + x;
-					pt.y = pt.y + y;
-				};
-			});
-			
-			data.do({ |data|
-				var rest, distances;
-				#rest, distances = data;
-				rest[1..].do({ |index, i|
-					var pt, polar;
-					pt = this.points[ index ];
-					if( pt.notNil ) {
-						polar = (pt - this.points[rest[i]]).asPolar;
-						polar.rho = distances[i];
-						polar = polar.asPoint + this.points[rest[i]];
-						pt.x = polar.x;
-						pt.y = polar.y;
+					var val, factor;
+					val = this.object[ index ];
+					if( val.notNil ) {
+						factor = i.linlin(0,restSize,-0.5pi, 0.5pi).sin.linlin(-1,1,0,1);
+						val = val + (y * factor);
+						this.object[ index ] = val;
 					};
 				});	
 			});
@@ -439,56 +461,23 @@ ArrayEditView : WFSBasicEditView {
 	}
 	
 	scaleSelected { |x = 1, y, mod ...moreArgs|
+		var d;
+		d = spec.unmap( spec.default );
 		y = y ? x;
+		if( hitPoint.y < d ) { y = 1/y };
 		if( selected.size > 0 ) {
 			selected.do({ |index|
-				var pt;
-				pt = this.points.asCollection[ index ];
-				pt.x = pt.x * x;
-				pt.y = pt.y * y;
+				this.object[index] = ((this.object[index] - d) * y) + d;
 			});
 			this.refresh;
 			this.edited( \edit, \scale, *moreArgs );
 		};
 	}
 	
-	rotateSelected { |angle = 0, scale = 1, mod ...moreArgs|
-		if( selected.size > 0 ) {
-			selected.do({ |index|
-				var pt, rpt;
-				pt = this.points.asCollection[ index ];
-				rpt = pt.rotate( angle ) * scale;
-				pt.x = rpt.x;
-				pt.y = rpt.y;
-			});
-			this.refresh;
-			this.edited( \edit, \rotate, *moreArgs );
-		};
-	}
-	
 	duplicateSelected { 
-		var points;
-		if( canChangeAmount && { selected.size >= 1} ) {
-			selected = selected.sort;
-			points = this.points.asCollection[ selected ].collect(_.copy);
-			selected = object.size + (..points.size-1);
-			this.points = this.points ++ points;
-			this.refresh;
-			this.edited( \duplicateSelected );
-		};
 	}
 	
 	removeSelected {
-		if( canChangeAmount && { object.size > selected.size } ) {
-			this.points = this.points.select({ |item, i|
-				selected.includes(i).not;
-			});
-			selected = [];
-		} {
-			"WFSPointView-removeSelected : should leave at least one point".warn;
-		};
-		this.refresh;
-		this.edited( \removeSelected );
 	}
 	
 	// selection

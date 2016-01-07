@@ -54,6 +54,8 @@ SimpleTransformerDef : GenericDef {
 
 SimpleTransformer : ObjectWithArgs {
 	
+	classvar <>nowExecuting;
+	
 	var <>action;
 	var <defName;
 	var <>makeCopy = false;
@@ -158,13 +160,17 @@ SimpleTransformer : ObjectWithArgs {
 	checkBypass { |obj| ^this.def.checkBypass( this, obj ) }
 	
 	value { |obj, args|
+		var res;
 		this.args = args;
 		if( makeCopy ) { obj = obj.deepCopy };
+		nowExecuting = this;
 		if( this.checkBypass( obj ) ) {
-			^obj;
+			res = obj;
 		} {
-			^this.prValue( obj );
+			res = this.prValue( obj );
 		};
+		nowExecuting = nil;
+		^res;
 
 	}
 	

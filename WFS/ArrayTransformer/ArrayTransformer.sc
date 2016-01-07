@@ -1,6 +1,8 @@
 ArrayTransformer : SimpleTransformer {
 	
 	var <selection;
+	var <spec;
+	var <>mappedArgs;
 	
 	*defClass { ^ArrayTransformerDef }
 	
