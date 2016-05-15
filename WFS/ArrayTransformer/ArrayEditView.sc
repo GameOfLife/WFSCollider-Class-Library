@@ -3,6 +3,7 @@ ArrayEditView : UBasicEditView {
 	var <>canChangeAmount = true;
 	var <spec;
 	var <objectBackup, <lineIndices, <lineStartEnd, <lastDrawIndex;
+	var <>transformers;
 	
 	// object is an array of points
 	
@@ -12,10 +13,15 @@ ArrayEditView : UBasicEditView {
 
 	defaultObject	{ ^(0,0.1..1)	}
 	defaultSpec { ^ControlSpec(0,1); }
+	defaultTransformers { 
+		ArrayTransformerDef.loadOnceFromDefaultDirectory;
+		^[ ArrayTransformer( \clip ) ];
+	}
 	
 	setDefaults { |inSpec|
 		object = object ?? { this.defaultObject };
 		spec = (inSpec ?? spec ?? { this.defaultSpec }).asSpec;
+		transformers = this.defaultTransformers;
 	}
 	
 	setViewProperties {
@@ -27,8 +33,19 @@ ArrayEditView : UBasicEditView {
 			.move_([0.5,0.5])
 	}	
 	
-	value { ^spec.map( object ) }
-	value_ { |inArray| this.object = spec.unmap( inArray ); }
+	applyTransformers {
+		var out;
+		out = object;
+		transformers.do({ |item| out = item.value( out ) });
+		^out;
+	}
+	
+	value { ^spec.map( this.applyTransformers( object ) ) }
+	
+	value_ { |inArray| 
+		transformers.do(_.reset);
+		this.object = spec.unmap( inArray ); 
+	}
 	
 	spec_ { |newSpec|
 		spec = newSpec.asSpec;
@@ -342,9 +359,10 @@ ArrayEditView : UBasicEditView {
 		};
 	}
 	
-	points { ^object.collect({ |item,i|
-			(i+0.5) @ ( spec.unmap( spec.map( item ) ) );
-		});
+	points {
+		^this.value.collect({ |item, i|
+			(i+0.5) @ ( spec.unmap( item ) );
+		})
 	}
 	
 	at { |index| ^this.object[index] }

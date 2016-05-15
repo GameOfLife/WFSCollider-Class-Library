@@ -191,7 +191,7 @@ ArrayTransformerView {
 		ArrayGeneratorDef.loadOnceFromDefaultDirectory;
 		
 		^(editDefs ?? { [ 
-			\line, \random, \offset, \scale, \tilt, \curve, \smooth, \round, \clip, \rotate, \sort
+			\line, \random, \offset, \scale, \tilt, \curve, \smooth, \round, \rotate, \sort
 		] })	
 			.asCollection 
 			.collect({ |item| ArrayTransformer.fromDefName( item ) })

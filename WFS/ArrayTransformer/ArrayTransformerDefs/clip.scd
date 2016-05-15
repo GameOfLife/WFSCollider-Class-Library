@@ -4,7 +4,7 @@ ArrayTransformerDef( \clip, { |f, obj|
 	if( (range[1] - range[0]) > 0 ) {	
 		obj = obj.linlin( *range ++ [-1,1,'none'] );
 		switch( f.get( \clipMode ),
-			\softClip, { obj.softclip2(1, f.get( \clipSoftness ) ); },
+			\clip, { obj.softclip2(1, f.get( \clipSoftness ) ); },
 			\sineClip, { obj.sineclip2(1, f.get( \clipSoftness ) ); },
 			\fold, { obj.softfold2(1, f.get( \clipSoftness ) ); },
 			\wrap, { obj.softwrap2(1, f.get( \clipSoftness ) ); },
@@ -13,7 +13,7 @@ ArrayTransformerDef( \clip, { |f, obj|
 		).linlin( *[-1,1] ++ range ++ [ 'none' ] ); 
 	} {
 		switch( f.get( \clipMode ),
-			\softClip, { obj.clip(*range); },
+			\clip, { obj.clip(*range); },
 			\sineClip, { obj.clip(*range); },
 			\fold, { obj.fold(*range); },
 			\wrap, { obj.wrap(*range); },
@@ -21,10 +21,10 @@ ArrayTransformerDef( \clip, { |f, obj|
 			{ obj }
 		);
 	};
-}, [ \clip, #[0,1], \clipMode, \off, \clipSoftness, 0.0 ], { |f, obj|
+}, [ \clip, #[0,1], \clipMode, \clip, \clipSoftness, 0.0 ], { |f, obj|
 	[ \clip, #[0,1], \clipMode, f.get( \clipMode ), \clipSoftness, 0.0 ]
 } )
 	.bypassFunc_({ |f, obj| f.get( \clipMode ) == \off })
 	.setSpec( \clip, [0,1].asSpec.asRangeSpec )
-	.setSpec( \clipMode, ListSpec( [ \softClip, \sineClip, \fold, \wrap, \excess, \off ] ) )
+	.setSpec( \clipMode, ListSpec( [ \clip, \sineClip, \fold, \wrap, \excess, \off ] ) )
 	.setSpec( \clipSoftness,[0,1].asSpec );
