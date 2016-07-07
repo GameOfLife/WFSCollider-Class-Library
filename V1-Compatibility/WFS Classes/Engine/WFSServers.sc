@@ -144,6 +144,12 @@ WFSServers {
 	
 	close {
 		this.quit;
+		this.allServers.do({ |item|
+			Server.all.remove( item );
+			ServerTree.objects !? _.removeAt( item );
+			ServerBoot.objects !? _.removeAt( item );
+			RootNode.roots.removeAt( item.name );
+		});
 		if( window.notNil && { window.isClosed.not }) { window.close; };
 	}
 	
