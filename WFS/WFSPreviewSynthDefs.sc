@@ -60,7 +60,7 @@ WFSPreviewSynthDefs : AbstractWFSSynthDefs {
 				globalDist = (0@0).dist( point );
 				delays = 0.06 + ((distances - globalDist) / WFSBasicPan.speedOfSound);
 				in = DelayC.ar( in, 0.12, delays );
-				amplitudes = PanAz.kr( 6, 1, (point.angle - 0.5pi).neg / pi, orientation: 0);
+				amplitudes = PanAz.kr( 6, 1, (point.angle - ((2/3)*pi)).neg / pi, orientation: 0);
 				amplitudes = amplitudes.max( globalDist.linlin(0.5,1,1,0).clip(0,1) );
 				in * amplitudes;
 			},
