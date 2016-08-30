@@ -40,8 +40,10 @@ WFSLib {
 				wfsOptions.serverOptions.do({ |item, i|
 					WFSServers.default[ 0 ][ i ].options						.numInputBusChannels_(  item.numInputBusChannels )
 						.numOutputBusChannels_( item.numOutputBusChannels )
-						.blockSize_( 128 )
-						.device_( item.device );
+						.blockSize_( wfsOptions.blockSize )
+						.sampleRate( wfsOptions.sampleRate )
+						.device_( item.device )
+						.hardwareBufferSize_( item.hardwareBufferSize );
 					 WFSServers.default.multiServers[i].servers.do({ |srv|
 						 WFSSpeakerConf.setOutputBusStartOffset( srv, item.outputBusStartOffset );
 					 });
@@ -88,8 +90,12 @@ WFSLib {
 		};
 		
 		this.setServerOptions( o.numOutputBusChannels );
+		Server.default.options.blockSize = wfsOptions.blockSize;
+		Server.default.options.sampleRate = wfsOptions.sampleRate;
 		Server.default.options.device = o.device;
+		Server.default.options.hardwareBufferSize = o.hardwareBufferSize;
 		Server.default.options.numInputBusChannels = o.numInputBusChannels;
+		
 		
 		WFSLib.previewMode = wfsOptions.previewMode;
 		
@@ -366,9 +372,9 @@ WFSLib {
 			.numInputBusChannels_(20)
 			.numWireBufs_(2048)
 			.memSize_(2**19) // 256MB
-			.hardwareBufferSize_(512)
-			.blockSize_(128)
-			.sampleRate_( 44100 )
+			//.hardwareBufferSize_(512)
+			//.blockSize_(128)
+			//.sampleRate_( 44100 )
 			.maxNodes_( 2**16 );
      }
 

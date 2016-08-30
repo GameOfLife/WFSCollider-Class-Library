@@ -1566,7 +1566,17 @@ WFSMixedView : WFSPointView {
 				Pen.lineTo( p * ( 1 @ -1) );
 				Pen.lineTo( p - (0 @ (3*scale) ) );
 				Pen.stroke;
-			}
+			},
+			\speaker: { |evt, p, scale|
+				Pen.use({
+					Pen.translate( p.x, p.y );
+					Pen.rotate( p.angle - pi );
+					Pen.alpha_( 0.75 );
+					DrawIcon( \speaker, 
+						Rect( -15 * scale, -15 * scale, 30 * scale, 30 * scale ) 
+					);
+				});
+			},
 		);
 	}
 	

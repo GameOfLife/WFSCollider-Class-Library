@@ -59,6 +59,7 @@ WFSMasterOptions : AbstractWFSOptions {
 	var <numInputBusChannels = 20;
 	var <outputBusStartOffset = 0;
 	var <device;
+	var <hardwareBufferSize = 512;
 	var <useForWFS = false;
 	
 	*presets { ^Dictionary[] }
@@ -77,6 +78,7 @@ WFSServerOptions : AbstractWFSOptions {
 	var <numInputBusChannels = 8;
 	var <outputBusStartOffset = 0;
 	var <device = "JackRouter";
+	var <hardwareBufferSize = 512;
 	
 	
 	*initClass {
@@ -121,6 +123,8 @@ WFSOptions : AbstractWFSOptions {
 	var <playSoundWhenReady = false;
 	var <startupAction;
 	var <serverAction;
+	var <blockSize = 128;
+	var <sampleRate = 44100;
 	
 	*new { ^super.new.init; }
 	
