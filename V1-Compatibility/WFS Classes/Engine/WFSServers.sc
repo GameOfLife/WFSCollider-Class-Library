@@ -30,6 +30,7 @@ WFSServers {
 	classvar <>maxStartsPerCycle = 25; // high values give errors with longer scores
 	classvar  <>wrapTime = 20.0;
 	classvar <>pulsesOutputBus = 14;
+	classvar <>singlePort = 57999;
 	
 	var <ips, <startPort, <serversPerSystem;
 	var <multiServers;
@@ -63,7 +64,7 @@ WFSServers {
 		^super.newCopyArgs( [ip], [startPort], serversPerSystem ).init( false );
 		}
 		
-	*single { ^super.newCopyArgs(nil,[58000],8).init; }
+	*single { ^super.newCopyArgs(nil,[ singlePort + 1 ],8).init; }
 		
 	init { |addMaster = true|
 		[ips,startPort,serversPerSystem].postln;
