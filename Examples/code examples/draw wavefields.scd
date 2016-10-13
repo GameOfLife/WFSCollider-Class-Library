@@ -85,13 +85,17 @@ w.drawFunc = {
 		
 		if( showWaveFronts ) {	
 			arrayPan.collect({ |times, i|
-				var color;
+				var color, amp, delay;
 				color = Color.blue(0.5).alpha_(crossfades[i]);
 				times = times.flop.flop;
 				speakerPoints[i].do({ |sp, ii|
-					Pen.color = color.copy.alpha_( (color.alpha * times[1][ii]).sqrt);
-					Pen.addArc( sp, ((t - times[0][ii] )*344).max(0), 
-						speakerLines[i].angle+0.5pi, pi ).stroke;
+					amp = times[1][ii];
+					delay = ((t - times[0][ii] )*344).max(0);
+					if( (amp > 0) && { delay > 0 }) {
+						Pen.color = color.copy.alpha_( (color.alpha * times[1][ii]).sqrt);
+						Pen.addArc( sp, delay, 
+							speakerLines[i].angle+0.5pi, pi ).stroke;
+					};
 				});
 			});
 		};
