@@ -25,7 +25,7 @@ UMapDef( \lag_point, { |
 	UMapOut.kr(point, false);
 })
 	.setSpec( \point, WFSPointSpec(200, 0.1) )
-	.setSpec( \time, [0,1].asSpec )
+	.setSpec( \time, [0,10].asSpec )
 	.setSpec( \linear, BoolSpec(false) )
 	.category_( 'point_filter' )
 	.canUseUMapFunc_({ |unit, key, umapdef|
