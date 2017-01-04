@@ -3,7 +3,7 @@
 
 ** this Udef should be used in conjunction with 'shared_point_in' UMap **
 
-The shared_point Udef creates an unit that is able to share point information with other units used further in the chain. This is useful when multiple units or unit parameters need to use the same point information, or derrive things from it. The shared_point would always need to come first in the order of the chain; it sends the point data to a bus. To retreive the data in an other unit use the 'shared_in_point' UMapDef, and make sure the 'id' setting is the same on both. This will only work _within_ a single chain.
+The shared_point Udef creates an unit that is able to share point information with other units used further in the chain. This is useful when multiple units or unit parameters need to use the same point information, or derrive things from it. The shared_point would always need to come first in the order of the chain; it sends the point data to a bus. To retreive the data in another unit use the 'shared_in_point' UMapDef, and make sure the 'id' setting is the same on both. This will only work _within_ a single chain.
 
 point: the point to be shared (can be an UMap)
 id: the id (0-99) by which the point can be retreived by 'shared_point_in'
