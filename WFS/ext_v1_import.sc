@@ -42,7 +42,7 @@
 				units.add( U( \diskSoundFile, [ \soundFile, this.asDiskSndFile ] ) );
 			},
 			\blip, {
-				units.add( U( \blip, args ) );
+				units.add( U( \blipTest, args ) );
 			}
 		);
 		
