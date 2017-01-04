@@ -1,7 +1,7 @@
 /*
 \trajectory
 
-A player for 2D spatial trajectories. The WFSPathGUI; an editor for trajectories, can be called up via the [umap] button in the UChain window. This umap is intended for use on units with PointSpec or WFSPointSpec based args.
+A player for 2D spatial trajectories. The WFSPathGUI; an editor for trajectories, can be called up via the [edit] button in the UChain window. This umap is intended for use on units with PointSpec or WFSPointSpec based args.
 
 trajectory: a WFSPathBuffer object. This object creates and points to a buffer with the data of the trajectory. This buffer is either filled with data sent directly, or data read from a .wfspath file (generated via the [write data] button in the GUI). Data from file is usually more reliable than sending via network.
 trigger: a trigger to (re)start the trajectory
