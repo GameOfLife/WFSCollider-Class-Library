@@ -18,7 +18,7 @@ FuncUMapDef( \random_point, { |
 		radius = #[10.0,10.0]|
 	(center + radius.rand2).asPoint;
 })	
-	.category_( 'point_function' )
+	.category_( 'function' )
 	.canUseUMapFunc_({ |unit, key, umapdef|
 		unit.getSpec( key ).isKindOf( PointSpec );
 	})
