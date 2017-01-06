@@ -22,6 +22,7 @@ ArrayEditView : UBasicEditView {
 		object = object ?? { this.defaultObject };
 		spec = (inSpec ?? spec ?? { this.defaultSpec }).asSpec;
 		transformers = this.defaultTransformers;
+		transformers.do(_.spec_(spec))
 	}
 	
 	setViewProperties {

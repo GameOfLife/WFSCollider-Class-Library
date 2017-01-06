@@ -92,7 +92,7 @@
 		f.args.pairsDo({ |key, value, i|
 			var vw, spec;
 			
-			spec = this.specs[i/2];
+			spec = f.getSpec( key );
 			
 			vw = ObjectView( composite, nil, f, key, spec, controller );
 				

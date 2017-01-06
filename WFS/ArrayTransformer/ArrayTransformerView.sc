@@ -26,14 +26,14 @@ ArrayTransformerView {
 	var <>action;
 	var <>onClose;
 	
-	*new { |parent, bounds, object, editDefs|
-		^super.new.init( parent, bounds, object, editDefs )
+	*new { |parent, bounds, object, spec, editDefs|
+		^super.new.init( parent, bounds, object, spec, editDefs )
 	}
 	
-	init { |parent, bounds, inObject, editDefs|
+	init { |parent, bounds, inObject, spec, editDefs|
 		object = inObject ? object;
 		this.makeObjectCopy;
-		editFuncs = this.makeEditFuncs( editDefs );
+		editFuncs = this.makeEditFuncs( editDefs, spec );
 		this.makeView( parent, bounds );	
 		this.resetFuncs;
 	}
@@ -185,7 +185,7 @@ ArrayTransformerView {
 		//this.reset; 
 	}
 	
-	makeEditFuncs { |editDefs|
+	makeEditFuncs { |editDefs, spec|
 		
 		ArrayTransformerDef.loadOnceFromDefaultDirectory;
 		ArrayGeneratorDef.loadOnceFromDefaultDirectory;
@@ -195,7 +195,8 @@ ArrayTransformerView {
 		] })	
 			.asCollection 
 			.collect({ |item| ArrayTransformer.fromDefName( item ) })
-			.select(_.notNil);
+			.select(_.notNil)
+			.collect(_.spec_( spec ));
 	}
 	
 	editDefs { ^editFuncs }

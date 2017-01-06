@@ -2,7 +2,8 @@ ArrayTransformer : SimpleTransformer {
 	
 	var <selection;
 	var <spec;
-	var <>mappedArgs;
+	var unmapMappedArgs = false;
+	var <>mapIO = false;
 	
 	*defClass { ^ArrayTransformerDef }
 	
@@ -17,8 +18,80 @@ ArrayTransformer : SimpleTransformer {
 		};
 	}
 	
+	getSpec { |key| 
+		if( spec.notNil && { (this.def.mappedArgs ? #[]).includes( key ) }) {
+			^this.def.getSpec( key ).adaptToSpec( spec );
+		} {
+			^this.def.getSpec( key )
+		};
+		
+	}
+	
+	spec_ { |inSpec|
+		if( spec.notNil && { spec != inSpec }) {
+			this.def.mappedArgs.do({ |key|
+				this.set( key, this.getSpec( key ).unmap( this.get( key ) ) );
+			});
+			spec = nil;
+		};
+		if( spec.isNil && { inSpec.notNil }) {
+			spec = inSpec.asSpec;
+			this.def.mappedArgs.do({ |key|
+				this.set( key, this.getSpec( key ).map( this.get( key ) ) );
+			});
+		};
+	}
+	
+	def_ { |newDef, keepArgs = true|
+		var sp;
+		sp = this.spec;
+		this.spec = nil;
+		this.init( newDef, if( keepArgs ) { args } { nil } );
+		this.spec = sp;
+		changeDefNameAction.value;
+	}
+	
+	defName_ { |newName, keepArgs = true|
+		this.def_( newName, keepArgs );
+	}
+	
+	set { |argName, value, constrain = false|
+		var spec;
+		if( constrain && { (spec = this.getSpec( argName )).notNil } ) { 
+			value = spec.constrain( value );
+		};
+		this.setArg( argName, value );
+	}
+	
+	get { |key|
+		if( unmapMappedArgs && { this.def.mappedArgs.includes( key ) } ) {
+			^this.getSpec( key ).unmap( this.getArg( key ) );
+		} {
+			^this.getArg( key );
+		};
+	}
+	
+	getMapped { |key|
+		^this.getArg( key );
+	}
+	
 	applyFunc { |obj, def|
+		var res;
 		def = def ?? { this.def };
+		if( mapIO && spec.notNil ) {
+			obj = spec.unmap( obj );
+		};
+		unmapMappedArgs = true;
+		res = this.prApplyFunc( obj, def );
+		unmapMappedArgs = false;
+		if( mapIO && spec.notNil ) {
+			^spec.map( res );
+		} {
+			^res;
+		};
+	}
+	
+	prApplyFunc { |obj, def|
 		^def.func.value( this, obj );
 	}
 	
@@ -46,9 +119,8 @@ ArrayGenerator : ArrayTransformer {
 	
 	*defClass { ^ArrayGeneratorDef }
 	
-	applyFunc { |obj, def|
+	prApplyFunc { |obj, def|
 		var result, size;
-		def = def ?? { this.def };
 		size = obj.size;
 		result = def.func.value( this, size, obj );
 		^switch( mode,
@@ -91,6 +163,7 @@ ArrayTransformerDef : SimpleTransformerDef {
 	classvar <>defsFolders, <>userDefsFolder;
 	
 	var <>useSelection = true;
+	var >mappedArgs;
 	
 	*initClass{
 		defsFolders = [ 
@@ -99,7 +172,27 @@ ArrayTransformerDef : SimpleTransformerDef {
 		userDefsFolder = Platform.userAppSupportDir ++ "/ArrayTransformerDefs/";
 	}
 	
+	mappedArgs { ^mappedArgs ? #[] }
+	
 	objectClass { ^ArrayTransformer }
+	
+	defaults { |f, obj|
+		var res;
+		if( mappedArgs.size > 0 && { f.spec.notNil } ) {
+			if( f.mapIO ) { obj = f.spec.unmap( obj ) };
+			res = defaults !? { defaults.value( f, obj ) } ?? { this.args };
+			mappedArgs.do({ |key|
+				var i;
+				i = res.indexOf( key );
+				if( i.notNil ) {
+					res[i+1] = f.getSpec( key ).map( res[i+1] );
+				};
+			});
+			^res;
+		} {
+			^defaults !? { defaults.value( f, obj ) } ?? { this.args };
+		};
+	}
 }
 
 ArrayGeneratorDef : ArrayTransformerDef {
