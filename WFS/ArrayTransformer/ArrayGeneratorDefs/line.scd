@@ -11,8 +11,10 @@ ArrayGeneratorDef( \line, { |f, n = 1|
 	});
 	
 }, [ \range, [0,1], \direction, \up, \curve, 0 ], { |f, obj|
-	[ \range, [ obj.minItem, obj.maxItem ], \direction, f.get( \direction ), \curve, f.get( \curve ) ]
+	[ \range, if( obj.minItem == obj.maxItem ) { [0,1] } { [ obj.minItem, obj.maxItem ] }, 
+	\direction, f.get( \direction ), \curve, f.get( \curve ) ]
 } )
+	.mappedArgs_([ \range ])
 	.setSpec( \range, [0,1].asSpec.asRangeSpec )
 	.setSpec( \direction, ListSpec( [\up, \down] ) )
 	.setSpec( \curve, [ -16, 16, \lin, 0, 0 ].asSpec );

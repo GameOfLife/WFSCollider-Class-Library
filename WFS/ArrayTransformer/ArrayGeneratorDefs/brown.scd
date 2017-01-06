@@ -8,11 +8,12 @@ ArrayGeneratorDef( \brown, { |f, n = 1|
 	stream.nextN( n );
 }, [ \range, [0.0,1.0], \step, 0.125, \center, 0.5, \seed, 12345 ], { |f, obj|
 	[ 
-		\range, [ obj.minItem, obj.maxItem ], 
+		\range, if( obj.minItem == obj.maxItem ) { [0,1] } { [ obj.minItem, obj.maxItem ] }, 
 		\step, f.get( \step ), 
 		\center, f.get( \center ), 
 		\seed, 1569325056.rand ]
 } )
+	.mappedArgs_([ \range ])
 	.setSpec( \range, [0,1].asSpec.asRangeSpec )
 	.setSpec( \center, [0,1,\lin,0,0.5].asSpec )
 	.setSpec( \step, [0,1].asSpec )

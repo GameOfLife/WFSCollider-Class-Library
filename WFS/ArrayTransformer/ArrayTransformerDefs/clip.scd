@@ -25,6 +25,7 @@ ArrayTransformerDef( \clip, { |f, obj|
 	[ \clip, #[0,1], \clipMode, f.get( \clipMode ), \clipSoftness, 0.0 ]
 } )
 	.bypassFunc_({ |f, obj| f.get( \clipMode ) == \off })
+	.mappedArgs_([\clip])
 	.setSpec( \clip, [0,1].asSpec.asRangeSpec )
 	.setSpec( \clipMode, ListSpec( [ \clip, \sineClip, \fold, \wrap, \excess, \off ] ) )
 	.setSpec( \clipSoftness,[0,1].asSpec );

@@ -8,10 +8,11 @@ ArrayGeneratorDef( \spline, { |f, n = 1|
 	});
 	
 }, [ \range, [0,1], \direction, \up, \c1, 1/3, \c2, 2/3 ], { |f, obj|
-	[ \range, [ obj.minItem, obj.maxItem ], \direction, f.get( \direction ), 
-	\c1, f.get( \c1 ), \c2, f.get( \c2 )
+	[ \range, if( obj.minItem == obj.maxItem ) { [0,1] } { [ obj.minItem, obj.maxItem ] }, 
+	\direction, f.get( \direction ), \c1, f.get( \c1 ), \c2, f.get( \c2 )
  ]
 } )
+	.mappedArgs_([ \range ])
 	.setSpec( \range, [0,1].asSpec.asRangeSpec )
 	.setSpec( \direction, ListSpec( [\up, \down] ) )
 	.setSpec( \c1, [0,1,\lin,0,1/3].asSpec )

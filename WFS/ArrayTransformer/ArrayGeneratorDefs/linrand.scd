@@ -7,7 +7,9 @@ ArrayGeneratorDef( \linrand, { |f, n = 1|
 	});
 	
 }, [ \range, [0.0,1.0], \seed, 12345 ], { |f, obj|
-	[ \range, [ obj.minItem, obj.maxItem ], \seed, 1569325056.rand ]
+	[ \range, if( obj.minItem == obj.maxItem ) { [0,1] } { [ obj.minItem, obj.maxItem ] }, 
+	\seed, 1569325056.rand ]
 } )
+	.mappedArgs_([ \range ])
 	.setSpec( \range, [0,1].asSpec.asRangeSpec )
 	.setSpec( \seed, PositiveIntegerSpec(12345) );
