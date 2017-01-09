@@ -31,7 +31,7 @@ UnitRack(\wfsSimpleReverb, [
 				'point_distance', [ 
 					'point1', 'shared_point_in', 
 					'fromRange', [ 0.0, 8.0 ] 
-				] ], 'u_i_ar_0_bus', 1.0, 'u_o_ar_0_bus', 1 
+				] ], 'u_i_ar_0_bus', i+1, 'u_o_ar_0_bus', i+1 
 			] 
 		)
 	}) ++ points.collect({ |pt,i| 
