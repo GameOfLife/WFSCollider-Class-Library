@@ -63,6 +63,7 @@ def = FreeUdef( \wfsDynamicPlane, [
 	.addUEnv
 	.addUGlobalEQ
 	.addUIO( UIn, \ar, 0, 1 )
+	.inputIsEndPoint_( true )
 	.setSpecMode( \latencyComp, \init, \quality, \init )
 	.setSynthFunc_({ |unit ...keyValuePairs|
 		unit.synths.do({ |sn|

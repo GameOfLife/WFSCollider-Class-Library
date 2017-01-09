@@ -62,6 +62,7 @@ def = FreeUdef( \wfsStaticPlane, [
 	.addUGlobalEQ
 	.setSpecMode( \latencyComp, \init, \point, \init )
 	.addUIO( UIn, \ar, 0, 1 )
+	.inputIsEndPoint_( true )
 	.setSynthFunc_({ |unit ...keyValuePairs|
 		unit.synths.do({ |sn|
 			var server = sn.server;

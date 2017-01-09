@@ -70,6 +70,7 @@ def = FreeUdef( \wfsDynamicPoint, [
 	.envPut( \set_wfsa, [ \point, \u_i_ar_0_bus ] )
 	.addUGlobalEQ
 	.addUIO( UIn, \ar, 0, 1 )
+	.inputIsEndPoint_( true )
 	.setSpecMode( \latencyComp, \init, \quality, \nonsynth )
 	.setSynthFunc_({ |unit ...keyValuePairs|
 		unit.synths.do({ |sn|
