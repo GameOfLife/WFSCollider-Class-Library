@@ -12,9 +12,9 @@ this is an UMapDef definition file
 part of the WFSCollider Class Library default UMapDefs set
 */
 
-UMapDef( \shared_point_in, { |id = 0|
+UMapDef( \shared_point_in, { 
 	var sig;
-	sig = In.kr((id * 2) + [1200,1201]);
+	sig = USharedPointIn.kr( \id );
 	UMapOut.kr(sig, false);
 })
 	.setSpec( \id, SharedPointIDSpec( 0 ) )

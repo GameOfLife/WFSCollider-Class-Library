@@ -13,11 +13,8 @@ this is an UMapDef definition file
 part of the WFSCollider Class Library default UMapDefs set
 */
 
-Udef( \shared_point, { |point = #[0.0, 0.0], id = 0|
-	id = id * 2;
-	ReplaceOut.kr(id + 1200, point[0]);
-	ReplaceOut.kr(id + 1201, point[1]);
+Udef( \shared_point, { |point = #[0.0, 0.0]|
+	USharedPointOut.kr( \id, point );
 })
 	.setSpec( \point, WFSPointSpec(200, 0.1) )
-	.setSpec( \id, SharedPointIDSpec() )
 	.category_( 'shared_io' );
