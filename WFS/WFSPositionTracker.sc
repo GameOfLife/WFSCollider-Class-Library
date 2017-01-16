@@ -62,6 +62,7 @@ WFSPositionTracker {
 					\wfsStaticPoint, 
 					\wfsDynamicPoint, 
 					\wfsDynamicDirectional,
+					\wfsSource,
 				].includes( unit.name ) ) {
 				pannerUnits = pannerUnits.add( unit );
 				typeDict[ i ] = \point;
@@ -69,7 +70,11 @@ WFSPositionTracker {
 			if( [ 
 					\wfsStaticPlane, 
 					\wfsDynamicPlane 
-				].includes( unit.name ) ) {
+				].includes( unit.name ) or: {
+					unit.name == \wfsSource && {
+						unit.type == \plane;
+					}
+				}) {
 				pannerUnits = pannerUnits.add( unit );
 				typeDict[ i ] = \plane;
 			};
