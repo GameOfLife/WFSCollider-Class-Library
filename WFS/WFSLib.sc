@@ -41,7 +41,7 @@ WFSLib {
 					WFSServers.default[ 0 ][ i ].options						.numInputBusChannels_(  item.numInputBusChannels )
 						.numOutputBusChannels_( item.numOutputBusChannels )
 						.blockSize_( wfsOptions.blockSize )
-						.sampleRate( wfsOptions.sampleRate )
+						.sampleRate_( wfsOptions.sampleRate )
 						.device_( item.device )
 						.hardwareBufferSize_( item.hardwareBufferSize );
 					 WFSServers.default.multiServers[i].servers.do({ |srv|
