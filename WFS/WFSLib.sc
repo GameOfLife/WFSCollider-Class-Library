@@ -114,7 +114,7 @@ WFSLib {
 		};
 		
 		servers = servers ++ WFSServers.default.multiServers.collect({ |ms|
-			LoadBalancer( *ms.servers ) 
+			LoadBalancer( *ms.servers ).name_( ms.hostName.asSymbol )
 		});
 		
 		WFSSpeakerConf.resetServers;
@@ -170,7 +170,7 @@ WFSLib {
 			
 			UChain.makeDefaultFunc = {	
 				UChain( \bufSoundFile, 
-					[ \wfsStaticPoint, 
+					[ \wfsSource, 
 						[ \point, 5.0.rand2@(5.0 rrand: 10) ] // always behind array
 					]
 				).useSndFileDur
@@ -183,7 +183,7 @@ WFSLib {
 							\soundFile, BufSndFile.newBasic("@resources/sounds/a11wlk01-44_1.aiff", 
 								107520, 1, 44100, 0, nil, 1, true) 
 						] ],
-						[ \wfsDynamicPoint, 
+						[ \wfsSource, 
 							[  
 								\point, [
 									\lag_point, [
@@ -199,7 +199,7 @@ WFSLib {
 				.putRaw( \staticPlane, { 
 					UChain( 
 						\bufSoundFile, 
-						[ \wfsStaticPlane, [  \point, 5.0.rand2@(5.0 rrand: 10) ] ]
+						[ \wfsSource, [  \point, 5.0.rand2@(5.0 rrand: 10), \type, \plane ] ]
 					).useSndFileDur 
 				})
 				.putRaw( \circlePath, {
@@ -208,7 +208,7 @@ WFSLib {
 							\soundFile, BufSndFile.newBasic("@resources/sounds/a11wlk01-44_1.aiff", 
 								107520, 1, 44100, 0, nil, 1, true) 
 						] ],
-						[ \wfsDynamicPoint, [ 
+						[ \wfsSource, [ 
 							\point, UMap( \circle_trajectory, [ \speed, 0.4 ] ),
 							\quality, \better 
 						] ]
@@ -217,7 +217,7 @@ WFSLib {
 				.putRaw( \trajectory, {
 					UChain(  
 						\bufSoundFile,
-						[ \wfsDynamicPoint, [
+						[ \wfsSource, [
 							\point, UMap( 'trajectory', [ \trajectory, 
 								WFSPathBuffer( 
 									WFSPath2.generate( 5, 2.4380952380952, 
@@ -231,9 +231,11 @@ WFSLib {
 				})
 				.putRaw( \sinewave, { UChain( 
 					\sine,
-					[ \wfsDynamicPoint, 
+					[ \wfsSource, 
 							[  
-								\point, 5.0.rand2@(5.0 rrand: 10),
+								\point, [ \lag_point, [ 
+									\point, 5.0.rand2@(5.0 rrand: 10), \time, 1 
+								] ],
 								\quality, \better
 							] // always behind array
 						]
@@ -244,9 +246,10 @@ WFSLib {
 					[ \cutFilter, [ 
 						\freq, 1.0.rand.linexp( 0,1, 200, 2000 ).round(200) + [0,200]
 					] ],
-					[ \wfsDynamicPoint, [  
-						\point, 5.0.rand2@(5.0 rrand: 10),
-						\pointLag, 1,
+					[ \wfsSource, [  
+						\point, [ \lag_point, [ 
+							\point, 5.0.rand2@(5.0 rrand: 10), \time, 1 
+						] ],
 						\quality, \better
 					] ]
 					).useSndFileDur
@@ -259,9 +262,9 @@ WFSLib {
 					[ 'delay', 
 						[ 'time', 0.5, 'maxTime', 0.5, 'dry', 0.0, 'amp', 0.5, 'u_o_ar_0_bus', 2 ] 
 					], 
-					[ 'wfsStaticPoint', [ 'point', Point(-6, 6) ] ], 
-					[ 'wfsStaticPlane', [ 'point', Point(6, 6), 'u_i_ar_0_bus', 1 ] ],
-					[ 'wfsStaticPlane', [ 'point', Point(-6, -6), 'u_i_ar_0_bus', 2 ] ]
+					[ 'wfsSource', [ 'point', Point(-6, 6) ] ], 
+					[ 'wfsSource', [ 'type', 'plane', 'point', Point(6, 6), 'u_i_ar_0_bus', 1 ] ],
+					[ 'wfsSource', [ 'type', 'plane', 'point', Point(-6, -6), 'u_i_ar_0_bus', 2 ] ]
 					)
 				);
 				
