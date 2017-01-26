@@ -23,10 +23,9 @@ UMapDef( \random_trajectory, { |
 		center = #[0.0,0.0],
 		radius = #[10.0,10.0],
 		type = 2,
-		lag = 0.1,
-		seed = 12345|
+		lag = 0.1|
 	var random, trigger;
-	URandSeed.ir(seed);
+	URandSeed.ir();
 	random = [
 		LFDNoise0.kr( speed.dup ).lag3( lag ),
 		LFDNoise1.kr( speed.dup ),
@@ -46,4 +45,3 @@ UMapDef( \random_trajectory, { |
 	.setSpec( \radius, WFSRadiusSpec(200) )
 	.setSpec( \type, [0,2,\lin,1,0].asSpec )
 	.setSpec( \lag, [0,10,\lin,0,0.1].asSpec )
-	.setSpec( \seed, PositiveIntegerSpec(12345), \init );
