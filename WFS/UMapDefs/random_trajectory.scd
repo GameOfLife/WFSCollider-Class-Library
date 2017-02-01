@@ -43,5 +43,5 @@ UMapDef( \random_trajectory, { |
 	.setSpec( \speed, [ 0, 100, 99.squared.log, 0, 0.1 ].asSpec )
 	.setSpec( \center, WFSPointSpec(200) )
 	.setSpec( \radius, WFSRadiusSpec(200) )
-	.setSpec( \type, [0,2,\lin,1,0].asSpec )
+	.setSpec( \type, ListSpec([0,1,2], 0, [\step, \linear, \cubic]) )
 	.setSpec( \lag, [0,10,\lin,0,0.1].asSpec )
