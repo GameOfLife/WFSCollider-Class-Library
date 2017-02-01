@@ -34,7 +34,7 @@ def = FreeUdef( \wfsDynamicPoint, [
 		[ \maxAmpRadius:	2,		[ 1, 5, \lin, 0, 2, "m" ].asSpec ],
 		[ \crossfadeLag:	0.2,		[ 0, 1, \lin, 0, 0.2 ].asSpec, true ],
 		[ \dontPause:		false,	BoolSpec( false ), true ]
-	], true ).category_( \wfs_panner )
+	], true ).category_( \private )
 	// first a few general things
 	.envPut( \getArgsFor, { |evt, which, args, server, startPos = 0|
 		if( which.notNil ) {
@@ -238,5 +238,15 @@ if( WFSPreviewSynthDefs.pannerFuncs.keys.includes( WFSLib.previewMode ).not ) {
 		target.asTarget.server.isLocal; // safety measure: no output on wfs servers
 	});
 };
+
+def.uchainInitFunc_({ |unit, chain|
+	var quality;
+	if( unit.point.isUMap.not or: { unit.point.def.allowedModes.includes( \init ); } ) {
+		unit.point = [ \lag_point, [ \point, unit.point, \time, 0 ] ]; // force dynamic
+	};
+	quality = unit.quality;
+	unit.def = \wfsSource.asUdef;
+	unit.quality = quality;
+});
 
 def; // return def

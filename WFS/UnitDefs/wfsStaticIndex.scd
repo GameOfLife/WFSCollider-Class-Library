@@ -18,7 +18,7 @@ def = FreeUdef( \wfsStaticIndex, [
 		[ \index: 		0,  		PositiveIntegerSpec() ],
 		[ \gain:			-6,		[ -96, 0, \db, 1, -6].asSpec ],
 ] )
-	.category_( \wfs_panner )
+	.category_( \private )
 	.synthDef_(
 		SynthDef( "wfsi_is", {
 			var input, env, maxIndex;
@@ -62,6 +62,10 @@ def = FreeUdef( \wfsStaticIndex, [
 
 def.removeArgSpec( \startIndex ); // this is set by createSynthFunc
 def.removeArgSpec( \i_gain ); // this is set by createSynthFunc
+
+def.uchainInitFunc_({ |unit, chain|
+	unit.def = \wfsIndex.asUdef;
+});
 
 def
 )

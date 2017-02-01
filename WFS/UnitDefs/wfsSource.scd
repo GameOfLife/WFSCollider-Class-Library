@@ -753,7 +753,7 @@ if( WFSPreviewSynthDefs.pannerFuncs.keys.includes( WFSLib.previewMode ).not ) {
 };
 
 
-multiDef = MultiUdef( \wfsSource, [staticPoint, dynamicPoint, staticPlane, dynamicPlane ], \wfs_experimental, \mode, true )
+multiDef = MultiUdef( \wfsSource, [staticPoint, dynamicPoint, staticPlane, dynamicPlane ], \wfs_panner, \mode, true )
 	.dontStoreArgNames_([ \mode ])
 	.chooseFunc_( { |args|
 		var index, plane;

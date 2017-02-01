@@ -24,7 +24,7 @@ def = FreeUdef( \wfsStaticPlane, [
 		[ \maxAmpRadius:	2,		[ 1, 5, \lin, 0, 2, "m" ].asSpec ],
 	] )
 
-	.category_( \wfs_panner )
+	.category_( \private )
 	// first a few general things
 	.envPut( \getArgsFor, { |evt, which, args, server, startPos = 0|
 		if( which.notNil ) {
@@ -175,5 +175,10 @@ def.createSynthFunc_({ |unit, target, startPos = 0|
 		target.asTarget.server.isLocal; // safety measure: no output on wfs servers
 	});
 };
+
+def.uchainInitFunc_({ |unit, chain|
+	unit.def = \wfsSource.asUdef;
+	unit.type = \plane;
+});
 
 def; // return def

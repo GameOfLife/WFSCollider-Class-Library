@@ -26,7 +26,7 @@ def = FreeUdef( \wfsDynamicPlane, [
 		[ \maxAmpRadius:	2,		[ 1, 5, \lin, 0, 2, "m" ].asSpec ],
 		[ \dontPause:		false,	BoolSpec( false ), true ]
 	] )
-	.category_( \wfs_panner )
+	.category_( \private )
 	// first a few general things
 	.envPut( \getArgsFor, { |evt, which, args, server, startPos = 0|
 		if( which.notNil ) {
@@ -206,5 +206,16 @@ if( WFSPreviewSynthDefs.pannerFuncs.keys.includes( WFSLib.previewMode ).not ) {
 		target.asTarget.server.isLocal; // safety measure: no output on wfs servers
 	});
 };
+
+def.uchainInitFunc_({ |unit, chain|
+	var quality;
+	if( unit.point.isUMap.not or: { unit.point.def.allowedModes.includes( \init ); } ) {
+		unit.point = [ \lag_point, [ \point, unit.point, \time, 0 ] ]; // force dynamic
+	};
+	quality = unit.quality;
+	unit.def = \wfsSource.asUdef;
+	unit.type = \plane;
+	unit.quality = quality;
+});
 
 def; // return def

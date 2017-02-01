@@ -24,7 +24,7 @@ def = FreeUdef( \wfsStaticPoint, [
 		[ \dbRollOff:		-6,		[ -24, 0, \lin, 1, -6 ].asSpec ],
 		[ \maxAmpRadius:	2,		[ 1, 5, \lin, 0, 2, "m" ].asSpec ],
 	] )
-	.category_( \wfs_panner )
+	.category_( \private )
 	// first a few general things
 	.envPut( \getArgsFor, { |evt, which, args, server, startPos = 0|
 		if( which.notNil ) {
@@ -200,5 +200,9 @@ if( WFSPreviewSynthDefs.pannerFuncs.keys.includes( WFSLib.previewMode ).not ) {
 		target.asTarget.server.isLocal; // safety measure: no output on wfs servers
 	});		
 };
+
+def.uchainInitFunc_({ |unit, chain|
+	unit.def = \wfsSource.asUdef;
+});
 
 def; // return def
