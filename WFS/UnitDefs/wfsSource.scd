@@ -1,10 +1,31 @@
+/*
+\wfsSource
+
+This udef creates a virtual source on the WFS system. It can be a point source or a plane wave source. The position of the source can static or changing over time (dynamic). The unit changes internally depending on the type of the source. If the point is set normally (default) the unit is in 'static' mode, meaning that the point can not be moved during playback. Changes to the point will not be audible until the unit (and chain) is stopped and started again. When applying an UMap on the point (location) of the source, the source becomes 'dynamic', which will add an extra 'quality' parameter, and make the source able to move over time. The reason for the difference between static and dynamic is in optimization; a 'static' source takes considerably less CPU power than a 'dynamic' source. If you want to move the source in realtime by hand, try using (for example) a 'point_lag' UMap on the point argument. This will change the umap into 'dynamic' mode, allowing it to move during playback. 
+
+point: This point represents the absolute location of the point source, or the center position of a plane wave (the point on the line nearest to the center of the room). When point becomes a UMap, the unit goes into 'dynamic' mode, except when the UMap outputs single values (for example: 'random_point').
+type (i): \point or \plane
+quality: (i) (\normal or \better) setting for the interpolation quality of the delays (only in 'dynamic' mode)
+		normal = linear interpolation
+		better = cubic interpolation
+	Cubic interpolation uses about 50% more cpu.
+latencyComp: (i) cancels the delay caused bu the distance of the source. 0 = no compensation, 1 = full compensation. This can reduce the doppler shift for moving sources, and can ensure synchronicity between this source and other sources.
+dbRollOff: decrease in level due to a doubling of the distance. In nature this is -6 dB in free field conditions, and might be -3 dB in extremely reverberant rooms.
+maxAmpRadius: defines the radius of the circular area in the centre where the level will always be 0 dB (maximum). The dbRollOff starts where this area ends. So the larger the area, the louder the sounds outside of it.
+
+Changes to arguments marked with (i) only become effective the next time the event is played.
+
+--
+this is an Udef definition file
+part of the WFSCollider Class Library default Udefs set
+*/
 
 var staticPoint, dynamicPoint, staticPlane, dynamicPlane, multiDef;
 
 staticPoint = HiddenFreeUdef( \staticPoint, [
 		[ \point: 		0@0,  	WFSPointSpec( 200, 0.1 ) ],
 		[ \type, 			\point, 	ListSpec( [ \point, \plane ] ), false, \init ],
-		[ \latencyComp:  	0,		[0,1].asSpec, true, \init ],
+		[ \latencyComp:  	0,		[0,1].asSpec, false, \init ],
 		[ \distanceFilter:	0,		[0,2,\lin,0,1].asSpec ],
 		[ \dbRollOff:		-6,		[ -24, 0, \lin, 1, -6 ].asSpec ],
 		[ \maxAmpRadius:	5,		[ 1, 5, \lin, 0, 5, "m" ].asSpec ],
@@ -304,7 +325,7 @@ if( WFSPreviewSynthDefs.pannerFuncs.keys.includes( WFSLib.previewMode ).not ) {
 staticPlane = HiddenFreeUdef( \staticPlane, [
 		[ \point: 		0@0,  	WFSPlaneSpec( 200, 0.1 ) ],
 		[ \type, 			\point, 	ListSpec( [ \point, \plane ] ), false, \init ],
-		[ \latencyComp:  	0,		[0,1].asSpec, true, \init ],
+		[ \latencyComp:  	0,		[0,1].asSpec, false, \init ],
 		[ \dbRollOff:		0,		[ -24, 0, \lin, 1, 0 ].asSpec ],
 		[ \maxAmpRadius:	5,		[ 1, 5, \lin, 0, 5, "m" ].asSpec ],
 	] )
@@ -433,8 +454,8 @@ staticPlane.createSynthFunc_({ |unit, target, startPos = 0|
 dynamicPlane = HiddenFreeUdef( \dynamicPlane, [	
 		[ \point: 		0@0,  	WFSPlaneSpec( 200, 0.1 ) ],
 		[ \type, 			\point, 	ListSpec( [ \point, \plane ] ), false, \init ],
-		[ \quality:		0,		ListSpec([ \normal, \better ], 0 ), true, \nonsynth ], // for \l or \c
-		[ \latencyComp:  	0,		[0,1].asSpec, true, \init ],
+		[ \quality:		0,		ListSpec([ \normal, \better ], 0 ), false, \nonsynth ], // for \l or \c
+		[ \latencyComp:  	0,		[0,1].asSpec, false, \init ],
 		[ \dbRollOff:		0,		[ -24, 0, \lin, 1, 0 ].asSpec ],
 		[ \maxAmpRadius:	5,		[ 1, 5, \lin, 0, 5, "m" ].asSpec ],
 		[ \dontPause:		false,	BoolSpec( false ), true ]
