@@ -4,63 +4,27 @@ var staticPoint, dynamicPoint, staticPlane, dynamicPlane, multiDef;
 staticPoint = HiddenFreeUdef( \staticPoint, [
 		[ \point: 		0@0,  	WFSPointSpec( 200, 0.1 ) ],
 		[ \type, 			\point, 	ListSpec( [ \point, \plane ] ), false, \init ],
-		[ \latencyComp:  	0,		[0,1].asSpec ],
+		[ \latencyComp:  	0,		[0,1].asSpec, true, \init ],
 		[ \distanceFilter:	0,		[0,2,\lin,0,1].asSpec ],
 		[ \dbRollOff:		-6,		[ -24, 0, \lin, 1, -6 ].asSpec ],
-		[ \maxAmpRadius:	2,		[ 1, 5, \lin, 0, 2, "m" ].asSpec ],
+		[ \maxAmpRadius:	5,		[ 1, 5, \lin, 0, 5, "m" ].asSpec ],
 	] )
-	.category_( \wfs_panner )
-	// first a few general things
-	.envPut( \getArgsFor, { |evt, which, args, server, startPos = 0|
-		if( which.notNil ) {
-			U.formatArgs( 
-				(args ? []).clump(2)
-					.select({ |arr| which.includes( arr[0] ) }).flatten(1),
-				server,
-				startPos
-			)
-		} {
-			[];
-		}
-	})
-	.envPut( \getInitArgsFor, { |evt, defName, args, server, startPos = 0|
-		var which;
-		which = evt[ ("init_" ++ defName).asSymbol ] ++ evt[ ("set_" ++ defName).asSymbol ];
-		evt.getArgsFor( which, args, server, startPos );
-	})
-	.envPut( \getSetArgsFor, { |evt, defName, args, server, startPos = 0|
-		evt.getArgsFor( evt[ ("set_" ++ defName).asSymbol ], args, server, startPos );
-	})
-	.envPut( \init_wfsp, [ \latencyComp, \u_dur, \point, \u_doneAction ] ) // controls only set at init
-	.envPut( \set_wfsp, [ // controls that can always be set
-		\distanceFilter, \dbRollOff, \maxAmpRadius,
-		\u_i_ar_0_bus, 
-		\u_gain, \u_gate, \u_mute,
-		\u_fadeIn, \u_fadeOut,
-		\u_fadeInCurve, \u_fadeOutCurve,
-		\u_globalGain,
-		\u_globalEQ_setting, \u_globalEQ_bypass, 
-	] )
-	.envPut( \init_wfsa, [ \point ] )
-	.envPut( \set_wfsa, [ \u_i_ar_0_bus ] )
 	.addUEnv
 	.addUGlobalEQ
-	.setSpecMode( \latencyComp, \init, /* \point, \init */ )
 	.addUIO( UIn, \ar, 0, 1 )
 	.inputIsEndPoint_( true )
 	.setSynthFunc_({ |unit ...keyValuePairs|
+		keyValuePairs = (keyValuePairs ? []).clump(2) // exclude point for staticPoint
+			.select({ |arr| arr[0] !== \point }).flatten(1);
 		unit.synths.do({ |sn|
-			var server = sn.server;
-			var key = switch( sn.class, Group, \wfsa, Synth, \wfsp );
-			server.sendSyncedBundle( Server.default.latency, nil, 
-				*server.makeBundle( false, {
-					var args;
-					args = unit.subDef.env.getSetArgsFor( key, keyValuePairs, server );
-					if( args.size > 0 ) {
-		    				sn.set( *unit.subDef.env.getSetArgsFor( key, keyValuePairs, server ) )
-					};
-	    			})
-	    		);
+			var args = keyValuePairs;
+			if( sn.class == Group ) { // is an array group or preview synth
+				args = (args ? []).clump(2)
+					.select({ |arr| arr[0] === \u_i_ar_0_bus }).flatten(1);
+			};
+			if( args.size > 0 ) { 
+				unit.subDef.prSetSynth( sn, *args );
+			};
 		})
 	});
 
@@ -95,7 +59,7 @@ if( WFSPreviewSynthDefs.pannerFuncs.keys.includes( WFSLib.previewMode ).not ) {
 		
 		// make the pre-panner synth (has to know the nodeID's of the panner synths)
 		prePanSynth = Synth( "wfsp_n_0",
-		 	unit.subDef.env.getInitArgsFor( \wfsp, unit.args, server, startPos ),
+		 	unit.getArgsFor( server, startPos ),
 			arrayGroup, addAction: \addBefore
 		);
 		
@@ -109,7 +73,7 @@ if( WFSPreviewSynthDefs.pannerFuncs.keys.includes( WFSLib.previewMode ).not ) {
 							\outOffset, n + WFSSpeakerConf.getOutputBusStartOffset( server ),
 							\amp, normalLevels[i],
 							\arrayLimit, WFSSpeakerConf.default.arrayLimit,
-						] ++ unit.subDef.env.getInitArgsFor( \wfsa, unit.args, server, startPos ), 
+						] ++ U.formatArgs( [ \point, unit.point, \u_i_ar_0_bus, unit.u_i_ar_0_bus ], server, startPos ),
 						arrayGroup, addAction: \addToTail 
 					) 
 				);
@@ -128,7 +92,7 @@ if( WFSPreviewSynthDefs.pannerFuncs.keys.includes( WFSLib.previewMode ).not ) {
 								\amp, focusLevels[i],
 								\arrayLimit, WFSSpeakerConf.default.arrayLimit,
 								\focusWidth, WFSSpeakerConf.default.focusWidth,
-							] ++ unit.subDef.env.getInitArgsFor( \wfsa, unit.args, server, startPos ), 
+							] ++ U.formatArgs( [ \point, unit.point, \u_i_ar_0_bus, unit.u_i_ar_0_bus ], server, startPos ), 
 							arrayGroup, addAction: \addToTail 
 						) 
 					);
@@ -163,7 +127,7 @@ if( WFSPreviewSynthDefs.pannerFuncs.keys.includes( WFSLib.previewMode ).not ) {
 		
 		// make the pre-panner synth (has to know the nodeID's of the panner synths)
 		prePanSynth = Synth( "wfsp_n_0",
-		 	unit.subDef.env.getInitArgsFor( \wfsp, unit.args, server, startPos ),
+		 	unit.getArgsFor( server, startPos ),
 			target, \addToTail
 		);
 		
@@ -171,7 +135,7 @@ if( WFSPreviewSynthDefs.pannerFuncs.keys.includes( WFSLib.previewMode ).not ) {
 		
 		previewSynth = Synth( 
 			WFSPreviewSynthDefs.getDefName( WFSLib.previewMode, \s ),
-			unit.subDef.env.getInitArgsFor( \wfsa, unit.args, server, startPos ) ++
+			U.formatArgs( [ \point, unit.point, \u_i_ar_0_bus, unit.u_i_ar_0_bus ], server, startPos ) ++
 				[ \out, WFSSpeakerConf.getOutputBusStartOffset( target ) ],
 			arrayGroup, \addToTail 
 		);
@@ -189,93 +153,29 @@ if( WFSPreviewSynthDefs.pannerFuncs.keys.includes( WFSLib.previewMode ).not ) {
 dynamicPoint = HiddenFreeUdef( \dynamicPoint, [	
 		[ \point: 		0@0,  	WFSPointSpec( 200, 0.1 ) ],
 		[ \type, 			\point, 	ListSpec( [ \point, \plane ] ), false, \init ],
-		[ \quality:		0,		ListSpec([ \good, \better ], 0 ) ], // \l or \c
+		[ \quality:		0,		ListSpec([ \good, \better ], 0 ), false, \nonsynth ], // \l or \c
 		[ \distanceFilter:	0,		[0,2,\lin,0,1].asSpec ],
-		[ \latencyComp:  	0,		[0,1].asSpec ],
+		[ \latencyComp:  	0,		[0,1].asSpec, false, \init ],
 		[ \dbRollOff:		-6,		[ -24, 0, \lin, 1, -6 ].asSpec ],
-		[ \maxAmpRadius:	2,		[ 1, 5, \lin, 0, 2, "m" ].asSpec ],
+		[ \maxAmpRadius:	5,		[ 1, 5, \lin, 0, 5, "m" ].asSpec ],
 		[ \crossfadeLag:	0.2,		[ 0, 1, \lin, 0, 0.2 ].asSpec, true ],
 		[ \dontPause:		false,	BoolSpec( false ), true ]
-	], true ).category_( \wfs_panner )
-	// first a few general things
-	.envPut( \getArgsFor, { |evt, which, args, server, startPos = 0|
-		if( which.notNil ) {
-			U.formatArgs( 
-				(args ? []).clump(2)
-					.select({ |arr| which.includes( arr[0] ) }).flatten(1),
-				server,
-				startPos
-			)
-		} {
-			[];
-		}
-	})
-	.envPut( \getInitArgsFor, { |evt, defName, args, server, startPos = 0|
-		var which;
-		which = evt[ ("init_" ++ defName).asSymbol ] ++ evt[ ("set_" ++ defName).asSymbol ];
-		evt.getArgsFor( which, args, server, startPos );
-	})
-	.envPut( \getSetArgsFor, { |evt, defName, args, server, startPos = 0|
-		evt.getArgsFor( evt[ ("set_" ++ defName).asSymbol ], args, server, startPos );
-	})
-	.envPut( \init_wfsp, [ \latencyComp, \u_dur ] )
-	.envPut( \set_wfsp, [ 
-		\point, \distanceFilter, \dbRollOff, 
-		\maxAmpRadius, \crossfadeLag, \dontPause,
-		\u_i_ar_0_bus,
-		\u_doneAction, \u_gain, \u_gate, \u_mute,
-		\u_fadeIn, \u_fadeOut,
-		\u_fadeInCurve, \u_fadeOutCurve,
-		\u_globalGain,
-		\u_globalEQ_setting, \u_globalEQ_bypass,  
-	] )
-	.envPut( \set_wfsa, [ \point, \u_i_ar_0_bus ] )
+	], true )
 	.addUGlobalEQ
 	.addUIO( UIn, \ar, 0, 1 )
 	.inputIsEndPoint_( true )
-	.setSpecMode( \latencyComp, \init, \quality, \nonsynth )
 	.setSynthFunc_({ |unit ...keyValuePairs|
 		unit.synths.do({ |sn|
-			var server = sn.server;
-			var key = switch( sn.class, Group, \wfsa, Synth, \wfsp );
-			server.sendSyncedBundle( Server.default.latency, nil, 
-				*server.makeBundle( false, {
-		    			sn.set( *unit.subDef.env.getSetArgsFor( key, keyValuePairs, server ) )
-	    			})
-	    		);
+			var args = keyValuePairs;
+			if( sn.class == Group ) { // is an array group or preview synth
+				args = (args ? []).clump(2)
+					.select({ |arr| [ \point, \u_i_ar_0_bus ].includes( arr[0] ) }).flatten(1);
+			};
+			if( args.size > 0 ) { 
+				unit.subDef.prSetSynth( sn, *args );
+			};
 		})
 	});
-
-// ensure backwards compatibility
-dynamicPoint.prepareArgsFunc = { |argPairs|
-	var point;
-	if( argPairs.notNil) {
-		if( argPairs.pairsAt( \pointFromBus ) == true ) {
-			if( argPairs.includes( \u_i_kr_0_bus ) or: { argPairs.includes( \u_i_kr_1_bus ) } ) {				argPairs = [ \point, [ \map_control_point, [ 
-								\bus_x, argPairs.pairsAt( \u_i_kr_0_bus ) ? 0,
-								\bus_y, argPairs.pairsAt( \u_i_kr_1_bus ) ? 1
-						] 
-					],
-				  \pointFromBus, false
-				] ++	argPairs;	
-			} {
-				argPairs = [ \point, \map_control_point, \pointFromBus, false ] ++ argPairs;
-			};
-		};
-		if( argPairs.pairsAt( \pointLag ).notNil ) {
-			if( argPairs.pairsAt( \point ).notNil ) {
-				argPairs = [ \point, [ \lag_point, [ 
-					\point, argPairs.pairsAt( \point ),
-					\time, argPairs.pairsAt( \pointLag ),
-				] ] ] ++ argPairs;
-			} {
-				argPairs = [ \point, [ \lag_point, [ \time, argPairs.pairsAt( \pointLag ) ] ] ] 
-					++ argPairs;
-			};
-		};
-		argPairs;
-	};
-};
 	
 if( WFSPreviewSynthDefs.pannerFuncs.keys.includes( WFSLib.previewMode ).not ) {
 // dynamic point wfs panner
@@ -320,7 +220,7 @@ if( WFSPreviewSynthDefs.pannerFuncs.keys.includes( WFSLib.previewMode ).not ) {
 				\focusIDs, focusSynths.collect(_.nodeID),
 				\sendPointRate, WFSPositionTracker.getRate,
 				\focusWidth, WFSSpeakerConf.default.focusWidth
-			] ++ unit.subDef.env.getInitArgsFor( \wfsp, unit.args, server, startPos ),
+			] ++ unit.getArgsFor( server, startPos ),
 			arrayGroup, addAction: \addBefore
 		);
 		
@@ -335,7 +235,7 @@ if( WFSPreviewSynthDefs.pannerFuncs.keys.includes( WFSLib.previewMode ).not ) {
 					\outOffset, n + WFSSpeakerConf.getOutputBusStartOffset( server ),
 					\arrayLimit, WFSSpeakerConf.default.arrayLimit,
 					\focusWidth, WFSSpeakerConf.default.focusWidth
-				] ++ unit.subDef.env.getInitArgsFor( \wfsa, unit.args, server, startPos ), 
+				] ++ U.formatArgs( [ \point, unit.point, \u_i_ar_0_bus, unit.u_i_ar_0_bus ], server, startPos ),
 				\addToTail ) 
 			);
 			n = n + arrayConfs[i].n;
@@ -350,7 +250,7 @@ if( WFSPreviewSynthDefs.pannerFuncs.keys.includes( WFSLib.previewMode ).not ) {
 					\outOffset, n + WFSSpeakerConf.getOutputBusStartOffset( server ),
 					\arrayLimit, WFSSpeakerConf.default.arrayLimit,
 					\focusWidth, WFSSpeakerConf.default.focusWidth
-				] ++ unit.subDef.env.getInitArgsFor( \wfsa, unit.args, server, startPos ), 
+				] ++ U.formatArgs( [ \point, unit.point, \u_i_ar_0_bus, unit.u_i_ar_0_bus ], server, startPos ),
 				\addToTail ) 
 			);
 			n = n + arrayConfs[i].n;
@@ -377,7 +277,7 @@ if( WFSPreviewSynthDefs.pannerFuncs.keys.includes( WFSLib.previewMode ).not ) {
 		
 		// make the pre-panner synth (has to know the nodeID's of the panner synths)
 		prePanSynth = Synth( "wfsp_d_0",
-			unit.subDef.env.getInitArgsFor( \wfsp, unit.args, server, startPos ) ++ 
+			unit.getArgsFor( server, startPos ) ++
 				[ \sendPointRate, WFSPositionTracker.getRate ],
 			target, \addToTail
 		);
@@ -386,7 +286,7 @@ if( WFSPreviewSynthDefs.pannerFuncs.keys.includes( WFSLib.previewMode ).not ) {
 		
 		previewSynth = Synth( 
 			WFSPreviewSynthDefs.getDefName( WFSLib.previewMode, \d ),
-			unit.subDef.env.getInitArgsFor( \wfsa, unit.args, server, startPos ) ++
+			U.formatArgs( [ \point, unit.point, \u_i_ar_0_bus, unit.u_i_ar_0_bus ], server, startPos ) ++
 				[ \out, WFSSpeakerConf.getOutputBusStartOffset( target ) ],
 			arrayGroup, \addToTail 
 		);
@@ -404,60 +304,28 @@ if( WFSPreviewSynthDefs.pannerFuncs.keys.includes( WFSLib.previewMode ).not ) {
 staticPlane = HiddenFreeUdef( \staticPlane, [
 		[ \point: 		0@0,  	WFSPlaneSpec( 200, 0.1 ) ],
 		[ \type, 			\point, 	ListSpec( [ \point, \plane ] ), false, \init ],
-		[ \latencyComp:  	0,		[0,1].asSpec ],
+		[ \latencyComp:  	0,		[0,1].asSpec, true, \init ],
 		[ \dbRollOff:		0,		[ -24, 0, \lin, 1, 0 ].asSpec ],
-		[ \maxAmpRadius:	2,		[ 1, 5, \lin, 0, 2, "m" ].asSpec ],
+		[ \maxAmpRadius:	5,		[ 1, 5, \lin, 0, 5, "m" ].asSpec ],
 	] )
-
-	.category_( \wfs_panner )
-	// first a few general things
-	.envPut( \getArgsFor, { |evt, which, args, server, startPos = 0|
-		if( which.notNil ) {
-			U.formatArgs( 
-				(args ? []).clump(2)
-					.select({ |arr| which.includes( arr[0] ) }).flatten(1),
-				server,
-				startPos
-			)
-		} {
-			[];
-		}
-	})
-	.envPut( \getInitArgsFor, { |evt, defName, args, server, startPos = 0|
-		var which;
-		which = evt[ ("init_" ++ defName).asSymbol ] ++ evt[ ("set_" ++ defName).asSymbol ];
-		evt.getArgsFor( which, args, server, startPos );
-	})
-	.envPut( \getSetArgsFor, { |evt, defName, args, server, startPos = 0|
-		evt.getArgsFor( evt[ ("set_" ++ defName).asSymbol ], args, server, startPos );
-	})
-	.envPut( \init_wfsp, [ \latencyComp, \u_dur, \point ] ) // controls only set at init
-	.envPut( \set_wfsp, [ // controls that can always be set
-		\dbRollOff, \maxAmpRadius,
-		\u_i_ar_0_bus, 
-		\u_doneAction, \u_gain, \u_gate, \u_mute,
-		\u_fadeIn, \u_fadeOut,
-		\u_fadeInCurve, \u_fadeOutCurve,
-		\u_globalGain,
-		\u_globalEQ_setting, \u_globalEQ_bypass,  
-	] )
-	.envPut( \init_wfsa, [ \point ] )
-	.envPut( \set_wfsa, [ \u_i_ar_0_bus ] )
 	.addUEnv
 	.addUGlobalEQ
-	.setSpecMode( \latencyComp, \init, /* \point, \init */ )
 	.addUIO( UIn, \ar, 0, 1 )
 	.inputIsEndPoint_( true )
 	.setSynthFunc_({ |unit ...keyValuePairs|
+		keyValuePairs = (keyValuePairs ? []).clump(2) // exclude point for staticPlane
+			.select({ |arr| arr[0] !== \point }).flatten(1);
 		unit.synths.do({ |sn|
-			var server = sn.server;
-			var key = switch( sn.class, Group, \wfsa, Synth, \wfsp );
-			server.sendSyncedBundle( Server.default.latency, nil, 
-				*server.makeBundle( false, {
-		    			sn.set( *unit.subDef.env.getSetArgsFor( key, keyValuePairs, server ) )
-	    			})
-	    		);
+			var args = keyValuePairs;
+			if( sn.class == Group ) { // is an array group or preview synth
+				args = (args ? []).clump(2)
+					.select({ |arr| arr[0] === \u_i_ar_0_bus }).flatten(1);
+			};
+			if( args.size > 0 ) { 
+				unit.subDef.prSetSynth( sn, *args );
+			};
 		})
+	
 	});
 	
 if( WFSPreviewSynthDefs.pannerFuncs.keys.includes( WFSLib.previewMode ).not ) {
@@ -488,7 +356,7 @@ if( WFSPreviewSynthDefs.pannerFuncs.keys.includes( WFSLib.previewMode ).not ) {
 		
 		// make the pre-panner synth (has to know the nodeID's of the panner synths)
 		prePanSynth = Synth( "wfsp_n_0",
-		 	unit.subDef.env.getInitArgsFor( \wfsp, unit.args, server, startPos ),
+		 	unit.getArgsFor( server, startPos ),
 			arrayGroup, addAction: \addBefore
 		);
 		
@@ -503,7 +371,7 @@ if( WFSPreviewSynthDefs.pannerFuncs.keys.includes( WFSLib.previewMode ).not ) {
 							\arrayConf, ac, 
 							\outOffset, n + WFSSpeakerConf.getOutputBusStartOffset( server ),
 							\amp, planeLevels[i]
-						] ++ unit.subDef.env.getInitArgsFor( \wfsa, unit.args, server, startPos ), 
+						] ++ U.formatArgs( [ \point, unit.point, \u_i_ar_0_bus, unit.u_i_ar_0_bus ], server, startPos ),
 						arrayGroup, addAction: \addToTail 
 					) 
 				);
@@ -538,15 +406,15 @@ staticPlane.createSynthFunc_({ |unit, target, startPos = 0|
 					
 		// make the pre-panner synth (has to know the nodeID's of the panner synths)
 		prePanSynth = Synth( "wfsp_n_0",
-		 	unit.subDef.env.getInitArgsFor( \wfsp, unit.args, server, startPos ),
-			target, \addToTail
+		 	unit.getArgsFor( server, startPos ),
+		 	target, \addToTail
 		);
 		
 		arrayGroup = Group(target, addAction: \addToTail);
 		
 		previewSynth = Synth( 
 			WFSPreviewSynthDefs.getDefName( WFSLib.previewMode, \s ),
-			unit.subDef.env.getInitArgsFor( \wfsa, unit.args, server, startPos ) ++
+			U.formatArgs( [ \point, unit.point, \u_i_ar_0_bus, unit.u_i_ar_0_bus ], server, startPos ) ++
 				[ \out, WFSSpeakerConf.getOutputBusStartOffset( target ) ],
 			arrayGroup, \addToTail 
 		);
@@ -565,93 +433,29 @@ staticPlane.createSynthFunc_({ |unit, target, startPos = 0|
 dynamicPlane = HiddenFreeUdef( \dynamicPlane, [	
 		[ \point: 		0@0,  	WFSPlaneSpec( 200, 0.1 ) ],
 		[ \type, 			\point, 	ListSpec( [ \point, \plane ] ), false, \init ],
-		[ \quality:		0,		ListSpec([ \normal, \better ], 0 ) ], // for \l or \c
-		[ \latencyComp:  	0,		[0,1].asSpec ],
+		[ \quality:		0,		ListSpec([ \normal, \better ], 0 ), true, \nonsynth ], // for \l or \c
+		[ \latencyComp:  	0,		[0,1].asSpec, true, \init ],
 		[ \dbRollOff:		0,		[ -24, 0, \lin, 1, 0 ].asSpec ],
-		[ \maxAmpRadius:	2,		[ 1, 5, \lin, 0, 2, "m" ].asSpec ],
+		[ \maxAmpRadius:	5,		[ 1, 5, \lin, 0, 5, "m" ].asSpec ],
 		[ \dontPause:		false,	BoolSpec( false ), true ]
 	] )
-	.category_( \wfs_panner )
-	// first a few general things
-	.envPut( \getArgsFor, { |evt, which, args, server, startPos = 0|
-		if( which.notNil ) {
-			U.formatArgs( 
-				(args ? []).clump(2)
-					.select({ |arr| which.includes( arr[0] ) }).flatten(1),
-				server,
-				startPos
-			)
-		} {
-			[];
-		}
-	})
-	.envPut( \getInitArgsFor, { |evt, defName, args, server, startPos = 0|
-		var which;
-		which = evt[ ("init_" ++ defName).asSymbol ] ++ evt[ ("set_" ++ defName).asSymbol ];
-		evt.getArgsFor( which, args, server, startPos );
-	})
-	.envPut( \getSetArgsFor, { |evt, defName, args, server, startPos = 0|
-		evt.getArgsFor( evt[ ("set_" ++ defName).asSymbol ], args, server, startPos );
-	})
-	.envPut( \init_wfsp, [ \latencyComp, \u_dur ] )
-	.envPut( \set_wfsp, [ 
-		\point, \dbRollOff, 
-		\maxAmpRadius, \dontPause,
-		\u_i_ar_0_bus,
-		\u_doneAction, \u_gain, \u_gate, \u_mute,
-		\u_fadeIn, \u_fadeOut,
-		\u_fadeInCurve, \u_fadeOutCurve,
-		\u_globalGain,
-		\u_globalEQ_setting, \u_globalEQ_bypass,  
-	] )
-	.envPut( \set_wfsa, [ \point, \u_i_ar_0_bus ] )
 	.addUEnv
 	.addUGlobalEQ
 	.addUIO( UIn, \ar, 0, 1 )
 	.inputIsEndPoint_( true )
-	.setSpecMode( \latencyComp, \init, \quality, \init )
 	.setSynthFunc_({ |unit ...keyValuePairs|
 		unit.synths.do({ |sn|
-			var server = sn.server;
-			var key = switch( sn.class, Group, \wfsa, Synth, \wfsp );
-			server.sendSyncedBundle( Server.default.latency, nil, 
-				*server.makeBundle( false, {
-		    			sn.set( *unit.subDef.env.getSetArgsFor( key, keyValuePairs, server ) )
-	    			})
-	    		);
+			var args = keyValuePairs;
+			if( sn.class == Group ) { // is an array group or preview synth
+				args = (args ? []).clump(2)
+					.select({ |arr| [ \point, \u_i_ar_0_bus ].includes( arr[0] ) }).flatten(1);
+			};
+			if( args.size > 0 ) { 
+				unit.subDef.prSetSynth( sn, *args );
+			};
 		})
+	
 	});
-
-// ensure backwards compatibility
-dynamicPlane.prepareArgsFunc = { |argPairs|
-	var point;
-	if( argPairs.notNil) {
-		if( argPairs.pairsAt( \pointFromBus ) == true ) {
-			if( argPairs.includes( \u_i_kr_0_bus ) or: { argPairs.includes( \u_i_kr_1_bus ) } ) {				argPairs = [ \point, [ \map_control_point, [ 
-								\bus_x, argPairs.pairsAt( \u_i_kr_0_bus ) ? 0,
-								\bus_y, argPairs.pairsAt( \u_i_kr_1_bus ) ? 1
-						] 
-					],
-				  \pointFromBus, false
-				] ++	argPairs;	
-			} {
-				argPairs = [ \point, \map_control_point, \pointFromBus, false ] ++ argPairs;
-			};
-		};
-		if( argPairs.pairsAt( \pointLag ).notNil ) {
-			if( argPairs.pairsAt( \point ).notNil ) {
-				argPairs = [ \point, [ \lag_point, [ 
-					\point, argPairs.pairsAt( \point ),
-					\time, argPairs.pairsAt( \pointLag ),
-				] ] ] ++ argPairs;
-			} {
-				argPairs = [ \point, [ \lag_point, [ \time, argPairs.pairsAt( \pointLag ) ] ] ] 
-					++ argPairs;
-			};
-		};
-		argPairs;
-	};
-};
 
 if( WFSPreviewSynthDefs.pannerFuncs.keys.includes( WFSLib.previewMode ).not ) {
 	// dynamic plane wfs panner
@@ -686,7 +490,7 @@ if( WFSPreviewSynthDefs.pannerFuncs.keys.includes( WFSLib.previewMode ).not ) {
 				\planeLevelBuses, planeLevelBuses, 
 				\planeIDs, planeSynths.collect(_.nodeID),
 				\sendPointRate, WFSPositionTracker.getRate
-			] ++ unit.subDef.env.getInitArgsFor( \wfsp, unit.args, server, startPos ),
+			] ++ unit.getArgsFor( server, startPos ),
 			arrayGroup, addAction: \addBefore
 		);
 		
@@ -700,7 +504,7 @@ if( WFSPreviewSynthDefs.pannerFuncs.keys.includes( WFSLib.previewMode ).not ) {
 					\arrayConf, arrayConfs[i], 
 					\amp, ("c" ++planeLevelBuses[i]).asSymbol,
 					\outOffset, n +  WFSSpeakerConf.getOutputBusStartOffset( server )
-				] ++ unit.subDef.env.getInitArgsFor( \wfsa, unit.args, server, startPos ), 
+				] ++ U.formatArgs( [ \point, unit.point, \u_i_ar_0_bus, unit.u_i_ar_0_bus ], server, startPos ),
 				\addToTail ) 
 			);
 			n = n + arrayConfs[i].n;
@@ -728,7 +532,7 @@ if( WFSPreviewSynthDefs.pannerFuncs.keys.includes( WFSLib.previewMode ).not ) {
 		
 		// make the pre-panner synth (has to know the nodeID's of the panner synths)
 		prePanSynth = Synth( "wfsp_p_0",
-			unit.subDef.env.getInitArgsFor( \wfsp, unit.args, server, startPos ) ++
+			unit.getArgsFor( server, startPos ) ++
 				[ \sendPointRate, WFSPositionTracker.getRate ],
 			target, \addToTail
 		);
@@ -737,7 +541,7 @@ if( WFSPreviewSynthDefs.pannerFuncs.keys.includes( WFSLib.previewMode ).not ) {
 		
 		previewSynth = Synth( 
 			WFSPreviewSynthDefs.getDefName( WFSLib.previewMode, \d ),
-			unit.subDef.env.getInitArgsFor( \wfsa, unit.args, server, startPos ) ++
+			U.formatArgs( [ \point, unit.point, \u_i_ar_0_bus, unit.u_i_ar_0_bus ], server, startPos ) ++
 				[ \out, WFSSpeakerConf.getOutputBusStartOffset( target ) ],
 			arrayGroup, \addToTail 
 		);
