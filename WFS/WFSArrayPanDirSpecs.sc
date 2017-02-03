@@ -196,5 +196,10 @@ RadiationPatternSpec : Spec {
 		{ vws[ \plot ].refresh }.defer;
 		if( active ) { vws[ \omni ].doAction };
 	}
-
+	
+	expandArgSpecs {
+		^[[\o,0], [\d,1], [\q,0]].collect({ |item|
+			ArgSpec( item[0], item[1], [0,1,\lin].asSpec );
+		}) ++ [ ArgSpec( \n, 1, [1,8,\lin,1,1].asSpec ) ];
+	}
 }
