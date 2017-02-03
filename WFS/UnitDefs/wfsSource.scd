@@ -179,8 +179,6 @@ dynamicPoint = HiddenFreeUdef( \dynamicPoint, [
 		[ \latencyComp:  	0,		[0,1].asSpec, false, \init ],
 		[ \dbRollOff:		-6,		[ -24, 0, \lin, 1, -6 ].asSpec ],
 		[ \maxAmpRadius:	5,		[ 1, 5, \lin, 0, 5, "m" ].asSpec ],
-		[ \crossfadeLag:	0.2,		[ 0, 1, \lin, 0, 0.2 ].asSpec, true ],
-		[ \dontPause:		false,	BoolSpec( false ), true ]
 	], true )
 	.addUGlobalEQ
 	.addUIO( UIn, \ar, 0, 1 )
@@ -458,7 +456,6 @@ dynamicPlane = HiddenFreeUdef( \dynamicPlane, [
 		[ \latencyComp:  	0,		[0,1].asSpec, false, \init ],
 		[ \dbRollOff:		0,		[ -24, 0, \lin, 1, 0 ].asSpec ],
 		[ \maxAmpRadius:	5,		[ 1, 5, \lin, 0, 5, "m" ].asSpec ],
-		[ \dontPause:		false,	BoolSpec( false ), true ]
 	] )
 	.addUEnv
 	.addUGlobalEQ
