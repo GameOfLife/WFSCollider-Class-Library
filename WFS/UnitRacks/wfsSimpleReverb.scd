@@ -35,9 +35,9 @@ UnitRack(\wfsSimpleReverb, [
 			] 
 		)
 	}) ++ points.collect({ |pt,i| 
-		U( 'wfsStaticPlane', [ 'point', pt, 'u_i_ar_0_bus', i+1 ] )
+		U( 'wfsSource', [ 'point', pt, 'type', 'plane', 'u_i_ar_0_bus', i+1 ] )
 	}) ++ [ 
-		[ 'wfsDynamicPoint', [ 'point', 'shared_point_in' ] ] 
+		[ 'wfsSource', [ 'point', 'shared_point_in' ] ] 
 	]
 ).category_( \wfs );
 )
