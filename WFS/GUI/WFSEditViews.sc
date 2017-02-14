@@ -713,16 +713,17 @@ WFSPathTimeView : WFSPathXYView {
 						
 			Pen.color = Color.gray(0.25); // line
 			Pen.addRect(Rect( 0, 0 - (scale.y/4), times.last, scale.y/2 ) ).fill;
-		
-			Pen.color = Color.green(0.5,0.5); // start point
+			
+			Pen.strokeColor = Color.black.alpha_(0.5); 
+			Pen.fillColor = Color.white; // start point
 			Pen.addOval( Rect.aboutPoint( times[0]@0, 
 				scale.x * 5, scale.y * 5 ) );		
-			Pen.fill;
+			Pen.fillStroke;
 				
-			Pen.color = Color.red(1, 0.5); // end point
+			Pen.fillColor = Color.red(0.85); // end point
 			Pen.addOval( Rect.aboutPoint( times.last@0, 
 				scale.x * 5, scale.y * 5 ) );		
-			Pen.fill;
+			Pen.fillStroke;
 			
 			Pen.color = selectColor; // selected points
 			selected.do({ |item| 
@@ -741,7 +742,7 @@ WFSPathTimeView : WFSPathXYView {
 			};
 			
 			Pen.color = Color.blue(0.5);
-			times[1..].do({ |item, i| drawPoint.( item@0 ); });
+			times[1..times.size-2].do({ |item, i| drawPoint.( item@0 ); });
 			Pen.draw(1);
 			
 			if( showInfo ) {	

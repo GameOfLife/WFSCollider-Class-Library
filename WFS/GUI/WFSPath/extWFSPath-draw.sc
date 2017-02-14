@@ -82,15 +82,16 @@
 			// points
 			if( [0,2,4].includes( drawMode ) ) {	
 				Pen.width = scale;
-				Pen.color = Color.green(0.5,0.5); // start point
+				Pen.strokeColor = Color.black.alpha_(0.5); 
+				Pen.fillColor = Color.white; // start point
 				Pen.moveTo( curves[0][0] );
 				Pen.addArc( curves[0][0], 4 * scale, 0, 2pi );
-				Pen.fill;
+				Pen.fillStroke;
 				
-				Pen.color = Color.red(1, 0.5); // end point
+				Pen.fillColor = Color.red(0.95); // end point
 				Pen.moveTo( curves.last[0] );
 				Pen.addArc( curves.last[0], 4 * scale, 0, 2pi );
-				Pen.fill;
+				Pen.fillStroke;
 			};
 			
 			if( drawMode == 4 ) {	
@@ -134,7 +135,7 @@
 			
 			if( [0,2,4].includes( drawMode ) ) {	
 				Pen.color = Color.blue(1,0.5);
-				curves[1..curves.size-1].do({ |item|
+				curves[1..curves.size-2].do({ |item|
 					Pen.moveTo( item[0] );
 					Pen.addArc( item[0], 3 * scale, 0, 2pi );
 				});
