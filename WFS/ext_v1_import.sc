@@ -49,33 +49,41 @@
 		switch( this.intType,
 			\linear, {
 				units.add( 
-					U( \wfsDynamicPoint, [ 
+					U( \wfsSource, [ 
 						\point, UMap( \trajectory, [ \trajectory, WFSPathBuffer( wfsPath.asWFSPath2 ) ] ),
-						\distanceFilter, 1
+						\distanceFilter, 1,
+						\maxAmpRadius, 2,
 					] ) 
 				);
 			},
 			\cubic, {
 				units.add( 
-					U( \wfsDynamicPoint, [
+					U( \wfsSource, [
 						\point, UMap( \trajectory, [ \trajectory, WFSPathBuffer( wfsPath.asWFSPath2 ) ] ), 
 						\distanceFilter, 1,
+						\maxAmpRadius, 2,
 						\quality, \better
 					] ) 
 				);
 			}, 
 			\static, {
-				units.add( U( \wfsStaticPoint, [ \point, wfsPath.asPoint, \distanceFilter, 1 ] ) );
+				units.add( U( \wfsSource, [ 
+					\point, wfsPath.asPoint, 
+					\distanceFilter, 1, 
+					\maxAmpRadius, 2 
+				] ) );
 			},
 			\plane, {
-				units.add( U( \wfsStaticPlane, [ 
+				units.add( U( \wfsSource, [ 
 					\point, wfsPath.distance_(wfsPath.distance.max(1.0e-12)).asPoint,
+					\type, \plane,
 					\distanceFilter, 1,
+					\maxAmpRadius, 2,
 					\dbRollOff, -6 // this mimicks the old behaviour
 				] ) );
 			},
 			\index, {
-				units.add( U( \wfsStaticIndex, [ \index, wfsPath ] ) );
+				units.add( U( \wfsIndex, [ \index, wfsPath ] ) );
 			}
 		);
 		
