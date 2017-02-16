@@ -2,10 +2,12 @@
 this example for WFSCollider demonstrates how to program midi control for your score. It creates a very simple score with a sine wave in the center of the room, with infinite duration. The frequency of the sine wave is controlled via the modulation wheel (cc 1), mapped to the whole frequency range (20-20000Hz).
 
 Items with multiple lines in between brackets ( () ) are meant to be executed together. Double click one of the brackets to select the whole block. Other items can be executed as single lines.
+
+Note that this is an alternative to the 'midi' UMapDefs (midi_bend, midi_cc etc..).
 */
 
 // define a simple score
-x = UScore( UChain( [ \sine, [ \lag, 0.1 ] ], [ \wfsDynamicPoint, [ \pointLag, 0.1 ] ] ) );
+x = UScore( UChain( [ \sine, [ \lag, 0.1 ] ], [ \wfsSource, [ \point, \lag_point ] ] ) );
 
 // open the score editor to see it:
 x.gui;
@@ -49,3 +51,14 @@ m = MIDIFunc.cc({ |val, num, chan, src|
 }, 1 );
 )
 
+(
+// using the built-in midi_cc UMapDef the score would be created like this:
+y = UScore( 
+	UChain(
+		[ 'sine', [ 'freq', 
+			[ 'midi_cc', [ 'active', true, 'cc', 1, 'toRange', [ 20, 20000 ] ] ] ] ], 
+		[ 'wfsSource', [ 'point', 'lag_point' ] ]
+	)
+);
+y.gui;
+)

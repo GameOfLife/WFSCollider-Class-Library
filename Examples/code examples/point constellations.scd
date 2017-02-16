@@ -12,7 +12,7 @@ a = UScore(
 				\formant, 100 exprand: 1000,
 			] ], 
 			[ \tremolo, [ \speed, (i*3/n) ] ],
-			[ \wfsStaticPoint, [ \point, Polar(r, i.linlin(0,n,0,2pi) ).asPoint ] ]
+			[ \wfsSource, [ \point, Polar(r, i.linlin(0,n,0,2pi) ).asPoint ] ]
 		).duration_( 10 ).fadeOut_( 1 );
 	})
 );
@@ -31,11 +31,11 @@ b = UScore(
 				\freq, 100.0 rrand: 120,
 				\formant, 130 exprand: 1200,
 			] ], 
-			[ \wfsDynamicPoint, [ \point, UMap( \circle_trajectory, [ 
+			[ \wfsSource, [ \point, [ \circle_trajectory, [ 
 					\speed, 0.1, 
 					\startAngle, i.linlin(0,n,-pi,pi),
 					\radius, r@r 
-				 ] ) 
+				 ] ] 
 			] ]
 		).duration_( 10 ).fadeOut_( 1 );
 	})
@@ -54,16 +54,15 @@ c = UScore(
 				\freq, 600.0 rrand: 1000,
 				\formant, 1400 exprand: 2000,
 			] ], 
-			[ \wfsDynamicPoint, [ \point, UMap( \random_trajectory, [
+			[ \wfsSource, [ \point, [ \random_trajectory, [
 					\speed, 0.7,
 					\radius, r@r,
 					\seed, 1234,
-					\center, UMap( \random_trajectory, [
+					\center, [ \random_trajectory, [
 						\speed, 2,
 						\radius, 2@2,
-						\seed, 1000 + i
-					] )
-				] ) 
+					] ]
+				] ] 
 			] ]
 		).duration_( 10 ).fadeOut_( 1 ).gain_( -6 );
 	})
@@ -84,7 +83,7 @@ d = UScore(
 				\formant, 100 exprand: 1000,
 			] ], 
 			[ \tremolo, [ \speed, i.linlin(0,n-1,0.5,1.5), \smooth, 0.05 ] ],
-			[ \wfsStaticPoint, [ \point, i.linlin( 0@0, (n-1)@(n-1), p, q ) ] ]
+			[ \wfsSource, [ \point, i.linlin( 0@0, (n-1)@(n-1), p, q ) ] ]
 		).duration_( 10 ).fadeOut_( 1 );
 	})
 );
@@ -102,11 +101,11 @@ e = UScore(
 				\freq, 160.0 rrand: 280,
 				\formant, 280 exprand: 2000,
 			] ], 
-			[ \wfsDynamicPoint, [ \point, UMap( \circle_trajectory, [
+			[ \wfsSource, [ \point, [ \circle_trajectory, [
 					\speed, 0.1,
 					\startAngle, if( i < (n/2) ) { 0 } { pi },
 					\radius, i.linlin(0,n-1,r.neg,r).abs.asPoint 
-				] )
+				] ]
 			] ]
 		).duration_( 10 ).fadeOut_( 1 );
 	})

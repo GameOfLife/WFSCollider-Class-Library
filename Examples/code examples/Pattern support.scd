@@ -1,6 +1,6 @@
 // generate a proto event
 (
-x = UChain( [ 'formant', [ \bw, 1 ] ], [ 'wfsStaticPoint', [ \latencyComp, 1 ] ]);
+x = UChain( [ 'formant', [ \bw, 1 ] ], [ 'wfsSource', [ \latencyComp, 1 ] ]);
 x.gui;
 )
 

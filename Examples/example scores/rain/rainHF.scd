@@ -1,6 +1,6 @@
 
-Udef(\rainHF, { |seed = 12345|
-	URandSeed.ir( seed );
+Udef(\rainHF, {
+	URandSeed.ir();
 	UOut.ar(0,tanh(
             3 * GVerb.ar(
                 HPF.ar(
@@ -11,5 +11,4 @@ Udef(\rainHF, { |seed = 12345|
             ) 
         )) 
 })
-.setSpec( \seed, PositiveIntegerSpec() )
 .category_(\synthesis)

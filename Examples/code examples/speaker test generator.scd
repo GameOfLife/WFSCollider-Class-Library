@@ -15,8 +15,9 @@ x = UScore();
 	x.add( folder );
 	r.do({ |ii|
 		n.do({ |iii|
-			folder.add( UChain( ((ii * (n + 1)) + iii) * z, iii, z * (3/4), t, 
-				[ \wfsStaticIndex, [ \index, (i * 8) + iii, \gain, 0 ] ]
+			folder.add( UChain( ((ii * (n + 1)) + iii) * z, iii, z * (3/4), 
+				[ t, [ \seed, 12345 ] ],
+				[ \wfsIndex, [ \index, (i * 8) + iii, \gain, 0 ] ]
 				)
 			);
 		});
