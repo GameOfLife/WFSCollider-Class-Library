@@ -150,6 +150,7 @@ WFSServers {
 			ServerTree.objects !? _.removeAt( item );
 			ServerBoot.objects !? _.removeAt( item );
 			RootNode.roots.removeAt( item.name );
+			NodeWatcher.all.removeAt( item.name );
 		});
 		if( window.notNil && { window.isClosed.not }) { window.close; };
 	}
