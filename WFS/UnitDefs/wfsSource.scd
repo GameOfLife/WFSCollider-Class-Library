@@ -4,7 +4,7 @@
 This udef creates a virtual source on the WFS system. It can be a point source or a plane wave source. The position of the source can static or changing over time (dynamic). The unit changes internally depending on the type of the source. If the point is set normally (default) the unit is in 'static' mode, meaning that the point can not be moved during playback. Changes to the point will not be audible until the unit (and chain) is stopped and started again. When applying an UMap on the point (location) of the source, the source becomes 'dynamic', which will add an extra 'quality' parameter, and make the source able to move over time. The reason for the difference between static and dynamic is in optimization; a 'static' source takes considerably less CPU power than a 'dynamic' source. If you want to move the source in realtime by hand, try using (for example) a 'point_lag' UMap on the point argument. This will change the umap into 'dynamic' mode, allowing it to move during playback. 
 
 point: This point represents the absolute location of the point source, or the center position of a plane wave (the point on the line nearest to the center of the room). When point becomes a UMap, the unit goes into 'dynamic' mode, except when the UMap outputs single values (for example: 'random_point').
-type (i): \point or \plane
+type: (i) \point or \plane
 quality: (i) (\normal or \better) setting for the interpolation quality of the delays (only in 'dynamic' mode)
 		normal = linear interpolation
 		better = cubic interpolation
