@@ -24,7 +24,13 @@ MultiChannelUdef( \wfsMasterIn, { |bus = 0|
 	});
 	UOut.ar( 0, input );
 } ).setSpec( \bus, PositiveIntegerSpec( 0 ) )
-	.category_( \wfs_io )
+	.category_( \private )
+	.uchainInitFunc_({ |unit, chain|
+		// this function replaces the wfsPoint unit in the chain
+		// by a \shared_point, and any of \map_control_point UMaps
+		// further in the chain by corresponding \shared_point_in
+		unit.def = \soundIn.asUdef;
+	})
 	.shouldPlayOnFunc_({ |unit, target|
 		target.asTarget.server == WFSServers.default.m;
 	});
