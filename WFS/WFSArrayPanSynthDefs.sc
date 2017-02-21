@@ -85,9 +85,16 @@ WFSArrayPanSynthDefs : AbstractWFSSynthDefs {
 	}
 	
 	*allSizes { 
-		^((maxSize/division).asInt + 1).collect({ |i|
+		var sizes;
+		sizes = ((maxSize/division).asInt + 1).collect({ |i|
 			((i * division) + (0,(2**i)..division-1)).asInt
 		}).flat.select(_ >= minSize);
+		if( WFSSpeakerConf.default.notNil ) {
+			 WFSSpeakerConf.default.arrayConfs.collect(_.n).do({ |item|
+				 if( sizes.includes( item ).not ) { sizes = sizes.add( item ) };
+			 });
+		};
+		^sizes;
 	}
 	
 	*getDefName { |size = 8, type = \u, mode = \s, int = \n|
