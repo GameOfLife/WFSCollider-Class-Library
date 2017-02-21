@@ -214,6 +214,13 @@ WFSOptions : AbstractWFSOptions {
 				.serverOptions_([
 					WFSServerOptions.fromPreset( 'sampl' )
 				]),
+			'parma', WFSOptions()
+				.serverOptions_([ WFSServerOptions()
+				.name_("Parma WFS")
+				.n_(6)
+				.numOutputBusChannels_(189)
+				.numInputBusChannels_(32)
+				.device_(nil) ]),
 			'test_sync', WFSOptions()
 				.masterOptions_(
 					WFSMasterOptions()
