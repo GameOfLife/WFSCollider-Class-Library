@@ -86,9 +86,9 @@ WFSMasterOptionsGUI : AbstractWFSOptionsGUI {
 	
 	*initClass {
 		specs = OEM(
-			\numInputBusChannels, IntegerSpec( 20, 8, 128 ),
-			\numOutputBusChannels, IntegerSpec( 20, 8, 128 ),
-			\outputBusStartOffset, IntegerSpec( 0, 0, 128 ),
+			\numInputBusChannels, IntegerSpec( 20, 8, 256 ),
+			\numOutputBusChannels, IntegerSpec( 20, 8, 256 ),
+			\outputBusStartOffset, IntegerSpec( 0, 0, 256 ),
 			\device, AudioDeviceSpec(),
 			\hardwareBufferSize, ListSpec( [64, 128, 256, 512, 1024, nil] ),
 			\useForWFS, BoolSpec(false),
@@ -109,9 +109,9 @@ WFSServerOptionsGUI : AbstractWFSOptionsGUI {
 			\ip, StringSpec("127.0.0.1"),
 			\startPort, IntegerSpec( 58000, 7000, 100000 ),
 			\n, IntegerSpec( 8, 1, 16 ),
-			\numInputBusChannels, IntegerSpec( 8, 8, 128 ),
-			\numOutputBusChannels, IntegerSpec( 96, 8, 128 ),
-			\outputBusStartOffset, IntegerSpec( 0, 0, 128 ),
+			\numInputBusChannels, IntegerSpec( 8, 8, 256 ),
+			\numOutputBusChannels, IntegerSpec( 96, 8, 256 ),
+			\outputBusStartOffset, IntegerSpec( 0, 0, 256 ),
 			\device, AudioDeviceSpec("JackRouter"),
 			\hardwareBufferSize, ListSpec( [64, 128, 256, 512, 1024, nil] ),
 		);
