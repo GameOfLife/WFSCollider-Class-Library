@@ -8,6 +8,7 @@ WFSPreviewSynthDefs : AbstractWFSSynthDefs {
 	
 	classvar <>modes;
 	classvar <>pannerFuncs;
+	classvar <>panDist = 0.2;
 	
 	*prefix { ^"wfsx" }
 	
@@ -39,7 +40,7 @@ WFSPreviewSynthDefs : AbstractWFSSynthDefs {
 			},
 			\quad: { |in, point| // clockwise quadraphonic panning
 				var distances, globalDist, delays, amplitudes;
-				var radius = 0.3; // should be < 1
+				var radius = panDist; // should be < 1
 				distances = [ 
 					(radius.neg)@radius, radius@radius, 
 					radius@(radius.neg), (radius.neg)@(radius.neg)
@@ -53,7 +54,7 @@ WFSPreviewSynthDefs : AbstractWFSSynthDefs {
 			},
 			\hexa: { |in, point| // clockwise hexaphonic panning, 
 				var distances, globalDist, delays, amplitudes;
-				var radius = 0.3; // should be < 1
+				var radius = panDist; // should be < 1
 				distances = ((2,1..-3)*2pi/6).collect({ |item|
 					Polar(radius,item).asPoint.dist( point )
 				});
@@ -66,7 +67,7 @@ WFSPreviewSynthDefs : AbstractWFSSynthDefs {
 			},
 			\octo: { |in, point| // clockwise octophonic panning, first speaker straight front
 				var distances, globalDist, delays, amplitudes;
-				var radius = 0.3; // should be < 1
+				var radius = panDist; // should be < 1
 				distances = ((2,1..-5)*2pi/8).collect({ |item|
 					Polar(radius,item).asPoint.dist( point )
 				});
