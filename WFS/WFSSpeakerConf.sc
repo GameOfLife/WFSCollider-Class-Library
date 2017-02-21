@@ -302,7 +302,7 @@ WFSSpeakerConf {
 				[ 32, 2.2958816567648, 0.024722222222222pi, 0.17867399847052, 0.17 ]
 			),
 		 	'sampl', WFSSpeakerConf([32, 5, 0.5pi, 0, 0.1275]).arrayLimit_(0.3).focusWidth_(2pi),
-		 	'parma', WFSSpeakerConf([ 35, 3.46, 0.5pi, 0, 0.12 ], [ 60, 2.14, 0, 0, 0.12 ], [ 34, 3.46, -0.5pi, 0.0, 0.12 ], [ 60, 2.14, pi, 0.0, 0.12 ]),
+		 	'parma', WFSSpeakerConf([ 35, 3.64, 0.5pi, 0, 0.12 ], [ 60, 2.14, 0, 0, 0.12 ], [ 34, 3.64, -0.5pi, 0.0, 0.12 ], [ 60, 2.14, pi, 0.0, 0.12 ]),
 		 ];
 		 presetManager.applyFunc_( { |object, preset|
 			 	if( object === WFSSpeakerConf ) {
