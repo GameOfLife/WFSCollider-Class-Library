@@ -29,6 +29,7 @@ staticPoint = HiddenFreeUdef( \staticPoint, [
 		[ \distanceFilter:	0,		[0,2,\lin,0,1].asSpec ],
 		[ \dbRollOff:		-6,		[ -24, 0, \lin, 1, -6 ].asSpec ],
 		[ \maxAmpRadius:	5,		[ 1, 5, \lin, 0, 5, "m" ].asSpec ],
+		[ \dynamic:		false,	BoolSpec(false), true, \nonsynth ], // force dynamic (hidden)
 	] )
 	.addUEnv
 	.addUGlobalEQ
@@ -179,6 +180,7 @@ dynamicPoint = HiddenFreeUdef( \dynamicPoint, [
 		[ \latencyComp:  	0,		[0,1].asSpec, false, \init ],
 		[ \dbRollOff:		-6,		[ -24, 0, \lin, 1, -6 ].asSpec ],
 		[ \maxAmpRadius:	5,		[ 1, 5, \lin, 0, 5, "m" ].asSpec ],
+		[ \dynamic:		false,	BoolSpec(false), true, \nonsynth ], // force dynamic (hidden)
 	], true )
 	.addUGlobalEQ
 	.addUIO( UIn, \ar, 0, 1 )
@@ -326,6 +328,7 @@ staticPlane = HiddenFreeUdef( \staticPlane, [
 		[ \latencyComp:  	0,		[0,1].asSpec, false, \init ],
 		[ \dbRollOff:		0,		[ -24, 0, \lin, 1, 0 ].asSpec ],
 		[ \maxAmpRadius:	5,		[ 1, 5, \lin, 0, 5, "m" ].asSpec ],
+		[ \dynamic:		false,	BoolSpec(false), true, \nonsynth ], // force dynamic (hidden)
 	] )
 	.addUEnv
 	.addUGlobalEQ
@@ -456,6 +459,7 @@ dynamicPlane = HiddenFreeUdef( \dynamicPlane, [
 		[ \latencyComp:  	0,		[0,1].asSpec, false, \init ],
 		[ \dbRollOff:		0,		[ -24, 0, \lin, 1, 0 ].asSpec ],
 		[ \maxAmpRadius:	5,		[ 1, 5, \lin, 0, 5, "m" ].asSpec ],
+		[ \dynamic:		false,	BoolSpec(false), true, \nonsynth ], // force dynamic (hidden)
 	] )
 	.addUEnv
 	.addUGlobalEQ
@@ -578,15 +582,23 @@ if( WFSPreviewSynthDefs.pannerFuncs.keys.includes( WFSLib.previewMode ).not ) {
 multiDef = MultiUdef( \wfsSource, [staticPoint, dynamicPoint, staticPlane, dynamicPlane ], \wfs_panner, \mode, true )
 	.dontStoreArgNames_([ \mode ])
 	.chooseFunc_( { |args|
-		var index, plane;
+		var index, plane, dynamic;
 		index = args.indexOf( \point );
 		plane = args.indexOf( \type );
+		dynamic = args.indexOf( \dynamic );
 		if( plane.notNil ) { plane = args[ plane + 1 ] == \plane; } { plane = false };
-		if( index.notNil && {
-			args[index+1].isUMap && {
-				args[index+1].def.allowedModes.includes( \init ).not;
-			}
-		}) { 
+		if( dynamic.notNil && { args[dynamic+1] == true } ) {
+			dynamic = true;
+		} {
+			if( index.notNil && {
+				args[index+1].isUMap && {
+					args[index+1].def.allowedModes.includes( \init ).not;
+				}
+			}) { 
+				dynamic = true 
+			};
+		};
+		if( dynamic == true ) { 
 			if( plane, \dynamicPlane, \dynamicPoint );
 		} {
 			if( plane, \staticPlane, \staticPoint );
