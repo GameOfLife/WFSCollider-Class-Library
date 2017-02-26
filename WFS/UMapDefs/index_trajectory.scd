@@ -17,8 +17,8 @@ UMapDef( \index_trajectory, {
 	var bufnum, startFrame, rate, loop, delay;
 	index = \index.kr(0.0);
 	#bufnum, startFrame, rate, loop, delay = WFSPathBufferPlayer.getArgs( \trajectory );
-	bufFrames = BufFrames.kr( bufnum ) - 1 - startFrame;
-	index = startFrame + (index * (bufFrames + loop));
+	bufFrames = BufFrames.kr( bufnum ) - 1;
+	index = (index * (bufFrames + loop));
 	sig = BufRd.kr( (numDim * 4) + 1, bufnum, index, 1, 1 );
 	sig = numDim.collect({ |i| sig[ (1..4) + (i*4) ].splineIntPart2( index.wrap(0,1) ); });
 	sig = sig + \addPoint.kr([0,0]);
