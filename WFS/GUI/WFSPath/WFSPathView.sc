@@ -28,6 +28,8 @@ WFSPointGroupEditView {
 			.addUndoManager( addUndoManager );
 	}
 	
+	viewClass { ^WFSPointGroupView }
+	
 	init { |parent, bounds, object|
 		
 		if( parent.isNil ) { 
@@ -48,7 +50,7 @@ WFSPointGroupEditView {
 		view.view.decorator.shift( 0, 2 ); // needed for some reason
 		
 		
-		xyView = WFSPointGroupView( view, bounds.copy.height_( bounds.height - 18), object );
+		xyView = this.viewClass.new( view, bounds.copy.height_( bounds.height - 18), object );
 		
 		// xyView is the master view
 		topBar.object = xyView;

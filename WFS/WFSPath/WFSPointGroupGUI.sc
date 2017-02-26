@@ -32,6 +32,10 @@ WFSPointGroupGUI {
 		^super.new.init( parent, bounds, object, addUndoManager )
 	}
 	
+	editViewClass { ^WFSPointGroupEditView }
+	
+	transformerViewClass { ^WFSPointGroupTransformerView }
+	
 	init { |parent, bounds, object, addUndoManager|
 		
 		var ctrl, ctrl2, ctrl3;
@@ -54,7 +58,7 @@ WFSPointGroupGUI {
 		bounds = view.asView.bounds;
 		view.addFlowLayout(0@0, 2@2);
 		
-		pathView = WFSPointGroupEditView( view, 
+		pathView = this.editViewClass.new( view, 
 			bounds.copy.width_( bounds.width - (editWidth + 4) ), object );
 		
 		editView = WFSPointGroupTransformerView( view, editWidth @ bounds.height, object );
@@ -62,7 +66,7 @@ WFSPointGroupGUI {
 		editView.resize_(3);
 		
 		editView.duplicateAction_({ |ev| 
-			WFSPointGroupEditView( object: ev.object.deepCopy )
+			this.editViewClass.new( object: ev.object.deepCopy )
 		});
 		
 		ctrl = SimpleController( pathView.xyView )

@@ -1545,13 +1545,13 @@ WFSMixedView : WFSPointView {
 	
 	*initClass {
 		typeDrawFuncs = (
-			\point: { |evt, p, scale|
+			\point: { |evt, p, scale, center|
 				Pen.moveTo( p );
 				Pen.addArc( p, 3 * scale, 0, 2pi );
 				Pen.line( p - ((5 * scale)@0), p + ((5 * scale)@0));
 				Pen.line( p - (0@(5 * scale)), p + (0@(5 * scale)));
 			},
-			\plane: { |evt, p, scale|
+			\plane: { |evt, p, scale, center|
 				var polar = (p * (1@ 1)).asPolar;
 				var p1 = polar.asPoint;
 				var p2 = Polar( 50, polar.angle-0.5pi).asPoint;
@@ -1559,7 +1559,7 @@ WFSMixedView : WFSPointView {
 				p2 = Polar( scale * 15, polar.angle ).asPoint;
 				Pen.arrow( p1 + p2, p1 - p2, scale * 5 );
 			},
-			\radius: { |evt, p, scale|
+			\radius: { |evt, p, scale, center|
 				Pen.moveTo( p );
 				Pen.addArc( p, 3 * scale, 0, 2pi );
 				Pen.line(p - ((3*scale) @ 0), p * (-1 @  1) );
@@ -1568,10 +1568,10 @@ WFSMixedView : WFSPointView {
 				Pen.lineTo( p - (0 @ (3*scale) ) );
 				Pen.stroke;
 			},
-			\speaker: { |evt, p, scale|
+			\speaker: { |evt, p, scale, center|
 				Pen.use({
 					Pen.translate( p.x, p.y );
-					Pen.rotate( p.angle - pi );
+					Pen.rotate( (p - center).angle - pi );
 					Pen.alpha_( 0.75 );
 					DrawIcon( \speaker, 
 						Rect( -15 * scale, -15 * scale, 30 * scale, 30 * scale ) 
@@ -1582,8 +1582,10 @@ WFSMixedView : WFSPointView {
 	}
 	
 	drawType { |which, p, scale = 1|
-		typeDrawFuncs.perform( which, p, scale );
+		typeDrawFuncs.perform( which, p, scale, this.center );
 	}
+	
+	center { ^Point(0,0) }
 
 	drawContents { |scale = 1|
 		var points, controls, types;
