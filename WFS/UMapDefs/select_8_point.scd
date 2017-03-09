@@ -20,7 +20,7 @@ UMapDef( \select_8_point, {
 	points = 8.collect({ |i|
 		("point"++i).asSymbol.kr([0.0,0.0]);
 	});
-	sig = LinSelectX.kr( 
+	sig = Select.kr( 
 		interpolation,
 		[
 			Select.kr( index, points ),
@@ -29,7 +29,7 @@ UMapDef( \select_8_point, {
 	);
 	UMapOut.kr( sig, false );
 }).category_( \point_utility )
-	.setSpec( \interpolation, [0,1].asSpec )
+	.setSpec( \interpolation, BoolSpec(true) )
 	.setSpec( \index, [0,7].asSpec )
 	.setSpec( \point0, WFSPointSpec(200, 0.1) )
 	.setSpec( \point1, WFSPointSpec(200, 0.1) )
