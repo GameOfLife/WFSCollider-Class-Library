@@ -40,13 +40,17 @@ WFSSynthDefs {
 	*generateAllOnce { |action, dir|
 		WFSPrePanSynthDefs.generateAllOnce( dir: dir );
 		WFSPreviewSynthDefs.generateAllOnce( dir: dir );
-		WFSArrayPanSynthDefs.generateAllOnce( action, dir );
+		WFSArrayPanSynthDefs.generateAllOnce( { |synthDefs|
+			WFSArrayPanDirSynthDefs.generateAllOnce( action, dir );
+		}, dir );
 	}
 	
 	*generateAll { |action, dir|
 		WFSPrePanSynthDefs.generateAll( dir: dir );
 		WFSPreviewSynthDefs.generateAll( dir: dir );
-		WFSArrayPanSynthDefs.generateAll( action, dir );
+		WFSArrayPanSynthDefs.generateAll( { |synthDefs|
+			WFSArrayPanDirSynthDefs.generateAll( action, dir );
+		}, dir );
 	}
 	
 	*loadAll { |action, dir|
