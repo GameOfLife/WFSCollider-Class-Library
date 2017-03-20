@@ -16,7 +16,7 @@ ArrayTransformerDef( \smooth,
 		}), amt );
 	}, 
 	[ \smooth, 0, \window, 0.3, \mode, \clip ],
-	{ |f, path| [ \smooth, 0, \window, f.get( \window) ] }
+	{ |f, path| [ \smooth, 0, \window, f.get( \window ),  \mode, f.get( \mode ) ] }
 )
 	.setSpec( \smooth, ControlSpec( -1, 1, \lin, 0, 0 ) )
 	.setSpec( \window, ControlSpec( 0, 1, \lin, 0.0, 0.3 ) )
