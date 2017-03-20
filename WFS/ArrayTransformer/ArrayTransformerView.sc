@@ -199,6 +199,10 @@ ArrayTransformerView {
 			.collect(_.spec_( spec ));
 	}
 	
+	spec_ { |spec|
+		editFuncs.do(_.spec_( spec ) );
+	}
+	
 	editDefs { ^editFuncs }
 	
 	editDefs_ { |editDefs|
