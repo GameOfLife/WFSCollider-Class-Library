@@ -509,6 +509,8 @@ WFSMultiPointSpec : PointSpec {
 	
 	massEditSpec { ^nil }
 	
+	canChangeAmount { ^false }
+	
 	makeView { |parent, bounds, label, action, resize|
 		var vws, view, labelWidth;
 		var localStep;
@@ -556,7 +558,7 @@ WFSMultiPointSpec : PointSpec {
 				var editor;
 				if( vws[ \editor ].isNil or: { vws[ \editor ].isClosed } ) {
 					editor = this.makeEditor( vws[ \val ] )
-						.canChangeAmount_( false )
+						.canChangeAmount_( this.canChangeAmount )
 						.action_( editAction )
 						.onClose_({ 
 							if( vws[ \editor ] == editor ) {
@@ -616,10 +618,10 @@ WFSMultiRadiusSpec : WFSMultiPointSpec {
 }
 
 WFSPointGroupSpec : WFSMultiPointSpec {
-	var <>type = \point;
+	var <>type = \point, <>canChangeAmount = false;
 	
-	*new { |default, type = \point|
-		^super.new.default_( default ).type_( type );
+	*new { |default, type = \point, canChangeAmount = false|
+		^super.new.default_( default ).canChangeAmount_( canChangeAmount ).type_( type );
 	}
 	
 	*testObject { |obj|
