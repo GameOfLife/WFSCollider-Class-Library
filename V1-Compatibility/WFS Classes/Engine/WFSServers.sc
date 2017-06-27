@@ -74,7 +74,8 @@ WFSServers {
 				basicName ++ (i+1) ++ "_", 
 				NetAddr( ip, startPort[i] ), 
 				Server.default.options , 
-				synthDefDir: "/Applications/WFSCollider.app/Contents/Resources/synthdefs/");
+				synthDefDir: SynthDef.synthDefDir
+				);
 			}) ? [];
 			
 		syncDelays = { { 0 }!serversPerSystem }!ips.size;
