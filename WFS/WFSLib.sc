@@ -325,7 +325,7 @@ WFSLib {
 		
 	  wfsOptions.startupAction.value( this );
 		
-	  WFSSynthDefs.generateAllOnce({
+	  WFSSynthDefs.generateAllOrCopyFromResources({
 	  	StartUp.defer({ WFSServers.default.boot; })
 	  });
 	  

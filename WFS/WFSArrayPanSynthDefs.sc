@@ -37,6 +37,19 @@ AbstractWFSSynthDefs {
 
 WFSSynthDefs {
 	
+	*generateAllOrCopyFromResources { |action, dir|
+		if( File.exists( Platform.resourceDir +/+ "synthdefs.zip" ) ) {
+			"copying WFS synthdefs from resources directory (if missing)".postln;
+			if( dir.notNil ) { dir = dir.dirname; } { dir = SynthDef.synthDefDir.dirname };
+			"unzip -n % -d %".format( 
+				Platform.resourceDir.escapeChar( $ ) +/+ "synthdefs.zip",
+				dir.escapeChar( $ )
+			).unixCmd( action: action );
+		} {
+			this.generateAllOnce( action, dir );
+		};
+	}
+	
 	*generateAllOnce { |action, dir|
 		WFSPrePanSynthDefs.generateAllOnce( dir: dir );
 		WFSPreviewSynthDefs.generateAllOnce( dir: dir );
