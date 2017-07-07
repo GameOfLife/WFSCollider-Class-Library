@@ -89,12 +89,11 @@ WFSLib {
 			};
 		};
 		
-		this.setServerOptions( o.numOutputBusChannels );
+		this.setServerOptions( o.numOutputBusChannels, o.numInputBusChannels, 64 );
 		Server.default.options.blockSize = wfsOptions.blockSize;
 		Server.default.options.sampleRate = wfsOptions.sampleRate;
 		Server.default.options.device = o.device;
 		Server.default.options.hardwareBufferSize = o.hardwareBufferSize;
-		Server.default.options.numInputBusChannels = o.numInputBusChannels;
 		
 		
 		WFSLib.previewMode = wfsOptions.previewMode;
@@ -367,12 +366,12 @@ WFSLib {
 		};
 	}
 	
-	*setServerOptions{ |numOuts=96|
+	*setServerOptions{ |numOuts=96, numIns = 20, numPrivate = 64|
 		Server.default.options
 			.maxSynthDefs_(2048)
-			.numPrivateAudioBusChannels_(256)
+			.numPrivateAudioBusChannels_(numPrivate)
 			.numOutputBusChannels_(numOuts)
-			.numInputBusChannels_(20)
+			.numInputBusChannels_(numIns)
 			.numWireBufs_(2048)
 			.memSize_(2**19) // 256MB
 			//.hardwareBufferSize_(512)
