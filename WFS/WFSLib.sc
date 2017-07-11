@@ -43,6 +43,7 @@ WFSLib {
 						.blockSize_( wfsOptions.blockSize )
 						.sampleRate_( wfsOptions.sampleRate )
 						.device_( item.device )
+						.maxSynthDefs_(2048)
 						.hardwareBufferSize_( item.hardwareBufferSize );
 					 WFSServers.default.multiServers[i].servers.do({ |srv|
 						 WFSSpeakerConf.setOutputBusStartOffset( srv, item.outputBusStartOffset );
