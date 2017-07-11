@@ -58,23 +58,27 @@ WFSPositionTracker {
 		var typeDict = Order();
 		this.remove( uchain );
 		uchain.units.do({ |unit, i|
-			if( [ 
+			case { [ 
 					\wfsStaticPoint, 
 					\wfsDynamicPoint, 
 					\wfsDynamicDirectional,
-					\wfsSource,
-				].includes( unit.name ) ) {
+				].includes( unit.name ) or: {
+					unit.name === \wfsSource && {
+						unit.type === \point;
+					}
+				}
+			} {
 				pannerUnits = pannerUnits.add( unit );
 				typeDict[ i ] = \point;
-			};
-			if( [ 
+			} { [ 
 					\wfsStaticPlane, 
 					\wfsDynamicPlane 
 				].includes( unit.name ) or: {
-					unit.name == \wfsSource && {
-						unit.type == \plane;
+					unit.name === \wfsSource && {
+						unit.type === \plane;
 					}
-				}) {
+				}
+			} {
 				pannerUnits = pannerUnits.add( unit );
 				typeDict[ i ] = \plane;
 			};
@@ -95,9 +99,6 @@ WFSPositionTracker {
 							};
 						};
 					}, '/point' );
-				} {
-					"%:add - no synth found in unit\n".postf( this );
-					nil
 				};
 			}).select(_.notNil);
 			if( repliers.size > 0 ) {
