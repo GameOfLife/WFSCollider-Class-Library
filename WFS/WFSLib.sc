@@ -3,7 +3,7 @@ WFSLib {
 	classvar <>previewMode;
 	
 	*startup { |wfsOptions|
-		var defs, servers, o;
+		var servers, o;
 		var bootFunc;
 		
 		WFSOptions.presetManager.filePath = Platform.userConfigDir +/+ "default" ++ "." ++ WFSOptions.presetManager.id ++ ".presets";
@@ -155,18 +155,10 @@ WFSLib {
 		if( SyncCenter.mode == 'sample' ) {
 			SyncCenter.writeDefs;
 		};
+
+		this.loadUDefs( false );
 		
-		if( WFSOptions.current.showGUI ) {	
-			
-				Udef.loadOnInit = false;
-				
-				defs = Udef.loadAllFromDefaultDirectory.collect(_.synthDef).flat.select(_.notNil);
-				defs = defs ++ UMapDef.loadAllFromDefaultDirectory.collect(_.synthDef).flat.select(_.notNil);
-				UnitRack.loadAllFromDefaultDirectory;
-				
-				Udef.loadOnInit = true;
-			
-			defs.do({|def| def.justWriteDefFile; });
+		if( WFSOptions.current.showGUI ) {
 			
 			UChain.makeDefaultFunc = {	
 				UChain( \bufSoundFile, 
@@ -379,6 +371,24 @@ WFSLib {
 			//.blockSize_(128)
 			//.sampleRate_( 44100 )
 			.maxNodes_( 2**16 );
+     }
+     
+     *loadUDefs { |loadDir = true|
+	     var defs;
+	     
+	     Udef.loadOnInit = false;
+				
+		defs = Udef.loadAllFromDefaultDirectory.collect(_.synthDef).flat.select(_.notNil);
+		defs = defs ++ UMapDef.loadAllFromDefaultDirectory.collect(_.synthDef).flat.select(_.notNil);
+		UnitRack.loadAllFromDefaultDirectory;
+				
+		Udef.loadOnInit = true;
+			
+		defs.do({|def| def.justWriteDefFile; });
+		
+		if( loadDir == true ) {
+			ULib.allServers.do(_.loadDirectory( SynthDef.synthDefDir ));
+		};
      }
 
 	*getCurrentPrefsPath { |action|
