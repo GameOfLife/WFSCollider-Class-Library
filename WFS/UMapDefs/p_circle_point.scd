@@ -19,14 +19,25 @@ UPatDef( \p_circle_point, { |unit,
 		startAngle = 0,
 		clockwise = true, 
 		center = (0@0),
-		radius = (10@10)|
+		radius = (10@10)
+		timeBase = \seconds|
 	{	
 		var i = 0;
+		var lastTime = UPattern.seconds;
+		var spd, delta;
 		loop {
 			((((((i % 1) * 2pi) + [0, 0.5pi] + startAngle.next).sin 
 				* radius.next.asArray) + center.next.asArray))
 				.asPoint.yield;
-			i = i + (speed.next * clockwise.next.binaryValue.linlin(0,1,-1,1) );
+			spd = speed.next * clockwise.next.binaryValue.linlin(0,1,-1,1);
+			switch( timeBase.next, 
+				\events, { i = i + spd }, 
+				\seconds, {
+					delta = (UPattern.seconds( true ) - lastTime);
+					i = i + (spd * delta);
+				},
+			);
+			lastTime = UPattern.seconds;
 		};
 	}.r
 }).category_( 'pattern_point' )
@@ -43,6 +54,7 @@ UPatDef( \p_circle_point, { |unit,
 	.setSpec( \clockwise, BoolSpec( true ) )
 	.setSpec( \center, WFSPointSpec(200) )
 	.setSpec( \radius, WFSRadiusSpec(200) )
+	.setSpec( \timeBase, ListSpec( [ 'events', 'seconds' ] ) )
 	.canUseUMapFunc_({ |unit, key, umapdef|
 		unit.getSpec( key ).isKindOf( PointSpec );
 	});
