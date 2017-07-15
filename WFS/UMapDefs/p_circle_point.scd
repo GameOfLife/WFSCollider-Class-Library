@@ -23,8 +23,8 @@ UPatDef( \p_circle_point, { |unit,
 		timeBase = \seconds|
 	{	
 		var i = 0;
-		var lastTime = UPattern.seconds;
-		var spd, delta;
+		var timer = UPattern.deltaTimer;
+		var spd;
 		loop {
 			((((((i % 1) * 2pi) + [0, 0.5pi] + startAngle.next).sin 
 				* radius.next.asArray) + center.next.asArray))
@@ -32,12 +32,8 @@ UPatDef( \p_circle_point, { |unit,
 			spd = speed.next * clockwise.next.binaryValue.linlin(0,1,-1,1);
 			switch( timeBase.next, 
 				\events, { i = i + spd }, 
-				\seconds, {
-					delta = (UPattern.seconds( true ) - lastTime);
-					i = i + (spd * delta);
-				},
+				\seconds, { i = i + (spd * timer.value); },
 			);
-			lastTime = UPattern.seconds;
 		};
 	}.r
 }).category_( 'pattern_point' )
