@@ -38,4 +38,4 @@ UPatDef( \p_envir_point_get, { |unit, key = 'p'|
 	.canUseUMapFunc_({ |unit, key, umapdef|
 		unit.getSpec( key ).isKindOf( PointSpec );
 	})
-	.category_( 'pattern_point' );
+	.category_( 'pattern_envir' );

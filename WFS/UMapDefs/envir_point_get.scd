@@ -39,4 +39,4 @@ ValueUMapDef( \envir_point_get, { |unit, ctrl|
 	.canUseUMapFunc_({ |unit, key, umapdef|
 		unit.getSpec( key ).isKindOf( PointSpec );
 	})
-	.category_( 'control' );
+	.category_( 'envir' );
