@@ -288,6 +288,7 @@ WFSPrePanSynthDefs : AbstractWFSSynthDefs {
 			var input, output, panner, crossfader, cornerfades;
 			var normalLevels, normalShouldRun, focusShouldRun;
 			var sendPointRate = 0;
+			var rho;
 			
 			point = \point.kr( point.asArray );
 			
@@ -298,6 +299,7 @@ WFSPrePanSynthDefs : AbstractWFSSynthDefs {
 			};
 			
 			point = point.asPoint;
+			rho = point.rho;
 			
 			if( crossfadeMode == \p ) { dbRollOff = 0 };
 			
@@ -315,15 +317,16 @@ WFSPrePanSynthDefs : AbstractWFSSynthDefs {
 			input = LeakDC.ar( input, 0.997 );
 			input = UGlobalEQ.ar( input );
 			input = (input / 4).softclip * 4; // 6dB headroom, then softclip to 12dB
-			input = Env([0,1],[\u_fadeIn.kr(0)], \u_fadeInCurve.kr(0) ).kr * input;
 			input = OnePole.ar( input, ( -2pi * (
 		 			(
-			 			100000 / ( point.rho * \distanceFilter.kr(0).cubed )
+			 			100000 / ( rho * \distanceFilter.kr(0).cubed )
 			 		).clip(0,10000000) / SampleRate.ir) 
 		 		).exp 
 			);
+			input = input * UEnv.kr( extraSilence: 
+				( ( rho / WFSBasicPan.speedOfSound ) * (1 - latencyComp) ) + 0.12
+			);
 			output = panner.ar( input, point );
-			output = output * UEnv.kr( extraSilence: 0.2, ignoreFadeIn: true );
 			
 			
 			ReplaceOut.ar( UIn.firstBusFor( \ar )+ \u_i_ar_0_bus.kr, output );
