@@ -21,11 +21,11 @@ UPatDef( \p_sequencer_point, { |unit,
 		
 	{	
 		var current = 0, direction = 1;
-		points.next !? { |x| x.at( current ).yield; } ? { (0@0).yield };
+		points.next.asWFSPointGroup.at( current ).yield;
 		inf.do { |i|
 			var pointsNext, size = 0;
 			current = current + direction;
-			pointsNext = points.next;
+			pointsNext = points.next.asWFSPointGroup;
 			if( pointsNext.notNil ) {
 				size = pointsNext.size;
 			};
@@ -43,7 +43,7 @@ UPatDef( \p_sequencer_point, { |unit,
 				},
 				\off, { current = current.clip(0,size-1); direction = 1; }
 			);
-			points.next !? { |x| x.positions.wrapAt( current ).yield; } ? { (0@0).yield };
+			pointsNext.positions.wrapAt( current ).yield;
 		};
 	}.r
 }).category_( 'pattern_point' )
@@ -51,7 +51,10 @@ UPatDef( \p_sequencer_point, { |unit,
 	.numChannels_( 2 )
 	.setSpec( \loop, ListSpec( [ \off, \loop, \backwards, \alternate ], 1 ) )
 	.setDefault( \value, 0.0@0.0 )
-	.setSpec( \points, WFSPointGroupSpec( canChangeAmount: true ) )
+	.setSpec( \points, WFSPointGroupSpec( 
+		WFSPointGroup.generate( 8, \circle ), 
+		canChangeAmount: true ) 
+	)
 	.setDefault( \points, WFSPointGroup.generate( 8, \circle ) )
 		.canUseUMapFunc_({ |unit, key, umapdef|
 		unit.getSpec( key ).isKindOf( PointSpec );
