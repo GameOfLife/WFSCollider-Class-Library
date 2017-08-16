@@ -592,7 +592,7 @@ multiDef = MultiUdef( \wfsSource, [staticPoint, dynamicPoint, staticPlane, dynam
 		} {
 			if( index.notNil && {
 				args[index+1].isUMap && {
-					args[index+1].def.allowedModes.includes( \init ).not;
+					args[index+1].allowedModes.includes( \init ).not;
 				}
 			}) { 
 				dynamic = true 
