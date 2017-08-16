@@ -639,6 +639,20 @@ WFSPointGroupSpec : WFSMultiPointSpec {
 	unmap { |value|
 		^this.constrain( value );
 	}
+	
+	expandArgSpecs {
+		^(this.default ?? { WFSPointGroup.generate( 8, \circle ) }).positions.collect({ |pos, i|
+			ArgSpec( ("point" ++ i).asSymbol, pos, WFSPointSpec(200) ) 
+		});
+	}
+	
+	expandValues { |obj|
+		^obj.positions.wrapExtend( this.default.size.postln );
+	}
+	
+	objFromExpandValues { |values|
+		^WFSPointGroup( *values.collect(_.asPoint) );
+	}
 		
 	setView { |view, value, active = false|
 		view[ \val ] = value.asWFSPointGroup;
