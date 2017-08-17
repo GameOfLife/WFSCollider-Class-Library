@@ -39,7 +39,7 @@ UMapDef( \line_trajectory, { |
 	});
 	UMapOut.kr( line, false );
 })
-	.category_( 'trajectory' )
+	.category_( 'point_trajectory' )
 	.canUseUMapFunc_({ |unit, key, umapdef|
 		unit.getSpec( key ).isKindOf( PointSpec );
 	})

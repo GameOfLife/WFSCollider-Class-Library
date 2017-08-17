@@ -58,7 +58,7 @@ UMapDef( \motion_trajectory, { |
 	.setSpec( \radius, WFSRadiusSpec(Rect(0,0,200,200)) )
 	.setSpec( \clipMode, ListSpec( (..3), 1, [ \clip, \fold, \wrap, \none ] ) )
 	.setSpec( \clipSoftness, [0,1,\lin,0,0.1].asSpec )
-	.category_( 'trajectory' )
+	.category_( 'point_trajectory' )
 	.canUseUMapFunc_({ |unit, key, umapdef|
 		unit.getSpec( key ).isKindOf( PointSpec );
 	})

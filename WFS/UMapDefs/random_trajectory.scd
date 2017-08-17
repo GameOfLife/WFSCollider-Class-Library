@@ -35,7 +35,7 @@ UMapDef( \random_trajectory, { |
 	random = random.madd( radius, center );
 	UMapOut.kr( random, false );
 })
-	.category_( 'trajectory' )
+	.category_( 'point_trajectory' )
 	.canUseUMapFunc_({ |unit, key, umapdef|
 		unit.getSpec( key ).isKindOf( PointSpec );
 	})

@@ -22,7 +22,7 @@ UMapDef( \trajectory, {
 	[ \trigger, 1, TriggerSpec() ], 
 	[ \addPoint, 0@0, WFSPointSpec(200, 0.1@0.1) ]
 ])
-	.category_( \trajectory )
+	.category_( \point_trajectory )
 	.canInsert_( false )
 	.canUseUMapFunc_({ |unit, key, umapdef|
 		unit.getSpec( key ).isKindOf( PointSpec );
