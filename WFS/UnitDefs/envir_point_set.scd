@@ -20,7 +20,7 @@ FreeUdef( \envir_point_set, [
 	.apxCPU_( 0 )
 	.prepareFunc_({ |server, unit, action, startPos = 0|
 		var value;
-		value = unit.get( \value );
+		value = unit.get( \point );
 		unit.get( \key ).asSymbol.uEnvirPut( value.value, WFSPointSpec(200) );
 		if( value.isKindOf( UMap ) ) { 
 			value.start 
@@ -29,6 +29,6 @@ FreeUdef( \envir_point_set, [
 	})
 	.createsSynth_( false )
 	.setSynthFunc_({ |unit ...keyValuePairs|
-		unit.get( \key ).asSymbol.uEnvirPut( unit.get( \value ).value, WFSPointSpec(200) );
+		unit.get( \key ).asSymbol.uEnvirPut( unit.get( \point ).value, WFSPointSpec(200) );
 	})
 	.category_( 'envir' );
