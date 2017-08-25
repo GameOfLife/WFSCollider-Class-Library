@@ -20,7 +20,9 @@ FuncUMapDef( \random_point, { |
 })	
 	.category_( 'random' )
 	.canUseUMapFunc_({ |unit, key, umapdef|
-		unit.getSpec( key ).isKindOf( PointSpec );
+		unit.getSpec( key ).isKindOf( PointSpec ) or: { 
+			unit.getSpec( key ).isKindOf( UAdaptSpec )
+		}
 	})
 	.valueIsMapped_( false )
 	.numChannels_( 2 )

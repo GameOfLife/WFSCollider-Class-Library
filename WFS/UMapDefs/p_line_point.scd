@@ -79,6 +79,8 @@ UPatDef( \p_line_point, { |unit,
 	.setSpec( \time, SMPTESpec() )
 	.setSpec( \loop, ListSpec( [ \off, \loop, \backwards, \alternate ], 1 ) )
 	.category_( 'pattern_point' )
-		.canUseUMapFunc_({ |unit, key, umapdef|
-			unit.getSpec( key ).isKindOf( PointSpec );
-		});
+	.canUseUMapFunc_({ |unit, key, umapdef|
+		var spec;
+		spec = unit.getSpec( key );
+		[ PointSpec, UAdaptSpec ].any({ |class| spec.isKindOf( class ); });
+	});

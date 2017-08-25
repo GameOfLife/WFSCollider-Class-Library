@@ -52,5 +52,7 @@ UPatDef( \p_circle_point, { |unit,
 	.setSpec( \radius, WFSRadiusSpec(200) )
 	.setSpec( \timeBase, ListSpec( [ 'events', 'seconds' ] ) )
 	.canUseUMapFunc_({ |unit, key, umapdef|
-		unit.getSpec( key ).isKindOf( PointSpec );
+		var spec;
+		spec = unit.getSpec( key );
+		[ PointSpec, UAdaptSpec ].any({ |class| spec.isKindOf( class ); });
 	});
