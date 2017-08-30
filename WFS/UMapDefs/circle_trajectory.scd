@@ -35,7 +35,7 @@ UMapDef( \circle_trajectory, { |
 	.canUseUMapFunc_({ |unit, key, umapdef|
 		unit.getSpec( key ).isKindOf( PointSpec );
 	})
-	.setSpec( \speed, [ 0, 100, 99.squared.log, 0, 0.1 ].asSpec )
+	.setSpec( \speed, [ 0, 100, 1.calcCurve(0,100), 0, 0.1 ].asSpec )
 	.setSpec( \startAngle, AngleSpec() )
 	.setSpec( \clockwise, BoolSpec( true ) )
 	.setSpec( \center, WFSPointSpec(200) )
