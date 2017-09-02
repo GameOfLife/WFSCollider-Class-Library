@@ -41,7 +41,7 @@ WFSSynthDefs {
 		if( File.exists( Platform.resourceDir +/+ "synthdefs.zip" ) ) {
 			"copying WFS synthdefs from resources directory (if missing)".postln;
 			if( dir.notNil ) { dir = dir.dirname; } { dir = SynthDef.synthDefDir.dirname };
-			"unzip -u % -d %".format( 
+			"unzip -ou % -d %".format( 
 				Platform.resourceDir.escapeChar( $ ) +/+ "synthdefs.zip",
 				dir.escapeChar( $ )
 			).unixCmd( action: action );
