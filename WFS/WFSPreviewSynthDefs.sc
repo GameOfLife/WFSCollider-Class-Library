@@ -52,6 +52,20 @@ WFSPreviewSynthDefs : AbstractWFSSynthDefs {
 				amplitudes = amplitudes.max( globalDist.linlin(0.5,1,1,0).clip(0,1) );
 				in * amplitudes;
 			},
+			\quad_crossed: { |in, point| // quadraphonic panning L, R, Lb, Rb
+				var distances, globalDist, delays, amplitudes;
+				var radius = panDist; // should be < 1
+				distances = [ 
+					(radius.neg)@radius, radius@radius, 
+					radius@(radius.neg), (radius.neg)@(radius.neg)
+				].collect(_.dist( point ));
+				globalDist = (0@0).dist( point );
+				delays = ((distances + radius - globalDist) / WFSBasicPan.speedOfSound);
+				in = DelayC.ar( in, 0.12, delays );
+				amplitudes = PanAz.kr( 4, 1, (point.angle - 0.5pi).neg / pi);
+				amplitudes = amplitudes.max( globalDist.linlin(0.5,1,1,0).clip(0,1) );
+				(in * amplitudes)[[0,1,3,2]];
+			},
 			\hexa: { |in, point| // clockwise hexaphonic panning, 
 				var distances, globalDist, delays, amplitudes;
 				var radius = panDist; // should be < 1
