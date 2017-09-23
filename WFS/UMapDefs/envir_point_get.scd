@@ -32,7 +32,7 @@ ValueUMapDef( \envir_point_get, { |unit, ctrl|
 	ctrl.remove;
 	nil;
 },[
-	[ \key, \p, SymbolSpec("") ]
+	[ \key, \p, SymbolSpec() ]
 ], \control )
 	.numChannels_( 2 )
 	.setSpec( \value, WFSPointSpec(200) )
