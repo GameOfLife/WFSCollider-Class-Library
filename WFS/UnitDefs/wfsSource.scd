@@ -21,6 +21,9 @@ part of the WFSCollider Class Library default Udefs set
 */
 
 var staticPoint, dynamicPoint, staticPlane, dynamicPlane, multiDef;
+var notPreviewMode;
+
+notPreviewMode = WFSPreviewSynthDefs.pannerFuncs.keys.includes( WFSLib.previewMode ).not;
 
 staticPoint = HiddenFreeUdef( \staticPoint, [
 		[ \point: 		0@0,  	WFSPointSpec( 200, 0.1 ) ],
@@ -30,6 +33,7 @@ staticPoint = HiddenFreeUdef( \staticPoint, [
 		[ \dbRollOff:		-6,		[ -24, 0, \lin, 1, -6 ].asSpec ],
 		[ \maxAmpRadius:	5,		[ 1, 5, \lin, 0, 5, "m" ].asSpec ],
 		[ \dynamic:		false,	BoolSpec(false), true, \nonsynth ], // force dynamic (hidden)
+		[ \busOffset:		0,	IntegerSpec(0,0,128), notPreviewMode, \nonsynth ], // bus offset
 	] )
 	.addUEnv
 	.addUGlobalEQ
@@ -50,7 +54,7 @@ staticPoint = HiddenFreeUdef( \staticPoint, [
 		})
 	});
 
-if( WFSPreviewSynthDefs.pannerFuncs.keys.includes( WFSLib.previewMode ).not ) {
+if(notPreviewMode) {
 	staticPoint.createSynthFunc_({ |unit, target, startPos = 0|
 		var server, n = 0;
 		var arrayConfs;
@@ -158,7 +162,7 @@ if( WFSPreviewSynthDefs.pannerFuncs.keys.includes( WFSLib.previewMode ).not ) {
 		previewSynth = Synth( 
 			WFSPreviewSynthDefs.getDefName( WFSLib.previewMode, \s ),
 			U.formatArgs( [ \point, unit.point, \u_i_ar_0_bus, unit.u_i_ar_0_bus ], server, startPos ) ++
-				[ \out, WFSSpeakerConf.getOutputBusStartOffset( target ) ],
+				[ \out, WFSSpeakerConf.getOutputBusStartOffset( target ) + unit.busOffset ],
 			arrayGroup, \addToTail 
 		);
 				
@@ -181,6 +185,7 @@ dynamicPoint = HiddenFreeUdef( \dynamicPoint, [
 		[ \dbRollOff:		-6,		[ -24, 0, \lin, 1, -6 ].asSpec ],
 		[ \maxAmpRadius:	5,		[ 1, 5, \lin, 0, 5, "m" ].asSpec ],
 		[ \dynamic:		false,	BoolSpec(false), true, \nonsynth ], // force dynamic (hidden)
+		[ \busOffset:		0,	IntegerSpec(0,0,128), notPreviewMode, \nonsynth ], // bus offset
 	], true )
 	.addUGlobalEQ
 	.addUIO( UIn, \ar, 0, 1 )
@@ -198,7 +203,7 @@ dynamicPoint = HiddenFreeUdef( \dynamicPoint, [
 		})
 	});
 	
-if( WFSPreviewSynthDefs.pannerFuncs.keys.includes( WFSLib.previewMode ).not ) {
+if(notPreviewMode) {
 // dynamic point wfs panner
 	dynamicPoint.createSynthFunc_({ |unit, target, startPos = 0|
 		var server, n = 0;
@@ -308,7 +313,7 @@ if( WFSPreviewSynthDefs.pannerFuncs.keys.includes( WFSLib.previewMode ).not ) {
 		previewSynth = Synth( 
 			WFSPreviewSynthDefs.getDefName( WFSLib.previewMode, \d ),
 			U.formatArgs( [ \point, unit.point, \u_i_ar_0_bus, unit.u_i_ar_0_bus ], server, startPos ) ++
-				[ \out, WFSSpeakerConf.getOutputBusStartOffset( target ) ],
+				[ \out, WFSSpeakerConf.getOutputBusStartOffset( target ) + unit.busOffset ],
 			arrayGroup, \addToTail 
 		);
 		
@@ -329,6 +334,7 @@ staticPlane = HiddenFreeUdef( \staticPlane, [
 		[ \dbRollOff:		0,		[ -24, 0, \lin, 1, 0 ].asSpec ],
 		[ \maxAmpRadius:	5,		[ 1, 5, \lin, 0, 5, "m" ].asSpec ],
 		[ \dynamic:		false,	BoolSpec(false), true, \nonsynth ], // force dynamic (hidden)
+		[ \busOffset:		0,	IntegerSpec(0,0,128), notPreviewMode, \nonsynth ], // bus offset
 	] )
 	.addUEnv
 	.addUGlobalEQ
@@ -350,7 +356,7 @@ staticPlane = HiddenFreeUdef( \staticPlane, [
 	
 	});
 	
-if( WFSPreviewSynthDefs.pannerFuncs.keys.includes( WFSLib.previewMode ).not ) {
+if(notPreviewMode) {
 	staticPlane.createSynthFunc_({ |unit, target, startPos = 0|
 		var server, n = 0;
 		var arrayConfs;
@@ -437,7 +443,7 @@ staticPlane.createSynthFunc_({ |unit, target, startPos = 0|
 		previewSynth = Synth( 
 			WFSPreviewSynthDefs.getDefName( WFSLib.previewMode, \s ),
 			U.formatArgs( [ \point, unit.point, \u_i_ar_0_bus, unit.u_i_ar_0_bus ], server, startPos ) ++
-				[ \out, WFSSpeakerConf.getOutputBusStartOffset( target ) ],
+				[ \out, WFSSpeakerConf.getOutputBusStartOffset( target ) + unit.busOffset ],
 			arrayGroup, \addToTail 
 		);
 				
@@ -460,6 +466,7 @@ dynamicPlane = HiddenFreeUdef( \dynamicPlane, [
 		[ \dbRollOff:		0,		[ -24, 0, \lin, 1, 0 ].asSpec ],
 		[ \maxAmpRadius:	5,		[ 1, 5, \lin, 0, 5, "m" ].asSpec ],
 		[ \dynamic:		false,	BoolSpec(false), true, \nonsynth ], // force dynamic (hidden)
+		[ \busOffset:		0,	IntegerSpec(0,0,128), notPreviewMode, \nonsynth ], // bus offset
 	] )
 	.addUEnv
 	.addUGlobalEQ
@@ -479,7 +486,7 @@ dynamicPlane = HiddenFreeUdef( \dynamicPlane, [
 	
 	});
 
-if( WFSPreviewSynthDefs.pannerFuncs.keys.includes( WFSLib.previewMode ).not ) {
+if(notPreviewMode) {
 	// dynamic plane wfs panner
 	dynamicPlane.createSynthFunc_({ |unit, target, startPos = 0|
 		var server, n = 0;
@@ -564,7 +571,7 @@ if( WFSPreviewSynthDefs.pannerFuncs.keys.includes( WFSLib.previewMode ).not ) {
 		previewSynth = Synth( 
 			WFSPreviewSynthDefs.getDefName( WFSLib.previewMode, \d ),
 			U.formatArgs( [ \point, unit.point, \u_i_ar_0_bus, unit.u_i_ar_0_bus ], server, startPos ) ++
-				[ \out, WFSSpeakerConf.getOutputBusStartOffset( target ) ],
+				[ \out, WFSSpeakerConf.getOutputBusStartOffset( target ) + unit.busOffset ],
 			arrayGroup, \addToTail 
 		);
 					
