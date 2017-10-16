@@ -101,7 +101,7 @@ WFSLib {
 		
 		UEvent.renderNumChannels = { 
 			var num;
-			num = WFSPreviewSynthDefs.pannerFuncs[ WFSLib.previewMode ].value(0,0@0) !? _.size;
+			num = WFSPreviewSynthDefs.pannerFuncs[ \n ][ WFSLib.previewMode ].value(0,0@0) !? _.size;
 			num = num ?? {
 				WFSSpeakerConf.default.getArraysFor( 
 					ULib.servers[0].asTarget.server 
