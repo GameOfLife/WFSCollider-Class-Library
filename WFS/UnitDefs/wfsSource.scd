@@ -23,7 +23,7 @@ part of the WFSCollider Class Library default Udefs set
 var staticPoint, dynamicPoint, staticPlane, dynamicPlane, multiDef;
 var notPreviewMode;
 
-notPreviewMode = WFSPreviewSynthDefs.pannerFuncs.keys.includes( WFSLib.previewMode ).not;
+notPreviewMode = WFSPreviewSynthDefs.pannerFuncs[\n].keys.includes( WFSLib.previewMode ).not;
 
 staticPoint = HiddenFreeUdef( \staticPoint, [
 		[ \point: 		0@0,  	WFSPointSpec( 200, 0.1 ) ],
@@ -160,7 +160,7 @@ if(notPreviewMode) {
 		arrayGroup = Group(target, addAction: \addToTail);
 		
 		previewSynth = Synth( 
-			WFSPreviewSynthDefs.getDefName( WFSLib.previewMode, \s ),
+			WFSPreviewSynthDefs.getDefName( WFSLib.previewMode, \s, \n ),
 			U.formatArgs( [ \point, unit.point, \u_i_ar_0_bus, unit.u_i_ar_0_bus ], server, startPos ) ++
 				[ \out, WFSSpeakerConf.getOutputBusStartOffset( target ) + unit.busOffset ],
 			arrayGroup, \addToTail 
@@ -311,7 +311,7 @@ if(notPreviewMode) {
 		arrayGroup = Group(target, addAction: \addToTail);
 		
 		previewSynth = Synth( 
-			WFSPreviewSynthDefs.getDefName( WFSLib.previewMode, \d ),
+			WFSPreviewSynthDefs.getDefName( WFSLib.previewMode, \d, \n ),
 			U.formatArgs( [ \point, unit.point, \u_i_ar_0_bus, unit.u_i_ar_0_bus ], server, startPos ) ++
 				[ \out, WFSSpeakerConf.getOutputBusStartOffset( target ) + unit.busOffset ],
 			arrayGroup, \addToTail 
@@ -441,7 +441,7 @@ staticPlane.createSynthFunc_({ |unit, target, startPos = 0|
 		arrayGroup = Group(target, addAction: \addToTail);
 		
 		previewSynth = Synth( 
-			WFSPreviewSynthDefs.getDefName( WFSLib.previewMode, \s ),
+			WFSPreviewSynthDefs.getDefName( WFSLib.previewMode, \s, \p ),
 			U.formatArgs( [ \point, unit.point, \u_i_ar_0_bus, unit.u_i_ar_0_bus ], server, startPos ) ++
 				[ \out, WFSSpeakerConf.getOutputBusStartOffset( target ) + unit.busOffset ],
 			arrayGroup, \addToTail 
@@ -569,7 +569,7 @@ if(notPreviewMode) {
 		arrayGroup = Group(target, addAction: \addToTail);
 		
 		previewSynth = Synth( 
-			WFSPreviewSynthDefs.getDefName( WFSLib.previewMode, \d ),
+			WFSPreviewSynthDefs.getDefName( WFSLib.previewMode, \d, \p ),
 			U.formatArgs( [ \point, unit.point, \u_i_ar_0_bus, unit.u_i_ar_0_bus ], server, startPos ) ++
 				[ \out, WFSSpeakerConf.getOutputBusStartOffset( target ) + unit.busOffset ],
 			arrayGroup, \addToTail 

@@ -125,7 +125,7 @@ WFSOptionsObjectGUI : AbstractWFSOptionsGUI {
 	
 	*initClass {
 		specs = OEM(
-			\previewMode, ListSpec( [ \off, \headphone, \stereo, \quad, \quad_crossed, \hexa, \octo ] ),
+			\previewMode, ListSpec( [ \off, \headphone, \stereo, \quad, \quad_crossed, \hexa, \octo, \hexa_deci ] ),
 			\showGUI, BoolSpec(true),
 			\showServerWindow, BoolSpec(true),
 			\playSoundWhenReady, BoolSpec(true),
