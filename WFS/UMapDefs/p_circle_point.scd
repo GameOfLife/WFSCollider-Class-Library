@@ -25,6 +25,10 @@ UPatDef( \p_circle_point, { |unit,
 		var i = 0;
 		var timer = UPattern.deltaTimer;
 		var spd;
+		if( timeBase.next === \seconds ) {
+			spd = speed.next * clockwise.next.binaryValue.linlin(0,1,-1,1);
+			i = spd * UPattern.startPos;
+		};
 		loop {
 			((((((i % 1) * 2pi) + [0, 0.5pi] + startAngle.next).sin 
 				* radius.next.asArray) + center.next.asArray))
