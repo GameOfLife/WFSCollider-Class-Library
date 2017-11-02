@@ -351,9 +351,13 @@ WFSServers {
 				.font_( font )
 				.action_( {
 					// kill synths and press cmd-k on remote
+					if( ips[i] == "127.0.0.1" ) {
+						 "killall -9 scsynth".unixCmd; 
+					} {
 					"killing scsynths on server %".postf( ips[i].asString );
 					"killall -9 scsynth; sleep 2; killall -9 scsynth;"
 						.sshCmd( "gameoflife", NetAddr(ips[i]) );
+					};
 			} );
 					 
 			serverLabels[i] = StaticText( window, Rect( 0, 0, 200, 12 ) )
