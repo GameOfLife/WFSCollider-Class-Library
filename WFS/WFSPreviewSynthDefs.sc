@@ -97,7 +97,7 @@ WFSPreviewSynthDefs : AbstractWFSSynthDefs {
 			\hexa_deci: { |in, point| // clockwise 16-channel panning, first speaker straight front
 				var distances, globalDist, delays, amplitudes;
 				var radius = panDist; // should be < 1
-				distances = ((2,1..-5)*2pi/16).collect({ |item|
+				distances = ((2,1..-13)*2pi/16).collect({ |item|
 					Polar(radius,item).asPoint.dist( point )
 				});
 				globalDist = (0@0).dist( point );
