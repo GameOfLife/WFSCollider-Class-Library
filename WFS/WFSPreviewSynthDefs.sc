@@ -68,7 +68,7 @@ WFSPreviewSynthDefs : AbstractWFSSynthDefs {
 				amplitudes = amplitudes.max( globalDist.linlin(0.5,1,1,0).clip(0,1) );
 				(in * amplitudes)[[0,1,3,2]];
 			},
-			\hexa: { |in, point| // clockwise hexaphonic panning, 
+			\hexa: { |in, point| // clockwise hexaphonic panning, first two speakers left and right of front
 				var distances, globalDist, delays, amplitudes;
 				var radius = panDist; // should be < 1
 				distances = ((2,1..-3)*2pi/6).collect({ |item|
@@ -84,8 +84,8 @@ WFSPreviewSynthDefs : AbstractWFSSynthDefs {
 			\octo: { |in, point| // clockwise octophonic panning, first speaker straight front
 				var distances, globalDist, delays, amplitudes;
 				var radius = panDist; // should be < 1
-				distances = ((2,1..-5)*2pi/8).collect({ |item|
-					Polar(radius,item).asPoint.dist( point )
+				distances = ((..7) * -2pi/8).collect({ |item|
+					Polar(radius,item + 0.5pi).asPoint.dist( point )
 				});
 				globalDist = (0@0).dist( point );
 				delays = ((distances + radius - globalDist) / WFSBasicPan.speedOfSound);
@@ -97,8 +97,8 @@ WFSPreviewSynthDefs : AbstractWFSSynthDefs {
 			\hexa_deci: { |in, point| // clockwise 16-channel panning, first speaker straight front
 				var distances, globalDist, delays, amplitudes;
 				var radius = panDist; // should be < 1
-				distances = ((2,1..-5)*2pi/16).collect({ |item|
-					Polar(radius,item).asPoint.dist( point )
+				distances = ((..15) * -2pi/16).collect({ |item|
+					Polar(radius,item + 0.5pi).asPoint.dist( point )
 				});
 				globalDist = (0@0).dist( point );
 				delays = ((distances + radius - globalDist) / WFSBasicPan.speedOfSound);
@@ -107,7 +107,45 @@ WFSPreviewSynthDefs : AbstractWFSSynthDefs {
 				amplitudes = amplitudes.max( globalDist.linlin(0.5,1,1,0).clip(0,1) );
 				in * amplitudes;
 			},
-			
+			\twentyfour: { |in, point| // clockwise 24-channel panning, first speaker straight front
+				var distances, globalDist, delays, amplitudes;
+				var radius = panDist; // should be < 1
+				distances = ((..23) * -2pi/24).collect({ |item|
+					Polar(radius,item + 0.5pi).asPoint.dist( point )
+				});
+				globalDist = (0@0).dist( point );
+				delays = ((distances + radius - globalDist) / WFSBasicPan.speedOfSound);
+				in = DelayC.ar( in, 0.12, delays );
+				amplitudes = PanAz.kr( 24, 1, (point.angle - 0.5pi).neg / pi, orientation: 0);
+				amplitudes = amplitudes.max( globalDist.linlin(0.5,1,1,0).clip(0,1) );
+				in * amplitudes;
+			},
+			\thirtytwo: { |in, point| // clockwise 32-channel panning, first speaker straight front
+				var distances, globalDist, delays, amplitudes;
+				var radius = panDist; // should be < 1
+				distances = ((..31) * -2pi/32).collect({ |item|
+					Polar(radius,item + 0.5pi).asPoint.dist( point )
+				});
+				globalDist = (0@0).dist( point );
+				delays = ((distances + radius - globalDist) / WFSBasicPan.speedOfSound);
+				in = DelayC.ar( in, 0.12, delays );
+				amplitudes = PanAz.kr( 32, 1, (point.angle - 0.5pi).neg / pi, orientation: 0);
+				amplitudes = amplitudes.max( globalDist.linlin(0.5,1,1,0).clip(0,1) );
+				in * amplitudes;
+			},
+			\sixtyfour: { |in, point| // clockwise 64-channel panning, first speaker straight front
+				var distances, globalDist, delays, amplitudes;
+				var radius = panDist; // should be < 1
+				distances = ((..63) * -2pi/64).collect({ |item|
+					Polar(radius,item + 0.5pi).asPoint.dist( point )
+				});
+				globalDist = (0@0).dist( point );
+				delays = ((distances + radius - globalDist) / WFSBasicPan.speedOfSound);
+				in = DelayC.ar( in, 0.12, delays );
+				amplitudes = PanAz.kr( 64, 1, (point.angle - 0.5pi).neg / pi, orientation: 0);
+				amplitudes = amplitudes.max( globalDist.linlin(0.5,1,1,0).clip(0,1) );
+				in * amplitudes;
+			},
 		),
 		\p: ( // plane
 			\headphone: { |in, point|
@@ -142,20 +180,35 @@ WFSPreviewSynthDefs : AbstractWFSSynthDefs {
 				#w,x,y,z = PanB.ar( in, (point.angle - 0.5pi).neg / pi, (0@0).dist( point ).linlin( 0,2,1,0,\minmax ) );
 				DecodeB2.ar( 4, w, x, y, 0.5 )[[0,1,3,2]];
 			},
-			\hexa: { |in, point| // clockwise hexaphonic panning, 
+			\hexa: { |in, point| // clockwise hexaphonic AEP panning, first two speakers left and right of front
 				var w,x,y,z;
 				#w,x,y,z = PanB.ar( in, (point.angle - 0.5pi).neg / pi, (0@0).dist( point ).linlin( 0,2,1,0,\minmax ) );
-				DecodeB2.ar( 6, w, x, y, 0 );
+				DecodeB2.ar( 6, w, x, y, 0.5 );
 			},
-			\octo: { |in, point| // clockwise octophonic panning, first speaker straight front
+			\octo: { |in, point| // clockwise octophonic AEP panning, first speaker straight front
 				var w,x,y,z;
 				#w,x,y,z = PanB.ar( in, (point.angle - 0.5pi).neg / pi, (0@0).dist( point ).linlin( 0,2,1,0,\minmax ) );
 				DecodeB2.ar( 8, w, x, y, 0 );
 			},
-			\hexa_deci: { |in, point| // clockwise 16-channel panning, first speaker straight front
+			\hexa_deci: { |in, point| // clockwise 16-channel AEP panning, first speaker straight front
 				var w,x,y,z;
 				#w,x,y,z = PanB.ar( in, (point.angle - 0.5pi).neg / pi, (0@0).dist( point ).linlin( 0,2,1,0,\minmax ) );
 				DecodeB2.ar( 16, w, x, y, 0 );
+			},
+			\twentyfour: { |in, point| // clockwise 24-channel AEP panning, first speaker straight front
+				var w,x,y,z;
+				#w,x,y,z = PanB.ar( in, (point.angle - 0.5pi).neg / pi, (0@0).dist( point ).linlin( 0,2,1,0,\minmax ) );
+				DecodeB2.ar( 24, w, x, y, 0 );
+			},
+			\thirtytwo: { |in, point| // clockwise 32-channel AEP panning, first speaker straight front
+				var w,x,y,z;
+				#w,x,y,z = PanB.ar( in, (point.angle - 0.5pi).neg / pi, (0@0).dist( point ).linlin( 0,2,1,0,\minmax ) );
+				DecodeB2.ar( 32, w, x, y, 0 );
+			},
+			\sixtyfour: { |in, point| // clockwise 64-channel AEP panning, first speaker straight front
+				var w,x,y,z;
+				#w,x,y,z = PanB.ar( in, (point.angle - 0.5pi).neg / pi, (0@0).dist( point ).linlin( 0,2,1,0,\minmax ) );
+				DecodeB2.ar( 64, w, x, y, 0 );
 			},
 		)
 		)
