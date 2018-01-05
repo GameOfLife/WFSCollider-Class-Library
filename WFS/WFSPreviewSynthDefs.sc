@@ -151,21 +151,17 @@ WFSPreviewSynthDefs : AbstractWFSSynthDefs {
 			\headphone: { |in, point|
 				// simple headphone panner (ear distance 0.19cm)
 				// no HRTFs involved (yet..)
-				var distances, globalDist, delays, amplitudes;
+				var distances, globalDist, amplitudes;
 				distances = [ -0.095@0, 0.095@0 ].collect(_.dist( point ));
 				globalDist = (0@0).dist( point );
-				delays = ((distances + 0.095 - globalDist) / WFSBasicPan.speedOfSound);
-				in = DelayC.ar( in, 0.1, delays );
 				amplitudes = Pan2.kr( 1, (point.angle - 0.5pi).neg.fold(-0.5pi,0.5pi) / 0.5pi );
 				amplitudes = amplitudes.max( globalDist.linlin(0.5,1,1,0).clip(0,1) );
 				in * amplitudes;
 			},
 			\stereo: { |in, point|
-				var distances, globalDist, delays, amplitudes;
+				var distances, globalDist, amplitudes;
 				distances = [ -0.3@0, 0.3@0 ].collect(_.dist( point ));
 				globalDist = (0@0).dist( point );
-				delays = ((distances + 0.3 - globalDist) / WFSBasicPan.speedOfSound);
-				in = DelayC.ar( in, 0.12, delays );
 				amplitudes = Pan2.kr( 1, (point.angle - 0.5pi).neg.fold(-0.5pi,0.5pi) / 0.5pi );
 				amplitudes = amplitudes.max( globalDist.linlin(0.5,1,1,0).clip(0,1) );
 				in * amplitudes;
