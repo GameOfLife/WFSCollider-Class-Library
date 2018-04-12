@@ -14,7 +14,10 @@ part of the WFSCollider Class Library default Udefs set
 */
 
 
-var def;
+var def, maxInput = 8;
+if( WFSSpeakerConf.serverGroups[0].notNil ) { 
+	maxInput = WFSSpeakerConf.serverGroups[0].choose.options.numInputBusChannels;
+};
 def = MultiChannelUdef( \wfsServerIn, { |bus = 0| // same as soundIn, but only plays on servers 
 	var input;
 	input = ((..Udef.numChannels - 1) + bus).collect({ |item| SoundIn.ar( item ) });
@@ -33,7 +36,8 @@ def = MultiChannelUdef( \wfsServerIn, { |bus = 0| // same as soundIn, but only p
 	});
 
 def.udefs.do({ |item|
-	item.setSpec( \bus, IntegerSpec( 0, 0, 8 - item.numChannels ) );
+	item.setSpec( \bus, IntegerSpec( 0, 0, maxInput - item.numChannels ) 
+	);
 });
 
 def;
