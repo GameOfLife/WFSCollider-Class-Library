@@ -146,6 +146,11 @@ WFSPreviewSynthDefs : AbstractWFSSynthDefs {
 				amplitudes = amplitudes.max( globalDist.linlin(0.5,1,1,0).clip(0,1) );
 				in * amplitudes;
 			},
+			\b_format: { |in, point| // 1st order b-format output (2D; 3 channels)
+				var amplitudes;
+				amplitudes = PanB2.kr( 1, (point.angle - 0.5pi).neg / pi);
+				amplitudes * in;
+			},
 		),
 		\p: ( // plane
 			\headphone: { |in, point|
@@ -205,6 +210,11 @@ WFSPreviewSynthDefs : AbstractWFSSynthDefs {
 				var w,x,y,z;
 				#w,x,y,z = PanB.ar( in, (point.angle - 0.5pi).neg / pi, (0@0).dist( point ).linlin( 0,2,1,0,\minmax ) );
 				DecodeB2.ar( 64, w, x, y, 0 );
+			},
+			\b_format: { |in, point| // 1st order b-format output (2D; 3 channels)
+				var amplitudes;
+				amplitudes = PanB2.kr( 1, (point.angle - 0.5pi).neg / pi);
+				amplitudes * in;
 			},
 		)
 		)
