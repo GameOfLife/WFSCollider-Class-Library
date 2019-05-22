@@ -120,7 +120,7 @@ def.prepareArgsFunc = { |argPairs|
 	};
 };
 	
-if( WFSPreviewSynthDefs.pannerFuncs.keys.includes( WFSLib.previewMode ).not ) {
+if( WFSPreviewSynthDefs.pannerFuncs[\n].keys.includes( WFSLib.previewMode ).not ) {
 // dynamic point wfs panner
 	def.createSynthFunc_({ |unit, target, startPos = 0|
 		var server, n = 0;
