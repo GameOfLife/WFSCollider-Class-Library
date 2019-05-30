@@ -125,19 +125,20 @@ WFSServers {
 	boot { if( masterServer.notNil )
 			{ masterServer.boot; };
 		multiServers.do({ |ms|
-			if( ms[0].options.device == "JackRouter" or: { 
-					thisProcess.platform.class.asSymbol === 'LinuxPlatform'
-			} ) { 
-				//{ 0.1.wait; ms.boot(10) }.fork 
-				Routine({
-					0.1.wait;
-					ms.servers.do{ |server| 
-						10.wait;
-						server.boot;
-					}
-				}).play
-			} { 
-				ms.boot(0)
+			if( ms.servers[0].addr.ip.asSymbol == '127.0.0.1' ) {				if( ms[0].options.device == "JackRouter" or: { 
+						thisProcess.platform.class.asSymbol === 'LinuxPlatform'
+				} ) { 
+					//{ 0.1.wait; ms.boot(10) }.fork 
+					Routine({
+						0.1.wait;
+						ms.servers.do{ |server| 
+							10.wait;
+							server.boot;
+						}
+					}).play
+				} { 
+					ms.servers.do(_.boot);
+				};
 			};
 		});
 	}
