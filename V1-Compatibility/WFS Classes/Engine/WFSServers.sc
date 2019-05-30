@@ -128,7 +128,14 @@ WFSServers {
 			if( ms[0].options.device == "JackRouter" or: { 
 					thisProcess.platform.class.asSymbol === 'LinuxPlatform'
 			} ) { 
-				{ 0.1.wait; ms.boot(10) }.fork 
+				//{ 0.1.wait; ms.boot(10) }.fork 
+				Routine({
+					0.1.wait;
+					ms.servers.do{ |server| 
+						10.wait;
+						server.boot;
+					}
+				}).play
 			} { 
 				ms.boot(0)
 			};
