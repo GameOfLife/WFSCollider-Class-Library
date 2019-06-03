@@ -151,6 +151,9 @@ WFSPreviewSynthDefs : AbstractWFSSynthDefs {
 				amplitudes = PanB2.kr( 1, (point.angle - 0.5pi).neg / pi);
 				amplitudes * in;
 			},
+			\mono: { |in, point|
+				in;
+			}
 		),
 		\p: ( // plane
 			\headphone: { |in, point|
@@ -216,6 +219,9 @@ WFSPreviewSynthDefs : AbstractWFSSynthDefs {
 				amplitudes = PanB2.kr( 1, (point.angle - 0.5pi).neg / pi);
 				amplitudes * in;
 			},
+			\mono: { |in, point|
+				in;
+			}
 		)
 		)
 	}
