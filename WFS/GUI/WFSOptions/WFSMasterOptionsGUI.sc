@@ -133,6 +133,7 @@ WFSOptionsObjectGUI : AbstractWFSOptionsGUI {
 			\serverAction, CodeSpec(),
 			\blockSize, ListSpec( [ 1, 64, 128 ] ),
 			\sampleRate, ListSpec( [ 44100, 48000, 88200, 96000 ] ),
+			\wfsSoundFilesLocation, StringSpec().default_( "/WFSSoundFiles" );
 		);
 	}
 

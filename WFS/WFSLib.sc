@@ -151,7 +151,7 @@ WFSLib {
 			WFSArrayPan.filenameSymbol.asString.dirname +/+ "UnitRacks"
 		);
 				
-		GlobalPathDict.put( \wfs, "/WFSSoundFiles" );
+		GlobalPathDict.put( \wfs, WFSOptions.current.wfsSoundFilesLocation );
 		
 		if( SyncCenter.mode == 'sample' ) {
 			SyncCenter.writeDefs;
