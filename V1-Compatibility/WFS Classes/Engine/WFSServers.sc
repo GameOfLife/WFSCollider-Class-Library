@@ -222,7 +222,14 @@ WFSServers {
 				.string_( "master (" ++ ( NetAddr.myIP ? "127.0.0.1" ) ++ ")" )
 				.font_( font );
 				
-			window.view.decorator.shift( window.view.decorator.indentedRemaining.width - 104, 0 );
+			window.view.decorator.shift( window.view.decorator.indentedRemaining.width - 144, 0 );
+			
+			SmoothButton( window, Rect( 0, 0, 36, 16 ) )
+					.states_( [["clear"]] )
+					.font_( font )
+					.action_( {
+						ULib.clear;
+					} );
 
 			EZSmoothSlider(window, Rect(0,0,100,15),nil, [0.02,1,\exp,0,0.02].asSpec)
 			    .value_(masterServer.latency)
@@ -234,7 +241,7 @@ WFSServers {
 			    		.knobColor_( Color.black.alpha_(0.25) );
 
 			window.view.decorator.nextLine;
-			masterServer.makeView( window ); 
+			masterServer.uView( window ); 
 			if( this.isMaster ) {
 				
 				/*
@@ -387,7 +394,7 @@ WFSServers {
 				if( this.isMaster ) {
 					widgets.add(SyncCenterServerWidget(window,70@17,server,true))
 				};
-				server.makeView( window ); 
+				server.uView( window ); 
 				});
 			});
 			
