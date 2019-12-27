@@ -215,10 +215,21 @@ WFSPreviewSynthDefs : AbstractWFSSynthDefs {
 				#w,x,y,z = PanB.ar( in, (point.angle - 0.5pi).neg / pi, (0@0).dist( point ).linlin( 0,2,1,0,\minmax ) );
 				DecodeB2.ar( 6, w, x, y, 0.5 );
 			},
+			\hexa_pairs: { |in, point| // pairwise hexaphonic AEP panning, stereo pairs from front to back
+				
+				var w,x,y,z;
+				#w,x,y,z = PanB.ar( in, (point.angle - 0.5pi).neg / pi, (0@0).dist( point ).linlin( 0,2,1,0,\minmax ) );
+				DecodeB2.ar( 6, w, x, y, 0.5 )[[ 0, 1, 5, 2, 4, 3 ]];
+			},
 			\octo: { |in, point| // clockwise octophonic AEP panning, first speaker straight front
 				var w,x,y,z;
 				#w,x,y,z = PanB.ar( in, (point.angle - 0.5pi).neg / pi, (0@0).dist( point ).linlin( 0,2,1,0,\minmax ) );
 				DecodeB2.ar( 8, w, x, y, 0 );
+			},
+			\octo_pairs: { |in, point| // pairwise octophonic AEP panning, stereo pairs from front to back
+				var w,x,y,z;
+				#w,x,y,z = PanB.ar( in, (point.angle - 0.5pi).neg / pi, (0@0).dist( point ).linlin( 0,2,1,0,\minmax ) );
+				DecodeB2.ar( 8, w, x, y, 0 )[[ 0, 1, 7, 2, 6, 3, 5, 4 ]];
 			},
 			\hexa_deci: { |in, point| // clockwise 16-channel AEP panning, first speaker straight front
 				var w,x,y,z;
