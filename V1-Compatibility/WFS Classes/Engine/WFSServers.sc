@@ -125,9 +125,12 @@ WFSServers {
 	boot { if( masterServer.notNil )
 			{ masterServer.boot; };
 		multiServers.do({ |ms|
-			if( ms.servers[0].addr.ip.asSymbol == '127.0.0.1' ) {				if( ms[0].options.device == "JackRouter" or: { 
-						thisProcess.platform.class.asSymbol === 'LinuxPlatform'
-				} ) { 
+			if( ms.servers[0].addr.ip.asSymbol == '127.0.0.1' ) {				if( 
+				true
+				// ms[0].options.device == "JackRouter" or: { 
+				//		thisProcess.platform.class.asSymbol === 'LinuxPlatform'
+				//} 
+				) { 
 					//{ 0.1.wait; ms.boot(10) }.fork 
 					Routine({
 						0.1.wait;
@@ -383,9 +386,30 @@ WFSServers {
 				.font_( font );
 			
 			if( this.isMaster.not ) {	 
+				window.view.decorator.shift( window.view.decorator.indentedRemaining.width - 144, 0 );
+			
+				SmoothButton( window, Rect( 0, 0, 36, 16 ) )
+						.states_( [["clear"]] )
+						.font_( font )
+						.action_( {
+							ULib.clear;
+						} );
+	
+				EZSmoothSlider(window, Rect(0,0,100,15),nil, [0.02,1,\exp,0,0.02].asSpec)
+				    .value_(multiServer[0].latency)
+				    .font_( font )
+				    .action_({ |v| multiServer[0].latency = v.value})
+				    .numberWidth_( 40 )
+				    .sliderView
+				    		.string_("Latency")
+				    		.knobColor_( Color.black.alpha_(0.25) );
+					
+				
+				/*
 				EZSmoothSlider(window, Rect(0,0,160,15),"Latency", [0.02,1,\exp,0,0.02].asSpec)
 				    .value_(multiServer[0].latency)
 				    .action_({ |v| multiServer[0].latency = v.value});
+				*/
 			};
 			
 			window.view.decorator.nextLine;
