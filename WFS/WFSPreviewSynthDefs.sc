@@ -81,6 +81,19 @@ WFSPreviewSynthDefs : AbstractWFSSynthDefs {
 				amplitudes = amplitudes.max( globalDist.linlin(0.5,1,1,0).clip(0,1) );
 				in * amplitudes;
 			},
+			\hexa_pairs: { |in, point| // pair-wise hexaphonic panning, stereo pairs front to back				
+				var distances, globalDist, delays, amplitudes;
+				var radius = panDist; // should be < 1
+				distances = ((2,1..-3)*2pi/6).collect({ |item|
+					Polar(radius,item).asPoint.dist( point )
+				});
+				globalDist = (0@0).dist( point );
+				delays = ((distances + radius - globalDist) / WFSBasicPan.speedOfSound);
+				in = DelayC.ar( in, 0.12, delays );
+				amplitudes = PanAz.kr( 6, 1, (point.angle - ((2/3)*pi)).neg / pi, orientation: 0);
+				amplitudes = amplitudes.max( globalDist.linlin(0.5,1,1,0).clip(0,1) );
+				(in * amplitudes)[[ 0, 1, 5, 2, 4, 3 ]];
+			},
 			\octo: { |in, point| // clockwise octophonic panning, first speaker straight front
 				var distances, globalDist, delays, amplitudes;
 				var radius = panDist; // should be < 1
@@ -93,6 +106,19 @@ WFSPreviewSynthDefs : AbstractWFSSynthDefs {
 				amplitudes = PanAz.kr( 8, 1, (point.angle - 0.5pi).neg / pi, orientation: 0);
 				amplitudes = amplitudes.max( globalDist.linlin(0.5,1,1,0).clip(0,1) );
 				in * amplitudes;
+			},
+			\octo_pairs: { |in, point| // pair-wise octophonic panning, stereo pairs from front to back				
+				var distances, globalDist, delays, amplitudes;
+				var radius = panDist; // should be < 1
+				distances = ((..7) * -2pi/8).collect({ |item|
+					Polar(radius,item + 0.5pi).asPoint.dist( point )
+				});
+				globalDist = (0@0).dist( point );
+				delays = ((distances + radius - globalDist) / WFSBasicPan.speedOfSound);
+				in = DelayC.ar( in, 0.12, delays );
+				amplitudes = PanAz.kr( 8, 1, (point.angle - 0.5pi).neg / pi, orientation: 0);
+				amplitudes = amplitudes.max( globalDist.linlin(0.5,1,1,0).clip(0,1) );
+				(in * amplitudes)[[ 0, 1, 7, 2, 6, 3, 5, 4 ]];
 			},
 			\hexa_deci: { |in, point| // clockwise 16-channel panning, first speaker straight front
 				var distances, globalDist, delays, amplitudes;
