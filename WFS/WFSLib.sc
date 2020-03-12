@@ -379,8 +379,8 @@ WFSLib {
 	     
 	     Udef.loadOnInit = false;
 				
-		defs = Udef.loadAllFromDefaultDirectory.collect(_.synthDef).flat.select(_.notNil);
-		defs = defs ++ UMapDef.loadAllFromDefaultDirectory.collect(_.synthDef).flat.select(_.notNil);
+		defs = Udef.loadAllFromDefaultDirectory.select(_.notNil).collect(_.synthDef).flat.select(_.notNil);
+		defs = defs ++ UMapDef.loadAllFromDefaultDirectory.select(_.notNil).collect(_.synthDef).flat.select(_.notNil);
 		UnitRack.loadAllFromDefaultDirectory;
 				
 		Udef.loadOnInit = true;
