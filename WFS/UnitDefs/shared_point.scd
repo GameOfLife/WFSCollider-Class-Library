@@ -14,6 +14,7 @@ part of the WFSCollider Class Library default UMapDefs set
 */
 
 Udef( \shared_point, { |point = #[0.0, 0.0]|
+	UEnv.kr( extraSilence: 0.2, useGlobalGain: 0 );
 	USharedPointOut.kr( \id, point );
 })
 	.setSpec( \point, WFSPointSpec(200, 0.1) )
