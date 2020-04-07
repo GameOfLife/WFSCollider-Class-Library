@@ -173,9 +173,21 @@ WFSPreviewSynthDefs : AbstractWFSSynthDefs {
 				in * amplitudes;
 			},
 			\b_format: { |in, point| // 1st order b-format output (2D; 3 channels)
-				var amplitudes;
-				amplitudes = PanB2.kr( 1, (point.angle - 0.5pi).neg / pi);
-				amplitudes * in;
+				var encoder;
+				if( 'Atk'.asClass.notNil ) {
+					encoder = FoaEncoderMatrix.newDirection( 0, 0 );
+					in = FoaEncode.ar( in, encoder );
+					in = FoaTransform.ar( in, 'directO', 
+						point.rho.linlin(0,5,pi/2,0,\minmax) 
+					);
+					if( point.theta.rate == 'control' ) {
+						FoaTransform.ar( in, 'rotate', 1.5pi + Unwrap.kr( point.theta.neg, -pi, pi ) )[..2];
+					} {
+						FoaTransform.ar( in, 'rotate', 1.5pi + point.theta.neg )[..2]
+					}
+				} {
+					PanB2.ar( in, (point.angle - 0.5pi).neg / pi);
+				};
 			},
 			\mono: { |in, point|
 				in;
@@ -252,9 +264,18 @@ WFSPreviewSynthDefs : AbstractWFSSynthDefs {
 				DecodeB2.ar( 64, w, x, y, 0 );
 			},
 			\b_format: { |in, point| // 1st order b-format output (2D; 3 channels)
-				var amplitudes;
-				amplitudes = PanB2.kr( 1, (point.angle - 0.5pi).neg / pi);
-				amplitudes * in;
+				var encoder;
+				if( 'Atk'.asClass.notNil ) {
+					encoder = FoaEncoderMatrix.newDirection( 0, 0 );
+					in = FoaEncode.ar( in, encoder );
+					if( point.theta.rate == 'control' ) {
+						FoaTransform.ar( in, 'rotate', 1.5pi + Unwrap.kr( point.theta.neg, -pi, pi ) )[..2];
+					} {
+						FoaTransform.ar( in, 'rotate', 1.5pi + point.theta.neg )[..2]
+					}
+				} {
+					PanB2.ar( in, (point.angle - 0.5pi).neg / pi);
+				};
 			},
 			\mono: { |in, point|
 				in;
