@@ -189,6 +189,23 @@ WFSPreviewSynthDefs : AbstractWFSSynthDefs {
 					PanB2.ar( in, (point.angle - 0.5pi).neg / pi);
 				};
 			},
+			\ambix: { |in, point| // 1st order b-format output WYZX (4-channels)
+				var encoder;
+				if( 'Atk'.asClass.notNil ) {
+					encoder = FoaEncoderMatrix.newDirection( 0, 0 );
+					in = FoaEncode.ar( in, encoder );
+					in = FoaTransform.ar( in, 'directO', 
+						point.rho.linlin(0,5,pi/2,0,\minmax) 
+					);
+					(if( point.theta.rate == 'control' ) {
+						FoaTransform.ar( in, 'rotate', 1.5pi + Unwrap.kr( point.theta.neg, -pi, pi ) )[[0,2,3,1]] * [1,1,1,-1];
+					} {
+						FoaTransform.ar( in, 'rotate', 1.5pi + point.theta.neg )[[0,2,3,1]] * [1,1,1,-1];
+					})
+				} {
+					(PanB2.ar( in, (point.angle - 0.5pi).neg / pi) ++ [DC.ar(0)])[[0,2,3,1]] * [1,1,1,-1];
+				};
+			},
 			\mono: { |in, point|
 				in;
 			}
@@ -275,6 +292,23 @@ WFSPreviewSynthDefs : AbstractWFSSynthDefs {
 					}
 				} {
 					PanB2.ar( in, (point.angle - 0.5pi).neg / pi);
+				};
+			},
+			\ambix: { |in, point| // 1st order b-format output WYZX (4-channels)
+				var encoder;
+				if( 'Atk'.asClass.notNil ) {
+					encoder = FoaEncoderMatrix.newDirection( 0, 0 );
+					in = FoaEncode.ar( in, encoder );
+					in = FoaTransform.ar( in, 'directO', 
+						point.rho.linlin(0,5,pi/2,0,\minmax) 
+					);
+					(if( point.theta.rate == 'control' ) {
+						FoaTransform.ar( in, 'rotate', 1.5pi + Unwrap.kr( point.theta.neg, -pi, pi ) )[[0,2,3,1]] * [1,1,1,-1];
+					} {
+						FoaTransform.ar( in, 'rotate', 1.5pi + point.theta.neg )[[0,2,3,1]] * [1,1,1,-1];
+					})
+				} {
+					(PanB2.ar( in, (point.angle - 0.5pi).neg / pi) ++ [DC.ar(0)])[[0,2,3,1]] * [1,1,1,-1];
 				};
 			},
 			\mono: { |in, point|
