@@ -81,12 +81,12 @@ r = (
 				\freq, ([ 0, 2, 4, 5, 7, 9, 11, 12 ].reverse[i%8] + 64).midicps
 			]
 		], 
-		[ \wfsStaticIndex, [ \index, i.asInt ] ]
+		[ \wfsStaticIndex, [ \index, i.asInteger ] ]
 	).fadeOut_(0.02);
 }) ++ (((..23) * 8) + 3).collect({ |i|
 	UChain( i.linlin(0,192,1,26),8,0.5,true,
 		[\sine, [ \freq, 60] ], 
-		[ \wfsStaticIndex, [ \index, i.asInt ] ]
+		[ \wfsStaticIndex, [ \index, i.asInteger ] ]
 	).fadeIn_(0).fadeOut_(0.45);
 })
 ).sort;

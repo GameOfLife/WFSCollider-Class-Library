@@ -126,12 +126,12 @@ ArrayEditView : UBasicEditView {
 			\draw, {
 				newIndex = x.floor.clip(0, this.object.size-1);
 				if( selected.size > 0 ) {
-					if( lastDrawIndex == newIndex && { selected.includes( newIndex.asInt ) } ) {
+					if( lastDrawIndex == newIndex && { selected.includes( newIndex.asInteger ) } ) {
 						this.object[ lastDrawIndex ] = y;
 						changed = true;
 					} {	
 						(lastDrawIndex..newIndex).do({ |item, i|
-							if( selected.includes( item.asInt ) ) {
+							if( selected.includes( item.asInteger ) ) {
 								this.object[item] = this.object[lastDrawIndex]
 									.blend( y, i/((newIndex - lastDrawIndex).abs).max(1) );
 								changed = true;
@@ -184,7 +184,7 @@ ArrayEditView : UBasicEditView {
 		var newObject = objectBackup.copy;
 		if( selected.size > 0 ) {
 			indices.do({ |index, i|
-				if( selected.includes( index.asInt ) ) {
+				if( selected.includes( index.asInteger ) ) {
 					newObject[index] = startEnd[0].blend( startEnd[1], i/(indices.size-1).max(1) );
 				};
 			});

@@ -83,7 +83,7 @@ WFSPath2 : WFSPointGroup {
 			};
 		} { in.isNumber } {
 			if( in < types.size ) {
-				^types[ in.asInt ];
+				^types[ in.asInteger ];
 			} { 
 				"%:getType - index (%) out of range, using % instead\n"
 					.format( this.class, in, types[0] )
@@ -112,7 +112,7 @@ WFSPath2 : WFSPointGroup {
 			};
 		} { in.isNumber } {
 			if( in < modes.size ) {
-				^modes[ in.asInt ];
+				^modes[ in.asInteger ];
 			} { 
 				"%:getType - index (%) out of range, using % instead\n"
 					.format( this.class, in, modes[0] )
@@ -372,9 +372,9 @@ WFSPath2 : WFSPointGroup {
 			
 			settingsArray = bufferArray[0];
 			
-			type = this.class.types[ settingsArray[1].asInt ] ? this.class.types[0];
+			type = this.class.types[ settingsArray[1].asInteger ] ? this.class.types[0];
 			curve = settingsArray[2];
-			clipMode = this.class.clipModes[ settingsArray[3].asInt ] ? this.class.clipModes[0];
+			clipMode = this.class.clipModes[ settingsArray[3].asInteger ] ? this.class.clipModes[0];
 			
 			#times, positions = bufferArray[1..].collect({ |vals|
 				var time, point;

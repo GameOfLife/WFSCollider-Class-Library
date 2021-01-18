@@ -57,7 +57,7 @@ Udef( \wfsRandomPath, { |
 		umaps = chain.units.collect({ |unit| 
 			(unit.getAllUMaps ? []).select({ |umap| 
 				(umap.defName === \map_control_point) && { 
-					[umap.bus_x, umap.bus_y].asInt == outputs; 
+					[umap.bus_x, umap.bus_y].asInteger == outputs; 
 				}
 			})
 		}).flatten(1);

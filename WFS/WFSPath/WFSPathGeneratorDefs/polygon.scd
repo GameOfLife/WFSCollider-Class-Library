@@ -14,11 +14,11 @@ WFSPathGeneratorDef(
 		periods = f.get( \periods );
 		close = f.get( \close );
 		if( close ) { nn = n-1 };
-		polygon = ((sides * periods).ceil).asInt.collect({ |i|
+		polygon = ((sides * periods).ceil).asInteger.collect({ |i|
 			(((i.linlin(0,sides,0,2pi * periods) * clockwise) + [0,0.5pi] + startAngle)
 				.sin.asPoint * radius) + center
 		});
-		path.positions = n.asInt.collect({ |i|
+		path.positions = n.asInteger.collect({ |i|
 			polygon.atL( ((i/nn) + offset ) * sides * periods );
 		});
 		path;

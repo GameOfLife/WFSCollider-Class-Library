@@ -95,13 +95,13 @@
 	
 	asBufSndFile { 
 		^BufSndFile.newBasic( filePath, sfNumFrames, 1, sfSampleRate, startFrame, 
-			startFrame + this.samplesPlayed, pbRate, loop.asInt.booleanValue 
+			startFrame + this.samplesPlayed, pbRate, loop.asInteger.booleanValue 
 		);
 	}
 	
 	asDiskSndFile { 
 		^BufSndFile.newBasic( filePath, sfNumFrames, 1, sfSampleRate, startFrame, 
-			startFrame + this.samplesPlayed, pbRate, loop.asInt.booleanValue 
+			startFrame + this.samplesPlayed, pbRate, loop.asInteger.booleanValue 
 		);
 	}
 	

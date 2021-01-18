@@ -178,7 +178,7 @@ WFSPath_Old {
 	
 	*spiral { |nPeriods = 5, res = 10, startSize = 1, endSize = 0.1, length, name|
 		var size, levels, points, times; 
-		size = (nPeriods * res).ceil.asInt + 1;
+		size = (nPeriods * res).ceil.asInteger + 1;
 		points = Array.fill(size, { |i|
 			(i / res) * 2pi
 					});

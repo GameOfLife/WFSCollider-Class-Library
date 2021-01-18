@@ -103,7 +103,7 @@ WFSArrayPanSynthDefs : AbstractWFSSynthDefs {
 	
 	*allSizes { 
 		var sizes;
-		sizes = ((maxSize/division).asInt + 1).collect({ |i|
+		sizes = ((maxSize/division).asInteger + 1).collect({ |i|
 			((i * division) + (0,(2**i)..division-1)).asInt
 		}).flat.select(_ >= minSize);
 		if( WFSSpeakerConf.default.notNil ) {
@@ -257,7 +257,7 @@ WFSPrePanSynthDefs : AbstractWFSSynthDefs {
 	}
 	
 	*allSizes { 
-		^((maxSize/division).asInt + 1).collect({ |i|
+		^((maxSize/division).asInteger + 1).collect({ |i|
 			((i * division) + (0,(2**i)..division-1)).asInt
 		}).flat.select(_ >= minSize);
 	}

@@ -129,7 +129,7 @@ def.uchainInitFunc_({ |unit, chain|
 	newUMap = makeUMap.value(unit);
 	umaps = chain.units.collect({ |unit| 
 		(unit.getAllUMaps ? []).select({ |umap| 
-			(umap.defName === \map_control_point) && { [umap.bus_x, umap.bus_y].asInt == outputs; }
+			(umap.defName === \map_control_point) && { [umap.bus_x, umap.bus_y].asInteger == outputs; }
 		})
 	}).flatten(1);
 	

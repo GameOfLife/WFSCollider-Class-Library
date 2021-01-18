@@ -1,6 +1,6 @@
 ArrayTransformerDef( \rotate, { |f, obj|
-	obj = obj.permute( f.get( \permute ).asInt );
-	obj = obj.rotate( f.get( \rotate ).asInt );
+	obj = obj.permute( f.get( \permute ).asInteger );
+	obj = obj.rotate( f.get( \rotate ).asInteger );
 	if( f.get( \reverse ) == true ) {
 		obj.reverse;
 	} {

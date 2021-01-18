@@ -689,10 +689,10 @@ WFSPathTimeView : WFSPathXYView {
 			speeds = speeds ++ [0];
 			
 			if( timesSum <= 60 ) {
-				vlines = timesSum.ceil.asInt.collect({ |i| i / timesSum });
+				vlines = timesSum.ceil.asInteger.collect({ |i| i / timesSum });
 				Pen.color = Color.white.alpha_(0.75);
 			} {
-				vlines = (timesSum / 60).ceil.asInt.collect({ |i| i / (timesSum / 60) });
+				vlines = (timesSum / 60).ceil.asInteger.collect({ |i| i / (timesSum / 60) });
 				Pen.color = Color.black.alpha_(0.25);
 			};
 			
