@@ -392,7 +392,7 @@ WFSPathView_TopBar : WFSPointGroupView_TopBar {
 				[ icons[\play], Color.white, Color.gray(0.4) ]
 			])
 			.action_({ |bt|
-				switch( bt.value.asInt,
+				switch( bt.value.asInteger,
 					1, { object.animate( true ) },
 					0, { object.animate( false ) }
 				);

@@ -125,7 +125,7 @@ def.uchainInitFunc_({ |unit, chain|
 	
 	outputs = unit.controlOuts.collect({ |item|
 		unit.getControlOut( item );
-	}).asInt;
+	}).asInteger;
 	newUMap = makeUMap.value(unit);
 	umaps = chain.units.collect({ |unit| 
 		(unit.getAllUMaps ? []).select({ |umap| 

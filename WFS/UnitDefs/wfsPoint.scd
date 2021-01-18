@@ -33,7 +33,7 @@ Udef(\wfsPoint,
 		
 		outputs = unit.controlOuts.collect({ |item|
 			unit.getControlOut( item );
-		}).asInt;
+		}).asInteger;
 		
 		chain.units.collect({ |unit| 
 			(unit.getAllUMaps ? []).select({ |umap| 

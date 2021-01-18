@@ -3,7 +3,7 @@ WFSPathTransformerDef( \simpleSize,
 		var oldTimes;
 		var newPos, newTimes;
 		var n;
-		n = f.get( \size ).asInt;
+		n = f.get( \size ).asInteger;
 		newTimes = [0] ++ path.times.integrate;
 		newTimes = newTimes.resize( n, \linear, false );
 		newPos = newTimes.collect({ |item| path.atTime( item ) });

@@ -209,7 +209,7 @@ WFSPath2 : WFSPointGroup {
 		dur = this.dur;
 		time = time.clip(0, dur);
 		index = this.indexAtTime( time );
-		ceiledIndex = index.ceil.asInt;
+		ceiledIndex = index.ceil.asInteger;
 		if( index == ceiledIndex ) {
 			positions = positions[ceiledIndex..];
 			times = this.times[ceiledIndex..];
@@ -226,7 +226,7 @@ WFSPath2 : WFSPointGroup {
 		dur = this.dur;
 		if( time < dur ) {
 			index = this.indexAtTime( time );
-			flooredIndex = index.floor.asInt;
+			flooredIndex = index.floor.asInteger;
 			if( index == flooredIndex ) {
 				positions = positions[..flooredIndex];
 				times = this.times[..flooredIndex-1];

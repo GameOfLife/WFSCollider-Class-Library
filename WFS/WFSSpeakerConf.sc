@@ -157,7 +157,7 @@ WFSArrayConf { // configuration for one single speaker array
 		};
 	}
 	
-	n_ { |newN| n = newN.asInt; this.changed( \n, n ); }
+	n_ { |newN| n = newN.asInteger; this.changed( \n, n ); }
 	dist_ { |newDist| 
 		dist = newDist; 
 		this.changed( \dist, dist );
@@ -369,7 +369,7 @@ WFSSpeakerConf {
 	
 	*polygon { |n = 6, r = 5, nsp = 192|
 		^this.new( *n.collect({ |i|
-			[ (nsp / n).asInt, r, i.linlin(0, n, 0.5pi, -1.5pi) ]
+			[ (nsp / n).asInteger, r, i.linlin(0, n, 0.5pi, -1.5pi) ]
 		}) );
 	}
 	

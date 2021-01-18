@@ -3,7 +3,7 @@ WFSPathTransformerDef( \circleSize,
 		var angles, distances;
 		var newPos, newTimes;
 		var n;
-		n = f.get( \size ).asInt;
+		n = f.get( \size ).asInteger;
 		if( path.repondsTo( \times ) ) {
 			newTimes = [0] ++ path.times.integrate;
 			newTimes = newTimes.resize( n, \linear, false ).differentiate[1..];

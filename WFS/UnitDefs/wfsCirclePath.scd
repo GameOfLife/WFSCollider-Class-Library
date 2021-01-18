@@ -42,7 +42,7 @@ Udef( \wfsCirclePath, { |
 		
 		outputs = unit.controlOuts.collect({ |item|
 			unit.getControlOut( item );
-		}).asInt;
+		}).asInteger;
 		
 		mixOut = unit.controlOuts.collect({ |item|
 			unit.getControlMixOutLevel( item );

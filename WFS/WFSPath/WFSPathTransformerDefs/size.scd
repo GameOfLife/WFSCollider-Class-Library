@@ -4,7 +4,7 @@ WFSPathTransformerDef( \size,
 		var newPos, newTimes;
 		var mode, n;
 		mode = f.get( \mode );
-		n = f.get( \size ).asInt;
+		n = f.get( \size ).asInteger;
 		switch( mode,
 			\interpolate, {
 				newTimes = [0] ++ path.times.integrate;
