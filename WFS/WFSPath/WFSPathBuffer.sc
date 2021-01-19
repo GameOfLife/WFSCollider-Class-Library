@@ -250,13 +250,9 @@ WFSPathBuffer : AbstractRichBuffer {
 		
 		buf = this.sendBuffer( server, writeFunc, forWriting: true );
 		
-		OSCresponderNode( server.addr, '/done', { |time, resp, msg, addr|
-			if( msg == [ '/done', '/b_write', buf.bufnum ] ) {
-				resp.remove;
-				buf.free;
-				action.value;
-			};
-		}).add; 
+		OSCFunc( { |msg, time, addr|
+			buf.free;
+		}, '/done', server.addr, argTemplate: [ '/b_write', buf.bufnum ]).oneShot; 
 	}
 	
 	storeArgs { ^[ wfsPath, startFrame, rate, loop, delay ] }
