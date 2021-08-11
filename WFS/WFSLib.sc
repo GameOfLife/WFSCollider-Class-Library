@@ -367,11 +367,11 @@ WFSLib {
 			.numOutputBusChannels_(numOuts)
 			.numInputBusChannels_(numIns)
 			.numWireBufs_(2048)
-			.memSize_(2**19) // 256MB
+			.memSize_( (2**19).asInteger ) // 256MB
 			//.hardwareBufferSize_(512)
 			//.blockSize_(128)
 			//.sampleRate_( 44100 )
-			.maxNodes_( 2**16 );
+			.maxNodes_( (2**16).asInteger );
      }
      
      *loadUDefs { |loadDir = true|
