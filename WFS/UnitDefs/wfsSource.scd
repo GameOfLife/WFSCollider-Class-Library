@@ -35,7 +35,7 @@ renderModeSpec = ListSpec(
 
 staticPoint = HiddenFreeUdef( \staticPoint, [
 		[ \point: 		0@0,  	WFSPointSpec( 200, 0.1 ) ],
-		[ \type, 			\point, 	ListSpec( [ \point, \plane ] ), false, \init ],
+		[ \type, 			\point, 	ListSpec( [ \point, \plane ] ), false, \nonsynth ],
 		[ \latencyComp:  	0,		[0,1].asSpec, false, \init ],
 		[ \distanceFilter:	0,		[0,2,\lin,0,1].asSpec ],
 		[ \dbRollOff:		-6,		[ -24, 0, \lin, 1, -6 ].asSpec ],
@@ -187,7 +187,7 @@ if(notPreviewMode) {
 
 dynamicPoint = HiddenFreeUdef( \dynamicPoint, [	
 		[ \point: 		0@0,  	WFSPointSpec( 200, 0.1 ) ],
-		[ \type, 			\point, 	ListSpec( [ \point, \plane ] ), false, \init ],
+		[ \type, 			\point, 	ListSpec( [ \point, \plane ] ), false, \nonsynth ],
 		[ \quality:		0,		ListSpec([ \good, \better ], 0 ), false, \nonsynth ], // \l or \c
 		[ \distanceFilter:	0,		[0,2,\lin,0,1].asSpec ],
 		[ \latencyComp:  	0,		[0,1].asSpec, false, \init ],
@@ -339,7 +339,7 @@ if(notPreviewMode) {
 
 staticPlane = HiddenFreeUdef( \staticPlane, [
 		[ \point: 		0@0,  	WFSPlaneSpec( 200, 0.1 ) ],
-		[ \type, 			\point, 	ListSpec( [ \point, \plane ] ), false, \init ],
+		[ \type, 			\point, 	ListSpec( [ \point, \plane ] ), false, \nonsynth ],
 		[ \latencyComp:  	0,		[0,1].asSpec, false, \init ],
 		[ \dbRollOff:		0,		[ -24, 0, \lin, 1, 0 ].asSpec ],
 		[ \maxAmpRadius:	5,		[ 1, 5, \lin, 0, 5, "m" ].asSpec ],
@@ -471,7 +471,7 @@ staticPlane.createSynthFunc_({ |unit, target, startPos = 0|
 
 dynamicPlane = HiddenFreeUdef( \dynamicPlane, [	
 		[ \point: 		0@0,  	WFSPlaneSpec( 200, 0.1 ) ],
-		[ \type, 			\point, 	ListSpec( [ \point, \plane ] ), false, \init ],
+		[ \type, 			\point, 	ListSpec( [ \point, \plane ] ), false, \nonsynth ],
 		[ \quality:		0,		ListSpec([ \normal, \better ], 0 ), false, \nonsynth ], // for \l or \c
 		[ \latencyComp:  	0,		[0,1].asSpec, false, \init ],
 		[ \dbRollOff:		0,		[ -24, 0, \lin, 1, 0 ].asSpec ],
