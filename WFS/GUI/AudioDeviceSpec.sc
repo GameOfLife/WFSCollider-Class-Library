@@ -31,18 +31,24 @@ AudioDeviceSpec : Spec {
 	}
 	
 	*refreshDevices { 
-		this.addDevices( 
-			ServerOptions.devices.select({ |item|
-				item.find( "Built-in", true ).isNil
-			})
-		); 
+		Platform.case(
+			\osx, {
+				this.addDevices( 
+					ServerOptions.devices.select({ |item|
+						item.find( "Built-in", true ).isNil
+					})
+				); 
+			}
+		);
 	}
 	
 	map { |in| ^in }
 	unmap { |in| ^in }
 	
 	constrain { |device|
-		if( device.notNil && { ServerOptions.devices.any({ |item| item == device }).not }) {
+		if( device.notNil && { 
+			Platform.case( \osx, { ServerOptions.devices.any({ |item| item == device }).not }, { false })
+		}) {
 			"AudioDeviceSpec:constrain - device '%' does not exist on this machine.\n\tThe server will use the system default device instead\n"
 				.postf( device )
 		};
@@ -58,18 +64,22 @@ AudioDeviceSpec : Spec {
 		this.class.refreshDevices;
 		vw = EZPopUpMenu( parent, bounds, label !? { label.asString ++ " " });
 		fillPopUp = {
-			vw.items = [
-				'system default' -> { |vw| action.value( vw, nil ) }
-			] ++ devices.collect({ |device|
-				device.asSymbol -> { |vw| action.value( vw, device ) }
-			}) ++ [
-			     '' -> { },
-				'add...' -> { |vw| 
-					SCRequestString( "", "please enter device name:", { |string|
-						action.value( vw, this.constrain( string ) );
-					})
-				}
-			];
+			Platform.case( \osx, {
+				vw.items = [
+					'system default' -> { |vw| action.value( vw, nil ) }
+				] ++ devices.collect({ |device|
+					device.asSymbol -> { |vw| action.value( vw, device ) }
+				}) ++ [
+				     '' -> { },
+					'add...' -> { |vw| 
+						SCRequestString( "", "please enter device name:", { |string|
+							action.value( vw, this.constrain( string ) );
+						})
+					}
+				];
+			}, { 
+				vw.items = [ 'system default' -> { } ]
+			});
 		};
 		fillPopUp.value;
 		ctrl = SimpleController( this.class )
