@@ -398,7 +398,11 @@ WFSServers {
 				EZSmoothSlider(window, Rect(0,0,100,15),nil, [0.02,1,\exp,0,0.02].asSpec)
 				    .value_(multiServer[0].latency)
 				    .font_( font )
-				    .action_({ |v| multiServer[0].latency = v.value})
+				    .action_({ |v| 
+					    multiServer.servers.do({ |server|
+						   	server.latency = v.value
+					    });
+					})
 				    .numberWidth_( 40 )
 				    .sliderView
 				    		.string_("Latency")
