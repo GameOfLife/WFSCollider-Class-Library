@@ -45,6 +45,9 @@ WFSLib {
 						.device_( item.device )
 						.maxSynthDefs_(2048)
 						.hardwareBufferSize_( item.hardwareBufferSize );
+					if( WFSServers.default[ 0 ][ i ].options.respondsTo( \maxLogins ) ) {
+						WFSServers.default[ 0 ][ i ].options.maxLogins_(2);
+					};
 					 WFSServers.default.multiServers[i].servers.do({ |srv|
 						 WFSSpeakerConf.setOutputBusStartOffset( srv, item.outputBusStartOffset );
 					 });
@@ -79,6 +82,9 @@ WFSLib {
 				Server.default = WFSServers.default.multiServers[0][0];
 				o = wfsOptions.serverOptions[0];
 				wfsOptions.serverOptions.do({ |item,i|
+					if( WFSServers.default[ 0 ][ i ].options.respondsTo( \maxLogins ) ) {
+						WFSServers.default[ 0 ][ i ].options.maxLogins_(2);
+					};
 					WFSServers.default.multiServers[i].servers.do({ |srv|
 						 WFSSpeakerConf.setOutputBusStartOffset( srv, item.outputBusStartOffset );
 					});
