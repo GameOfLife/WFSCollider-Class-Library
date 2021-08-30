@@ -47,6 +47,7 @@ WFSLib {
 						.hardwareBufferSize_( item.hardwareBufferSize );
 					if( WFSServers.default[ 0 ][ i ].options.respondsTo( \maxLogins ) ) {
 						WFSServers.default[ 0 ][ i ].options.maxLogins_(2);
+						WFSServers.default[ 0 ][ i ].options.bindAddress_("0.0.0.0");
 					};
 					 WFSServers.default.multiServers[i].servers.do({ |srv|
 						 WFSSpeakerConf.setOutputBusStartOffset( srv, item.outputBusStartOffset );
@@ -84,6 +85,7 @@ WFSLib {
 				wfsOptions.serverOptions.do({ |item,i|
 					if( WFSServers.default[ 0 ][ i ].options.respondsTo( \maxLogins ) ) {
 						WFSServers.default[ 0 ][ i ].options.maxLogins_(2);
+						WFSServers.default[ 0 ][ i ].options.bindAddress_("0.0.0.0");
 					};
 					WFSServers.default.multiServers[i].servers.do({ |srv|
 						 WFSSpeakerConf.setOutputBusStartOffset( srv, item.outputBusStartOffset );
@@ -378,6 +380,11 @@ WFSLib {
 			//.blockSize_(128)
 			//.sampleRate_( 44100 )
 			.maxNodes_( (2**16).asInteger );
+		if( Server.default.options.respondsTo( \maxLogins ) ) {
+			Server.default.options.maxLogins_(2);
+			Server.default.options.bindAddress_("0.0.0.0");
+		};
+			
      }
      
      *loadUDefs { |loadDir = true|
