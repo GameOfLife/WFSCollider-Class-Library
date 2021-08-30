@@ -77,7 +77,7 @@ WFSServerOptions : AbstractWFSOptions {
 	var <numOutputBusChannels = 96;
 	var <numInputBusChannels = 8;
 	var <outputBusStartOffset = 0;
-	var <device = "JackRouter";
+	var <device;
 	var <hardwareBufferSize = 512;
 	
 	
