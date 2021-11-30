@@ -289,7 +289,8 @@ WFSPrePanSynthDefs : AbstractWFSSynthDefs {
 			var normalLevels, normalShouldRun, focusShouldRun;
 			var sendPointRate = 0;
 			var rho;
-			
+			var env, freezePause;
+
 			point = \point.kr( point.asArray );
 			
 			if( crossfadeMode != \n ) {	
@@ -323,9 +324,10 @@ WFSPrePanSynthDefs : AbstractWFSSynthDefs {
 			 		).clip(0,10000000) / SampleRate.ir) 
 		 		).exp 
 			);
-			input = input * UEnv.kr( extraSilence: 
+			env = UEnv.kr( extraSilence:
 				( ( rho / WFSBasicPan.speedOfSound ) * (1 - latencyComp) ) + 0.12
 			);
+			input = input * env;
 			output = panner.ar( input, point );
 			
 			
@@ -383,8 +385,10 @@ WFSPrePanSynthDefs : AbstractWFSSynthDefs {
 					normalLevels = crossfader.cornerfades * normalShouldRun;
 								
 					dontPause = \dontPause.kr(dontPause); // if 1 never pause
-					
-					// id's of synths to pause (998 for none) 
+
+					freezePause = env > 0.0000001;
+
+					// id's of synths to pause (998 for none)
 					normalIDs = \normalIDs.ir( 998.dup(numArrays) ).asCollection;
 					focusIDs = \focusIDs.ir( 998.dup(numArrays) ).asCollection;
 					
@@ -407,14 +411,14 @@ WFSPrePanSynthDefs : AbstractWFSSynthDefs {
 						pause = (normalLevels[i] > 0);
 						pause = Slew.kr( pause, inf, 1/pauseLag ) > 0;
 						pause = pause.max(dontPause);
-						Pause.kr( pause, id );
+						Pause.kr( Gate.kr( pause, freezePause ), id );
 					});
 					
 					focusIDs.do({ |id, i|
 						var pause;
 						pause = (focusShouldRun[i] > 0);
 						pause = Slew.kr( pause, inf, 1/pauseLag ) > 0;
-						Pause.kr( pause.max(dontPause), id );
+						Pause.kr( Gate.kr( pause.max(dontPause), freezePause ), id );
 					});
 					
 				}, \p, {
@@ -433,7 +437,9 @@ WFSPrePanSynthDefs : AbstractWFSSynthDefs {
 					crossfader = WFSCrossfaderPlane( point, arrayConfs );
 						
 					dontPause = \dontPause.kr(dontPause);
-					
+
+					freezePause = env > 0.0000001;
+
 					// id's of synths to pause (-1 for none)
 					planeIDs = \planeIDs.ir( -1.dup(numArrays) ).asCollection;
 					
@@ -452,7 +458,7 @@ WFSPrePanSynthDefs : AbstractWFSSynthDefs {
 						var pause;
 						pause = (planeLevels[i] > 0);
 						pause = Slew.kr( pause, inf, 1/pauseLag ) > 0;
-						Pause.kr( pause.max(dontPause), id );
+						Pause.kr( Gate.kr( pause.max(dontPause), freezePause ), id );
 					});
 				});
 			};
