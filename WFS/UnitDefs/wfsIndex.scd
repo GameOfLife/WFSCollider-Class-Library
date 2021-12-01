@@ -16,8 +16,8 @@ var dynamicIndex;
 var staticIndex;
 var multiDef;
 
-dynamicIndex = HiddenFreeUdef( \dynamic, [	
-		[ \index: 		0,  		PositiveIntegerSpec(0,0,191) ],
+dynamicIndex = HiddenFreeUdef( \dynamic, [
+		[ \index: 		0,  		PositiveIntegerSpec(0,0,255) ],
 		[ \gain:			-6,		[ -96, 0, \db, 1, -6].asSpec ],
 ] )
 	.category_( \wfs_panner )
@@ -60,8 +60,8 @@ dynamicIndex.removeArgSpec( \startIndex ); // this is set by createSynthFunc
 dynamicIndex.removeArgSpec( \i_gain ); // this is set by createSynthFunc
 
 
-staticIndex = HiddenFreeUdef( \static, [	
-		[ \index: 		0,  		PositiveIntegerSpec(0,0,191) ],
+staticIndex = HiddenFreeUdef( \static, [
+		[ \index: 		0,  		PositiveIntegerSpec(0,0,255) ],
 		[ \gain:			-6,		[ -96, 0, \db, 1, -6].asSpec ],
 ] )
 	.category_( \wfs_panner )
