@@ -31,7 +31,8 @@ WFSServers {
 	classvar  <>wrapTime = 20.0;
 	classvar <>pulsesOutputBus = 14;
 	classvar <>singlePort = 57999;
-	
+	classvar <>msWaitTime = 10;
+
 	var <ips, <startPort, <serversPerSystem;
 	var <multiServers;
 	var <masterServer;
@@ -134,8 +135,8 @@ WFSServers {
 					//{ 0.1.wait; ms.boot(10) }.fork 
 					Routine({
 						0.1.wait;
-						ms.servers.do{ |server| 
-							10.wait;
+						ms.servers.do{ |server|
+							msWaitTime.wait;
 							server.boot;
 						}
 					}).play
