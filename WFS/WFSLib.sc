@@ -312,12 +312,16 @@ WFSLib {
 					WFSPositionTracker.start;
 				});
 			} {
-				UMenuWindow();
-				UMenuWindow.viewMenu.tree.put( 'WFS Position tracker', {
+				UMenuBarIDE("WFSCollider");
+
+				UMenuBarIDE.add("WFS Position tracker", {
 					WFSPositionTrackerGUI.newOrCurrent;
 					WFSPositionTracker.start;
-				});
-				UMenuWindow.viewMenu.tree.put( 'WFS Preferences...', {
+				}, "View");
+
+				UMenuBarIDE.add("Preferences", \separator );
+
+				UMenuBarIDE.add("Preferences...", {
 					WFSOptionsGUI.newOrCurrent;
 				});
 			};
