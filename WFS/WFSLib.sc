@@ -314,6 +314,12 @@ WFSLib {
 			} {
 				UMenuBarIDE("WFSCollider");
 
+				UMenuBarIDE.add("WFS", \separator, "View" );
+
+				UMenuBarIDE.add("WFSServers", {
+					WFSServers.default.makeWindow;
+				}, "View");
+
 				UMenuBarIDE.add("WFS Position tracker", {
 					WFSPositionTrackerGUI.newOrCurrent;
 					WFSPositionTracker.start;
