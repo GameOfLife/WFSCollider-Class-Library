@@ -1,0 +1,9 @@
+(
+  name: "WFSCollider-Class-Library",
+  summary: "A composition tool for spatial music, created to drive the WFS system of the Game of Life foundation, the Netherlands",
+  version: "2.2.6b",
+  schelp: "WFSCollider",
+dependencies: ["Unit-Lib", "MathLib", "NetLib"],
+  license: "GPL3",
+  copyright: "Miguel Negrão, Wouter Snoei, Casper Schipper 2006-2021"
+)
