@@ -2,7 +2,7 @@ WFSLib {
 	
 	classvar <>previewMode;
 	
-	*startup { |wfsOptions|
+	*startup { |wfsOptions, useMenuWindow = false|
 		var servers, o;
 		var bootFunc;
 
@@ -312,24 +312,37 @@ WFSLib {
 					WFSPositionTracker.start;
 				});
 			} {
-				UMenuBarIDE("WFSCollider");
+				if( useMenuWindow or: { thisProcess.platform.name === 'windows' } ) {
+					UMenuWindow();
 
-				UMenuBarIDE.add("WFS", \separator, "View" );
+					UMenuWindow.viewMenu.tree.put( 'WFS Position tracker', {
+						WFSPositionTrackerGUI.newOrCurrent;
+						WFSPositionTracker.start;
+					});
+					UMenuWindow.viewMenu.tree.put( 'WFS Preferences...', {
+						WFSOptionsGUI.newOrCurrent;
+					});
+				} {
+					UMenuBarIDE("WFSCollider");
 
-				UMenuBarIDE.add("WFSServers", {
-					WFSServers.default.makeWindow;
-				}, "View");
+					UMenuBarIDE.add("WFS", \separator, "View" );
 
-				UMenuBarIDE.add("WFS Position tracker", {
-					WFSPositionTrackerGUI.newOrCurrent;
-					WFSPositionTracker.start;
-				}, "View");
+					UMenuBarIDE.add("WFSServers", {
+						WFSServers.default.makeWindow;
+					}, "View");
 
-				UMenuBarIDE.add("Preferences", \separator );
+					UMenuBarIDE.add("WFS Position tracker", {
+						WFSPositionTrackerGUI.newOrCurrent;
+						WFSPositionTracker.start;
+					}, "View");
 
-				UMenuBarIDE.add("Preferences...", {
-					WFSOptionsGUI.newOrCurrent;
-				});
+					UMenuBarIDE.add("Preferences", \separator );
+
+					UMenuBarIDE.add("Preferences...", {
+						WFSOptionsGUI.newOrCurrent;
+					});
+
+				};
 			};
 	
 			UGlobalGain.gui;
