@@ -6,7 +6,9 @@ WFSLib {
 		var servers, o;
 		var bootFunc;
 
-		Server.nodeAllocClass = UNodeIDAllocator;
+		if( Server.respondsTo( \nodeAllocClass_ ) ) {
+			Server.nodeAllocClass = UNodeIDAllocator;
+		};
 
 		WFSOptions.presetManager.filePath = Platform.userConfigDir +/+ "default" ++ "." ++ WFSOptions.presetManager.id ++ ".presets";
 		WFSOptions.presetManager.readAdd( silent: true );
