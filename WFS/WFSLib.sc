@@ -46,9 +46,14 @@ WFSLib {
 						.numOutputBusChannels_( item.numOutputBusChannels )
 						.blockSize_( wfsOptions.blockSize )
 						.sampleRate_( wfsOptions.sampleRate )
-						.device_( item.device )
 						.maxSynthDefs_(2048)
 						.hardwareBufferSize_( item.hardwareBufferSize );
+					if( item.device.isString or: item.device.isNil ) {
+						WFSServers.default[ 0 ][ i ].options.device = item.device;
+					} {
+						WFSServers.default[ 0 ][ i ].options.inDevice = item.device[0];
+						WFSServers.default[ 0 ][ i ].options.outDevice = item.device[1];
+					};
 					if( WFSServers.default[ 0 ][ i ].options.respondsTo( \maxLogins ) ) {
 						WFSServers.default[ 0 ][ i ].options.maxLogins_(2);
 						WFSServers.default[ 0 ][ i ].options.bindAddress_("0.0.0.0");
@@ -105,7 +110,12 @@ WFSLib {
 		this.setServerOptions( o.numOutputBusChannels, o.numInputBusChannels, 64 );
 		Server.default.options.blockSize = wfsOptions.blockSize;
 		Server.default.options.sampleRate = wfsOptions.sampleRate;
-		Server.default.options.device = o.device;
+		if( o.device.isString or: o.device.isNil ) {
+			Server.default.options.device = o.device;
+		} {
+			Server.default.options.inDevice = o.device[0];
+			Server.default.options.outDevice = o.device[1];
+		};
 		Server.default.options.hardwareBufferSize = o.hardwareBufferSize;
 		
 		
