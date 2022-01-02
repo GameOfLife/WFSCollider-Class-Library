@@ -1,5 +1,5 @@
-WFSPathTransformerDef( \sort, 
-	{ |f, path| 
+WFSPathTransformerDef( \sort,
+	{ |f, path|
 		var sortedPos, oldPos, type;
 		type = f.get( \sort );
 		if( type != \scramble ) { f.environment[ \seed ] = nil; };
@@ -25,7 +25,7 @@ WFSPathTransformerDef( \sort,
 				oldPos = path.positions.reverse;
 				sortedPos = Array( oldPos.size );
 				sortedPos.add( oldPos.pop );
-				oldPos.size.do({ 
+				oldPos.size.do({
 					oldPos.sort({ |a,b|
 						a.dist( sortedPos.last ) >= b.dist( sortedPos.last )
 					});
@@ -37,7 +37,7 @@ WFSPathTransformerDef( \sort,
 				sortedPos = Array( oldPos.size );
 				sortedPos.add( oldPos.pop );
 				if( oldPos.size > 0 ) { sortedPos.add( oldPos.pop ); };
-				oldPos.size.do({ 
+				oldPos.size.do({
 					var lastAngle;
 					lastAngle = (sortedPos.last - sortedPos[ sortedPos.size - 2 ]).angle;
 					oldPos.sort({ |a,b|
@@ -70,7 +70,7 @@ WFSPathTransformerDef( \sort,
 			}
 		);
 		if( sortedPos.notNil ) { path.positions_(sortedPos); };
-	}, 
+	},
 	[ \sort, \off ]
 )
 	.setSpec( \sort, ListSpec( [ \off, \distance, \angle, \scramble, \nearest, \rel_angle, \x, \y, \mean_xy ] ) );

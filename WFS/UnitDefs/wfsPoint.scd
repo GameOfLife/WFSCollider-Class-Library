@@ -16,9 +16,9 @@ part of the WFSCollider Class Library default Udefs set
 */
 
 Udef(\wfsPoint,
-    { |point = #[0,0], lag = 0| 
+    { |point = #[0,0], lag = 0|
         point = LPFLag.kr( point, lag );
-        UOut.kr(0, point) 
+        UOut.kr(0, point)
 }, [
     [ \point: 0@0, WFSPointSpec( 200, 0.1 ) ],
     [ \lag: 0, [ 0, 1, \lin, 0, 0].asSpec ]
@@ -29,23 +29,23 @@ Udef(\wfsPoint,
 		// by a \shared_point, and any of \map_control_point UMaps
 		// further in the chain by corresponding \shared_point_in
 		var outputs, removeMe = false;
-		var umaps, point;	
-		
+		var umaps, point;
+
 		outputs = unit.controlOuts.collect({ |item|
 			unit.getControlOut( item );
 		}).asInteger;
-		
-		chain.units.collect({ |unit| 
-			(unit.getAllUMaps ? []).select({ |umap| 
-				(umap.defName === \map_control_point) && { 
-					[umap.bus_x, umap.bus_y].asInteger == outputs; 
+
+		chain.units.collect({ |unit|
+			(unit.getAllUMaps ? []).select({ |umap|
+				(umap.defName === \map_control_point) && {
+					[umap.bus_x, umap.bus_y].asInteger == outputs;
 				}
 			})
 		}).flatten(1).do({ |umap|
 			umap.def = \shared_point_in.asUdef(UMapDef);
 			umap.id = outputs[0] / 2;
 		});
-			
+
 		unit.def = \shared_point.asUdef;
 		unit.id = outputs[0] / 2;
 	})

@@ -16,12 +16,12 @@ UPatDef( \p_envir_point_get, { |unit, key = 'p'|
 	{
 		var kkey, val, spec, fromSpec;
 		spec = unit.spec ?? { WFSPointSpec(200) };
-		loop { 
+		loop {
 			kkey = key.next.asSymbol;
 			if( kkey.notNil ) {
 				val = currentEnvironment[ kkey ] ? (spec.default);
 				fromSpec = currentEnvironment[ \u_specs ] !? _[ kkey ] ? spec;
-				if( val.isKindOf( Point ).not ) { 
+				if( val.isKindOf( Point ).not ) {
 					val = spec.constrain( val.asPoint );
 				};
 			} {
@@ -30,7 +30,7 @@ UPatDef( \p_envir_point_get, { |unit, key = 'p'|
 			val.yield;
 		};
 	}.r
-})	
+})
 	.setSpec( \key, SymbolSpec() )
 	.numChannels_( 2 )
 	.valueIsMapped_( false )

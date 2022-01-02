@@ -1,19 +1,19 @@
-AudioDeviceSpec : Spec { 
-	
+AudioDeviceSpec : Spec {
+
 	classvar <devices;
-	
+
 	var default;
-	
+
 	*initClass {
 		devices = [];
 		//StartUp.defer({ this.refreshDevices; });
 	}
-	
+
 	*new { |default, addDevices|
 		this.addDevices( [ default ] ++ addDevices );
 		^super.newCopyArgs(default);
 	}
-	
+
 	*addDevices { |addDevices|
 		var added = false;
 		addDevices.do({ |item|
@@ -24,29 +24,29 @@ AudioDeviceSpec : Spec {
 		});
 		if( added ) { this.devices = devices };
 	}
-	
+
 	*devices_ { |newDevices|
 		devices = newDevices;
 		this.changed( \devices );
 	}
-	
-	*refreshDevices { 
+
+	*refreshDevices {
 		Platform.case(
 			\osx, {
-				this.addDevices( 
+				this.addDevices(
 					ServerOptions.devices.select({ |item|
 						item.find( "Built-in", true ).isNil
 					})
-				); 
+				);
 			}
 		);
 	}
-	
+
 	map { |in| ^in }
 	unmap { |in| ^in }
-	
+
 	constrain { |device|
-		if( device.notNil && { 
+		if( device.notNil && {
 			Platform.case( \osx, { ServerOptions.devices.any({ |item| item == device }).not }, { false })
 		}) {
 			"AudioDeviceSpec:constrain - device '%' does not exist on this machine.\n\tThe server will use the system default device instead\n"
@@ -55,7 +55,7 @@ AudioDeviceSpec : Spec {
 		this.class.addDevices( [ device ] );
 		^device;
 	}
-	
+
 	makeView { |parent, bounds, label, action, resize|
 		var multipleActions = action.size > 0;
 		var vw;
@@ -71,13 +71,13 @@ AudioDeviceSpec : Spec {
 					device.asSymbol -> { |vw| action.value( vw, device ) }
 				}) ++ [
 				     '' -> { },
-					'add...' -> { |vw| 
+					'add...' -> { |vw|
 						SCRequestString( "", "please enter device name:", { |string|
 							action.value( vw, this.constrain( string ) );
 						})
 					}
 				];
-			}, { 
+			}, {
 				vw.items = [ 'system default' -> { } ]
 			});
 		};
@@ -92,7 +92,7 @@ AudioDeviceSpec : Spec {
 		if( resize.notNil ) { vw.view.resize = resize };
 		^vw
 	}
-	
+
 	setView { |view, value, active = false|
 		{  // can call from fork
 			value = this.constrain( value );
@@ -100,7 +100,7 @@ AudioDeviceSpec : Spec {
 			if( active ) { view.doAction };
 		}.defer;
 	}
-	
+
 	mapSetView { |view, value, active = false|
 		{  // can call from fork
 			view.value = view.items.collect(_.key).indexOf( value.asSymbol ) ? 0;
@@ -108,5 +108,5 @@ AudioDeviceSpec : Spec {
 		}.defer;
 	}
 
-	
+
 }

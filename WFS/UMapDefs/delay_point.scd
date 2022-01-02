@@ -5,7 +5,7 @@ Creates an UMap for applying a delay to a point input. When the point is moving 
 
 point: the point to lag
 time: the length of the delay.
-timeScale: the number of seconds by which 'time' is multiplied. This value can not be changed during playback. 
+timeScale: the number of seconds by which 'time' is multiplied. This value can not be changed during playback.
 lag: smoothing time applied to change of delay time, use to prevent sudden jumps during change of delay time.
 
 --
@@ -15,7 +15,7 @@ part of the WFSCollider Class Library default UMapDefs set
 
 
 UMapDef( \delay_point, { |
-		point = #[0.0, 0.0], 
+		point = #[0.0, 0.0],
 		time = 0.1,
 		timeScale = 1,
 		lag = 0

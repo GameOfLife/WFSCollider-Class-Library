@@ -1,6 +1,6 @@
 WFSPathGeneratorDef(
 	\orbit,
-	{ |f, path, n| 
+	{ |f, path, n|
 		var clockwise, startAngle, center, radius, periods;
 		var close, nn = n;
 		var eccentricity, eccentAngle;
@@ -21,7 +21,7 @@ WFSPathGeneratorDef(
 		});
 		path;
 	},
-	[ \periods, 1, \close, false, \startAngle, 0, 
+	[ \periods, 1, \close, false, \startAngle, 0,
 		\clockwise, true, \center, 0@0, \radius, 8@8,
 		\eccent, 0, \eccentAngle, 0
 	]

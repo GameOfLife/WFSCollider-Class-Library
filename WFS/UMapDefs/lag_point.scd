@@ -14,7 +14,7 @@ part of the WFSCollider Class Library default UMapDefs set
 
 
 UMapDef( \lag_point, { |
-		point = #[0.0, 0.0], 
+		point = #[0.0, 0.0],
 		time = 0.1,
 		linear = 0
 		|

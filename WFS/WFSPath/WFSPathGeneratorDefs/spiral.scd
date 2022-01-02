@@ -1,6 +1,6 @@
 WFSPathGeneratorDef(
 	\spiral,
-	{ |f, path, n| 
+	{ |f, path, n|
 		var clockwise, startAngle, center, radius, periods;
 		var close, nn = n;
 		clockwise = f.get( \clockwise ).binaryValue.linlin( 0,1,-1,1);
@@ -12,14 +12,14 @@ WFSPathGeneratorDef(
 		if( close ) { nn = n-1 };
 		path.positions = n.collect({ |i|
 			(((i.linlin(0,nn,0,2pi * periods) * clockwise) + [0,0.5pi] + startAngle)
-				.sin.asPoint * radius[0].blend(radius[1], i/nn) ) 
+				.sin.asPoint * radius[0].blend(radius[1], i/nn) )
 					+ center[0].blend(center[1], i/nn)
 		});
 		path;
 	},
-	[ \periods, 1, \close, true, \startAngle, 0, 
-		\clockwise, true, \startCenter, 0@0, \startRadius, 8@8,  
-		\endCenter, 0@0, \endRadius, 0@0,  
+	[ \periods, 1, \close, true, \startAngle, 0,
+		\clockwise, true, \startCenter, 0@0, \startRadius, 8@8,
+		\endCenter, 0@0, \endRadius, 0@0,
 	]
 )
 	.changesT_( false )

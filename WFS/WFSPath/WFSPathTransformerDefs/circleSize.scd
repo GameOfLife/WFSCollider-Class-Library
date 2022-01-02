@@ -1,4 +1,4 @@
-WFSPathTransformerDef( \circleSize, 
+WFSPathTransformerDef( \circleSize,
 	{ |f, path|
 		var angles, distances;
 		var newPos, newTimes;
@@ -11,7 +11,7 @@ WFSPathTransformerDef( \circleSize,
 		};
 		angles = path.positions.collect(_.angle);
 		distances = path.positions.collect(_.rho);
-		
+
 		newPos = path.positions.resize( n, \hermite, true );
 		path.positions_( newPos );
 	},

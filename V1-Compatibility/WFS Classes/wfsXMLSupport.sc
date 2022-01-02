@@ -27,9 +27,9 @@
 		    		rawValues.do({ arg line;
 		    			var lineString = "";
 		    			line.do({ arg item;
-		   				lineString = lineString ++ 
+		   				lineString = lineString ++
 		   					(item.round(1e-12).asString ++ ",")
-		   						.extend( 
+		   						.extend(
 		   							21.max( item.round(1e-12).asString.size + 1 ), $ ); });
 					wfsPathString = wfsPathString ++ "\n\t" ++ lineString;
 		   			});
@@ -38,23 +38,23 @@
 		    		wfsPathTag.setAttribute( "dur" , this.length.asString );
 		    		wfsPathTag.setAttribute( "size" , this.size.asString );
 		    		wfsPathTag.setAttribute( "type" , "absolute" );
-		    		t = d.createTextNode(wfsPathString ++ "\n        "); 
-		   		wfsPathTag.appendChild(t); 
-		    		^root.appendChild(wfsPathTag); 
+		    		t = d.createTextNode(wfsPathString ++ "\n        ");
+		   		wfsPathTag.appendChild(t);
+		    		^root.appendChild(wfsPathTag);
 			}
-			
+
 	*fromDOMElement { arg tag;
 				var values, positions, times, newWFSPath;
 				values = ("[" ++ tag.getText ++ "]").interpret.clump(4).flop;
 				positions = values.at([0,1]).flop;
-				newWFSPath = this.new(positions, name: tag.getAttribute("name")); 
+				newWFSPath = this.new(positions, name: tag.getAttribute("name"));
 				times = values[3];
 				if(tag.getAttribute("type").asSymbol == 'absolute')
 					{ newWFSPath.timeLine = times }
 					{ newWFSPath.times = times };
-				^newWFSPath; 
+				^newWFSPath;
 			}
-		
+
 		}
 
 + WFSPoint {
@@ -65,17 +65,17 @@
 		    	wfsPointTag.setAttribute( "x" , x.asString );
 		    	wfsPointTag.setAttribute( "y" , y.asString );
 		    	wfsPointTag.setAttribute( "z" , z.asString );
-		    	^root.appendChild( wfsPointTag ); 
+		    	^root.appendChild( wfsPointTag );
 			}
-		
+
 	*fromDOMElement { arg tag;
-		^this.new( 
+		^this.new(
 			tag.getAttribute("x").interpret ? 0,
-			tag.getAttribute("y").interpret ? 0, 
+			tag.getAttribute("y").interpret ? 0,
 			tag.getAttribute("z").interpret ? 0 );
 		}
 	}
-		
+
 + WFSPlane {
 
 	asDOMElement { arg d, root;
@@ -83,34 +83,34 @@
 			wfsPointTag = d.createElement("plane");
 		    	wfsPointTag.setAttribute( "angle" , this.angle.asString );
 		    	wfsPointTag.setAttribute( "distance" , distance.asString );
-		    	^root.appendChild( wfsPointTag ); 
+		    	^root.appendChild( wfsPointTag );
 			}
-	
+
 	*fromDOMElement { arg tag;
 		    	^this.new(
 		    		tag.getAttribute("angle").interpret ? 0,
 				tag.getAttribute("distance").interpret ? 0
 		    		);
 			}
-			
+
 		}
-		
+
 + WFSPathArray {
-	
+
 	*readWFSFile {arg path = "~/scwork/wfsPathsTest.xml";
 		var document, file, wfsPaths, lastTime = 0;
 		document = DOMDocument.new;
 		file = File(path.standardizePath, "r");
 		document.read(file);
-		
-		wfsPaths = 
+
+		wfsPaths =
 			(document.getDocumentElement.getElementsByTagName("path") ++
 			 document.getDocumentElement.getElementsByTagName("movement"))
 			 	.collect({ |tag| WFSPath_Old.fromDOMElement( tag ) });
 		^super.with(*wfsPaths)
 		}
-		
-	writeWFSFile {arg path = "~/scwork/wfsPathsTest.xml", name="example", 
+
+	writeWFSFile {arg path = "~/scwork/wfsPathsTest.xml", name="example",
 			overwrite= false, ask= true;
 		var root, wfsPathsTag, wfsPathTag;
 		var nameTag,d,f;
@@ -120,52 +120,52 @@
 		nameTag = d.createElement("name");
 		nameTag.appendChild(d.createTextNode(name));
 		root.appendChild(nameTag);
-		
+
 		this.asDOMElement( d, root );
-			
+
 		if(path.notNil)
-			{ File.checkDo( 
+			{ File.checkDo(
 				PathName(path).extension_( "xml").fullPath, //force xml extension
 				{ |f| d.write(f); }, overwrite, ask) // output to file with default formatting
 			};
 		^d.format;
 		}
-		
+
 	asDOMElement { arg d, root;
 			var wfsPathsTag;
 			wfsPathsTag = d.createElement("patharray");
 			this.do({ arg wfsPath, index;
 				wfsPath.asDOMElement( d, wfsPathsTag );		    		});
-			^root.appendChild(wfsPathsTag);			
+			^root.appendChild(wfsPathsTag);
 		}
-	
+
 	*fromDOMElement { |tag|
 		super.with( *(
-			tag.getElementsByTagName("path") ++ 
+			tag.getElementsByTagName("path") ++
 			tag.getElementsByTagName("movement"))
 			 	.collect({ |subtag| WFSPath_Old.fromDOMElement( subtag ) }) );
 		}
-		
+
 	}
-	
-	
+
+
 + WFSScore {
-	
+
 	asDOMElement { arg d, root;
 		var wfsScoreTag, nameTag;
 		wfsScoreTag = d.createElement("score");
-		
+
 		wfsScoreTag.setAttribute( "name", name );
-		
-	 
+
+
 		if( clickTrackPath.notNil ) // clicktrack support added 29/10/08 ws
 			{ wfsScoreTag.setAttribute( "clickTrackPath", clickTrackPath ); };
-		
+
 		events.do({ arg event; event.asDOMElement( d,  wfsScoreTag ); });
-		
-		^root.appendChild(wfsScoreTag); 
+
+		^root.appendChild(wfsScoreTag);
 		}
-	
+
 	*fromDOMElement { arg tag;
 		var name, events;
 		var clickTrackPath; // 29/10/08 ws
@@ -175,7 +175,7 @@
 			.collect({ |subtag| WFSEvent.fromDOMElement( subtag ); });
 		^this.new( *events ).name_( name ).clickTrackPath_( clickTrackPath );  // 29/10/08 ws
 		}
-		
+
 	writeWFSFile {arg path = "~/scwork/wfsScoreTest.xml",
 			overwrite= false, ask= true;
 		var root, wfsScoreTag, wfsPathTag;
@@ -183,34 +183,34 @@
 		d = DOMDocument.new; // create empty XML document
 		root = d.createElement("xml:wfs");
 		d.appendChild(root);
-			
+
 		this.asDOMElement( d, root );
-			
+
 		if(path.notNil)
-			{ File.checkDo( 
+			{ File.checkDo(
 				PathName(path).extension_( "xml").fullPath, //force xml extension
 				{ |f| d.write(f); }, overwrite, ask) // output to file with default formatting
 			};
 		^d.format;
 		}
-		
+
 	*readWFSFile {arg path = "~/scwork/wfsScoreTest.xml";
 		var document, file, element, lastTime = 0;
 		document = DOMDocument.new;
 		file = File(path.standardizePath, "r");
 		document.read(file);
-		
+
 		element = document.getDocumentElement.getElement("score");
-		
+
 		if( element.notNil )
 			{ ^this.fromDOMElement( element ).filePath_(path) }
 			{ "WFSScore-readWFSFile: file doesn't contain a valid <score/> element"
 				^nil };
-		
+
 		}
 	}
-	
-	
+
+
 + WFSEvent {
 
 	asDOMElement { |d, root|
@@ -220,41 +220,41 @@
 		wfsEventTag.setAttribute( "dur" , this.dur.asString );
 		wfsEventTag.setAttribute( "track" , track.asString );
 		wfsSynth.asDOMElement( d, wfsEventTag );
-		^root.appendChild(wfsEventTag); 
+		^root.appendChild(wfsEventTag);
 		}
-		
+
 	*fromDOMElement { |tag|
 		var startTime, wfsSynth, track;
 		var scoreTag;
-		
+
 		startTime = tag.getAttribute( "startTime" ).interpret;
 		track = tag.getAttribute( "track" ).interpret;
 		scoreTag = tag.getElement( "score" ); // check if a score is available
 		if( scoreTag.notNil )
 			{ wfsSynth = WFSScore.fromDOMElement( scoreTag ); }
 			{ wfsSynth = WFSSynth.fromDOMElement( tag.getElement( "synth" ) ); };
-		
+
 		^this.new( startTime, wfsSynth, track );
 		}
 	}
-	
+
 + Number { // for 'index' typed events
-	
+
 	asWFSDOMElement { |d, root|
 		var wfsNumberTag, t;
 		wfsNumberTag = d.createElement("number");
 		wfsNumberTag.appendChild( d.createTextNode( this.asString ) );
-		^root.appendChild( wfsNumberTag ); 
+		^root.appendChild( wfsNumberTag );
 		}
-		 
+
 	*fromWFSDOMElement { |tag| // to do
 		^tag.getText.interpret;
 		}
-	
+
 	}
-	
+
 + WFSSynth {
-	
+
 	asDOMElement { |d, root|
 		var wfsSynthTag, pathElement, argsElement;
 		wfsSynthTag = d.createElement("synth");
@@ -265,22 +265,22 @@
 		wfsSynthTag.setAttribute( "fadeout" , this.fadeOutTime.asString );
 		if( this.useSwitch )
 			{ wfsSynthTag.setAttribute( "useSwitch" , this.useSwitch.asString ); };
-			
+
 		if( this.prefServer.notNil )
 			{ wfsSynthTag.setAttribute( "prefServer" , this.prefServer.asString ); };
-		
+
 		if( this.useFocused.not )
 			{ wfsSynthTag.setAttribute( "useFocused" , this.useFocused.asString ); };
-			
+
 		argsElement = d.createElement("args");
 			([ pbRate: pbRate, loop: loop, input: input ] ++ args)
 				.pairsDo({ |argName, argValue|
 					argsElement.setAttribute( argName.asString, argValue.asString )
 			});
-			
+
 		wfsSynthTag.appendChild( argsElement );
-		
-		if( filePath.size > 0 ) 
+
+		if( filePath.size > 0 )
 			{ 	pathElement = d.createElement( "filePath" );
 				if( startFrame.notNil && {startFrame != 0} )
 					{ pathElement.setAttribute( "startFrame", startFrame.asString ); };
@@ -288,24 +288,24 @@
 					{ pathElement.setAttribute( "numFrames", sfNumFrames.asString ); };
 				if( sfSampleRate.notNil && { sfSampleRate != 44100 } )
 					{ pathElement.setAttribute( "sampleRate", sfSampleRate.asString ); };
-				pathElement.appendChild( d.createTextNode( filePath.asString ) ); 
+				pathElement.appendChild( d.createTextNode( filePath.asString ) );
 				wfsSynthTag.appendChild( pathElement ); };
-			
+
 		if( wfsPath.isNumber )
 			{ wfsPath.asWFSDOMElement( d, wfsSynthTag ); }
 			{ wfsPath.asDOMElement( d, wfsSynthTag ); };
-		
-		^root.appendChild( wfsSynthTag ); 
+
+		^root.appendChild( wfsSynthTag );
 		}
-		
+
 	*fromDOMElement { |tag|
 		var defName, dur, wfsPath, level = 1, fadeTimes, filePath = "";
 		var pbRateLoopInput, args, fileElement, startFrame = 0;
 		var sfNumFrames, sfSampleRate;
 		var useSwitch, prefServer, useFocused;
-		
+
 		fadeTimes = [0,0];
-		
+
 		pbRateLoopInput = [1,1.0,0]; //initial values for pbRate, loop and input args
 		args = [];
 		defName = tag.getAttribute( "defName" );
@@ -316,14 +316,14 @@
 		useSwitch = (tag.getAttribute( "useSwitch" ) ? "false").interpret;
 		prefServer = (tag.getAttribute( "prefServer" ) ? "nil").interpret;
 		useFocused =  (tag.getAttribute( "useFocused" ) ? "true").interpret;
-		
+
 		if( (fileElement = tag.getElement( "filePath" )).notNil )
 			{ filePath = fileElement.getText;
 			  startFrame = fileElement.getAttribute( "startFrame" ).interpret ? 0;
 			  sfNumFrames = fileElement.getAttribute( "numFrames" ).interpret;
 			  sfSampleRate = fileElement.getAttribute( "sampleRate" ).interpret;
 			};
-			
+
 		tag.getElement( "args" ).getAttributes
 			.keysValuesDo({ |key, value, i|
 				var index;
@@ -333,10 +333,10 @@
 					{ pbRateLoopInput[ index ] = value.getNodeValue.interpret;  }
 					{ args = args ++ [ key.asSymbol, value.getNodeValue.interpret ]; };
 				});
-		
+
 		if( defName.split( $_ ).first.asSymbol != 'WFS' )
 			{ defName = "WFS_" ++ defName; };
-			
+
 		case { ( defName.wfsIntType === 'linear') or: ( defName.wfsIntType === 'cubic')}
 			{ wfsPath = WFSPath_Old.fromDOMElement( tag.getElement( "path" ) ); }
 			{ ( defName.wfsIntType === 'static') }
@@ -346,12 +346,12 @@
 			{ ( defName.wfsIntType === 'index') }
 			{ wfsPath = Number.fromWFSDOMElement( tag.getElement( "number" ) ); };
 
-		^this.new( defName, wfsPath, nil, filePath, dur, level, 
+		^this.new( defName, wfsPath, nil, filePath, dur, level,
 			pbRateLoopInput[0], pbRateLoopInput[1], pbRateLoopInput[2], args,
 			fadeTimes, startFrame ).sfNumFrames_( sfNumFrames ).sfSampleRate_( sfSampleRate )
 				.useSwitch_( useSwitch ).prefServer_( prefServer ).useFocused_( useFocused );
-		
+
 		}
-	
-	
+
+
 	}

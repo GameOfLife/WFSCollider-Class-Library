@@ -23,10 +23,10 @@ part of the WFSCollider Class Library default UMapDefs set
 */
 
 UMapDef( \point_distance, { |
-		point1 = #[0.0, 0.0], 
-		point2 = #[0.0, 0.0], 
+		point1 = #[0.0, 0.0],
+		point2 = #[0.0, 0.0],
 		fromRange = #[0, 20],
-		toRange = #[0.0,1.0],	
+		toRange = #[0.0,1.0],
 		invert = 0,
 		clipMode = 0,
 		clipSoftness = 0.0|

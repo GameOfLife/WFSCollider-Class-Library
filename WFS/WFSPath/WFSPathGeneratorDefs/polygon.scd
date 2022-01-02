@@ -1,6 +1,6 @@
 WFSPathGeneratorDef(
 	\polygon,
-	{ |f, path, n| 
+	{ |f, path, n|
 		var sides, clockwise, orientation, offset, startAngle, center, radius, periods;
 		var close, nn = n;
 		var polygon;
@@ -23,8 +23,8 @@ WFSPathGeneratorDef(
 		});
 		path;
 	},
-	[ \sides, 6, \orientation, 0, \offset, 0.0, \periods, 1, \close, false, 
-		\clockwise, true, \center, 0@0, \radius, 8@8 
+	[ \sides, 6, \orientation, 0, \offset, 0.0, \periods, 1, \close, false,
+		\clockwise, true, \center, 0@0, \radius, 8@8
 	]
 )
 	.changesT_( false )

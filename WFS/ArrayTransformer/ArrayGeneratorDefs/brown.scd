@@ -7,10 +7,10 @@ ArrayGeneratorDef( \brown, { |f, n = 1|
 	stream = Pcbrown( range[0], range[1], step, center ).asStream;
 	stream.nextN( n );
 }, [ \range, [0.0,1.0], \step, 0.125, \center, 0.5, \seed, 12345 ], { |f, obj|
-	[ 
-		\range, if( obj.minItem == obj.maxItem ) { [0,1] } { [ obj.minItem, obj.maxItem ] }, 
-		\step, f.get( \step ), 
-		\center, f.get( \center ), 
+	[
+		\range, if( obj.minItem == obj.maxItem ) { [0,1] } { [ obj.minItem, obj.maxItem ] },
+		\step, f.get( \step ),
+		\center, f.get( \center ),
 		\seed, 1569325056.rand ]
 } )
 	.mappedArgs_([ \range ])

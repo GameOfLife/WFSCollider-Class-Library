@@ -28,7 +28,7 @@ def = FreeUdef( \wfsStaticPlane, [
 	// first a few general things
 	.envPut( \getArgsFor, { |evt, which, args, server, startPos = 0|
 		if( which.notNil ) {
-			U.formatArgs( 
+			U.formatArgs(
 				(args ? []).clump(2)
 					.select({ |arr| which.includes( arr[0] ) }).flatten(1),
 				server,
@@ -49,12 +49,12 @@ def = FreeUdef( \wfsStaticPlane, [
 	.envPut( \init_wfsp, [ \latencyComp, \u_dur, \point ] ) // controls only set at init
 	.envPut( \set_wfsp, [ // controls that can always be set
 		\dbRollOff, \maxAmpRadius,
-		\u_i_ar_0_bus, 
+		\u_i_ar_0_bus,
 		\u_doneAction, \u_gain, \u_gate, \u_mute,
 		\u_fadeIn, \u_fadeOut,
 		\u_fadeInCurve, \u_fadeOutCurve,
 		\u_globalGain,
-		\u_globalEQ_setting, \u_globalEQ_bypass,  
+		\u_globalEQ_setting, \u_globalEQ_bypass,
 	] )
 	.envPut( \init_wfsa, [ \point ] )
 	.envPut( \set_wfsa, [ \u_i_ar_0_bus ] )
@@ -67,14 +67,14 @@ def = FreeUdef( \wfsStaticPlane, [
 		unit.synths.do({ |sn|
 			var server = sn.server;
 			var key = switch( sn.class, Group, \wfsa, Synth, \wfsp );
-			server.sendSyncedBundle( Server.default.latency, nil, 
+			server.sendSyncedBundle( Server.default.latency, nil,
 				*server.makeBundle( false, {
 		    			sn.set( *unit.def.env.getSetArgsFor( key, keyValuePairs, server ) )
 	    			})
 	    		);
 		})
 	});
-	
+
 if( WFSPreviewSynthDefs.pannerFuncs.keys.includes( WFSLib.previewMode ).not ) {
 	def.createSynthFunc_({ |unit, target, startPos = 0|
 		var server, n = 0;
@@ -87,48 +87,48 @@ if( WFSPreviewSynthDefs.pannerFuncs.keys.includes( WFSLib.previewMode ).not ) {
 		var crossfader;
 		var gain;
 		var point;
-		
+
 		server = target.asTarget.server;
-		
+
 		point = unit.get( \point ).value.asPoint;
-		
+
 		arrayConfs = WFSSpeakerConf.default.getArraysFor( server );
 		crossfader = WFSCrossfaderPlane( point, arrayConfs );
-		
+
 		arrayGroup = Group(target, addAction: \addToTail);
-		
+
 		defName = "wfsa_psn_";
-				
+
 		planeLevels = crossfader.crossfades;
-		
+
 		// make the pre-panner synth (has to know the nodeID's of the panner synths)
 		prePanSynth = Synth( "wfsp_n_0",
 		 	unit.def.env.getInitArgsFor( \wfsp, unit.args, server, startPos ),
 			arrayGroup, addAction: \addBefore
 		);
-		
+
 		gain = WFSSpeakerConf.default.gain.dbamp * WFSSpeakerConf.default.planeWaveMakeUpGain;
-		
+
 		// make the panner synths
 		n = 0;
 		arrayConfs.do({ |ac, i|
 			if( planeLevels[i] > 0 ) {
-				planeSynths = planeSynths.add(							Synth( defName ++ ac.n, [ 
+				planeSynths = planeSynths.add(							Synth( defName ++ ac.n, [
 							\gain, gain,
-							\arrayConf, ac, 
+							\arrayConf, ac,
 							\outOffset, n + WFSSpeakerConf.getOutputBusStartOffset( server ),
 							\amp, planeLevels[i]
-						] ++ unit.def.env.getInitArgsFor( \wfsa, unit.args, server, startPos ), 
-						arrayGroup, addAction: \addToTail 
-					) 
+						] ++ unit.def.env.getInitArgsFor( \wfsa, unit.args, server, startPos ),
+						arrayGroup, addAction: \addToTail
+					)
 				);
 			};
 			n = n + arrayConfs[i].n;
 		});
-				
+
 		arrayGroup.freeAction_({ |group| unit.removeSynth( group ); });
 		unit.synths = unit.synths.add( arrayGroup );
-		
+
 		prePanSynth;
 	})
 	.shouldPlayOnFunc_({ |unit, target|
@@ -148,27 +148,27 @@ def.createSynthFunc_({ |unit, target, startPos = 0|
 		var prePanSynth;
 		var previewSynth;
 		var arrayGroup;
-		
+
 		server = target.asTarget.server;
-					
+
 		// make the pre-panner synth (has to know the nodeID's of the panner synths)
 		prePanSynth = Synth( "wfsp_n_0",
 		 	unit.def.env.getInitArgsFor( \wfsp, unit.args, server, startPos ),
 			target, \addToTail
 		);
-		
+
 		arrayGroup = Group(target, addAction: \addToTail);
-		
-		previewSynth = Synth( 
+
+		previewSynth = Synth(
 			WFSPreviewSynthDefs.getDefName( WFSLib.previewMode, \s ),
 			unit.def.env.getInitArgsFor( \wfsa, unit.args, server, startPos ) ++
 				[ \out, WFSSpeakerConf.getOutputBusStartOffset( target ) ],
-			arrayGroup, \addToTail 
+			arrayGroup, \addToTail
 		);
-				
+
 		arrayGroup.freeAction_({ |synth| unit.removeSynth( synth ); });
 		unit.synths = unit.synths.add( arrayGroup );
-		
+
 		prePanSynth;
 	})
 	.shouldPlayOnFunc_({ |unit, target|

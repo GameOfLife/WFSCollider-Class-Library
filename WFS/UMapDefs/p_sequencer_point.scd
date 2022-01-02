@@ -16,10 +16,10 @@ part of the WFSCollider Class Library default UMapDefs set
 */
 
 UPatDef( \p_sequencer_point, { |unit,
-		points, 
+		points,
 		loop = \loop|
-		
-	{	
+
+	{
 		var current = 0, direction = 1;
 		points.next.asWFSPointGroup.at( current ).yield;
 		inf.do { |i|
@@ -32,7 +32,7 @@ UPatDef( \p_sequencer_point, { |unit,
 			switch( loop.next,
 				\loop, { current = current.wrap( 0, size -1); direction = 1; },
 				\backwards, { current = current.wrap( 0, size -1); direction = -1; },
-				\alternate, { 
+				\alternate, {
 					case { current >= size} {
 						current = current.fold(0,size-1);
 						direction = -1;
@@ -51,9 +51,9 @@ UPatDef( \p_sequencer_point, { |unit,
 	.numChannels_( 2 )
 	.setSpec( \loop, ListSpec( [ \off, \loop, \backwards, \alternate ], 1 ) )
 	.setDefault( \value, 0.0@0.0 )
-	.setSpec( \points, WFSPointGroupSpec( 
-		WFSPointGroup.generate( 8, \circle ), 
-		canChangeAmount: true ) 
+	.setSpec( \points, WFSPointGroupSpec(
+		WFSPointGroup.generate( 8, \circle ),
+		canChangeAmount: true )
 	)
 	.setDefault( \points, WFSPointGroup.generate( 8, \circle ) )
 	.canUseUMapFunc_({ |unit, key, umapdef|

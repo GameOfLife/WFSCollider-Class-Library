@@ -22,8 +22,8 @@ FreeUdef( \envir_point_set, [
 		var value;
 		value = unit.get( \point );
 		unit.get( \key ).asSymbol.uEnvirPut( value.value, WFSPointSpec(200) );
-		if( value.isKindOf( UMap ) ) { 
-			value.start 
+		if( value.isKindOf( UMap ) ) {
+			value.start
 		};
 		action.value;
 	})

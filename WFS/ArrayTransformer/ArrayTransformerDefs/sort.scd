@@ -1,5 +1,5 @@
-ArrayTransformerDef( \sort, 
-	{ |f, obj| 
+ArrayTransformerDef( \sort,
+	{ |f, obj|
 		var sorted, old, type;
 		type = f.get( \sort );
 		if( type != \scramble ) { f.environment[ \seed ] = nil; };
@@ -25,7 +25,7 @@ ArrayTransformerDef( \sort,
 				old = obj.deepCopy.reverse;
 				sorted = Array( old.size );
 				sorted.add( old.pop );
-				old.size.do({ 
+				old.size.do({
 					old.sort({ |a,b|
 						a.absdif( sorted.last ) >= b.absdif( sorted.last )
 					});
@@ -35,7 +35,7 @@ ArrayTransformerDef( \sort,
 			},
 			{ obj }
 		);
-	}, 
+	},
 	[ \sort, \off ]
 )
 	.setSpec( \sort, ListSpec( [ \off, \up, \down, \scramble, \nearest ] ) );

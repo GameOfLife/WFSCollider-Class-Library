@@ -26,7 +26,7 @@ WFS {
     classvar <>debugSMPTE;
 
     classvar <>syncWrap = 16777216; // == 2**24 == max resolution 32 bits float
-    
+
     *initClass { debugSMPTE = SMPTE(0, 1000); }
 
     *debug { |string ... argsArray |
@@ -51,22 +51,22 @@ WFS {
             .maxNodes_( 2**16 );
 
     }
-    
+
     *startupCustom { |config|
 		var file, speakers,ip,name, wfsConf;
 
-		Udef.userDefsFolder = File.getcwd +/+ "UnitDefs";		   
-		Udef.defsFolders = Udef.defsFolders.add( 
+		Udef.userDefsFolder = File.getcwd +/+ "UnitDefs";
+		Udef.defsFolders = Udef.defsFolders.add(
 			WFSArrayPan.filenameSymbol.asString.dirname +/+ "UnitDefs"
-		);		
-		
+		);
+
 		WFSSpeakerConf.rect( *config[\speakConf][[0,1,3,2]] * [1,1,0.5,0.5] ).makeDefault;
-			
+
 		if(config[\hostname].notNil){
 			"starting server mode".postln;
 			WFS.startupServer;
 		};
-			
+
 		if(config[\ips].notNil){
 			"starting client mode".postln;
 			WFS.startupClient(
@@ -77,93 +77,93 @@ WFS {
 				config[\soundCard] ? "MOTU 828mk2",
 				config[\numSpeakers] ? 96
 			);
-		};			
-		   
+		};
+
     }
-	
+
 	*startup { ^WFSLib.startup }
-	
+
 	*startupOld {
 		var file, speakers,ip,name, dict, wfsConf;
 
-		Udef.userDefsFolder = File.getcwd +/+ "UnitDefs";		   
-		Udef.defsFolders = Udef.defsFolders.add( 
+		Udef.userDefsFolder = File.getcwd +/+ "UnitDefs";
+		Udef.defsFolders = Udef.defsFolders.add(
 			WFSArrayPan.filenameSymbol.asString.dirname +/+ "UnitDefs"
 		);
-		
-		UnitRack.defsFolders = UnitRack.defsFolders.add( 
+
+		UnitRack.defsFolders = UnitRack.defsFolders.add(
 			WFSArrayPan.filenameSymbol.asString.dirname +/+ "UnitRacks"
 		);
 		U.addUneditableCategory(\wfs_panner);
-		
+
 		WFSSpeakerConf.rect( 48, 48, 5, 5 ).makeDefault;
-		
+
 		GlobalPathDict.put( \wfs, "/WFSSoundFiles" );
 		GlobalPathDict.put( \resources, String.scDir );
-		
+
 		UChain.makeDefaultFunc = {
-			UChain( \bufSoundFile, 
-				[ \wfsStaticPoint, 
+			UChain( \bufSoundFile,
+				[ \wfsStaticPoint,
 					[ \point, (5@0).rotate(2pi.rand) ]
 				]
 			).useSndFileDur
 		};
-		
+
 			UChain.presetManager
-			.putRaw( \dynamicPoint, { 
-				UChain( 
-					[ \bufSoundFile, [ 
-						\soundFile, BufSndFile.newBasic("@resources/sounds/a11wlk01-44_1.aiff", 
-							107520, 1, 44100, 0, nil, 1, true) 
+			.putRaw( \dynamicPoint, {
+				UChain(
+					[ \bufSoundFile, [
+						\soundFile, BufSndFile.newBasic("@resources/sounds/a11wlk01-44_1.aiff",
+							107520, 1, 44100, 0, nil, 1, true)
 					] ],
-					[ \wfsDynamicPoint, 
-						[  
+					[ \wfsDynamicPoint,
+						[
 							\point, 5.0.rand2@(5.0 rrand: 10),
 							\pointLag, 1,
 							\quality, \better
 						] // always behind array
 					]
-				).useSndFileDur 
+				).useSndFileDur
 			})
-			.putRaw( \staticPlane, { 
-				UChain( 
-					[ \bufSoundFile, [ 
-						\soundFile, BufSndFile.newBasic("@resources/sounds/a11wlk01-44_1.aiff", 
-							107520, 1, 44100, 0, nil, 1, true) 
-					] ], 
+			.putRaw( \staticPlane, {
+				UChain(
+					[ \bufSoundFile, [
+						\soundFile, BufSndFile.newBasic("@resources/sounds/a11wlk01-44_1.aiff",
+							107520, 1, 44100, 0, nil, 1, true)
+					] ],
 					[ \wfsStaticPlane, [  \point, 5.0.rand2@(5.0 rrand: 10) ] ]
-				).useSndFileDur 
+				).useSndFileDur
 			})
 			.putRaw( \circlePath, {
-				UChain(  
-					[ \bufSoundFile, [ 
-						\soundFile, BufSndFile.newBasic("@resources/sounds/a11wlk01-44_1.aiff", 
-							107520, 1, 44100, 0, nil, 1, true) 
+				UChain(
+					[ \bufSoundFile, [
+						\soundFile, BufSndFile.newBasic("@resources/sounds/a11wlk01-44_1.aiff",
+							107520, 1, 44100, 0, nil, 1, true)
 					] ],
 					[ \wfsCirclePath, [ \speed, 0.4 ] ],
 					[ \wfsDynamicPoint, [ \pointFromBus, true, \quality, \better ] ]
-				).useSndFileDur 
+				).useSndFileDur
 			})
 			.putRaw( \wfsPath, {
-				UChain(  
-					[ \bufSoundFile, [ 
-						\soundFile, BufSndFile.newBasic("@resources/sounds/a11wlk01-44_1.aiff", 
-							107520, 1, 44100, 0, nil, 1, true) 
+				UChain(
+					[ \bufSoundFile, [
+						\soundFile, BufSndFile.newBasic("@resources/sounds/a11wlk01-44_1.aiff",
+							107520, 1, 44100, 0, nil, 1, true)
 					] ],
-					[ \wfsPathPlayer, [ \wfsPath, 
-						WFSPathBuffer( 
-							WFSPath2.generate( 10, 5, 
-								[ \random, [\seed, 100000.rand, \radius, 10@10] ] 
+					[ \wfsPathPlayer, [ \wfsPath,
+						WFSPathBuffer(
+							WFSPath2.generate( 10, 5,
+								[ \random, [\seed, 100000.rand, \radius, 10@10] ]
 							), 0, 1, true
-						), 
+						),
 					] ],
 					[ \wfsDynamicPoint, [ \pointFromBus, true, \quality, \better ] ]
 				).useSndFileDur
 			})
-			.putRaw( \sinewave, { UChain( 
+			.putRaw( \sinewave, { UChain(
 				\sine,
-				[ \wfsDynamicPoint, 
-						[  
+				[ \wfsDynamicPoint,
+						[
 							\point, 5.0.rand2@(5.0 rrand: 10),
 							\pointLag, 1,
 							\quality, \better
@@ -171,67 +171,67 @@ WFS {
 					]
 				).useSndFileDur
 			})
-			.putRaw( \noiseband, { UChain( 
+			.putRaw( \noiseband, { UChain(
 				\pinkNoise,
-				[ \cutFilter, [ 
+				[ \cutFilter, [
 					\freq, 1.0.rand.linexp( 0,1, 200, 2000 ).round(200) + [0,200]
 				] ],
-				[ \wfsDynamicPoint, [  
+				[ \wfsDynamicPoint, [
 					\point, 5.0.rand2@(5.0 rrand: 10),
 					\pointLag, 1,
 					\quality, \better
 				] ]
 				).useSndFileDur
 			})
-			.putRaw( \dualdelay, UChain( 
-				'bufSoundFile', 
-				[ 'delay', 
-					[ 'time', 0.3, 'maxTime', 0.3, 'dry', 0.0, 'amp', 0.5, 'u_o_ar_0_bus', 1 ] 
+			.putRaw( \dualdelay, UChain(
+				'bufSoundFile',
+				[ 'delay',
+					[ 'time', 0.3, 'maxTime', 0.3, 'dry', 0.0, 'amp', 0.5, 'u_o_ar_0_bus', 1 ]
 				],
-				[ 'delay', 
-					[ 'time', 0.5, 'maxTime', 0.5, 'dry', 0.0, 'amp', 0.5, 'u_o_ar_0_bus', 2 ] 
-				], 
-				[ 'wfsStaticPoint', [ 'point', Point(-6, 6) ] ], 
+				[ 'delay',
+					[ 'time', 0.5, 'maxTime', 0.5, 'dry', 0.0, 'amp', 0.5, 'u_o_ar_0_bus', 2 ]
+				],
+				[ 'wfsStaticPoint', [ 'point', Point(-6, 6) ] ],
 				[ 'wfsStaticPlane', [ 'point', Point(6, 6), 'u_i_ar_0_bus', 1 ] ],
 				[ 'wfsStaticPlane', [ 'point', Point(-6, -6), 'u_i_ar_0_bus', 2 ] ]
 				)
 			);
-		
-		
+
+
 		if( File.exists( "/Library/Application Support/WFSCollider/WFSCollider_configuration.txt" ) ) {
 			file = File("/Library/Application Support/WFSCollider/WFSCollider_configuration.txt","r");
 			dict = file.readAllString.interpret;
 			file.close;
 			WFSSpeakerConf.rect( *dict[\speakConf][[0,1,3,2]] * [1,1,0.5,0.5] ).makeDefault;
-			
+
 			if(dict[\hostname].notNil){
 				"starting server mode".postln;
 				WFS.startupServer;
 			};
-			
+
 			if(dict[\ips].notNil){
 				"starting client mode".postln;
 				WFS.startupClient(
-					dict[\ips], 
-					dict[\startPorts] ?? { 58000 ! 2 }, 
-					dict[\scsynthsPerSystem] ? 8, 
-					dict[\hostnames], 
-					dict[\soundCard] ? "MOTU 828mk2" 
+					dict[\ips],
+					dict[\startPorts] ?? { 58000 ! 2 },
+					dict[\scsynthsPerSystem] ? 8,
+					dict[\hostnames],
+					dict[\soundCard] ? "MOTU 828mk2"
 				);
 			};
-			
+
 		} {
 			"starting offline".postln;
 			WFS.startupOffline;
 		};
-		
+
 		UMenuBar.remove;
 		if( thisProcess.platform.class.asSymbol === 'OSXPlatform' ) {
 			thisProcess.preferencesAction = { WFSOptionsGUI.newOrCurrent; };
 		};
-		
+
 		if(thisProcess.platform.class.asSymbol === 'OSXPlatform' && {
-			thisProcess.platform.ideName.asSymbol === \scapp 
+			thisProcess.platform.ideName.asSymbol === \scapp
 		}) {
 			UMenuBar();
 			SCMenuItem.new(UMenuBar.viewMenu, "WFS Position tracker").action_({
@@ -248,14 +248,14 @@ WFS {
 		};
 
 	}
-		
+
     *startupOffline {
         var server, defs;
 
         this.setServerOptions(20);
 
         server = WFSServers.single.makeDefault;
-        
+
         WFSLib.previewMode = \headphone;
 
         WFSSpeakerConf
@@ -306,7 +306,7 @@ WFS {
         server.hostNames_( *hostnames );
 
         server.makeWindow;
-        
+
          WFSLib.previewMode = nil;
 
         WFSSpeakerConf.numSystems_( ips.size );
@@ -396,5 +396,5 @@ WFS {
         ^server // returns an instance of WFSServers for assignment
         // best to be assigned to var 'm' in the intepreter
     }
-	
+
 }

@@ -17,9 +17,9 @@ part of the WFSCollider Class Library default UMapDefs set
 */
 
 UMapDef( \point_in_rect, { |
-		point = #[0.0, 0.0], 
-		center = #[0.0, 0.0], 
-		radius = #[10.0, 10.0], 
+		point = #[0.0, 0.0],
+		center = #[0.0, 0.0],
+		radius = #[10.0, 10.0],
 		inValue = 1.0,
 		outValue = 0.0|
 	var index, output;

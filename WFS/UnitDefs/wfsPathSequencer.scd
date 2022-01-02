@@ -12,10 +12,10 @@ Each WFSPath can be timed by using its 'delay' setting.
 wfsPath: a WFSPathBuffer object. This object creates and points to a buffer with the data of the trajectory. This buffer is either filled with data sent directly, or data read from a .wfspath file (generated via the [write data] button in the GUI). Data from file is usually more reliable than sending via network. This is the first path to be played
 
 fadeTime1, fadeTime2 etc.: the duration of the crossfade to the next trajectory.
-fadePos1, fadePos2 etc.: the position of the crossfade on the time line. 
+fadePos1, fadePos2 etc.: the position of the crossfade on the time line.
 	0 means: before the start of the trajectory
 	1 means: after the start of the trajectory
-	
+
 wfsPath1, wfsPath2 etc.: WFSPathBuffer objects for each node in the sequence. The 'delay' parameter can be used to set the start time of each path. Paths may overlap, but there will always be only one of them audible (except during the fadeTime).
 
 numPaths: the total number of paths. This may range from 2 to 8. The actual value of this argument is 'wfsPathSequencer%', where % is the number. In the GUI this shows up as numbers in a popup menu. The default number is 2.
@@ -54,7 +54,7 @@ defs = (2..8).collect({ |n|
 		.setSpec( \wfsPath, WFSPathSpec())
 		.setDefault( \wfsPath, WFSPathSpec().default )
 		.setControlOutName( [0,1], ['x', 'y'] );
-	
+
 	(n-1).do({ |i|
 		i = i+1;
 		def.setSpec( ("fadeTime" ++ i).asSymbol, SMPTESpec() );
@@ -90,7 +90,7 @@ makeUMap = { |unit|
 				wfsPath.delay + (fadeTime * fadePos),
 			]
 		}).flatten(1) ++ [
-			unit.get( ("wfsPath" ++ (numPaths-1) ).asSymbol ).delay + 
+			unit.get( ("wfsPath" ++ (numPaths-1) ).asSymbol ).delay +
 			unit.get( ("wfsPath" ++ (numPaths-1) ).asSymbol ).wfsPath.dur ? 7
 		];
 		times = times.max(0);
@@ -104,13 +104,13 @@ makeUMap = { |unit|
 		levels = levels[..(levels.differentiate.detectIndex(_.isNegative) ? levels.size)-1];
 		times = times[..levels.size-1];
 		times = times.differentiate[1..];
-		
+
 		UMap( \select_8_point, ([
 			\index, [ \envelope, [ \env, EnvM( levels, times ) ] ],
 			\point0, [ \trajectory, [ \trajectory, unit.wfsPath.deepCopy ] ],
 		] ++ (1..(numPaths - 1)).collect({ |i|
-			[ ("point" ++ i).asSymbol, [ \trajectory, [ \trajectory, 
-				unit.get( ("wfsPath" ++ i).asSymbol ).deepCopy 
+			[ ("point" ++ i).asSymbol, [ \trajectory, [ \trajectory,
+				unit.get( ("wfsPath" ++ i).asSymbol ).deepCopy
 			] ] ];
 		}).flatten(1))
 		);
@@ -121,18 +121,18 @@ def.uchainInitFunc_({ |unit, chain|
 	// this function removes or replaces the wfsPathSequencer unit in the chain
 	// by the currently used UMaps at load time.
 	var outputs, removeMe = false;
-	var umaps, newUMap;	
-	
+	var umaps, newUMap;
+
 	outputs = unit.controlOuts.collect({ |item|
 		unit.getControlOut( item );
 	}).asInteger;
 	newUMap = makeUMap.value(unit);
-	umaps = chain.units.collect({ |unit| 
-		(unit.getAllUMaps ? []).select({ |umap| 
+	umaps = chain.units.collect({ |unit|
+		(unit.getAllUMaps ? []).select({ |umap|
 			(umap.defName === \map_control_point) && { [umap.bus_x, umap.bus_y].asInteger == outputs; }
 		})
 	}).flatten(1);
-	
+
 	if( umaps.size < 2 ) {
 		// if only used once, directly insert at that spot
 		umaps.do({ |umap|
@@ -148,8 +148,8 @@ def.uchainInitFunc_({ |unit, chain|
 			umap.id = outputs[0] / 2;
 		});
 	};
-	
-	if( removeMe ) { 
+
+	if( removeMe ) {
 		chain.units.remove( unit );
 		chain.units = chain.units; // update GUI / re-init
 	} {

@@ -1,4 +1,4 @@
-WFSPathTransformerDef( \size, 
+WFSPathTransformerDef( \size,
 	{ |f, path|
 		var oldTimes;
 		var newPos, newTimes;
@@ -11,7 +11,7 @@ WFSPathTransformerDef( \size,
 				newTimes = newTimes.resize( n, \linear, false );
 				newPos = newTimes.collect({ |item| path.atTime( item ) });
 				newTimes = newTimes.differentiate[1..];
-			}, 
+			},
 			\wrap, {
 				oldTimes = path.times ++ [ path.times.last ];
 				newPos = n.collect({ |i|
@@ -35,7 +35,7 @@ WFSPathTransformerDef( \size,
 				newTimes.pop;
 				oldTimes.pop;
 				newTimes = newTimes.normalizeSum( oldTimes.sum );
-			
+
 			}
 		);
 		path.positions_( newPos ).times_( newTimes );

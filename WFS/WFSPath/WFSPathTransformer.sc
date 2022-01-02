@@ -18,38 +18,38 @@
 */
 
 WFSPathTransformerDef : SimpleTransformerDef {
-	
+
 	classvar <>all;
 	classvar <>defsFolders, <>userDefsFolder;
-	
+
 	var <>useSelection = true;
-	
+
 	*initClass{
-		defsFolders = [ 
+		defsFolders = [
 			this.filenameSymbol.asString.dirname +/+ "WFSPathTransformerDefs"
 		];
 		userDefsFolder = Platform.userAppSupportDir ++ "/WFSPathTransformerDefs/";
 	}
-	
+
 	objectClass { ^WFSPathTransformer }
 }
 
 WFSPathGeneratorDef : WFSPathTransformerDef {
-	
+
 	classvar <>defsFolders, <>userDefsFolder;
-	
+
 	var <>changesX = true;
 	var <>changesY = true;
 	var <>changesT = true;
-	
+
 	*initClass{
-		defsFolders = [ 
+		defsFolders = [
 			this.filenameSymbol.asString.dirname +/+ "WFSPathGeneratorDefs"
 		];
 		userDefsFolder = Platform.userAppSupportDir ++ "/WFSPathGeneratorDefs/";
 	}
-	
-	defaultBypassFunc { 
+
+	defaultBypassFunc {
 		^{ |f, obj|
 			(f.blend == 0) or: {
 				(f.modeT === \bypass) and: {
@@ -60,17 +60,17 @@ WFSPathGeneratorDef : WFSPathTransformerDef {
 			};
 		};
 	}
-	
-	objectClass { ^WFSPathGenerator }	
+
+	objectClass { ^WFSPathGenerator }
 
 }
 
 WFSPathTransformer : SimpleTransformer {
-	
+
 	var <selection;
-	
+
 	*defClass { ^WFSPathTransformerDef }
-	
+
 	prValue { |obj|
 		var def;
 		def = this.def;
@@ -80,40 +80,40 @@ WFSPathTransformer : SimpleTransformer {
 			^this.applyFunc( obj, def );
 		};
 	}
-	
+
 	applyFunc { |obj, def|
 		def = def ?? { this.def };
 		^def.func.value( this, obj );
 	}
-	
+
 	prValueSelection { |obj, def|
 		var result;
 		result = this.applyFunc( obj.copySelection( selection ), def );
 		obj.putSelection( selection, result );
 		^obj;
 	}
-	
+
 	selection_ { |newSelection| selection = newSelection; this.changed( \selection, selection ); }
-	
+
 	asWFSPathTransformer { ^this }
 	asWFSPathGenerator { ^this } // these are exchangeable
-	
+
 }
 
 
 WFSPathGenerator : WFSPathTransformer {
-	
+
 	// \bypass, \replace, \+, \-, \*, <any binary operator>
 	var <modeX = \replace;
 	var <modeY = \replace;
 	var <modeT = \replace;
-	
+
 	var <blend = 1; // 0 to 1
 
 	var <polar = false;
-	
+
 	*defClass { ^WFSPathGeneratorDef }
-	
+
 	applyFunc { |obj, def|
 		var copy, result;
 		var newX, newY, newT;
@@ -131,15 +131,15 @@ WFSPathGenerator : WFSPathTransformer {
 		} {
 			result = def.func.value( this, copy, copy.positions.size );
 		};
-		
+
 		if( def.changesX ) {
 			newX = result.positions.collect(_.x);
 			size = newX.size;
 			obj.positions.do({ |item, i|
 				var x;
 				switch( modeX,
-					\replace, { 
-						x = newX[i]; 
+					\replace, {
+						x = newX[i];
 						item.x = item.x.blend( x, blend );
 					},
 					\lin_xfade, {
@@ -152,17 +152,17 @@ WFSPathGenerator : WFSPathTransformer {
 						item.x = item.x.blend( x, blend );
 					}
 				);
-				
+
 			});
 		};
-		
+
 		if( def.changesY ) {
 			newY = result.positions.collect(_.y);
 			obj.positions.do({ |item, i|
 				var y;
 				switch( modeY,
-					\replace, { 
-						y = newY[i]; 
+					\replace, {
+						y = newY[i];
 						item.y = item.y.blend( y, blend );
 					},
 					\lin_xfade, {
@@ -177,14 +177,14 @@ WFSPathGenerator : WFSPathTransformer {
 				);
 			});
 		};
-		
+
 		if( def.changesT ) {
 			newT = result.times;
 			obj.times = obj.times.collect({ |item, i|
 				var t;
 				switch( modeT,
-					\replace, { 
-						t = newT[i]; 
+					\replace, {
+						t = newT[i];
 						item.blend( t, blend );
 					},
 					\lin_xfade, {
@@ -199,23 +199,23 @@ WFSPathGenerator : WFSPathTransformer {
 				);
 			});
 		};
-		
+
 		^obj;
 	}
-	
+
 	reset { |obj, all = false| // can use an object to get the defaults from
 		this.blend = 0;
 		if( all == true ) {
 			this.args = this.defaults( obj );
 		};
 	}
-	
+
 	modeX_ { |newModeX| modeX = newModeX; this.changed( \modeX, modeX )  }
 	modeY_ { |newModeY| modeY = newModeY; this.changed( \modeY, modeY )  }
 	modeT_ { |newModeT| modeT = newModeT; this.changed( \modeT, modeT )  }
 	blend_ { |val = 1| blend = val; this.changed( \blend, blend )  }
 	polar_ { |bool = false| polar = bool; this.changed( \polar, polar )  }
-	
+
 	storeModifiersOn{|stream|
 		if( blend != 1 ) {
 			stream << ".blend_(" <<< blend << ")";
@@ -233,9 +233,9 @@ WFSPathGenerator : WFSPathTransformer {
 			stream << ".polar_(" <<< polar << ")";
 		};
 	}
-	
+
 	asWFSPathTransformer { ^nil } // cannot be used as transformer
-	asWFSPathGenerator { ^this } 
+	asWFSPathGenerator { ^this }
 
 }
 

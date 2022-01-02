@@ -14,11 +14,11 @@ part of the WFSCollider Class Library default UMapDefs set
 */
 
 UPatDef( \p_map_polar, { |unit,
-		rho = 0, 
+		rho = 0,
 		theta = 0,
 		center = (0@0),
 		radius = (10@10)|
-	{	
+	{
 		loop {
 			(Polar(rho.next, theta.next).asPoint.asArray * radius.next.asArray + center.next.asArray).asPoint.yield
 		};
@@ -27,7 +27,7 @@ UPatDef( \p_map_polar, { |unit,
 	.valueIsMapped_( false )
 	.numChannels_( 2 )
 	.setSpec( \value, DisplaySpec( PointSpec(Rect(0,0,1,1)), { |point|
-		"% @ %".format(point.x, point.y ) 
+		"% @ %".format(point.x, point.y )
 	}) )
 	.setSpec( \center, WFSPointSpec(200) )
 	.setSpec( \radius, WFSRadiusSpec(200) )

@@ -1,7 +1,7 @@
 /*
 \wfsMasterIn
 
-Input audio from a hardware input of the master audio interface of the system (if there is one). 
+Input audio from a hardware input of the master audio interface of the system (if there is one).
 
 Using this Udef in a UChain will cause the whole UChain to be played on the master computer instead of the servers.
 

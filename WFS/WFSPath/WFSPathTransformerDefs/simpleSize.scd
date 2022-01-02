@@ -1,4 +1,4 @@
-WFSPathTransformerDef( \simpleSize, 
+WFSPathTransformerDef( \simpleSize,
 	{ |f, path|
 		var oldTimes;
 		var newPos, newTimes;

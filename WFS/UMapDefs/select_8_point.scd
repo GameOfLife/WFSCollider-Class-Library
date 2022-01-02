@@ -20,7 +20,7 @@ UMapDef( \select_8_point, {
 	points = 8.collect({ |i|
 		("point"++i).asSymbol.kr([0.0,0.0]);
 	});
-	sig = Select.kr( 
+	sig = Select.kr(
 		interpolation,
 		[
 			Select.kr( index, points ),

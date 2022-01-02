@@ -27,8 +27,8 @@ UMapDef( \line_trajectory, { |
 		duration = 10|
 	var line;
 	line = ULine.kr( 0, 1, duration, \loop, \delay, \trigger );
-	line = [0,1].splineIntFunction( line, 
-		easeIn.linlin(-1,1,2/3,0), 
+	line = [0,1].splineIntFunction( line,
+		easeIn.linlin(-1,1,2/3,0),
 		easeOut.linlin(-1,1,1/3,1)
 	);
 	line = 2.collect({ |i|
@@ -44,7 +44,7 @@ UMapDef( \line_trajectory, { |
 		unit.getSpec( key ).isKindOf( PointSpec );
 	})
 	.setSpec( \a, WFSPointSpec(200) )
-	.setSpec( \b, WFSPointSpec(200) ) 
+	.setSpec( \b, WFSPointSpec(200) )
 	.setSpec( \curve, WFSPointSpec(16, 0.1) )
 	.setSpec( \easeIn, [-1,1,\lin,0,0].asSpec )
 	.setSpec( \easeOut, [-1,1,\lin,0,0].asSpec )

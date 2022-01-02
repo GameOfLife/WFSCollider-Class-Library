@@ -1,6 +1,6 @@
 WFSPathGeneratorDef(
 	\line,
-	{ |f, path, n| 
+	{ |f, path, n|
 		var start, end, curve;
 		start = f.get( \start );
 		end = f.get( \end );
@@ -13,7 +13,7 @@ WFSPathGeneratorDef(
 		});
 	},
 	[ \start, 0@0, \end, 5@5, \curve, 0@0 ]
-)	
+)
 	.changesT_( false )
 	.setSpec( \start, PointSpec( 200, 0.1@0.1 ) )
 	.setSpec( \end, PointSpec( 200, 0.1@0.1 ) )

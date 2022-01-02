@@ -5,9 +5,9 @@ ArrayGeneratorDef( \linrand, { |f, n = 1|
 	n.collect({ |i|
 		1.0.linrand.linlin(0,1,*range);
 	});
-	
+
 }, [ \range, [0.0,1.0], \seed, 12345 ], { |f, obj|
-	[ \range, if( obj.minItem == obj.maxItem ) { [0,1] } { [ obj.minItem, obj.maxItem ] }, 
+	[ \range, if( obj.minItem == obj.maxItem ) { [0,1] } { [ obj.minItem, obj.maxItem ] },
 	\seed, 1569325056.rand ]
 } )
 	.mappedArgs_([ \range ])

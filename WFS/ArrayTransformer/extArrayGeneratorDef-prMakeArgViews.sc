@@ -18,21 +18,21 @@
 */
 
 + ArrayGeneratorDef {
-	
+
 	viewNumLines {
 		^super.viewNumLines + 2;
 	}
-	
+
 	prMakeArgViews { |f, composite, controller|
 		var views, header, labelWidth = 65;
 		var font;
-		
+
 		font = (RoundView.skin ?? { ( font: Font( Font.defaultSansFace, 10 ) ) }).font;
-		
+
 		views = ();
-		
+
 		labelWidth =(RoundView.skin ? ()).labelWidth ? labelWidth;
-		
+
 		views[ \label ] = PopUpMenu( composite, labelWidth @ viewHeight )
 			.applySkin( RoundView.skin ? () )
 			.font_( font.boldVariant )
@@ -43,31 +43,31 @@
 			.action_({ |pu|
 				f.defName = pu.item;
 			});
-		
+
 		views[ \label ].value = views[ \label ].items.indexOf( f.defName );
-			
+
 		views[ \blend ] = EZSmoothSlider( composite, (composite.bounds.width - labelWidth - 2) @ viewHeight,
-				nil, 
+				nil,
 				[0,1,\lin], { |sl|
 					f.blend = sl.value;
-					f.action.value( f, \blend, sl.value ); 
-				}, f.blend 
+					f.action.value( f, \blend, sl.value );
+				}, f.blend
 			);
-		
+
 		views[ \blend ].view.resize_(2);
-			
+
 		views[ \blend ].view.background_( Color.white.alpha_(0.25) );
 		views[ \blend ].sliderView.background_( Color.clear );
-			
+
 		controller.put( \blend, { views[ \blend ].value = f.blend } );
-		
+
 		composite.decorator.nextLine;
-		
+
 		StaticText( composite, labelWidth @ viewHeight )
 			.applySkin( RoundView.skin ? () )
 			.string_( "mode" )
 			.align_( \right );
-		views[ \mode ] = PopUpMenu( composite, 
+		views[ \mode ] = PopUpMenu( composite,
 				(composite.bounds.width - labelWidth - 4) @ viewHeight )
 			.items_([ 'bypass', 'replace', 'lin_xfade', '+', '-', '*', 'min', 'max' ])
 			.applySkin( RoundView.skin ? () )
@@ -76,28 +76,28 @@
 				f.action.value( f, \mode, pu.item );
 			})
 			.resize_(2);
-		controller.put( \mode, { 
-			{ views[ \mode ].value = views[ \mode ].items.indexOf( 
-				f.mode 
+		controller.put( \mode, {
+			{ views[ \mode ].value = views[ \mode ].items.indexOf(
+				f.mode
 			); }.defer;
 		});
-		
+
 		f.changed( \mode );
-		
+
 		f.args.pairsDo({ |key, value, i|
 			var vw, spec;
-			
+
 			spec = f.getSpec( key );
-			
+
 			vw = ObjectView( composite, nil, f, key, spec, controller );
-				
+
 			vw.action = { f.action.value( f, key, value ); };
-				
+
 			views[ key ] = vw;
 		});
-		
+
 		views[ \composite ] = composite;
-		
+
 		^views;
 	}
 

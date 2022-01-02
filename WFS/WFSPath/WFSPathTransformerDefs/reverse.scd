@@ -1,4 +1,4 @@
-WFSPathTransformerDef( \reverse, 
+WFSPathTransformerDef( \reverse,
 		{ |f, path|
 		var positions;
 		switch( f.get( \reverse ),
@@ -46,5 +46,5 @@ WFSPathTransformerDef( \reverse,
 		path;
 	},
 	[ \reverse, \off ]
-)	
+)
 	.setSpec( \reverse, ListSpec([ \off, \all, \x, \y, \angles, \distances, \positions, \times ]) )

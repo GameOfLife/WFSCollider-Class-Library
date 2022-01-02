@@ -5,7 +5,7 @@ WFSPathTransformerDef( \clip, { |f, path|
 		center =  f.get( \clipCenter );
 		obj = path.positions.collect( _ - center );
 		range = f.get( \clipRadius );
-		if( f.get( \polar ) == true ) {	
+		if( f.get( \polar ) == true ) {
 			range = range.clip(1.0e-12, inf);
 			obj = obj.collect({ |item| item = (item / range).asPolar; [item.rho, item.theta] }).flop;
 			obj[0] = switch( f.get( \clip ),
@@ -17,7 +17,7 @@ WFSPathTransformerDef( \clip, { |f, path|
 				{ obj[0] }
 			);
 			obj = obj.flop.collect({ |item| Polar( item[0], item[1] ).asPoint * range });
-		} {	
+		} {
 			obj = switch( f.get( \clip ),
 				\softClip, { obj.softclip2(range, f.get( \clipSoftness ) * range ) },
 				\sineClip, { obj.sineclip2(range, f.get( \clipSoftness ) * range ); },

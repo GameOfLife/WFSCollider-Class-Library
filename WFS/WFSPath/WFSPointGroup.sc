@@ -19,11 +19,11 @@
 
 WFSPointGroup {
 	var <positions;
-	
+
 	*new { |positions|
 		^super.newCopyArgs( positions ).init;
 	}
-	
+
 	*generate { |size = 20 ...args|
 		var editors, pointGroup;
 		if( args.size == 0 ) { args = [ \circle ] };
@@ -39,84 +39,84 @@ WFSPointGroup {
 		});
 		^pointGroup;
 	}
-	
+
 	init {
 		this.changed( \init );
 	}
-	
-	positions_ { |pos| 
+
+	positions_ { |pos|
 		positions = pos.as( Array ).collect(_.asPoint); // make sure it is valid
 		this.changed( \positions );
 	}
-	
+
 	times_ { "%:times_ - a WFSPointGroup can not store time data\n".postf( this.class ); }
 	times { ^1!positions.size }
-	
+
 	// methods from old WFSPath
 	x { ^positions.collect(_.x) }
 	y { ^positions.collect(_.y) }
-	
+
 	distances { ^positions[1..].collect({ |pt, i| pt.dist( positions[i] );  }) } // between points
 
-	left { ^this.x.minItem } 
+	left { ^this.x.minItem }
 	back { ^this.y.minItem } // is top
-	right { ^this.x.maxItem } 
+	right { ^this.x.maxItem }
 	front { ^this.y.maxItem } // is bottom
 	width { ^this.right - this.left }
 	depth { ^this.front - this.back }
-	
+
 	asRect { ^Rect( this.left, this.back, this.width, this.depth ) }
-	
+
 	size { ^positions.size }
-	
+
 	at { |index| ^positions[ index ] }
-	
+
 	copySelection { |indices | // indices should not be out of range!
 		var pos, tim;
 		indices = indices ?? { (..positions.size-1) };
 		pos = positions[ indices ].collect(_.copy);
 		^this.class.new( pos );
 	}
-	
+
 	putSelection { |indices, selectionPointGroup| // in place operation !!
-		selectionPointGroup = selectionPointGroup.asWFSPointGroup; 
+		selectionPointGroup = selectionPointGroup.asWFSPointGroup;
 		indices = indices ?? { (..selectionPointGroup.positions.size-1) };
 		indices.do({ |item, i|
 			positions.put( item, selectionPointGroup.positions[i].copy );
 		});
 		this.changed( \positions );
 	}
-	
+
 	insertPoint { |index = 0, point|
 		point = point.asPoint;
 		this.positions = positions.insert( index, point );
 	}
-	
+
 	insertMultiple { |index = 0, points|
 		points = points.asCollection.collect(_.asPoint);
 		this.positions = positions[..index-1] ++ points ++ positions[index..];
 		^index + (..points.size-1); // return indices of selection
 	}
-	
+
 	== { |that|
 		if (that.class != this.class) { ^false };
 		^(positions == that.positions)
 	}
-	
+
 	asWFSPointGroup { ^this }
 	isWFSPointGroup { ^true }
-	
+
 	asWFSPath2 { ^WFSPath2( positions.deepCopy ) }
-	
+
 	asControlInput { ^positions.collect(_.asArray).flat }
 	asOSCArgEmbeddedArray { | array| ^this.asControlInput.asOSCArgEmbeddedArray(array) }
-	
+
 	archiveAsCompileString { ^true }
-	
+
 	storeArgs { ^[ positions ] }
 }
 
-+ Object { 
++ Object {
 	isWFSPointGroup { ^false }
 }
 
@@ -139,7 +139,7 @@ WFSPointGroup {
 }
 
 + Nil {
-	asWFSPointGroup { 
+	asWFSPointGroup {
 		^WFSPointGroup( { |i| Polar( 8, i.linlin(0,15,0,2pi) ).asPoint  } ! 15 );
 	}
 }

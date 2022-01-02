@@ -1,12 +1,12 @@
 ArrayTransformer : SimpleTransformer {
-	
+
 	var <selection;
 	var <spec;
 	var unmapMappedArgs = false;
 	var <>mapIO = false;
-	
+
 	*defClass { ^ArrayTransformerDef }
-	
+
 	prValue { |obj|
 		var def;
 		def = this.def;
@@ -17,16 +17,16 @@ ArrayTransformer : SimpleTransformer {
 			^this.applyFunc( obj, def );
 		};
 	}
-	
-	getSpec { |key| 
+
+	getSpec { |key|
 		if( spec.notNil && { (this.def.mappedArgs ? #[]).includes( key ) }) {
 			^this.def.getSpec( key ).adaptToSpec( spec );
 		} {
 			^this.def.getSpec( key )
 		};
-		
+
 	}
-	
+
 	spec_ { |inSpec|
 		if( spec.notNil && { spec != inSpec }) {
 			this.def.mappedArgs.do({ |key|
@@ -41,7 +41,7 @@ ArrayTransformer : SimpleTransformer {
 			});
 		};
 	}
-	
+
 	def_ { |newDef, keepArgs = true|
 		var sp;
 		sp = this.spec;
@@ -50,19 +50,19 @@ ArrayTransformer : SimpleTransformer {
 		this.spec = sp;
 		changeDefNameAction.value;
 	}
-	
+
 	defName_ { |newName, keepArgs = true|
 		this.def_( newName, keepArgs );
 	}
-	
+
 	set { |argName, value, constrain = false|
 		var spec;
-		if( constrain && { (spec = this.getSpec( argName )).notNil } ) { 
+		if( constrain && { (spec = this.getSpec( argName )).notNil } ) {
 			value = spec.constrain( value );
 		};
 		this.setArg( argName, value );
 	}
-	
+
 	get { |key|
 		if( unmapMappedArgs && { this.def.mappedArgs.includes( key ) } ) {
 			^this.getSpec( key ).unmap( this.getArg( key ) );
@@ -70,11 +70,11 @@ ArrayTransformer : SimpleTransformer {
 			^this.getArg( key );
 		};
 	}
-	
+
 	getMapped { |key|
 		^this.getArg( key );
 	}
-	
+
 	applyFunc { |obj, def|
 		var res;
 		def = def ?? { this.def };
@@ -90,11 +90,11 @@ ArrayTransformer : SimpleTransformer {
 			^res;
 		};
 	}
-	
+
 	prApplyFunc { |obj, def|
 		^def.func.value( this, obj );
 	}
-	
+
 	prValueSelection { |obj, def|
 		var result, size, sel;
 		size = obj.size;
@@ -105,26 +105,26 @@ ArrayTransformer : SimpleTransformer {
 		});
 		^obj;
 	}
-	
+
 	selection_ { |newSelection| selection = newSelection; this.changed( \selection, selection ); }
 }
 
 ArrayGenerator : ArrayTransformer {
-	
-	
+
+
 	// \bypass, \replace, \+, \-, \*, <any binary operator>
 	var <mode = \replace;
-	
+
 	var <blend = 1; // 0 to 1
-	
+
 	*defClass { ^ArrayGeneratorDef }
-	
+
 	prApplyFunc { |obj, def|
 		var result, size;
 		size = obj.size;
 		result = def.func.value( this, size, obj );
 		^switch( mode,
-			\replace, { 
+			\replace, {
 				obj.blend( result, blend );
 			},
 			\lin_xfade, {
@@ -137,17 +137,17 @@ ArrayGenerator : ArrayTransformer {
 			}
 		);
 	}
-	
+
 	reset { |obj, all = false| // can use an object to get the defaults from
 		this.blend = 0;
 		//if( all == true ) {
 			this.args = this.defaults( obj );
 		//};
 	}
-	
+
 	mode_ { |newMode| mode = newMode; this.changed( \mode, mode )  }
 	blend_ { |val = 1| blend = val; this.changed( \blend, blend )  }
-	
+
 	storeModifiersOn{|stream|
 		if( blend != 1 ) {
 			stream << ".blend_(" <<< blend << ")";
@@ -161,21 +161,21 @@ ArrayGenerator : ArrayTransformer {
 ArrayTransformerDef : SimpleTransformerDef {
 	classvar <>all;
 	classvar <>defsFolders, <>userDefsFolder;
-	
+
 	var <>useSelection = true;
 	var >mappedArgs;
-	
+
 	*initClass{
-		defsFolders = [ 
+		defsFolders = [
 			this.filenameSymbol.asString.dirname +/+ "ArrayTransformerDefs"
 		];
 		userDefsFolder = Platform.userAppSupportDir ++ "/ArrayTransformerDefs/";
 	}
-	
+
 	mappedArgs { ^mappedArgs ? #[] }
-	
+
 	objectClass { ^ArrayTransformer }
-	
+
 	defaults { |f, obj|
 		var res;
 		if( mappedArgs.size > 0 && { f.spec.notNil } ) {
@@ -196,22 +196,22 @@ ArrayTransformerDef : SimpleTransformerDef {
 }
 
 ArrayGeneratorDef : ArrayTransformerDef {
-	
+
 	classvar <>defsFolders, <>userDefsFolder;
-	
+
 	*initClass{
-		defsFolders = [ 
+		defsFolders = [
 			this.filenameSymbol.asString.dirname +/+ "ArrayGeneratorDefs"
 		];
 		userDefsFolder = Platform.userAppSupportDir ++ "/ArrayGeneratorDefs/";
 	}
-	
-	defaultBypassFunc { 
+
+	defaultBypassFunc {
 		^{ |f, obj|
 			(f.blend == 0) or: { f.mode === \bypass };
 		};
 	}
-	
-	objectClass { ^ArrayGenerator }	
+
+	objectClass { ^ArrayGenerator }
 
 }

@@ -19,30 +19,30 @@
 
 /*
 WFSPathURL manages file locations for WFSPath2. It makes sure only one url is
-associated with a specific path. If the url is changed it makes a copy of the path 
+associated with a specific path. If the url is changed it makes a copy of the path
 for on the old url, and if a path was already on an url it moves it into "orphaned".
 
-WFSPathURL behaves like a WFSPath2 in all other 
+WFSPathURL behaves like a WFSPath2 in all other
 
 */
 
 WFSPathURL {
-	
+
 	classvar <>all;
 	classvar <>orphaned;
-	
+
 	var url;
-	
-	*initClass { 
-		all = IdentityDictionary(); 
-		
+
+	*initClass {
+		all = IdentityDictionary();
+
 	}
-	
+
 	*new { |url|
 		url = this.formatURL( url );
 		^this.newCopyArgs( url ).init;
 	}
-	
+
 	init {
 		var wfsPath;
 		wfsPath = this.class.getWFSPath( url );
@@ -51,7 +51,7 @@ WFSPathURL {
 		};
 		this.changed( \init );
 	}
-	
+
 	*formatURL { |url|
 		if( url.notNil ) {
 			^url.asString.formatGPath.asSymbol;
@@ -59,19 +59,19 @@ WFSPathURL {
 			^nil;
 		};
 	}
-	
+
 	*getWFSPath { |url|
 		url = this.formatURL( url );
 		^all[ url ];
 	}
-	
+
 	*getURL { |wfsPath|
 		all.keysValuesDo({ |key, value|
 			if( value === wfsPath ) { ^key.asString };
 		});
 		^nil;
 	}
-	
+
 	*putWFSPath { |url, wfsPath, keepOld = true|
 		var oldPath, oldURL;
 		if( keepOld ) {
@@ -86,26 +86,26 @@ WFSPathURL {
 			all.put( this.formatURL( url ), wfsPath );
 		};
 	}
-	
+
 	wfsPath {
 		^all[ url ];
 	}
-	
+
 	draw { |drawMode = 0, selected, pos, showControls = false, pixelScale = 1|
 		if( this.wfsPath.notNil ) {
 			this.wfsPath.draw( drawMode, selected, pos, showControls, pixelScale );
 		};
 	}
-	
+
 	url_ { |url|
 		url = this.class.formatURL( url );
 		this.init;
 	}
-	
+
 	url { ^url.asString }
-	
+
 	filePath { ^this.doesNotUnderstand( \filePath ) ?? { this.url; } }
-	
+
 	doesNotUnderstand { |selector ...args|
 		var res, wfsPath;
 		wfsPath = this.wfsPath;
@@ -120,17 +120,17 @@ WFSPathURL {
 			};
 		};
 	}
-	
+
 	size { ^if( this.wfsPath.notNil ) { this.wfsPath.size } { nil }; }
-	
+
 	dirty { ^if( this.wfsPath.notNil ) { this.wfsPath.dirty } { true }; }
-	
+
 	exists { ^this.wfsPath.notNil }
-	
+
 	isWFSPath2 { ^true }
 
 	asWFSPath2 { ^this.wfsPath }
-	
+
 	storeArgs { ^[ url.asString.formatGPath ] }
-	
+
 }

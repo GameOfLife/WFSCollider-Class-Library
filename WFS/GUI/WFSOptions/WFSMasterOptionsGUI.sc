@@ -1,23 +1,23 @@
 AbstractWFSOptionsGUI {
-	
+
 	var <options, <label;
-	
+
 	var <parent, <composite, <views, <controller;
 	var <viewHeight = 14, <labelWidth = 120;
 	var <>action;
-		
+
 	*new { |parent, bounds, options, label = ""|
 		^super.newCopyArgs( options, label ).init( parent, bounds );
 	}
-	
+
 	*specs { ^() }
-	
+
 	init { |inParent, bounds|
 		parent = inParent;
 		if( parent.isNil ) { parent = Window( this.class.name ).front };
 		this.makeViews( bounds );
 	}
-	
+
 	*getHeight { |viewHeight, margin, gap|
 		viewHeight = viewHeight ? 14;
 		margin = margin ?? {0@0};
@@ -26,64 +26,64 @@ AbstractWFSOptionsGUI {
 			this.specs.as(Array).collect(_.viewNumLines).sum * (viewHeight + gap.y)
 		) - gap.y;
 	}
-	
+
 	makeViews { |bounds|
 		var margin = 0@0, gap = 4@4;
-		
+
 		bounds = (bounds ?? { parent.asView.bounds.insetBy(4,4) }).asRect;
 		bounds.height = this.class.getHeight( viewHeight, margin, gap );
 		controller = SimpleController( options );
-		
+
 		composite = CompositeView( parent, bounds ).resize_(2);
 		composite.addFlowLayout( margin, gap );
 		composite.onClose = {
 			controller.remove
 		 };
-		
+
 		views = ();
-		
+
 		RoundView.pushSkin( UChainGUI.skin ++ ( 'labelWidth': labelWidth ) );
-		
+
 		this.class.specs.keys.do({ |key, i|
 				var vw, spec;
-				
+
 				spec = this.class.specs[ key ];
-							
+
 				vw = ObjectView( composite, nil, options, key, spec, controller );
-					
+
 				vw.action = { action.value( this, key ); };
-					
+
 				views[ key ] = vw;
 			});
-			
+
 		RoundView.popSkin;
 	}
-	
+
 	remove { composite.remove; }
-		
+
 	resize_ { |resize| composite.resize_(resize) }
-	
+
 	font_ { |font| views.values.do({ |vw| vw.font = font }); }
-	
+
 	viewHeight_ { |height = 14|
 		views.values.do({ |vw| vw.view.bounds = vw.view.bounds.height_( height ) });
 		composite.decorator.reFlow( composite );
 	}
-	
+
 	labelWidth_ { |width=80|
 		labelWidth = width;
 		views.values.do(_.labelWidth_(width));
 	}
-	
+
 	view { ^composite }
-	
+
 	background_ { |color| composite.background = color }
 }
 
 WFSMasterOptionsGUI : AbstractWFSOptionsGUI {
-	
+
 	classvar <>specs;
-	
+
 	*initClass {
 		specs = OEM(
 			\numInputBusChannels, IntegerSpec( 20, 8, 256 ),
@@ -100,9 +100,9 @@ WFSMasterOptionsGUI : AbstractWFSOptionsGUI {
 
 
 WFSServerOptionsGUI : AbstractWFSOptionsGUI {
-	
+
 	classvar <>specs;
-	
+
 	*initClass {
 		specs = OEM(
 			\name, StringSpec("Game Of Life 1"),
@@ -120,9 +120,9 @@ WFSServerOptionsGUI : AbstractWFSOptionsGUI {
 }
 
 WFSOptionsObjectGUI : AbstractWFSOptionsGUI {
-	
+
 	classvar <>specs;
-	
+
 	*initClass {
 		specs = OEM(
 			\previewMode, ListSpec( [ \off, \headphone, \stereo, \quad, \quad_crossed, \hexa, \hexa_pairs, \octo, \octo_pairs, \hexa_deci, \twentyfour, \thirtytwo, \sixtyfour, \b_format, \ambix, \mono ] ),

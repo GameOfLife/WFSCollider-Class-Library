@@ -15,13 +15,13 @@ part of the WFSCollider Class Library default UMapDefs set
 */
 
 UPatDef( \p_circle_point, { |unit,
-		speed = 0.1, 
+		speed = 0.1,
 		startAngle = 0,
-		clockwise = true, 
+		clockwise = true,
 		center = (0@0),
 		radius = (10@10)
 		timeBase = \seconds|
-	{	
+	{
 		var i = 0;
 		var timer = UPattern.deltaTimer;
 		var spd;
@@ -30,12 +30,12 @@ UPatDef( \p_circle_point, { |unit,
 			i = spd * UPattern.startPos;
 		};
 		loop {
-			((((((i % 1) * 2pi) + [0, 0.5pi] + startAngle.next).sin 
+			((((((i % 1) * 2pi) + [0, 0.5pi] + startAngle.next).sin
 				* radius.next.asArray) + center.next.asArray))
 				.asPoint.yield;
 			spd = speed.next * clockwise.next.binaryValue.linlin(0,1,-1,1);
-			switch( timeBase.next, 
-				\events, { i = i + spd }, 
+			switch( timeBase.next,
+				\events, { i = i + spd },
 				\seconds, { i = i + (spd * timer.value); },
 			);
 		};
@@ -44,7 +44,7 @@ UPatDef( \p_circle_point, { |unit,
 	.valueIsMapped_( false )
 	.numChannels_( 2 )
 	.setSpec( \value, DisplaySpec( PointSpec(Rect(0,0,1,1)), { |point|
-		"% @ %".format(point.x, point.y ) 
+		"% @ %".format(point.x, point.y )
 	}) )
 	.setDefault( \value, 0.0@0.0 )
 	.setDefault( \center, 0.0@0.0 )

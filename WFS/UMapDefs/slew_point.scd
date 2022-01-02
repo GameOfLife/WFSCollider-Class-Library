@@ -12,7 +12,7 @@ part of the WFSCollider Class Library default UMapDefs set
 */
 
 UMapDef( \slew_point, { |
-		point = #[0.0, 0.0], 
+		point = #[0.0, 0.0],
 		maxSpeed = 1
 		|
 	point = Slew.kr( point, maxSpeed, maxSpeed );

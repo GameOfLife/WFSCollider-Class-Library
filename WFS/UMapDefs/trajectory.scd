@@ -17,9 +17,9 @@ UMapDef( \trajectory, {
 	sig = WFSPathBufferPlayer.kr( \trajectory, \trigger );
 	sig = sig + \addPoint.kr([0,0]);
 	UMapOut.kr( sig, false );
-}, [ 
-	[ \trajectory, nil, WFSPathSpec() ], 
-	[ \trigger, 1, TriggerSpec() ], 
+}, [
+	[ \trajectory, nil, WFSPathSpec() ],
+	[ \trigger, 1, TriggerSpec() ],
 	[ \addPoint, 0@0, WFSPointSpec(200, 0.1@0.1) ]
 ])
 	.category_( \point_trajectory )

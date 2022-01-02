@@ -1,4 +1,4 @@
-WFSPathTransformerDef( \duration, 
+WFSPathTransformerDef( \duration,
 	{ |f, path|
 		var tms, origTms, seldur, dur, adddur;
 		var sel;

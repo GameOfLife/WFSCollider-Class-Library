@@ -1,11 +1,11 @@
 WFSPathGeneratorDef(
 	\random,
-	{ |f, path, n| 
+	{ |f, path, n|
 		var center, radius;
 		center = f.get( \center );
 		radius = f.get( \radius );
 		thisThread.randSeed = f.get( \seed );
-		path.positions = n.collect({ 
+		path.positions = n.collect({
 			(Polar( 1.0.rand, 2pi.rand ).asPoint * radius ) + center;
 		});
 		path;

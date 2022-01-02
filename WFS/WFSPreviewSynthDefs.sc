@@ -1,22 +1,22 @@
 WFSPreviewSynthDefs : AbstractWFSSynthDefs {
-	
+
 	/*
-	These synthdefs should be placed after a WFSPrePanSynthDef. 
+	These synthdefs should be placed after a WFSPrePanSynthDef.
 	They mimick the sound of WFSArrayPanSynthDefs. The preview might
 	not be completely accurate.
 	*/
-	
+
 	classvar <>modes;
 	classvar <>types;
 	classvar <>pannerFuncs;
 	classvar <>panDist = 0.2;
-	
+
 	*prefix { ^"wfsx" }
-	
+
 	*initClass {
 		modes = [ \s, \d ]; // static, dynamic
 		types = [ \n, \p ]; // normal (point), plane
-		pannerFuncs = ( 
+		pannerFuncs = (
 		\n: ( // point
 			\headphone: { |in, point|
 				// simple headphone panner (ear distance 0.19cm)
@@ -43,8 +43,8 @@ WFSPreviewSynthDefs : AbstractWFSSynthDefs {
 			\quad: { |in, point| // clockwise quadraphonic panning
 				var distances, globalDist, delays, amplitudes;
 				var radius = panDist; // should be < 1
-				distances = [ 
-					(radius.neg)@radius, radius@radius, 
+				distances = [
+					(radius.neg)@radius, radius@radius,
 					radius@(radius.neg), (radius.neg)@(radius.neg)
 				].collect(_.dist( point ));
 				globalDist = (0@0).dist( point );
@@ -57,8 +57,8 @@ WFSPreviewSynthDefs : AbstractWFSSynthDefs {
 			\quad_crossed: { |in, point| // quadraphonic panning L, R, Lb, Rb
 				var distances, globalDist, delays, amplitudes;
 				var radius = panDist; // should be < 1
-				distances = [ 
-					(radius.neg)@radius, radius@radius, 
+				distances = [
+					(radius.neg)@radius, radius@radius,
 					radius@(radius.neg), (radius.neg)@(radius.neg)
 				].collect(_.dist( point ));
 				globalDist = (0@0).dist( point );
@@ -81,7 +81,7 @@ WFSPreviewSynthDefs : AbstractWFSSynthDefs {
 				amplitudes = amplitudes.max( globalDist.linlin(0.5,1,1,0).clip(0,1) );
 				in * amplitudes;
 			},
-			\hexa_pairs: { |in, point| // pair-wise hexaphonic panning, stereo pairs front to back				
+			\hexa_pairs: { |in, point| // pair-wise hexaphonic panning, stereo pairs front to back
 				var distances, globalDist, delays, amplitudes;
 				var radius = panDist; // should be < 1
 				distances = ((2,1..-3)*2pi/6).collect({ |item|
@@ -107,7 +107,7 @@ WFSPreviewSynthDefs : AbstractWFSSynthDefs {
 				amplitudes = amplitudes.max( globalDist.linlin(0.5,1,1,0).clip(0,1) );
 				in * amplitudes;
 			},
-			\octo_pairs: { |in, point| // pair-wise octophonic panning, stereo pairs from front to back				
+			\octo_pairs: { |in, point| // pair-wise octophonic panning, stereo pairs from front to back
 				var distances, globalDist, delays, amplitudes;
 				var radius = panDist; // should be < 1
 				distances = ((..7) * -2pi/8).collect({ |item|
@@ -177,8 +177,8 @@ WFSPreviewSynthDefs : AbstractWFSSynthDefs {
 				if( 'Atk'.asClass.notNil ) {
 					encoder = FoaEncoderMatrix.newDirection( 0, 0 );
 					in = FoaEncode.ar( in, encoder );
-					in = FoaTransform.ar( in, 'directO', 
-						point.rho.linlin(0,5,pi/2,0,\minmax) 
+					in = FoaTransform.ar( in, 'directO',
+						point.rho.linlin(0,5,pi/2,0,\minmax)
 					);
 					if( point.theta.rate == 'control' ) {
 						FoaTransform.ar( in, 'rotate', 1.5pi + Unwrap.kr( point.theta, -pi, pi ) )[..2];
@@ -194,18 +194,18 @@ WFSPreviewSynthDefs : AbstractWFSSynthDefs {
 				if( 'Atk'.asClass.notNil ) {
 					encoder = FoaEncoderMatrix.newDirection( 0, 0 );
 					in = FoaEncode.ar( in, encoder );
-					in = FoaTransform.ar( in, 'directO', 
-						point.rho.linlin(0,5,pi/2,0,\minmax) 
+					in = FoaTransform.ar( in, 'directO',
+						point.rho.linlin(0,5,pi/2,0,\minmax)
 					);
 					(if( point.theta.rate == 'control' ) {
-						FoaTransform.ar( in, 'rotate', 1.5pi + Unwrap.kr( point.theta, -pi, pi ) )[[0,2,3,1]] * 
+						FoaTransform.ar( in, 'rotate', 1.5pi + Unwrap.kr( point.theta, -pi, pi ) )[[0,2,3,1]] *
 							[ 1, 0.5.sqrt, 0.5.sqrt, 0.5.sqrt ];
 					} {
-						FoaTransform.ar( in, 'rotate', 1.5pi + point.theta )[[0,2,3,1]] * 
+						FoaTransform.ar( in, 'rotate', 1.5pi + point.theta )[[0,2,3,1]] *
 							[ 1, 0.5.sqrt, 0.5.sqrt, 0.5.sqrt ];
 					})
 				} {
-					(PanB2.ar( in, (point.angle - 0.5pi).neg / pi) ++ [DC.ar(0)])[[0,2,3,1]] * 
+					(PanB2.ar( in, (point.angle - 0.5pi).neg / pi) ++ [DC.ar(0)])[[0,2,3,1]] *
 						[ 1, 0.5.sqrt, 0.5.sqrt, 0.5.sqrt ];
 				};
 			},
@@ -248,7 +248,7 @@ WFSPreviewSynthDefs : AbstractWFSSynthDefs {
 				DecodeB2.ar( 6, w, x, y, 0.5 );
 			},
 			\hexa_pairs: { |in, point| // pairwise hexaphonic AEP panning, stereo pairs from front to back
-				
+
 				var w,x,y,z;
 				#w,x,y,z = PanB.ar( in, (point.angle - 0.5pi).neg / pi, (0@0).dist( point ).linlin( 0,2,1,0,\minmax ) );
 				DecodeB2.ar( 6, w, x, y, 0.5 )[[ 0, 1, 5, 2, 4, 3 ]];
@@ -302,8 +302,8 @@ WFSPreviewSynthDefs : AbstractWFSSynthDefs {
 				if( 'Atk'.asClass.notNil ) {
 					encoder = FoaEncoderMatrix.newDirection( 0, 0 );
 					in = FoaEncode.ar( in, encoder );
-					in = FoaTransform.ar( in, 'directO', 
-						point.rho.linlin(0,5,pi/2,0,\minmax) 
+					in = FoaTransform.ar( in, 'directO',
+						point.rho.linlin(0,5,pi/2,0,\minmax)
 					);
 					(if( point.theta.rate == 'control' ) {
 						FoaTransform.ar( in, 'rotate', 1.5pi + Unwrap.kr( point.theta, -pi, pi ) )[[0,2,3,1]] *
@@ -313,7 +313,7 @@ WFSPreviewSynthDefs : AbstractWFSSynthDefs {
 							[ 1, 0.5.sqrt, 0.5.sqrt, 0.5.sqrt ];
 					})
 				} {
-					(PanB2.ar( in, (point.angle - 0.5pi).neg / pi) ++ [DC.ar(0)])[[0,2,3,1]] * 
+					(PanB2.ar( in, (point.angle - 0.5pi).neg / pi) ++ [DC.ar(0)])[[0,2,3,1]] *
 						[ 1, 0.5.sqrt, 0.5.sqrt, 0.5.sqrt ];
 				};
 			},
@@ -323,36 +323,36 @@ WFSPreviewSynthDefs : AbstractWFSSynthDefs {
 		)
 		)
 	}
-	
+
 	*getDefName { |which = \headphone, mode = \s, type = \n|
 		^[ this.prefix, which, mode.asString[0].toLower, type ].join("_");
 	}
-	
+
 	*generateDef { |which = \headphone, mode = \s, type = \n|
-		
+
 		mode = mode.asString[0].toLower.asSymbol;
-		
+
 		^SynthDef( this.getDefName( which, mode, type ), {
-			
+
 			var point = 0@0, amp = 1;
 			var input;
-			
+
 			amp = \amp.kr( amp );
-			
+
 			// depending on mode
 			if( mode === \d ) {
 				point = \point.kr([0,0]).asPoint;
 			} {
 				point = \point.ir([0,0]).asPoint;
 			};
-				
+
 			input = UIn.ar(0, 1) * amp;
-			
+
 			Out.ar( \out.kr(0), pannerFuncs[ type ][ which ].value( input, point ) );
 		});
-		
+
 	}
-	
+
 	*generateAll { |action, dir|
 		dir = dir ? SynthDef.synthDefDir;
 		synthDefs = modes.collect({ |mode|
@@ -363,9 +363,9 @@ WFSPreviewSynthDefs : AbstractWFSSynthDefs {
 			})
 		}).flatten(2);
 		action.value(this);
-		^synthDefs;		
-	
+		^synthDefs;
+
 	}
-	
-	
+
+
 }

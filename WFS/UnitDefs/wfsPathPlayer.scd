@@ -25,24 +25,24 @@ Udef( \wfsPathPlayer, {
 		// by the currently used UMaps at load time.
 		var outputs, removeMe = false;
 		var umaps, trajectory;
-		var newUMap, mixOut;	
-		
+		var newUMap, mixOut;
+
 		outputs = unit.controlOuts.collect({ |item|
 			unit.getControlOut( item );
 		}).asInteger;
-		
+
 		mixOut = unit.controlOuts.collect({ |item|
 			unit.getControlMixOutLevel( item );
 		});
-		
-		umaps = chain.units.collect({ |unit| 
-			(unit.getAllUMaps ? []).select({ |umap| 
-				(umap.defName === \map_control_point) && { 
-					[umap.bus_x, umap.bus_y].asInteger == outputs; 
+
+		umaps = chain.units.collect({ |unit|
+			(unit.getAllUMaps ? []).select({ |umap|
+				(umap.defName === \map_control_point) && {
+					[umap.bus_x, umap.bus_y].asInteger == outputs;
 				}
 			})
 		}).flatten(1);
-		
+
 		if( umaps.size < 2 ) {
 			// if only used once, directly insert at that spot
 			umaps.do({ |umap|
@@ -58,8 +58,8 @@ Udef( \wfsPathPlayer, {
 				umap.id = outputs[0] / 2;
 			});
 		};
-		
-		if( removeMe ) { 
+
+		if( removeMe ) {
 			chain.units.remove( unit );
 			chain.units = chain.units; // update GUI / re-init
 		} {
@@ -69,7 +69,7 @@ Udef( \wfsPathPlayer, {
 			unit.id = outputs[0] / 2;
 			newUMap = unit.point;
 		};
-		
+
 		case { mixOut == [1,1] } {
 			newUMap.addPoint = [ \map_control_point, [ \bus_x, outputs[0], \bus_y, outputs[1] ] ];
 		} { mixOut.any(_ != 0) } {

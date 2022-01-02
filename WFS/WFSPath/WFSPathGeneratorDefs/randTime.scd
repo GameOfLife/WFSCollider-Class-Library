@@ -1,6 +1,6 @@
 WFSPathGeneratorDef(
 	\randTime,
-	{ |f, path, n| 
+	{ |f, path, n|
 		var min, max, seed, dur;
 		min = f.get( \min );
 		max = f.get( \max );

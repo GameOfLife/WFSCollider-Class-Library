@@ -1,6 +1,6 @@
 WFSPathGeneratorDef(
 	\lineTime,
-	{ |f, path, n| 
+	{ |f, path, n|
 		var start, end, curve, dur, nx;
 		start = f.get( \start );
 		end = f.get( \end );

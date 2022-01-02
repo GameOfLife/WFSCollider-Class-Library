@@ -18,16 +18,16 @@
 */
 
 WFSSpeakerConfGUI {
-	
+
 	classvar <>current;
 	classvar <>editWidth = 325;
-	
+
 	var <view, <editor, <editView;
-	
+
 	*new { |parent, bounds, object|
 		^super.new.init( parent, bounds, object )
 	}
-	
+
 	*newOrCurrent {
 		if( current.notNil && { current.composite.isClosed.not } ) {
 			current.composite.getParents.last.findWindow.front;
@@ -36,74 +36,74 @@ WFSSpeakerConfGUI {
 			^this.new;
 		};
 	}
-	
+
 	init { |parent, bounds, object|
-		
+
 		var ctrl;
-		
-		if( parent.isNil ) { 
+
+		if( parent.isNil ) {
 			parent = this.class.asString;
-			bounds = bounds ?? { Rect( 
-					400 rrand: 450, 
+			bounds = bounds ?? { Rect(
+					400 rrand: 450,
 					120 rrand: 150,
-					737, 
+					737,
 					430
- 				 ) 
-			}; 
+ 				 )
+			};
 		} {
 			bounds = parent.asView.bounds;
 		};
-		
+
 		view = EZCompositeView( parent, bounds, gap: 2@2, margin: 2@2 );
 		view.resize_(5);
 		bounds = view.asView.bounds;
 		view.addFlowLayout(0@0, 2@2);
-		
+
 		editor = WFSSpeakerConfEditor( view, editWidth @ bounds.height, object );
-			
+
 		editor.resize_(4);
-		
-		editView = WFSSpeakerConfView( view, 
+
+		editView = WFSSpeakerConfView( view,
 			bounds.copy.width_( bounds.width - editWidth ), object );
-		
+
 		editView.resize_(5);
-		
+
 		editor.action = { |vw| editView.select( *editor.selected ) };
-		
+
 		ctrl = SimpleController( editView )
 			.put( \select, { editor.select( *editView.selected ) });
 
 		current = this;
 		this.class.changed( \current );
-		
-		view.findWindow.toFrontAction = { 
+
+		view.findWindow.toFrontAction = {
 			current = this;
 			this.class.changed( \current );
 		};
-		
-		view.onClose = view.onClose.addFunc( { 
+
+		view.onClose = view.onClose.addFunc( {
 			ctrl.remove;
 			if( current == this ) {
 				current = nil;
 				this.class.changed( \current );
 			};
 		} );
-	
+
 	}
-		
+
 	object { ^editor.object }
-	
-	object_ { |obj| 
+
+	object_ { |obj|
 		editor.object = obj;
-		editView.object = obj; 
+		editView.object = obj;
 	 }
-	
+
 	doesNotUnderstand { |selector ...args|
 		var res;
 		res = editor.perform( selector, *args );
 		if( res != editor ) { ^res; }
 	}
-	
+
 }
 
 

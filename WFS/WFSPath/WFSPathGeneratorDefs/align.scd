@@ -1,6 +1,6 @@
 WFSPathGeneratorDef(
 	\align,
-	{ |f, path, n| 
+	{ |f, path, n|
 		var direction, amount, mode;
 		var current, mean, extent, size;
 		current = path.positions.deepCopy;
@@ -14,7 +14,7 @@ WFSPathGeneratorDef(
 					item.x = mean;
 					item.rotate( direction * -0.5pi );
 				});
-			}, 
+			},
 			\circle, {
 				current = current.collect(_.asPolar);
 				mean = current.collect(_.rho).mean;
@@ -22,7 +22,7 @@ WFSPathGeneratorDef(
 					item.rho = mean;
 					item.asPoint;
 				});
-			}, 
+			},
 			\spacing, {
 				current = current.collect(_.rotate( direction * 0.5pi) );
 				size = current.size;
@@ -47,7 +47,7 @@ WFSPathGeneratorDef(
 		path.positions = current;
 	},
 	[ \direction, 0.0, \mode, \line ]
-)	
+)
 	.changesT_( false )
 	.setSpec( \direction, ControlSpec(0,1) )
 	.setSpec( \mode, ListSpec([\line, \circle, \spacing, \spacing_nearest]) );

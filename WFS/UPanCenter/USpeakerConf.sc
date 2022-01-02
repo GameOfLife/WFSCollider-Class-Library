@@ -1,36 +1,36 @@
 USpeakerConf : WFSPointGroup {
-	
+
 	classvar <>default;
 	classvar <>current;
-	
+
 	var listener;
-	
+
 	*new { |positions, listener|
 		^super.newCopyArgs( positions, listener ).init;
 	}
-	
+
 	init {
 		this.changed( \init );
 	}
-	
-	listener_ { |point| 
+
+	listener_ { |point|
 		listener = point.asPoint;
 		this.changed( \listener );
 	}
-	
+
 	listener {
 		if( listener.isNil ) { this.listener = 0@0; };
 		^listener
 	}
-	
+
 }
 
 USpeakerConfView : WFSMixedView {
-	
+
 	var <>type = \speaker;
-	
+
 	points { ^(object !? _.positions) ? [] }
-	
+
 	points_ { |points|
 		points = points.asUSpeakerConf;
 		if( this.object.isNil ) {
@@ -45,30 +45,30 @@ USpeakerConfView : WFSMixedView {
 			};
 		};
 	}
-	
+
 	center { ^this.object.listener }
 }
 
 USpeakerConfTransformerView : WFSPointGroupTransformerView {
-	
-	revertObject { 
+
+	revertObject {
 		object.positions = objectCopy.positions.deepCopy;
 	}
-	
+
 	makeObjectCopy {
 		objectCopy = object.deepCopy;
 	}
-	
+
 	makeEditFuncs { |editDefs|
-		
+
 		WFSPathGeneratorDef.loadOnceFromDefaultDirectory;
-		
-		^(editDefs ?? { [ \circleSize, \polygon, \align, \move, \scale, \rotate, \sort ] })			.asCollection 
+
+		^(editDefs ?? { [ \circleSize, \polygon, \align, \move, \scale, \rotate, \sort ] })			.asCollection
 			.collect(_.asWFSPathTransformer)
 			.select(_.notNil);
 	}
-	
-	
+
+
 }
 
 USpeakerConfEditView : WFSPointGroupEditView {
@@ -80,7 +80,7 @@ USpeakerConfGUI : WFSPointGroupGUI {
 	transformerViewClass { ^USpeakerConfTransformerView }
 }
 
-+ Object { 
++ Object {
 	isUSpeakerConf { ^false }
 }
 
@@ -103,7 +103,7 @@ USpeakerConfGUI : WFSPointGroupGUI {
 }
 
 + Nil {
-	asUSpeakerConf { 
+	asUSpeakerConf {
 		^USpeakerConf( { |i| Polar( 8, i.linlin(0,15,0,2pi) ).asPoint  } ! 15 );
 	}
 }

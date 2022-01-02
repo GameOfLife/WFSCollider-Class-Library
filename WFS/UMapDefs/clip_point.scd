@@ -22,9 +22,9 @@ part of the WFSCollider Class Library default UMapDefs set
 
 
 UMapDef( \clip_point, { |
-		point = #[0.0, 0.0], 
-		center = #[0.0, 0.0], 
-		radius = #[10.0, 10.0], 
+		point = #[0.0, 0.0],
+		center = #[0.0, 0.0],
+		radius = #[10.0, 10.0],
 		clipMode = 0,
 		clipSoftness = 0.1|
 	radius = radius.max(1.0e-10);

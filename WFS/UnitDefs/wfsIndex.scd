@@ -26,18 +26,18 @@ dynamicIndex = HiddenFreeUdef( \dynamic, [
 			var input, env, maxIndex;
 			var gain = -10.dbamp;
 			var index = 0, indexFromBus = 0;
-			
+
 			index = \index.kr(index);
-			
+
 			index = index - \startIndex.kr(0);
 			gain = gain * \i_gain.ir(0).dbamp;
 			gain = gain * \gain.kr(-6).dbamp;
 			maxIndex = NumOutputBuses.ir; // only output to hardware outs
-			
+
 			gain = gain * InRange.kr(index, 0, maxIndex); // mute when out of range
-			
+
 			input = UGlobalEQ.ar( UIn.ar(0, 1) ) * gain * UEnv.kr;
-			
+
 			Out.ar( index.clip(0, maxIndex), input );
 		})
 	)
@@ -48,10 +48,10 @@ dynamicIndex = HiddenFreeUdef( \dynamic, [
 	.createSynthFunc_({ |unit, target, startPos = 0|
 		var startIndex;
 		startIndex = WFSSpeakerConf.default.firstSpeakerIndexOf( target.asTarget.server );
-		Synth( "wfsi_id", [ 
-				\startIndex, startIndex - WFSSpeakerConf.getOutputBusStartOffset( target ), 
-				\i_gain, WFSSpeakerConf.default.gain 
-			] ++ unit.getArgsFor( target, startPos ), 
+		Synth( "wfsi_id", [
+				\startIndex, startIndex - WFSSpeakerConf.getOutputBusStartOffset( target ),
+				\i_gain, WFSSpeakerConf.default.gain
+			] ++ unit.getArgsFor( target, startPos ),
 			target, \addToTail );
 	})
 	.setControlInName( 0, 'index' );
@@ -70,17 +70,17 @@ staticIndex = HiddenFreeUdef( \static, [
 			var input, env, maxIndex;
 			var gain = -10.dbamp;
 			var index = 0, indexFromBus = 0;
-		
+
 			index = \index.kr(index); // not really static
 			index = index - \startIndex.kr(0);
 			gain = gain * \i_gain.ir(0).dbamp;
 			gain = gain * \gain.kr(-6).dbamp;
 			maxIndex = NumOutputBuses.ir; // only output to hardware outs
-			
+
 			gain = gain * InRange.kr(index, 0, maxIndex); // mute when out of range
-			
+
 			input = UGlobalEQ.ar( UIn.ar(0, 1) ) * gain * UEnv.kr;
-			
+
 			Out.ar( index.clip(0, maxIndex), input );
 		})
 	)
@@ -88,7 +88,7 @@ staticIndex = HiddenFreeUdef( \static, [
 	.shouldPlayOnFunc_({ |unit, target|
 		target = target.asTarget.server;
 		WFSSpeakerConf.includesServer( target ) && {
-			unit.get( \index ).inclusivelyBetween( 
+			unit.get( \index ).inclusivelyBetween(
 				WFSSpeakerConf.default.firstSpeakerIndexOf( target ),
 				WFSSpeakerConf.default.lastSpeakerIndexOf( target )
 			);
@@ -97,11 +97,11 @@ staticIndex = HiddenFreeUdef( \static, [
 	.createSynthFunc_({ |unit, target, startPos = 0|
 		var startIndex;
 		startIndex = WFSSpeakerConf.default.firstSpeakerIndexOf( target.asTarget.server );
-		Synth( "wfsi_is", [ 
-			\startIndex, startIndex - WFSSpeakerConf.getOutputBusStartOffset( target ), 
-			\i_gain, WFSSpeakerConf.default.gain 
-		] ++ 
-			unit.getArgsFor( target.asTarget.server, startPos ), 
+		Synth( "wfsi_is", [
+			\startIndex, startIndex - WFSSpeakerConf.getOutputBusStartOffset( target ),
+			\i_gain, WFSSpeakerConf.default.gain
+		] ++
+			unit.getArgsFor( target.asTarget.server, startPos ),
 			target, \addToTail );
 	});
 
@@ -118,7 +118,7 @@ multiDef = MultiUdef( \wfsIndex, [ staticIndex, dynamicIndex ], \wfs_panner, \mo
 			args[index+1].isUMap && {
 				args[index+1].def.allowedModes.includes( \init ).not;
 			}
-		}) { 
+		}) {
 			\dynamic;
 		} {
 			\static;

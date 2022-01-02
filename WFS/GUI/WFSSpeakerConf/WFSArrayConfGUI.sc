@@ -18,16 +18,16 @@
 */
 
 WFSArrayConfGUI {
-	
+
 	classvar <>specs;
-	
+
 	var <arrayConf, <label;
-	
+
 	var <parent, <composite, <views, <controller;
 	var <viewHeight = 14, <labelWidth = 80;
 	var <>action;
 	var <selected = false;
-	
+
 	*initClass {
 		specs = (
 			n: IntegerSpec( 48, 8, 96 ).step_(8).alt_step_(1),
@@ -36,88 +36,88 @@ WFSArrayConfGUI {
 			spWidth: [0.05,0.25,\lin, 0.001, 0.164, " m"].asSpec
 		);
 	}
-	
+
 	*new { |parent, bounds, arrayConf, label = ""|
 		^super.newCopyArgs( arrayConf, label ).init( parent, bounds );
 	}
-	
+
 	init { |inParent, bounds|
 		parent = inParent;
 		if( parent.isNil ) { parent = Window( this.class.name ).front };
 		this.makeViews( bounds );
 	}
-	
+
 	*getHeight { |viewHeight, margin, gap|
 		viewHeight = viewHeight ? 14;
 		margin = margin ?? {0@0};
 		gap = gap ??  {4@4};
-		^(margin.y * 2) + ( 
-			 4 * (viewHeight + gap.y) 
+		^(margin.y * 2) + (
+			 4 * (viewHeight + gap.y)
 		) - gap.y;
 	}
-	
+
 	makeViews { |bounds|
 		var margin = 0@0, gap = 4@4;
-		
+
 		bounds = bounds ?? { parent.asView.bounds.insetBy(4,4) };
 		bounds.height = this.class.getHeight( viewHeight, margin, gap );
 		controller = SimpleController( arrayConf );
-		
+
 		composite = CompositeView( parent, bounds ).resize_(2);
 		composite.addFlowLayout( margin, gap );
 		composite.onClose = {
 			controller.remove
 		 };
-		 
-		 if( selected ) { 
-			 composite.background = Color.yellow.alpha_(0.25); 
+
+		 if( selected ) {
+			 composite.background = Color.yellow.alpha_(0.25);
 		 } {
-			 composite.background = Color.white.alpha_(0.25); 
+			 composite.background = Color.white.alpha_(0.25);
 		 };
-		
+
 		views = ();
-	
+
 		views[ \select ] = SmoothButton( composite, viewHeight@viewHeight )
 			.label_([ label, label ])
 			.hiliteColor_( Color.yellow.alpha_(0.5) )
 			.radius_(2)
 			.canFocus_( false )
-			.action_({ |bt| 
+			.action_({ |bt|
 				this.selected = bt.value.booleanValue;
 				action.value( this, \select );
 			});
-			
+
 		composite.decorator.shift( (viewHeight + 4).neg, 0 );
-		
+
 		[ \n, \center, \offset, \spWidth ].do({ |key, i|
 			var vw, spec;
-			
+
 			spec = specs[ key ];
-						
+
 			vw = ObjectView( composite, nil, arrayConf, key, spec, controller );
-				
+
 			vw.action = { action.value( this, key ); };
-				
+
 			views[ key ] = vw;
 		});
 	}
-	
+
 	remove { composite.remove; }
-	
+
 	select { |bool = true| this.selected = bool }
-	
+
 	selected_ { |bool = true|
 		selected = bool;
 		views[ \select ].value = selected.binaryValue;
-		if( selected ) { 
+		if( selected ) {
 			{ composite.background = Color.yellow.alpha_(0.25); }.defer;
 		} {
 			{ composite.background = Color.white.alpha_(0.25); }.defer;
 		};
 	}
-	
+
 	resize_ { |resize| composite.resize_(resize) }
-	
+
 	font_ { |font| views.values.do({ |vw| vw.font = font }); }
 	viewHeight_ { |height = 16|
 		views.values.do({ |vw| vw.view.bounds = vw.view.bounds.height_( height ) });
@@ -127,7 +127,7 @@ WFSArrayConfGUI {
 		labelWidth = width;
 		views.values.do(_.labelWidth_(width));
 	}
-	
+
 	view { ^composite }
 }
 

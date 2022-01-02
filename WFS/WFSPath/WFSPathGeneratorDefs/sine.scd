@@ -1,6 +1,6 @@
 WFSPathGeneratorDef(
 	\sine,
-	{ |f, path, n| 
+	{ |f, path, n|
 		var start, end, phase, amp, periods;
 		var polar;
 		start = f.get( \start );

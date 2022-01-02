@@ -25,7 +25,7 @@ part of the WFSCollider Class Library default UMapDefs set
 
 UMapDef( \point_axis, { |
 		point = #[0.0, 0.0],
-		which = 0, 
+		which = 0,
 		rotate = 0,
 		fromRange = #[-20, 20],
 		toRange = #[0.0,1.0],

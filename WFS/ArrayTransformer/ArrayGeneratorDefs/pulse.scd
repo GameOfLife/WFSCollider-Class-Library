@@ -1,6 +1,6 @@
 ArrayGeneratorDef( \pulse, { |f, n = 1|
 	var phase, width, periods, range, close, size;
-	periods = f.get( \periods );	
+	periods = f.get( \periods );
 	width = f.get( \width );
 	phase = f.get( \phase ) / 2;
 	range = f.get( \range );
@@ -10,14 +10,14 @@ ArrayGeneratorDef( \pulse, { |f, n = 1|
 			.binaryValue
 			.linlin(0,1,*range);
 	});
-	
+
 }, [ \range, [0.0,1.0], \periods, 1, \width, 0.5, \phase, 0, \close, true ], { |f, obj|
-	[ 
-		\range, if( obj.minItem == obj.maxItem ) { [0,1] } { [ obj.minItem, obj.maxItem ] }, 
-		\periods, f.get( \periods ), 
-		\width, f.get( \width ), 
+	[
+		\range, if( obj.minItem == obj.maxItem ) { [0,1] } { [ obj.minItem, obj.maxItem ] },
+		\periods, f.get( \periods ),
+		\width, f.get( \width ),
 		\phase, f.get( \phase ),
-		\close, f.get( \close ) 
+		\close, f.get( \close )
 	]
 } )
 	.mappedArgs_([ \range ])

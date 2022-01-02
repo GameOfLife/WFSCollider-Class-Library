@@ -13,7 +13,7 @@ part of the WFSCollider Class Library default UMapDefs set
 */
 
 UMapDef( \follow_point, { |
-		point = #[0.0, 0.0], 
+		point = #[0.0, 0.0],
 		maxSpeed = 1,
 		maxRotation = 180
 		|
@@ -25,9 +25,9 @@ UMapDef( \follow_point, { |
 	fp = initPoint + [x,y];
 	delta = (point - fp).asPoint.asPolar;
 	delta.rho = delta.rho.min( maxSpeed );
-	delta.theta = if( delta.rho < maxSpeed, 
-		delta.theta, 
-		(delta.theta - angle).wrap2( pi ).clip2( maxRotation ) + angle 
+	delta.theta = if( delta.rho < maxSpeed,
+		delta.theta,
+		(delta.theta - angle).wrap2( pi ).clip2( maxRotation ) + angle
 	);
 	angle = if( delta.rho > 0, delta.theta, angle );
 	delta = delta.asPoint.asArray;

@@ -3,7 +3,7 @@
 
 ** if a furseDistanceFilter is used in combination with a wfsDynamicPoint or wfsStaticPoint in a chain, the next time the score is opened it will be removed and replaced by a 'distanceFilter' setting in on the panner unit **
 
-The furseDistanceFilter is a filter that applies distance filtering according to a formula by Richard W. Furse (http://www.muse.demon.co.uk/vspace/model.html): 
+The furseDistanceFilter is a filter that applies distance filtering according to a formula by Richard W. Furse (http://www.muse.demon.co.uk/vspace/model.html):
 
 cutoff = 100000 / distance
 
@@ -17,7 +17,7 @@ this is an Udef definition file
 part of the WFSCollider Class Library default Udefs set
 */
 
-Udef( \furseDistanceFilter, { 
+Udef( \furseDistanceFilter, {
 	var sig, point = (0@0), freq;
 	point = \point.kr( point.asArray ).asPoint;
 	sig = UIn.ar(0);
@@ -29,13 +29,13 @@ Udef( \furseDistanceFilter, {
 		var point;
 		if( argPairs.notNil) {
 			if( argPairs.pairsAt( \pointFromBus ) == true ) {
-				if( argPairs.includes( \u_i_kr_0_bus ) or: { 
-					argPairs.includes( \u_i_kr_1_bus ) 
+				if( argPairs.includes( \u_i_kr_0_bus ) or: {
+					argPairs.includes( \u_i_kr_1_bus )
 				} ) {
-					argPairs = [ \point, [ \map_control_point, [ 
+					argPairs = [ \point, [ \map_control_point, [
 						\bus_x, argPairs.pairsAt( \u_i_kr_0_bus ) ? 0,
 						\bus_y, argPairs.pairsAt( \u_i_kr_1_bus ) ? 1
-						] 
+						]
 					], \pointFromBus, false ] ++ argPairs;
 				} {
 					argPairs = [ \point, \map_control_point, \pointFromBus, false ] ++ argPairs;
@@ -45,8 +45,8 @@ Udef( \furseDistanceFilter, {
 	})
 	.uchainInitFunc_({	 |unit, chain|
 		var removeMe = false;
-		
-		chain.units.select({ |item| 
+
+		chain.units.select({ |item|
 			([ \wfsDynamicPoint, \wfsStaticPoint ].includes( item.defName )) && {
 				if( item.point.isUMap && unit.point.isUMap ) {
 					(item.point.defName == unit.point.defName) && {
@@ -62,8 +62,8 @@ Udef( \furseDistanceFilter, {
 			item.distanceFilter = unit.amount;
 			removeMe = true;
 		});
-					
-		if( removeMe ) { 
+
+		if( removeMe ) {
 			chain.units.remove( unit );
 			chain.units = chain.units; // update GUI / re-init
 		};

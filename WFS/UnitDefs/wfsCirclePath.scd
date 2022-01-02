@@ -6,7 +6,12 @@
 Generates a circular or elliptical control signal.
 
 This signal can be used by the wfsDynamicPoint and wfsDynamicPlane udefs, by checking their 'pointFromBus' argument.
-speed: frequency (cycles per second).startAngle: starting angle of the path in degrees.clockwise: select to turn clockwise, otherwise the path turns anti-clockwise.center: the center of the circle (Point).radius: x and y radius of the circle/ellipse (Point).
+
+speed: frequency (cycles per second).
+startAngle: starting angle of the path in degrees.
+clockwise: select to turn clockwise, otherwise the path turns anti-clockwise.
+center: the center of the circle (Point).
+radius: x and y radius of the circle/ellipse (Point).
 lag: a smoothing time for changes in the startAngle, center and radius. This uses a second-order filter, which may cause slight oscillations at beginnings and endings of movements. Changing the lag time during playback may cause audible artifacts.
 
 
@@ -16,16 +21,16 @@ part of the WFSCollider Class Library default Udefs set
 */
 
 Udef( \wfsCirclePath, { |
-		speed = 0.1, 
+		speed = 0.1,
 		startAngle = 0,
-		clockwise = 1, 
+		clockwise = 1,
 		center = #[0,0],
 		radius = #[10,10],
 		lag = 0,
 		u_startPos = 0|
-	varÊcircle;
-	circle =ÊSinOsc.kr(  
-		speed * clockwise.linlin(0,1,-1,1), 
+	varï¿½circle;
+	circle =ï¿½SinOsc.kr(
+		speed * clockwise.linlin(0,1,-1,1),
 		[ 0, 0.5pi ] + (((LPFLag.kr( startAngle, lag ) / 360) + (u_startPos * speed)) * 2pi),
 		LPFLag.kr( radius, lag ),
 		LPFLag.kr( center, lag )
@@ -38,24 +43,24 @@ Udef( \wfsCirclePath, { |
 		// by the currently used UMaps at load time.
 		var outputs, removeMe = false;
 		var umaps, copy;
-		var newUMap, mixOut;		
-		
+		var newUMap, mixOut;
+
 		outputs = unit.controlOuts.collect({ |item|
 			unit.getControlOut( item );
 		}).asInteger;
-		
+
 		mixOut = unit.controlOuts.collect({ |item|
 			unit.getControlMixOutLevel( item );
 		});
-		
-		umaps = chain.units.collect({ |unit| 
-			(unit.getAllUMaps ? []).select({ |umap| 
-				(umap.defName === \map_control_point) && { 
-					[umap.bus_x, umap.bus_y].asInteger == outputs; 
+
+		umaps = chain.units.collect({ |unit|
+			(unit.getAllUMaps ? []).select({ |umap|
+				(umap.defName === \map_control_point) && {
+					[umap.bus_x, umap.bus_y].asInteger == outputs;
 				}
 			})
 		}).flatten(1);
-		
+
 		if( umaps.size < 2 ) {
 			// if only used once, directly insert at that spot
 			umaps.do({ |umap|
@@ -72,8 +77,8 @@ Udef( \wfsCirclePath, { |
 				umap.id = outputs[0] / 2;
 			});
 		};
-		
-		if( removeMe ) { 
+
+		if( removeMe ) {
 			chain.units.remove( unit );
 			chain.units = chain.units; // update GUI / re-init
 		} {
@@ -84,10 +89,10 @@ Udef( \wfsCirclePath, { |
 			unit.id = outputs[0] / 2;
 			newUMap = unit.point;
 		};
-		
+
 		case { mixOut == [1,1] && { newUMap.center == (0@0) } } {
-			newUMap.center = [ \map_control_point, 
-				[ \bus_x, outputs[0], \bus_y, outputs[1] ] 
+			newUMap.center = [ \map_control_point,
+				[ \bus_x, outputs[0], \bus_y, outputs[1] ]
 			];
 		} { mixOut.any(_ != 0) } {
 			newUMap.center = [ \scale_point, [

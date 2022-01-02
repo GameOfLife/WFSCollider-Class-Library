@@ -28,7 +28,7 @@ def = FreeUdef( \wfsStaticPoint, [
 	// first a few general things
 	.envPut( \getArgsFor, { |evt, which, args, server, startPos = 0|
 		if( which.notNil ) {
-			U.formatArgs( 
+			U.formatArgs(
 				(args ? []).clump(2)
 					.select({ |arr| which.includes( arr[0] ) }).flatten(1),
 				server,
@@ -49,12 +49,12 @@ def = FreeUdef( \wfsStaticPoint, [
 	.envPut( \init_wfsp, [ \latencyComp, \u_dur, \point, \u_doneAction ] ) // controls only set at init
 	.envPut( \set_wfsp, [ // controls that can always be set
 		\distanceFilter, \dbRollOff, \maxAmpRadius,
-		\u_i_ar_0_bus, 
+		\u_i_ar_0_bus,
 		\u_gain, \u_gate, \u_mute,
 		\u_fadeIn, \u_fadeOut,
 		\u_fadeInCurve, \u_fadeOutCurve,
 		\u_globalGain,
-		\u_globalEQ_setting, \u_globalEQ_bypass, 
+		\u_globalEQ_setting, \u_globalEQ_bypass,
 	] )
 	.envPut( \init_wfsa, [ \point ] )
 	.envPut( \set_wfsa, [ \u_i_ar_0_bus ] )
@@ -67,7 +67,7 @@ def = FreeUdef( \wfsStaticPoint, [
 		unit.synths.do({ |sn|
 			var server = sn.server;
 			var key = switch( sn.class, Group, \wfsa, Synth, \wfsp );
-			server.sendSyncedBundle( Server.default.latency, nil, 
+			server.sendSyncedBundle( Server.default.latency, nil,
 				*server.makeBundle( false, {
 					var args;
 					args = unit.def.env.getSetArgsFor( key, keyValuePairs, server );
@@ -91,70 +91,70 @@ if( WFSPreviewSynthDefs.pannerFuncs.keys.includes( WFSLib.previewMode ).not ) {
 		var crossfader;
 		var focusMul;
 		var point;
-		
+
 		server = target.asTarget.server;
-		
+
 		point = unit.get( \point ).value.asPoint;
-		
+
 		arrayConfs = WFSSpeakerConf.default.getArraysFor( server );
-		crossfader = WFSCrossfader( 
-			point, arrayConfs, focusWidth: WFSSpeakerConf.default.focusWidth 
+		crossfader = WFSCrossfader(
+			point, arrayConfs, focusWidth: WFSSpeakerConf.default.focusWidth
 		);
 		focusMul = WFSSpeakerConf.default.focusDetector.kr( point );
-		
+
 		arrayGroup = Group(target, addAction: \addToTail);
-		
+
 		defNames = [ "wfsa_nsn_", "wfsa_usn_" ]; // normal and uni static n
-		
+
 		normalLevels = crossfader.arraysShouldRun( false ) * crossfader.cornerfades;		focusLevels = crossfader.arraysShouldRun( true );
-		
+
 		// make the pre-panner synth (has to know the nodeID's of the panner synths)
 		prePanSynth = Synth( "wfsp_n_0",
 		 	unit.def.env.getInitArgsFor( \wfsp, unit.args, server, startPos ),
 			arrayGroup, addAction: \addBefore
 		);
-		
+
 		// make the panner synths
 		n = 0;
 		arrayConfs.do({ |ac, i|
 			if( normalLevels[i] > 0 ) {
-				normalSynths = normalSynths.add(							Synth( defNames[0] ++ ac.n, [ 
+				normalSynths = normalSynths.add(							Synth( defNames[0] ++ ac.n, [
 							\gain, WFSSpeakerConf.default.gain.dbamp,
-							\arrayConf, ac, 
+							\arrayConf, ac,
 							\outOffset, n + WFSSpeakerConf.getOutputBusStartOffset( server ),
 							\amp, normalLevels[i],
 							\arrayLimit, WFSSpeakerConf.default.arrayLimit,
-						] ++ unit.def.env.getInitArgsFor( \wfsa, unit.args, server, startPos ), 
-						arrayGroup, addAction: \addToTail 
-					) 
+						] ++ unit.def.env.getInitArgsFor( \wfsa, unit.args, server, startPos ),
+						arrayGroup, addAction: \addToTail
+					)
 				);
 			};
 			n = n + arrayConfs[i].n;
 		});
-		
-		if( focusMul > 0 ) {	
+
+		if( focusMul > 0 ) {
 			n = 0;
 			arrayConfs.do({ |ac, i|
 				if( focusLevels[i] > 0 ) {
-					focusSynths = focusSynths.add(							Synth( defNames[1] ++ ac.n, [ 
+					focusSynths = focusSynths.add(							Synth( defNames[1] ++ ac.n, [
 								\gain, WFSSpeakerConf.default.gain.dbamp,
-								\arrayConf, ac, 
+								\arrayConf, ac,
 								\outOffset, n + WFSSpeakerConf.getOutputBusStartOffset( server ),
 								\amp, focusLevels[i],
 								\arrayLimit, WFSSpeakerConf.default.arrayLimit,
 								\focusWidth, WFSSpeakerConf.default.focusWidth,
-							] ++ unit.def.env.getInitArgsFor( \wfsa, unit.args, server, startPos ), 
-							arrayGroup, addAction: \addToTail 
-						) 
+							] ++ unit.def.env.getInitArgsFor( \wfsa, unit.args, server, startPos ),
+							arrayGroup, addAction: \addToTail
+						)
 					);
 				};
 				n = n + arrayConfs[i].n;
 			});
 		};
-		
+
 		arrayGroup.freeAction_({ |group| unit.removeSynth( group ); });
 		unit.synths = unit.synths.add( arrayGroup );
-		
+
 		prePanSynth;
 	})
 	.shouldPlayOnFunc_({ |unit, target|
@@ -173,32 +173,32 @@ if( WFSPreviewSynthDefs.pannerFuncs.keys.includes( WFSLib.previewMode ).not ) {
 		var prePanSynth;
 		var previewSynth;
 		var arrayGroup;
-		
+
 		server = target.asTarget.server;
-		
+
 		// make the pre-panner synth (has to know the nodeID's of the panner synths)
 		prePanSynth = Synth( "wfsp_n_0",
 		 	unit.def.env.getInitArgsFor( \wfsp, unit.args, server, startPos ),
 			target, \addToTail
 		);
-		
+
 		arrayGroup = Group(target, addAction: \addToTail);
-		
-		previewSynth = Synth( 
+
+		previewSynth = Synth(
 			WFSPreviewSynthDefs.getDefName( WFSLib.previewMode, \s ),
 			unit.def.env.getInitArgsFor( \wfsa, unit.args, server, startPos ) ++
 				[ \out, WFSSpeakerConf.getOutputBusStartOffset( target ) ],
-			arrayGroup, \addToTail 
+			arrayGroup, \addToTail
 		);
-				
+
 		arrayGroup.freeAction_({ |synth| unit.removeSynth( synth ); });
 		unit.synths = unit.synths.add( arrayGroup );
-					
+
 		prePanSynth;
 	})
 	.shouldPlayOnFunc_({ |unit, target|
 		target.asTarget.server.isLocal; // safety measure: no output on wfs servers
-	});		
+	});
 };
 
 def.uchainInitFunc_({ |unit, chain|

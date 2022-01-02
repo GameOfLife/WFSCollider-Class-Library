@@ -21,5 +21,5 @@ ArrayTransformerDef( \round, { |f, obj|
 		} {
 			ControlSpec( 0, 1, \lin, 0.0, 0 );
 		};
-	}) 
+	})
 	);

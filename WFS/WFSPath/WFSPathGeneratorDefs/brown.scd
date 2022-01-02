@@ -1,6 +1,6 @@
 WFSPathGeneratorDef(
 	\brown,
-	{ |f, path, n| 
+	{ |f, path, n|
 		var center, radius, minRadius, angleStep, step;
 		var wx, wy;
 		var wr, wa;
@@ -11,7 +11,7 @@ WFSPathGeneratorDef(
 		thisThread.randSeed = f.get( \seed );
 		wr = Pbrown( 0, 1, step ).asStream;
 		wa = Pseries( 0, Pwhite( angleStep.neg, angleStep ) ).asStream;
-		path.positions = n.collect({ 
+		path.positions = n.collect({
 			(Polar( wr.next, wa.next ).asPoint * radius) + center
 		});
 		path;

@@ -1,6 +1,6 @@
 WFSPathGeneratorDef(
 	\spline,
-	{ |f, path, n| 
+	{ |f, path, n|
 		var start, end, c1, c2;
 		var part1;
 		start = f.get( \start );
@@ -14,7 +14,7 @@ WFSPathGeneratorDef(
 		path;
 	},
 	[ \start, 0@0, \end, 5@5, \c1, 0@5, \c2, 5@0 ]
-)	
+)
 	.changesT_( false )
 	.setSpec( \start, PointSpec( 200, 0.1@0.1 ) )
 	.setSpec( \end, PointSpec( 200, 0.1@0.1 ) )

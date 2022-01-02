@@ -19,7 +19,7 @@ UMapDef( \mirror_point, { |point = #[0.0,0.0], plane = #[5.0,0.0], absolute = 0|
 	point = point.rotate( plane.theta.neg );
 	newX = point.x.neg + (2 * plane.rho);
 	newX = Select.kr( absolute, [ newX, newX.max( point.x ) ] );
-	point = Point( newX, point.y ).rotate( plane.theta ); 
+	point = Point( newX, point.y ).rotate( plane.theta );
 	UMapOut.kr(point.asArray, false);
 })
 	.setSpec( \point, WFSPointSpec(200,0.1) )

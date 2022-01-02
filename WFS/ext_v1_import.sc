@@ -18,26 +18,26 @@
 */
 
 + WFSEvent {
-	
+
 	asUEvent {
 		^wfsSynth.asUEvent
 			.startTime_( startTime )
-			.track_( track ); 
+			.track_( track );
 	}
-	
+
 }
 
 + WFSSynth {
-	
-	asUEvent { 
+
+	asUEvent {
 		var units, gain = 0;
-		
+
 		units = Array.new( 4 );
-		
+
 		switch( this.audioType,
-			\buf, { 
+			\buf, {
 				units.add( U( \bufSoundFile, [ \soundFile, this.asBufSndFile ] ) );
-			}, 
+			},
 			\disk, {
 				units.add( U( \diskSoundFile, [ \soundFile, this.asDiskSndFile ] ) );
 			},
@@ -45,36 +45,36 @@
 				units.add( U( \blipTest, args ) );
 			}
 		);
-		
+
 		switch( this.intType,
 			\linear, {
-				units.add( 
-					U( \wfsSource, [ 
+				units.add(
+					U( \wfsSource, [
 						\point, UMap( \trajectory, [ \trajectory, WFSPathBuffer( wfsPath.asWFSPath2 ) ] ),
 						\distanceFilter, 1,
 						\maxAmpRadius, 2,
-					] ) 
+					] )
 				);
 			},
 			\cubic, {
-				units.add( 
+				units.add(
 					U( \wfsSource, [
-						\point, UMap( \trajectory, [ \trajectory, WFSPathBuffer( wfsPath.asWFSPath2 ) ] ), 
+						\point, UMap( \trajectory, [ \trajectory, WFSPathBuffer( wfsPath.asWFSPath2 ) ] ),
 						\distanceFilter, 1,
 						\maxAmpRadius, 2,
 						\quality, \better
-					] ) 
+					] )
 				);
-			}, 
+			},
 			\static, {
-				units.add( U( \wfsSource, [ 
-					\point, wfsPath.asPoint, 
-					\distanceFilter, 1, 
-					\maxAmpRadius, 2 
+				units.add( U( \wfsSource, [
+					\point, wfsPath.asPoint,
+					\distanceFilter, 1,
+					\maxAmpRadius, 2
 				] ) );
 			},
 			\plane, {
-				units.add( U( \wfsSource, [ 
+				units.add( U( \wfsSource, [
 					\point, wfsPath.distance_(wfsPath.distance.max(1.0e-12)).asPoint,
 					\type, \plane,
 					\distanceFilter, 1,
@@ -86,30 +86,30 @@
 				units.add( U( \wfsIndex, [ \index, wfsPath ] ) );
 			}
 		);
-		
+
 		^UChain( 0, 0, dur, true, *units )
 			.fadeIn_( this.fadeInTime )
 			.fadeOut_( this.fadeOutTime )
 			.setGain( level.ampdb + gain );
 	}
-	
-	asBufSndFile { 
-		^BufSndFile.newBasic( filePath, sfNumFrames, 1, sfSampleRate, startFrame, 
-			startFrame + this.samplesPlayed, pbRate, loop.asInteger.booleanValue 
+
+	asBufSndFile {
+		^BufSndFile.newBasic( filePath, sfNumFrames, 1, sfSampleRate, startFrame,
+			startFrame + this.samplesPlayed, pbRate, loop.asInteger.booleanValue
 		);
 	}
-	
-	asDiskSndFile { 
-		^BufSndFile.newBasic( filePath, sfNumFrames, 1, sfSampleRate, startFrame, 
-			startFrame + this.samplesPlayed, pbRate, loop.asInteger.booleanValue 
+
+	asDiskSndFile {
+		^BufSndFile.newBasic( filePath, sfNumFrames, 1, sfSampleRate, startFrame,
+			startFrame + this.samplesPlayed, pbRate, loop.asInteger.booleanValue
 		);
 	}
-	
+
 }
 
 
 + WFSScore {
-	
+
 	asUEvent {
 		var uevts, maxTrack = 0;
 		uevts = events.collect(_.asUEvent);
@@ -117,7 +117,7 @@
 			maxTrack = uevts.collect(_.track).maxItem;
 		};
 		if( clickTrackPath.notNil ) {
-			uevts = [ 
+			uevts = [
 				UChain( 0, maxTrack + 1, inf, false,
 					[ \diskSoundFile, [ \soundFile, clickTrackPath ] ],
 					[ \wfsMasterOut, [ \toServers, false ] ]

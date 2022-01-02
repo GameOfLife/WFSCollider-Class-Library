@@ -4,7 +4,7 @@
 Creates an UMap for generating a random trajectory for modulatable point parameters.
 
 speed: frequency by which new random positions are generated, in Hz.
-center: (Point) the center of the rectangle within which a random path can be generated. 
+center: (Point) the center of the rectangle within which a random path can be generated.
 radius: (Point) x and y radius of the rectangle within which the random path is generated.
 type: the type of noise used:
 	0: step or sample-and-hold noise; hard jumps at each value change
@@ -24,9 +24,9 @@ UMapDef( \random_trajectory, { |
 		radius = #[10.0,10.0],
 		type = 2,
 		lag = 0.1|
-	varÊrandom, trigger;
+	varï¿½random, trigger;
 	URandSeed.ir();
-	random =Ê[
+	random =ï¿½[
 		LFDNoise0.kr( speed.dup ).lag3( lag ),
 		LFDNoise1.kr( speed.dup ),
 		LFDNoise3.kr( speed.dup )

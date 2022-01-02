@@ -24,10 +24,10 @@ part of the WFSCollider Class Library default UMapDefs set
 */
 
 UMapDef( \point_direction, { |
-		point = #[0.0, 0.0], 
+		point = #[0.0, 0.0],
 		centerAngle = 0,
 		fromRange = #[-1, 1],
-		toRange = #[0.0,1.0],	
+		toRange = #[0.0,1.0],
 		invert = 0,
 		clipMode = 2,
 		clipSoftness = 0.0,

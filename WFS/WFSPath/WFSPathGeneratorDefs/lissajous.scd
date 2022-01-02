@@ -1,6 +1,6 @@
 WFSPathGeneratorDef(
 	\lissajous,
-	{ |f, path, n| 
+	{ |f, path, n|
 		var startAngle, center, radius, periods;
 		var close, nn = n;
 		startAngle = (f.get( \startAngle ) / 360) * 2pi;

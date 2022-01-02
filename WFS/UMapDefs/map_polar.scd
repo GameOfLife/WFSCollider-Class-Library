@@ -14,8 +14,8 @@ part of the Unit lib default UMapDefs set
 */
 
 UMapDef( \map_polar, { |
-		rho = 0.0, 
-		theta = 0, 
+		rho = 0.0,
+		theta = 0,
 		center = #[0.0,0.0],
 		radius = #[10.0,10.0]|
 	var polar;

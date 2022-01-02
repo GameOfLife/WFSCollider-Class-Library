@@ -15,15 +15,15 @@ part of the WFSCollider Class Library default UMapDefs set
 */
 
 UMapDef( \circle_trajectory, { |
-		speed = 0.1, 
+		speed = 0.1,
 		startAngle = 0,
-		clockwise = 1, 
+		clockwise = 1,
 		center = #[0.0,0.0],
 		radius = #[10.0,10.0],
 		u_startPos = 0|
-	varÊcircle;
-	circle =ÊSinOsc.kr(  
-		speed * clockwise.linlin(0,1,-1,1), 
+	varï¿½circle;
+	circle =ï¿½SinOsc.kr(
+		speed * clockwise.linlin(0,1,-1,1),
 		[ 0, 0.5pi ] + (startAngle + (u_startPos * speed * 2pi).wrap(0,2pi)),
 		radius,
 		center

@@ -14,7 +14,7 @@ part of the Unit lib default UMapDefs set
 */
 
 UMapDef( \map_point, { |
-		x = 0, 
+		x = 0,
 		y = 0,
 		center = #[0.0,0.0],
 		radius = #[10.0,10.0]|

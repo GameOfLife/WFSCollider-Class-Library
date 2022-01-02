@@ -1,11 +1,11 @@
 /*
 \wfsMasterOut
 
-Output audio from the master audio interface of the system (if there is one). 
+Output audio from the master audio interface of the system (if there is one).
 
-Using this Udef in a UChain will cause the whole UChain to be played on the master computer instead of the servers. 
+Using this Udef in a UChain will cause the whole UChain to be played on the master computer instead of the servers.
 
-On the Game of Life WFS system it can be used either to send audio digitally from the master computer to the servers (for which there are 8 buses available Ð i.e. one ADAT cable), or to the analog outputs of the master audio interface (for example to send audio signals in sync with the WFS system to other speakers or headphones).
+On the Game of Life WFS system it can be used either to send audio digitally from the master computer to the servers (for which there are 8 buses available ï¿½ i.e. one ADAT cable), or to the analog outputs of the master audio interface (for example to send audio signals in sync with the WFS system to other speakers or headphones).
 
 bus: number of a hardware output (starting at 0)
 toServers: if true (default), the output is to the digital inputs of the servers. If not selected, it is sent to analog outputs.
@@ -23,7 +23,7 @@ MultiChannelUdef( \wfsMasterOut, { |bus = 0, toServers = 1, u_busOffset = 14|
 	bus = bus + minBus;
 	useGlobalGain = 1 - toServers;
 	bus = bus * InRange.kr( bus, minBus, maxBus );
-	
+
 	Out.ar( bus, UIn.ar( 0, Udef.numChannels ) * UEnv.kr( useGlobalGain: useGlobalGain ) );
 }, channels: (1..8))
 	.category_( \wfs_io )

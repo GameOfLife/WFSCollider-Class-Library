@@ -7,8 +7,11 @@ a Udef generating a random trajectory as a control signal.
 
 This signal can be used by the wfsDynamicPoint and wfsDynamicPlane udefs, by checking their 'pointFromBus' argument.
 
-speed: frequency by which new random positions are generated, in Hz.center: (Point) the center of the rectangle within which a random path can be generated. radius: (Point) x and y radius of the rectangle within which the random path is generated.
-lag: a smoothing time for changes in the center and radius. This uses a second-order filter, which may cause slight oscillations at beginnings and endings of movements. Changing the lag time during playback may cause audible artifacts.seed: Use this to generate a different random path. Paths with the same seed are exactly the same.
+speed: frequency by which new random positions are generated, in Hz.
+center: (Point) the center of the rectangle within which a random path can be generated.
+radius: (Point) x and y radius of the rectangle within which the random path is generated.
+lag: a smoothing time for changes in the center and radius. This uses a second-order filter, which may cause slight oscillations at beginnings and endings of movements. Changing the lag time during playback may cause audible artifacts.
+seed: Use this to generate a different random path. Paths with the same seed are exactly the same.
 
 --
 this is an Udef definition file
@@ -16,15 +19,15 @@ part of the WFSCollider Class Library default Udefs set
 */
 
 Udef( \wfsRandomPath, { |
-		speed = 0.1, 
+		speed = 0.1,
 		center = #[0,0],
 		radius = #[10,10],
 		lag = 0,
 		seed = 12345
 		|
-	varÊrandom;
+	varï¿½random;
 	URandSeed.ir(seed);
-	random =ÊLFDNoise3.kr(  
+	random =ï¿½LFDNoise3.kr(
 		speed.dup,
 		LPFLag.kr( radius, lag ),
 		LPFLag.kr( center, lag )
@@ -36,32 +39,32 @@ Udef( \wfsRandomPath, { |
 		// this function removes or replaces the wfsRandomPath unit in the chain
 		// by the currently used UMaps at load time.
 		var outputs, removeMe = false;
-		var umaps, args;	
-		var newUMap, mixOut;	
-		
+		var umaps, args;
+		var newUMap, mixOut;
+
 		outputs = unit.controlOuts.collect({ |item|
 			unit.getControlOut( item );
 		}).asInteger;
-		
+
 		mixOut = unit.controlOuts.collect({ |item|
 			unit.getControlMixOutLevel( item );
 		});
-		
-		args = [ 
-			\speed, unit.speed, 
-			\center, unit.center, 
-			\radius, unit.radius, 
-			\seed, unit.seed 
+
+		args = [
+			\speed, unit.speed,
+			\center, unit.center,
+			\radius, unit.radius,
+			\seed, unit.seed
 		];
-		
-		umaps = chain.units.collect({ |unit| 
-			(unit.getAllUMaps ? []).select({ |umap| 
-				(umap.defName === \map_control_point) && { 
-					[umap.bus_x, umap.bus_y].asInteger == outputs; 
+
+		umaps = chain.units.collect({ |unit|
+			(unit.getAllUMaps ? []).select({ |umap|
+				(umap.defName === \map_control_point) && {
+					[umap.bus_x, umap.bus_y].asInteger == outputs;
 				}
 			})
 		}).flatten(1);
-		
+
 		if( umaps.size < 2 ) {
 			// if only used once, directly insert at that spot
 			umaps.do({ |umap|
@@ -77,8 +80,8 @@ Udef( \wfsRandomPath, { |
 				umap.id = outputs[0] / 2;
 			});
 		};
-		
-		if( removeMe ) { 
+
+		if( removeMe ) {
 			chain.units.remove( unit );
 			chain.units = chain.units; // update GUI / re-init
 		} {
@@ -87,10 +90,10 @@ Udef( \wfsRandomPath, { |
 			unit.id = outputs[0] / 2;
 			newUMap = unit.point;
 		};
-		
+
 		case { mixOut == [1,1] && { newUMap.center == (0@0) } } {
-			newUMap.center = [ \map_control_point, 
-				[ \bus_x, outputs[0], \bus_y, outputs[1] ] 
+			newUMap.center = [ \map_control_point,
+				[ \bus_x, outputs[0], \bus_y, outputs[1] ]
 			];
 		} { mixOut.any(_ != 0) } {
 			newUMap.center = [ \scale_point, [
