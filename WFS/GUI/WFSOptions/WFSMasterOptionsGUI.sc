@@ -22,8 +22,8 @@ AbstractWFSOptionsGUI {
 		viewHeight = viewHeight ? 14;
 		margin = margin ?? {0@0};
 		gap = gap ??  {4@4};
-		^(margin.y * 2) + ( 
-			 this.specs.keys.size * (viewHeight + gap.y) 
+		^(margin.y * 2) + (
+			this.specs.as(Array).collect(_.viewNumLines).sum * (viewHeight + gap.y)
 		) - gap.y;
 	}
 	

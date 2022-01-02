@@ -31,10 +31,10 @@ WFSOptionsGUI {
 			bounds = bounds ?? { Rect( 
 					190 rrand: 220, 
 					300 rrand: 350,
-					(2 * (columnWidth + 6)) + 2, 
-					500
- 				 ) 
-			}; 
+					(2 * (columnWidth + 6)) + 2,
+					550
+ 				 )
+			};
 		} {
 			bounds = parent.asView.bounds;
 		};
@@ -49,14 +49,14 @@ WFSOptionsGUI {
 		ctrl = SimpleController( object );
 		
 		RoundView.pushSkin( UChainGUI.skin );
-		
-		firstColumn = CompositeView( view, columnWidth @ (bounds.height - footerHeight) )
+
+		firstColumn = CompositeView( view, columnWidth @ (bounds.height - (footerHeight + 4)) )
 			.background_( Color.gray(1).alpha_(0.125) )
 			.resize_(4);
 			
 		firstColumn.addFlowLayout(0@0, 2@2);
-		
-		secondColumn = CompositeView( view, columnWidth @ (bounds.height - footerHeight) )
+
+		secondColumn = CompositeView( view, columnWidth @ (bounds.height - (footerHeight + 4)) )
 			.background_( Color.gray(1).alpha_(0.125) )
 			.resize_(5);
 			
@@ -172,11 +172,11 @@ WFSOptionsGUI {
 		
 		firstColumn.decorator.nextLine;
 		firstColumn.decorator.top_( firstColumn.bounds.height - 34);
-		
-		presetManagerGUI = PresetManagerGUI( 
-			firstColumn, 
-			firstColumn.bounds.width @ 28,
-			object.class.presetManager, 
+
+		presetManagerGUI = PresetManagerGUI(
+			firstColumn,
+			firstColumn.bounds.width @ 32,
+			object.class.presetManager,
 			object
 		);
 		
