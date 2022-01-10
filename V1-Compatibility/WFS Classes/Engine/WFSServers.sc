@@ -420,7 +420,7 @@ WFSServers {
 			window.view.decorator.nextLine;
 
 			multiServer.servers.do({ |server, ii|
-				if( this.isMaster ) {
+				if( this.isMaster && { SyncCenter.mode === \sample } ) {
 					widgets.add(SyncCenterServerWidget(window,70@17,server,true))
 				};
 				server.uView( window );
