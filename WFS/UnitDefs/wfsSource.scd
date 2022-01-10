@@ -180,9 +180,6 @@ if(notPreviewMode) {
 
 		prePanSynth;
 	})
-	.shouldPlayOnFunc_({ |unit, target|
-		target.asTarget.server.isLocal; // safety measure: no output on wfs servers
-	});
 };
 
 dynamicPoint = HiddenFreeUdef( \dynamicPoint, [
@@ -332,9 +329,6 @@ if(notPreviewMode) {
 
 		prePanSynth;
 	})
-	.shouldPlayOnFunc_({ |unit, target|
-		target.asTarget.server.isLocal; // safety measure: no output on wfs servers
-	});
 };
 
 staticPlane = HiddenFreeUdef( \staticPlane, [
@@ -463,9 +457,6 @@ staticPlane.createSynthFunc_({ |unit, target, startPos = 0|
 
 		prePanSynth;
 	})
-	.shouldPlayOnFunc_({ |unit, target|
-		target.asTarget.server.isLocal; // safety measure: no output on wfs servers
-	});
 };
 
 
@@ -592,9 +583,6 @@ if(notPreviewMode) {
 
 		prePanSynth;
 	})
-	.shouldPlayOnFunc_({ |unit, target|
-		target.asTarget.server.isLocal; // safety measure: no output on wfs servers
-	});
 };
 
 
