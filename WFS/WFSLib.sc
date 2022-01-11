@@ -363,9 +363,13 @@ WFSLib {
 
 	  wfsOptions.startupAction.value( this );
 
+	  File.mkdir( Platform.userAppSupportDir +/+ "wfs_synthdefs" );
+
 	  WFSSynthDefs.generateAllOrCopyFromResources({
 	  	StartUp.defer({ WFSServers.default.boot; })
-	  });
+	  }, Platform.userAppSupportDir +/+ "wfs_synthdefs" );
+
+	  ServerBoot.add( this );
 
 	  CmdPeriod.add( this );
 
@@ -402,6 +406,12 @@ WFSLib {
 				.collect(_.servers).flatten(1).do({ |srv|
 					WFSOptions.current.serverAction.value( srv )
 				});
+		};
+	}
+
+	*doOnServerBoot { |server|
+		if( ULib.allServers.includes( server ) ) {
+			server.loadDirectory( Platform.userAppSupportDir +/+ "wfs_synthdefs" )
 		};
 	}
 
