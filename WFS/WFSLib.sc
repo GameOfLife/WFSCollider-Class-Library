@@ -369,6 +369,8 @@ WFSLib {
 	  	StartUp.defer({ WFSServers.default.boot; })
 	  }, Platform.userAppSupportDir +/+ "wfs_synthdefs" );
 
+      UEvent.nrtStartBundle = [ [ "/d_loadDir", Platform.userAppSupportDir +/+ "wfs_synthdefs" ] ];
+
 	  ServerBoot.add( this );
 
 	  CmdPeriod.add( this );
