@@ -200,7 +200,7 @@ WFSPathBufferView {
 			.border_( 1 )
 			.label_( "write data" )
 			.action_({ |bt|
-				Dialog.savePanel({ |path|
+				ULib.savePanel({ |path|
 				  	this.performWFSPathBuffer( \writeFile, nil, path );
 				  	this.performWFSPathBuffer( \changed, \filePath );
 				});
@@ -232,9 +232,8 @@ WFSPathBufferView {
 			.border_( 1 )
 			.label_( "read data" )
 			.action_({ |bt|
-				Dialog.getPaths({ |paths|
-					var sf, pth, wfspath, fa;
-					pth = paths[0];
+				ULib.openPanel({ |pth|
+					var sf, wfspath, fa;
 					sf = SoundFile.openRead( pth );
 					if( sf.notNil ) {
 						if( sf.numChannels == 9 ) {
