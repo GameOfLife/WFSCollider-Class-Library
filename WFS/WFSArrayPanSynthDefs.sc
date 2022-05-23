@@ -20,9 +20,14 @@
 AbstractWFSSynthDefs {
 
 	classvar <>synthDefs;
+	classvar <>defaultDir;
+
+	*initClass {
+		defaultDir = Platform.userAppSupportDir +/+ "wfs_synthdefs";
+	}
 
 	*checkIfExists { |dir|
-		^((dir ? SynthDef.synthDefDir) +/+ this.prefix ++ "_*.scsyndef" ).pathMatch.size > 0;
+		^((dir ? defaultDir ? SynthDef.synthDefDir) +/+ this.prefix ++ "_*.scsyndef" ).pathMatch.size > 0;
 	}
 
 	*generateAllOnce { |action, dir|
@@ -67,7 +72,7 @@ WFSSynthDefs {
 	}
 
 	*loadAll { |action, dir|
-		dir = dir ? SynthDef.synthDefDir;
+		dir = dir ? AbstractWFSSynthDefs.defaultDir ? SynthDef.synthDefDir;
 		this.generateAll({
 			Server.all.do({ |srv|
 				if( srv.isLocal && srv.serverRunning ) {
@@ -196,7 +201,7 @@ WFSArrayPanSynthDefs : AbstractWFSSynthDefs {
 		// can be stopped via cmd-.
 
 		var all, waitTime;
-		dir = dir ? SynthDef.synthDefDir;
+		dir = dir ? defaultDir ? SynthDef.synthDefDir;
 		all = #[ // these are the all types we'll probably need
 			[ uni, static, n ],    // use this for any static
 			[ normal, static, n ], // use this for normal static
@@ -467,7 +472,7 @@ WFSPrePanSynthDefs : AbstractWFSSynthDefs {
 	}
 
 	*generateAll { |action, dir|
-		dir = dir ? SynthDef.synthDefDir;
+		dir = dir ? defaultDir ? SynthDef.synthDefDir;
 		synthDefs = crossfadeModes.collect({ |item|
 			if( modesThatNeedArrays.includes( item ) ) {
 				this.allSizes.collect({ |i|

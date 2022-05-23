@@ -354,7 +354,7 @@ WFSPreviewSynthDefs : AbstractWFSSynthDefs {
 	}
 
 	*generateAll { |action, dir|
-		dir = dir ? SynthDef.synthDefDir;
+		dir = dir ? defaultDir ? SynthDef.synthDefDir;
 		synthDefs = modes.collect({ |mode|
 			types.collect({ |type|
 				pannerFuncs[ type ].keys.as(Array).collect({ |which|
