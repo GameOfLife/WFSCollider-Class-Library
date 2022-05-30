@@ -72,7 +72,7 @@ WFSArrayPanDirSynthDefs : WFSArrayPanSynthDefs {
 		// can be stopped via cmd-.
 
 		var all, waitTime;
-		dir = dir ? SynthDef.synthDefDir;
+		dir = dir ? defaultDir ? SynthDef.synthDefDir;
 		all = #[ // these are the all types we'll probably need
 			[ uni, static, n ],    // use this for any static
 			[ normal, static, n ], // use this for normal static
