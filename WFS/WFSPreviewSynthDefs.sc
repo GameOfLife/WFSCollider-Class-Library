@@ -40,6 +40,20 @@ WFSPreviewSynthDefs : AbstractWFSSynthDefs {
 				amplitudes = amplitudes.max( globalDist.linlin(0.5,1,1,0).clip(0,1) );
 				in * amplitudes;
 			},
+			\lrs: { |in, point| // left, right, surround/back
+				var distances, globalDist, delays, amplitudes;
+				var radius = panDist; // should be < 1
+				distances = [
+					(radius.neg)@radius, radius@radius,
+					0@(radius.neg)
+				].collect(_.dist( point ));
+				globalDist = (0@0).dist( point );
+				delays = ((distances + radius - globalDist) / WFSBasicPan.speedOfSound);
+				in = DelayC.ar( in, 0.12, delays );
+					amplitudes = PanAz.kr( 3, 1, (point.angle - (0.5pi)).neg / pi);
+				amplitudes = amplitudes.max( globalDist.linlin(0.5,1,1,0).clip(0,1) );
+				in * amplitudes;
+			},
 			\quad: { |in, point| // clockwise quadraphonic panning
 				var distances, globalDist, delays, amplitudes;
 				var radius = panDist; // should be < 1
@@ -231,6 +245,11 @@ WFSPreviewSynthDefs : AbstractWFSSynthDefs {
 				amplitudes = Pan2.kr( 1, (point.angle - 0.5pi).neg.fold(-0.5pi,0.5pi) / 0.5pi );
 				amplitudes = amplitudes.max( globalDist.linlin(0.5,1,1,0).clip(0,1) );
 				in * amplitudes;
+			},
+			\lrs: { |in, point| // left, right, surround/back
+				var w,x,y,z;
+				#w,x,y,z = PanB.ar( in, (point.angle - 0.5pi).neg / pi, (0@0).dist( point ).linlin( 0,2,1,0,\minmax ) );
+				DecodeB2.ar( 3, w, x, y, 0.5 );
 			},
 			\quad: { |in, point| // clockwise quadraphonic panning, AEP
 				var w,x,y,z;
