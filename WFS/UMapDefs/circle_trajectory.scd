@@ -22,7 +22,7 @@ UMapDef( \circle_trajectory, { |
 		radius = #[10.0,10.0],
 		u_startPos = 0|
 	var circle;
-	u_startPos = (u_startPos * Latch.kr( speed, Impulse.kr(0) ) * 2pi).wrap(0,2pi);
+	u_startPos = (u_startPos * DC.kr( speed ) * 2pi).wrap(0,2pi);
 	circle = SinOsc.kr(
 		speed * clockwise.linlin(0,1,-1,1),
 		[ 0, 0.5pi ] + startAngle + u_startPos,
