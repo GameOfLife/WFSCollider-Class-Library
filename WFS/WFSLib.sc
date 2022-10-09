@@ -324,7 +324,7 @@ WFSLib {
 					WFSPositionTracker.start;
 				});
 			} {
-				if( useMenuWindow or: { thisProcess.platform.name === 'windows' } ) {
+				if( useMenuWindow ) {
 					UMenuWindow();
 
 					UMenuWindow.viewMenu.tree.put( 'WFS Position tracker', {
@@ -335,6 +335,10 @@ WFSLib {
 						WFSOptionsGUI.newOrCurrent;
 					});
 				} {
+					if (thisProcess.platform.name === 'windows' ) {
+						UMenuWindow.mode = \toolbar;
+					};
+
 					UMenuBarIDE("WFSCollider");
 
 					UMenuBarIDE.add("WFS", \separator, "View" );
