@@ -336,7 +336,7 @@ WFSLib {
 					});
 				} {
 					if (thisProcess.platform.name === 'windows' ) {
-						UMenuWindow.mode = \toolbar;
+						UMenuBarIDE.mode = \toolbar;
 					};
 
 					UMenuBarIDE("WFSCollider");
