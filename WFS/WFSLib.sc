@@ -179,6 +179,8 @@ WFSLib {
 			SyncCenter.writeDefs;
 		};
 
+		Udef.synthDefDir = Platform.userAppSupportDir +/+ "u_synthdefs/";
+
 		this.loadUDefs( false );
 
 		if( WFSOptions.current.showGUI ) {
@@ -368,12 +370,14 @@ WFSLib {
 	  wfsOptions.startupAction.value( this );
 
 	  File.mkdir( Platform.userAppSupportDir +/+ "wfs_synthdefs" );
+	  if( Udef.synthDefDir.notNil ) { File.mkdir( Udef.synthDefDir ); };
 
 	  WFSSynthDefs.generateAllOrCopyFromResources({
 	  	StartUp.defer({ WFSServers.default.boot; })
 	  }, Platform.userAppSupportDir +/+ "wfs_synthdefs" );
 
       UEvent.nrtStartBundle = [ [ "/d_loadDir", Platform.userAppSupportDir +/+ "wfs_synthdefs" ] ];
+		if( Udef.synthDefDir.notNil ) { UEvent.nrtStartBundle = UEvent.nrtStartBundle.add( [ "/d_loadDir", Udef.synthDefDir ] ) };
 
 	  ServerBoot.add( this );
 
@@ -417,7 +421,8 @@ WFSLib {
 
 	*doOnServerBoot { |server|
 		if( ULib.allServers.includes( server ) ) {
-			server.loadDirectory( Platform.userAppSupportDir +/+ "wfs_synthdefs" )
+			server.loadDirectory( Platform.userAppSupportDir +/+ "wfs_synthdefs" );
+			if( Udef.synthDefDir.notNil ) { server.loadDirectory( Udef.synthDefDir ); };
 		};
 	}
 
@@ -451,10 +456,10 @@ WFSLib {
 
 		Udef.loadOnInit = true;
 
-		defs.do({|def| def.justWriteDefFile; });
+		defs.do({|def| def.justWriteDefFile( Udef.synthDefDir ); });
 
 		if( loadDir == true ) {
-			ULib.allServers.do(_.loadDirectory( SynthDef.synthDefDir ));
+			ULib.allServers.do(_.loadDirectory( Udef.synthDefDir ? SynthDef.synthDefDir ));
 		};
      }
 
