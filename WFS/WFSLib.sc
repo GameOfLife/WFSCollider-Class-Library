@@ -181,6 +181,8 @@ WFSLib {
 
 		Udef.synthDefDir = Platform.userAppSupportDir +/+ "u_synthdefs/";
 
+		if( Udef.synthDefDir.notNil ) { File.mkdir( Udef.synthDefDir ); };
+
 		this.loadUDefs( false );
 
 		if( WFSOptions.current.showGUI ) {
@@ -370,7 +372,6 @@ WFSLib {
 	  wfsOptions.startupAction.value( this );
 
 	  File.mkdir( Platform.userAppSupportDir +/+ "wfs_synthdefs" );
-	  if( Udef.synthDefDir.notNil ) { File.mkdir( Udef.synthDefDir ); };
 
 	  WFSSynthDefs.generateAllOrCopyFromResources({
 	  	StartUp.defer({ WFSServers.default.boot; })
