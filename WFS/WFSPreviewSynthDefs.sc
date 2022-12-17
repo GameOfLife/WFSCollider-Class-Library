@@ -25,7 +25,7 @@ WFSPreviewSynthDefs : AbstractWFSSynthDefs {
 				distances = [ -0.095@0, 0.095@0 ].collect(_.dist( point ));
 				globalDist = (0@0).dist( point );
 				delays = ((distances + 0.095 - globalDist) / WFSBasicPan.speedOfSound);
-				in = DelayC.ar( in, 0.1, delays );
+				in = DelayC.ar( in, 0.1, delays + ControlDur.ir);
 				amplitudes = Pan2.kr( 1, (point.angle - 0.5pi).neg.fold(-0.5pi,0.5pi) / 0.5pi );
 				amplitudes = amplitudes.max( globalDist.linlin(0.5,1,1,0).clip(0,1) );
 				in * amplitudes;
@@ -35,7 +35,7 @@ WFSPreviewSynthDefs : AbstractWFSSynthDefs {
 				distances = [ -0.3@0, 0.3@0 ].collect(_.dist( point ));
 				globalDist = (0@0).dist( point );
 				delays = ((distances + 0.3 - globalDist) / WFSBasicPan.speedOfSound);
-				in = DelayC.ar( in, 0.12, delays );
+				in = DelayC.ar( in, 0.12, delays + ControlDur.ir);
 				amplitudes = Pan2.kr( 1, (point.angle - 0.5pi).neg.fold(-0.5pi,0.5pi) / 0.5pi );
 				amplitudes = amplitudes.max( globalDist.linlin(0.5,1,1,0).clip(0,1) );
 				in * amplitudes;
@@ -49,7 +49,7 @@ WFSPreviewSynthDefs : AbstractWFSSynthDefs {
 				].collect(_.dist( point ));
 				globalDist = (0@0).dist( point );
 				delays = ((distances + radius - globalDist) / WFSBasicPan.speedOfSound);
-				in = DelayC.ar( in, 0.12, delays );
+				in = DelayC.ar( in, 0.12, delays + ControlDur.ir);
 					amplitudes = PanAz.kr( 3, 1, (point.angle - (0.5pi)).neg / pi);
 				amplitudes = amplitudes.max( globalDist.linlin(0.5,1,1,0).clip(0,1) );
 				in * amplitudes;
@@ -63,7 +63,7 @@ WFSPreviewSynthDefs : AbstractWFSSynthDefs {
 				].collect(_.dist( point ));
 				globalDist = (0@0).dist( point );
 				delays = ((distances + radius - globalDist) / WFSBasicPan.speedOfSound);
-				in = DelayC.ar( in, 0.12, delays );
+				in = DelayC.ar( in, 0.12, delays + ControlDur.ir);
 				amplitudes = PanAz.kr( 4, 1, (point.angle - 0.5pi).neg / pi);
 				amplitudes = amplitudes.max( globalDist.linlin(0.5,1,1,0).clip(0,1) );
 				in * amplitudes;
@@ -77,7 +77,7 @@ WFSPreviewSynthDefs : AbstractWFSSynthDefs {
 				].collect(_.dist( point ));
 				globalDist = (0@0).dist( point );
 				delays = ((distances + radius - globalDist) / WFSBasicPan.speedOfSound);
-				in = DelayC.ar( in, 0.12, delays );
+				in = DelayC.ar( in, 0.12, delays + ControlDur.ir);
 				amplitudes = PanAz.kr( 4, 1, (point.angle - 0.5pi).neg / pi);
 				amplitudes = amplitudes.max( globalDist.linlin(0.5,1,1,0).clip(0,1) );
 				(in * amplitudes)[[0,1,3,2]];
@@ -90,7 +90,7 @@ WFSPreviewSynthDefs : AbstractWFSSynthDefs {
 				});
 				globalDist = (0@0).dist( point );
 				delays = ((distances + radius - globalDist) / WFSBasicPan.speedOfSound);
-				in = DelayC.ar( in, 0.12, delays );
+				in = DelayC.ar( in, 0.12, delays + ControlDur.ir);
 				amplitudes = PanAz.kr( 6, 1, (point.angle - ((2/3)*pi)).neg / pi, orientation: 0);
 				amplitudes = amplitudes.max( globalDist.linlin(0.5,1,1,0).clip(0,1) );
 				in * amplitudes;
@@ -103,7 +103,7 @@ WFSPreviewSynthDefs : AbstractWFSSynthDefs {
 				});
 				globalDist = (0@0).dist( point );
 				delays = ((distances + radius - globalDist) / WFSBasicPan.speedOfSound);
-				in = DelayC.ar( in, 0.12, delays );
+				in = DelayC.ar( in, 0.12, delays + ControlDur.ir);
 				amplitudes = PanAz.kr( 6, 1, (point.angle - ((2/3)*pi)).neg / pi, orientation: 0);
 				amplitudes = amplitudes.max( globalDist.linlin(0.5,1,1,0).clip(0,1) );
 				(in * amplitudes)[[ 0, 1, 5, 2, 4, 3 ]];
@@ -116,7 +116,7 @@ WFSPreviewSynthDefs : AbstractWFSSynthDefs {
 				});
 				globalDist = (0@0).dist( point );
 				delays = ((distances + radius - globalDist) / WFSBasicPan.speedOfSound);
-				in = DelayC.ar( in, 0.12, delays );
+				in = DelayC.ar( in, 0.12, delays + ControlDur.ir);
 				amplitudes = PanAz.kr( 8, 1, (point.angle - 0.5pi).neg / pi, orientation: 0);
 				amplitudes = amplitudes.max( globalDist.linlin(0.5,1,1,0).clip(0,1) );
 				in * amplitudes;
@@ -129,7 +129,7 @@ WFSPreviewSynthDefs : AbstractWFSSynthDefs {
 				});
 				globalDist = (0@0).dist( point );
 				delays = ((distances + radius - globalDist) / WFSBasicPan.speedOfSound);
-				in = DelayC.ar( in, 0.12, delays );
+				in = DelayC.ar( in, 0.12, delays + ControlDur.ir);
 				amplitudes = PanAz.kr( 8, 1, (point.angle - 0.5pi).neg / pi, orientation: 0);
 				amplitudes = amplitudes.max( globalDist.linlin(0.5,1,1,0).clip(0,1) );
 				(in * amplitudes)[[ 0, 1, 7, 2, 6, 3, 5, 4 ]];
@@ -142,7 +142,7 @@ WFSPreviewSynthDefs : AbstractWFSSynthDefs {
 				});
 				globalDist = (0@0).dist( point );
 				delays = ((distances + radius - globalDist) / WFSBasicPan.speedOfSound);
-				in = DelayC.ar( in, 0.12, delays );
+				in = DelayC.ar( in, 0.12, delays + ControlDur.ir);
 				amplitudes = PanAz.kr( 16, 1, (point.angle - 0.5pi).neg / pi, orientation: 0);
 				amplitudes = amplitudes.max( globalDist.linlin(0.5,1,1,0).clip(0,1) );
 				in * amplitudes;
@@ -155,7 +155,7 @@ WFSPreviewSynthDefs : AbstractWFSSynthDefs {
 				});
 				globalDist = (0@0).dist( point );
 				delays = ((distances + radius - globalDist) / WFSBasicPan.speedOfSound);
-				in = DelayC.ar( in, 0.12, delays );
+				in = DelayC.ar( in, 0.12, delays + ControlDur.ir);
 				amplitudes = PanAz.kr( 24, 1, (point.angle - 0.5pi).neg / pi, orientation: 0);
 				amplitudes = amplitudes.max( globalDist.linlin(0.5,1,1,0).clip(0,1) );
 				in * amplitudes;
@@ -168,7 +168,7 @@ WFSPreviewSynthDefs : AbstractWFSSynthDefs {
 				});
 				globalDist = (0@0).dist( point );
 				delays = ((distances + radius - globalDist) / WFSBasicPan.speedOfSound);
-				in = DelayC.ar( in, 0.12, delays );
+				in = DelayC.ar( in, 0.12, delays + ControlDur.ir);
 				amplitudes = PanAz.kr( 32, 1, (point.angle - 0.5pi).neg / pi, orientation: 0);
 				amplitudes = amplitudes.max( globalDist.linlin(0.5,1,1,0).clip(0,1) );
 				in * amplitudes;
@@ -181,7 +181,7 @@ WFSPreviewSynthDefs : AbstractWFSSynthDefs {
 				});
 				globalDist = (0@0).dist( point );
 				delays = ((distances + radius - globalDist) / WFSBasicPan.speedOfSound);
-				in = DelayC.ar( in, 0.12, delays );
+				in = DelayC.ar( in, 0.12, delays + ControlDur.ir);
 				amplitudes = PanAz.kr( 64, 1, (point.angle - 0.5pi).neg / pi, orientation: 0);
 				amplitudes = amplitudes.max( globalDist.linlin(0.5,1,1,0).clip(0,1) );
 				in * amplitudes;
