@@ -209,7 +209,7 @@ WFSServers {
 			SmoothButton( window, Rect( 0, 0, 16, 16 ) )
 				.states_([["K", Color.black, Color.clear]])
 				.font_( font )
-				.action_( { "killall -9 scsynth".unixCmd; } );
+				.action_( { Server.killAll; } );
 
 			if( SyncCenter.mode === \sample ) {
 				SmoothButton( window, Rect( 0, 0, 36, 16 ) )
@@ -371,7 +371,7 @@ WFSServers {
 				.action_( {
 					// kill synths and press cmd-k on remote
 					if( ips[i] == "127.0.0.1" ) {
-						 "killall -9 scsynth".unixCmd;
+						 Server.killAll;
 					} {
 					"killing scsynths on server %".postf( ips[i].asString );
 					"killall -9 scsynth; sleep 2; killall -9 scsynth;"
