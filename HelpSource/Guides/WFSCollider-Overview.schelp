@@ -3,7 +3,7 @@ summary:: An introduction to the Game of Life WFSCollider software 2.0
 categories:: WFSCollider
 related::Guides/WFSCollider-Visual-Guide, Guides/WFSCollider-Code,Guides/WFSCollider-Panners,Tutorials/WFSCollider-tutorial
 
-GameOfLife WFSCollider is an adapted version of SuperCollider, the audio synthesis engine and programming language, for Wave Field Synthesis spatialization.
+GameOfLife WFSCollider is a library in SuperCollider, the audio synthesis engine and programming language, for Wave Field Synthesis spatialization. It is currently distributed as Quark in the SuperCollider standard Quarks set as WFSCollider-Class-Library
 
 It's currently being used in the 192 speakers system of the Game Of Life Foundation (http://gameoflife.nl/en), installed in den Haag, the Netherlands.
 
@@ -13,12 +13,19 @@ WFSCollider V2.0 is a completly rewritten version of the software with many new 
 
 Most of the functionality of the software is implemented in the Unit Library, a set of SuperCollider classes that are the core of the system. For more information on this library you should read it's link::Reference/Unit-Lib##reference guide::
 
-The WFSCollider software was implemented on top of the Unit Library:
+The WFSCollider software was implemented on top of the Unit Library. To start WFSCollider within SuperCollider, evaluate this code:
+
+code::
+WFSLib.startup;
+::
+
+The WFSCollider server and graphical interface will now boot up. The first time you do this WFSCollider will generate a number of large SynthDefs, which will take several minutes to complete before the library can be used. The next time WFSCollider is started up it will go much faster, as the SynthDefs only need to be created once.
 
 the WFS panners were created as FreeUDefs. Creating a WFS source is as easy as doing
 code::
-UChain(\sine,\wfsDynamicPoint).prepareAndStart
+UChain(\sine,\wfsSource).prepareAndStart
 ::.
+
   For trajectories the link::Classses/WFSPath:: was implemented as a "smart" argument of the wfsPathPlayer unit.  The crossfading algorithms were revised and the cpu count of each source optimized by dividing the speaker arrays into separate synths, and pausing the synths when the source is in a position that does not require the corresponding arrays to play. The system also allows for different geometries of the speaker arrays besides squares and rectangles. Real-time control of the system is enabled by using a new scheduling system, created by blackrain, that allows for precise synchronization of different computers by sending a single pulse from a central source (the client) to the servers. From them on it's possible to schedule bundles with sample accuracy in different servers operating in different computers, something  needed for Wave Field Synthesis to work. Although still not fully tested, we expect the system to be able to use supernova, a multi-core aware version of scsynth, to exploit the all the cpu available in our multi-core rendering servers.
 
 To use the system there are two possible starting points: creating a UScore or creating a USession:
