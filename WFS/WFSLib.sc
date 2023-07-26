@@ -400,10 +400,10 @@ WFSLib {
 	             "System ready".postln;
 	             if( wfsOptions.playSoundWhenReady ) {
 		             "playing lifesign".postln;
-		             "server %, ready"
+					"say 'server %, ready'"
 		             	.format(
 		             		WFSServers.default.multiServers.collect(_.hostName).join( ", ")
-		             	).speak;
+		             	).unixCmd;
 	             };
 	             servers.do({ |srv| wfsOptions.serverAction.value( srv ) });
 		   }).play( AppClock );
