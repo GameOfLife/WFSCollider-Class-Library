@@ -56,7 +56,7 @@ WFSSpeakerConfView : WFSBasicEditView {
 				conf.arrayConfs.do({ |arrayConf, i|
 					var points, counts, movePt;
 					points = [ arrayConf.lastPoint, arrayConf.firstPoint ];
-					counts = count + [0, arrayConf.n-1 ];
+					counts = count + [0, arrayConf.n-1 ] + arrayConf.outputOffset;
 					count = count + arrayConf.n;
 					movePt = Polar(12, arrayConf.angle.neg ).asPoint;
 
