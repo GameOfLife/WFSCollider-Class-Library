@@ -105,7 +105,7 @@ if(notPreviewMode) {
 				normalSynths = normalSynths.add(							Synth( defNames[0] ++ ac.n, [
 							\gain, WFSSpeakerConf.default.gain.dbamp,
 							\arrayConf, ac,
-							\outOffset, n + WFSSpeakerConf.getOutputBusStartOffset( server ),
+							\outOffset, n + ac.outputOffset + WFSSpeakerConf.getOutputBusStartOffset( server ),
 							\amp, normalLevels[i],
 							\arrayLimit, WFSSpeakerConf.default.arrayLimit,
 						] ++ U.formatArgs( [ \point, unit.point, \u_i_ar_0_bus, unit.u_i_ar_0_bus ], server, startPos ),
@@ -123,7 +123,7 @@ if(notPreviewMode) {
 					focusSynths = focusSynths.add(							Synth( defNames[1] ++ ac.n, [
 								\gain, WFSSpeakerConf.default.gain.dbamp,
 								\arrayConf, ac,
-								\outOffset, n + WFSSpeakerConf.getOutputBusStartOffset( server ),
+								\outOffset, n + ac.outputOffset + WFSSpeakerConf.getOutputBusStartOffset( server ),
 								\amp, focusLevels[i],
 								\arrayLimit, WFSSpeakerConf.default.arrayLimit,
 								\focusWidth, WFSSpeakerConf.default.focusWidth,
@@ -265,7 +265,7 @@ if(notPreviewMode) {
 					\gain, WFSSpeakerConf.default.gain.dbamp,
 					\arrayConf, arrayConfs[i],
 					\amp, ("c" ++ normalLevelBuses[i]).asSymbol,
-					\outOffset, n + WFSSpeakerConf.getOutputBusStartOffset( server ),
+					\outOffset, n + arrayConfs[i].outputOffset + WFSSpeakerConf.getOutputBusStartOffset( server ),
 					\arrayLimit, WFSSpeakerConf.default.arrayLimit,
 					\focusWidth, WFSSpeakerConf.default.focusWidth
 				] ++ U.formatArgs( [ \point, unit.point, \u_i_ar_0_bus, unit.u_i_ar_0_bus ], server, startPos ),
@@ -280,7 +280,7 @@ if(notPreviewMode) {
 					\gain, WFSSpeakerConf.default.gain.dbamp,
 					\arrayConf, arrayConfs[i],
 					\amp, ("c" ++ focusLevelBuses[i]).asSymbol,
-					\outOffset, n + WFSSpeakerConf.getOutputBusStartOffset( server ),
+					\outOffset, n + arrayConfs[i].outputOffset + WFSSpeakerConf.getOutputBusStartOffset( server ),
 					\arrayLimit, WFSSpeakerConf.default.arrayLimit,
 					\focusWidth, WFSSpeakerConf.default.focusWidth
 				] ++ U.formatArgs( [ \point, unit.point, \u_i_ar_0_bus, unit.u_i_ar_0_bus ], server, startPos ),
@@ -402,7 +402,7 @@ if(notPreviewMode) {
 				planeSynths = planeSynths.add(							Synth( defName ++ ac.n, [
 							\gain, gain,
 							\arrayConf, ac,
-							\outOffset, n + WFSSpeakerConf.getOutputBusStartOffset( server ),
+							\outOffset, n + ac.outputOffset + WFSSpeakerConf.getOutputBusStartOffset( server ),
 							\amp, planeLevels[i]
 						] ++ U.formatArgs( [ \point, unit.point, \u_i_ar_0_bus, unit.u_i_ar_0_bus ], server, startPos ),
 						arrayGroup, addAction: \addToTail
@@ -535,7 +535,7 @@ if(notPreviewMode) {
 					\gain, gain,
 					\arrayConf, arrayConfs[i],
 					\amp, ("c" ++planeLevelBuses[i]).asSymbol,
-					\outOffset, n +  WFSSpeakerConf.getOutputBusStartOffset( server )
+					\outOffset, n + arrayConfs[i].outputOffset + WFSSpeakerConf.getOutputBusStartOffset( server )
 				] ++ U.formatArgs( [ \point, unit.point, \u_i_ar_0_bus, unit.u_i_ar_0_bus ], server, startPos ),
 				\addToTail )
 			);

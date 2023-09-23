@@ -46,8 +46,8 @@ WFSSpeakerConfGUI {
 			bounds = bounds ?? { Rect(
 					400 rrand: 450,
 					120 rrand: 150,
-					737,
-					430
+					806,
+					500
  				 )
 			};
 		} {

@@ -175,7 +175,7 @@ if( WFSPreviewSynthDefs.pannerFuncs[\n].keys.includes( WFSLib.previewMode ).not 
 					\gain, WFSSpeakerConf.default.gain.dbamp,
 					\arrayConf, arrayConfs[i],
 					\amp, ("c" ++ normalLevelBuses[i]).asSymbol,
-					\outOffset, n + WFSSpeakerConf.getOutputBusStartOffset( server ),
+					\outOffset, n + arrayConfs[i].outputOffset + WFSSpeakerConf.getOutputBusStartOffset( server ),
 					\arrayLimit, WFSSpeakerConf.default.arrayLimit,
 					\focusWidth, WFSSpeakerConf.default.focusWidth
 				] ++ unit.def.env.getInitArgsFor( \wfsd, unit.args, server, startPos ),
@@ -190,7 +190,7 @@ if( WFSPreviewSynthDefs.pannerFuncs[\n].keys.includes( WFSLib.previewMode ).not 
 					\gain, WFSSpeakerConf.default.gain.dbamp,
 					\arrayConf, arrayConfs[i],
 					\amp, ("c" ++ focusLevelBuses[i]).asSymbol,
-					\outOffset, n + WFSSpeakerConf.getOutputBusStartOffset( server ),
+					\outOffset, n + arrayConfs[i].outputOffset + WFSSpeakerConf.getOutputBusStartOffset( server ),
 					\arrayLimit, WFSSpeakerConf.default.arrayLimit,
 					\focusWidth, WFSSpeakerConf.default.focusWidth
 				] ++ unit.def.env.getInitArgsFor( \wfsd, unit.args, server, startPos ),
