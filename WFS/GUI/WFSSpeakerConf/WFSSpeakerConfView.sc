@@ -1,6 +1,8 @@
 WFSSpeakerConfView : WFSBasicEditView {
 
 	var <>showCorners = true;
+	var <>showUnits = true;
+	var <>unitSize = 8;
 
 	defaultObject	{ ^nil } // nil means default
 
@@ -55,6 +57,7 @@ WFSSpeakerConfView : WFSBasicEditView {
 
 				conf.arrayConfs.do({ |arrayConf, i|
 					var points, counts, movePt;
+					var unitPoints;
 					points = [ arrayConf.lastPoint, arrayConf.firstPoint ];
 					counts = count + [0, arrayConf.n-1 ] + arrayConf.outputOffset;
 					count = count + arrayConf.n;
@@ -72,6 +75,25 @@ WFSSpeakerConfView : WFSBasicEditView {
 							);
 						});
 					});
+
+					if( showUnits && { unitSize.notNil && { unitSize > 3 }}) {
+						unitPoints = ((arrayConf.n / unitSize).floor.asInteger).collect({ |i|
+							points[0].blend( points[1], i.linlin( -0.5, (arrayConf.n / unitSize) - 0.5, 0, 1 ) );
+						});
+						Pen.color = Color.black.alpha_(0.25);
+						Pen.font = Font( Font.defaultSansFace, 9, true );
+						unitPoints.do({ |item, ii|
+							Pen.use({
+								Pen.translate( item.x , item.y );
+								Pen.scale(scale,scale.neg);
+								Pen.stringCenteredIn(
+									(((counts[0] / unitSize).floor.asInteger + ii) + 1).asString,
+									Rect.aboutPoint( movePt.rotate(pi), 20, 15)
+								);
+							});
+						});
+
+					};
 
 					Pen.color = Color.red(0.5, 0.5);
 					Pen.font = Font( Font.defaultSansFace, 14 );
