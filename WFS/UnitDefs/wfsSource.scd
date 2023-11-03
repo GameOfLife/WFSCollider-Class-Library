@@ -21,7 +21,7 @@ part of the WFSCollider Class Library default Udefs set
 */
 
 var staticPoint, dynamicPoint, staticPlane, dynamicPlane, multiDef;
-var notPreviewMode, getPreviewMode, renderModeSpec;
+var notPreviewMode, getPreviewMode, renderModeSpec, calcDelayNormal, calcDelayFocused;
 
 notPreviewMode = WFSPreviewSynthDefs.pannerFuncs[\n].keys.includes( WFSLib.previewMode ).not;
 
@@ -32,6 +32,14 @@ renderModeSpec = ListSpec(
 	0,
 	[ "previewMode (%)".format( WFSLib.previewMode ).asSymbol ] ++ WFSOptionsObjectGUI.specs.previewMode.list[1..]
 );
+
+calcDelayNormal = { |server|
+	((WFSSpeakerConf.default.maxDistance + 0.0504) / WFSBasicPan.speedOfSound) // + (server.options.blockSize/server.sampleRate)
+};
+
+calcDelayFocused = { |server|
+	((WFSSpeakerConf.default.maxDistance * 2) / WFSBasicPan.speedOfSound) // + (server.options.blockSize/server.sampleRate)
+};
 
 staticPoint = HiddenFreeUdef( \staticPoint, [
 		[ \point: 		0@0,  	WFSPointSpec( 200, 0.1 ) ],
@@ -75,6 +83,7 @@ if(notPreviewMode) {
 		var crossfader;
 		var focusMul;
 		var point;
+		var addDelay;
 
 		server = target.asTarget.server;
 
@@ -90,7 +99,10 @@ if(notPreviewMode) {
 
 		defNames = [ "wfsa_nsn_", "wfsa_usn_" ]; // normal and uni static n
 
-		normalLevels = crossfader.arraysShouldRun( false ) * crossfader.cornerfades;		focusLevels = crossfader.arraysShouldRun( true );
+		addDelay = calcDelayFocused.value( server ) - 0.06;
+
+		normalLevels = crossfader.arraysShouldRun( false ) * crossfader.cornerfades;
+		focusLevels = crossfader.arraysShouldRun( true );
 
 		// make the pre-panner synth (has to know the nodeID's of the panner synths)
 		prePanSynth = Synth( "wfsp_n_0",
@@ -108,6 +120,7 @@ if(notPreviewMode) {
 							\outOffset, n + ac.outputOffset + WFSSpeakerConf.getOutputBusStartOffset( server ),
 							\amp, normalLevels[i],
 							\arrayLimit, WFSSpeakerConf.default.arrayLimit,
+					        \addDelay, addDelay,
 						] ++ U.formatArgs( [ \point, unit.point, \u_i_ar_0_bus, unit.u_i_ar_0_bus ], server, startPos ),
 						arrayGroup, addAction: \addToTail
 					)
@@ -127,6 +140,7 @@ if(notPreviewMode) {
 								\amp, focusLevels[i],
 								\arrayLimit, WFSSpeakerConf.default.arrayLimit,
 								\focusWidth, WFSSpeakerConf.default.focusWidth,
+						        \addDelay, addDelay,
 							] ++ U.formatArgs( [ \point, unit.point, \u_i_ar_0_bus, unit.u_i_ar_0_bus ], server, startPos ),
 							arrayGroup, addAction: \addToTail
 						)
@@ -220,6 +234,7 @@ if(notPreviewMode) {
 		var normalSynths, focusSynths;
 		var normalLevelBuses, focusLevelBuses;
 		var defNames;
+		var addDelay;
 
 		server = target.asTarget.server;
 
@@ -234,6 +249,8 @@ if(notPreviewMode) {
 			[ "wfsa_nd", "wfsa_fd" ],
 			[ switch( unit.get( \quality ), \good, \l_, \better, \c_, \l_ ) ]
 		].flop.collect(_.join);
+
+		addDelay = calcDelayFocused.value( server ) - 0.06;
 
 		// make the panner synths, but don't send yet
 		normalSynths = arrayConfs.collect({ |item|
@@ -267,7 +284,8 @@ if(notPreviewMode) {
 					\amp, ("c" ++ normalLevelBuses[i]).asSymbol,
 					\outOffset, n + arrayConfs[i].outputOffset + WFSSpeakerConf.getOutputBusStartOffset( server ),
 					\arrayLimit, WFSSpeakerConf.default.arrayLimit,
-					\focusWidth, WFSSpeakerConf.default.focusWidth
+					\focusWidth, WFSSpeakerConf.default.focusWidth,
+				    \addDelay, addDelay,
 				] ++ U.formatArgs( [ \point, unit.point, \u_i_ar_0_bus, unit.u_i_ar_0_bus ], server, startPos ),
 				\addToTail )
 			);
@@ -282,7 +300,8 @@ if(notPreviewMode) {
 					\amp, ("c" ++ focusLevelBuses[i]).asSymbol,
 					\outOffset, n + arrayConfs[i].outputOffset + WFSSpeakerConf.getOutputBusStartOffset( server ),
 					\arrayLimit, WFSSpeakerConf.default.arrayLimit,
-					\focusWidth, WFSSpeakerConf.default.focusWidth
+					\focusWidth, WFSSpeakerConf.default.focusWidth,
+				    \addDelay, addDelay,
 				] ++ U.formatArgs( [ \point, unit.point, \u_i_ar_0_bus, unit.u_i_ar_0_bus ], server, startPos ),
 				\addToTail )
 			);
@@ -373,6 +392,7 @@ if(notPreviewMode) {
 		var crossfader;
 		var gain;
 		var point;
+		var addDelay;
 
 		server = target.asTarget.server;
 
@@ -384,6 +404,8 @@ if(notPreviewMode) {
 		arrayGroup = Group(target, addAction: \addToTail);
 
 		defName = "wfsa_psn_";
+
+		addDelay = calcDelayFocused.value( server ) - 0.06;
 
 		planeLevels = crossfader.crossfades;
 
@@ -403,7 +425,8 @@ if(notPreviewMode) {
 							\gain, gain,
 							\arrayConf, ac,
 							\outOffset, n + ac.outputOffset + WFSSpeakerConf.getOutputBusStartOffset( server ),
-							\amp, planeLevels[i]
+							\amp, planeLevels[i],
+					        \addDelay, addDelay,
 						] ++ U.formatArgs( [ \point, unit.point, \u_i_ar_0_bus, unit.u_i_ar_0_bus ], server, startPos ),
 						arrayGroup, addAction: \addToTail
 					)
@@ -500,6 +523,7 @@ if(notPreviewMode) {
 		var planeLevelBuses;
 		var defName;
 		var gain;
+		var addDelay;
 
 		server = target.asTarget.server;
 
@@ -510,6 +534,9 @@ if(notPreviewMode) {
 		arrayGroup = Group(target, addAction: \addToTail);
 
 		defName =  "wfsa_pd" ++ switch( unit.get( \quality ), \good, \l_, \better, \c_, \l_ );
+
+		addDelay = calcDelayFocused.value( server ) - 0.06;
+
 		// make the panner synths, but don't send yet
 		planeSynths = arrayConfs.collect({ |item|
 			Synth.basicNew( defName ++ item.n, server );
@@ -535,7 +562,8 @@ if(notPreviewMode) {
 					\gain, gain,
 					\arrayConf, arrayConfs[i],
 					\amp, ("c" ++planeLevelBuses[i]).asSymbol,
-					\outOffset, n + arrayConfs[i].outputOffset + WFSSpeakerConf.getOutputBusStartOffset( server )
+					\outOffset, n + arrayConfs[i].outputOffset + WFSSpeakerConf.getOutputBusStartOffset( server ),
+				    \addDelay, addDelay,
 				] ++ U.formatArgs( [ \point, unit.point, \u_i_ar_0_bus, unit.u_i_ar_0_bus ], server, startPos ),
 				\addToTail )
 			);
