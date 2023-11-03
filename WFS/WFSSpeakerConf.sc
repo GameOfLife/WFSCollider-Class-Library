@@ -236,6 +236,10 @@ WFSArrayConf { // configuration for one single speaker array
 		this.prCornerPoints_( array );
 	}
 
+	maxDistance { // distance of furthest speaker from center
+		^[ this.rotatedFirstPoint, this.rotatedLastPoint ].collect(_.rho).maxItem
+	}
+
 	prCornerPoints_ { |array|
 		// re-calculate angle and dist from corner points
 		angle = ((array[1] - array[0]).angle + 0.5pi).wrap(-pi,pi);
@@ -284,6 +288,7 @@ WFSSpeakerConf {
 	var <>focusWidth = 0.5pi;
 
 	var <>focusDetector;
+	var <>maxDistance = 6.3129482811124;
 
 	var <>gain = 0; // in db
 
@@ -341,6 +346,8 @@ WFSSpeakerConf {
 		});
 
 		focusDetector = WFSFocusDetector( this.uniqueCorners );
+
+		this.findMaxDistance;
 
 		this.changed( \init );
 	}
@@ -522,6 +529,10 @@ WFSSpeakerConf {
 			};
 		});
 		^uniqueCorners;
+	}
+
+	findMaxDistance { // distance of furthest speaker from center
+		maxDistance = arrayConfs.collect(_.maxDistance).maxItem;
 	}
 
 	// Server management
