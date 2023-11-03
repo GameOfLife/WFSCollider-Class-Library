@@ -341,25 +341,25 @@ WFSArrayPan : WFSBasicArrayPan {
 	// [ [ delayTimes ... ], [ amplitudes * source .. ] ];
 
 	// example of normal source straight behind a 48-speaker front array
-	WFSArrayPan( 48, 5, 0.5pi ).ar( 1, 0@7 ).plot2; // delays on top, amps on bottom
+	WFSArrayPan( 48, 5, 0.5pi ).ar( 1, 0@7 ).plot; // delays on top, amps on bottom
 
 	// when approaching the array the limit (default: 1m) kicks in
-	WFSArrayPan( 48, 5, 0.5pi ).ar( 1, -2@5.5 ).plot2; // shifted left and closer to array
+	WFSArrayPan( 48, 5, 0.5pi ).ar( 1, -2@5.5 ).plot; // shifted left and closer to array
 
 	// when inside the array the source becomes focused (i.e. delays inversed)
-	WFSArrayPan( 48, 5, 0.5pi ).ar( 1, 0@3 ).plot2; // focused source
+	WFSArrayPan( 48, 5, 0.5pi ).ar( 1, 0@3 ).plot; // focused source
 
 	// focused sources use a window for determining where they play
 	// the window has a 90 degree radius.
-	WFSArrayPan( 48, 5, 0.5pi ).ar( 1, -1@1 ).plot2; // focused source
+	WFSArrayPan( 48, 5, 0.5pi ).ar( 1, -1@1 ).plot; // focused source
 
 	// If a source is turned more than
 	// 90 degrees off the speaker array it will not sound at all:
-	WFSArrayPan( 48, 5, 0.5pi ).ar( 1, -1@ -1 ).plot2; // focused source
+	WFSArrayPan( 48, 5, 0.5pi ).ar( 1, -1@ -1 ).plot; // focused source
 
 	// But if it is within 1m from the center of the room
 	// it will play on all speakers
-	WFSArrayPan( 48, 5, 0.5pi ).ar( 1, 0@0 ).plot2; // focused source
+	WFSArrayPan( 48, 5, 0.5pi ).ar( 1, 0@0 ).plot; // focused source
 
 
 	// WFSArrayPan can be forced to do only focused or unfocused sources via the focus var
@@ -375,16 +375,16 @@ WFSArrayPan : WFSBasicArrayPan {
 	// Typically the forced focus setting is used for dynamic wavefields to create a
 	// smooth transition between focused and unfocused.
 
-	WFSArrayPan( 48, 5, 0.5pi ).focus_(false).ar( 1, 0@3 ).plot2; // forced unfocused source
+	WFSArrayPan( 48, 5, 0.5pi ).focus_(false).ar( 1, 0@3 ).plot; // forced unfocused source
 
 	( //  a transition from behind to in front with forced unfocus
 	p = WFSArrayPan(48, 5, 0.5pi ).focus_(false);
-	{ |i| p.ar(1, 0@i.linlin(0,9,7,3) )[0] }.dup(10).plot2
+	{ |i| p.ar(1, 0@i.linlin(0,9,7,3) )[0] }.dup(10).plot
 	)
 
 	( //  a normal transition from behind to in front (notice the inversion in the middle)
 	p = WFSArrayPan(48, 5, 0.5pi );
-	{ |i| p.ar(1, 0@i.linlin(0,9,7,3) )[0] }.dup(10).plot2
+	{ |i| p.ar(1, 0@i.linlin(0,9,7,3) )[0] }.dup(10).plot
 	)
 
 	*/
