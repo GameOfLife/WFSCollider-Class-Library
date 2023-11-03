@@ -496,7 +496,7 @@ WFSArrayPanPlane : WFSBasicArrayPan {
 		amplitudes = 1/n; // normalize sum for fixed average number of speakers
 
 		// subtract large delay
-		delayOffset = preDelay;
+		delayOffset = preDelay + addDelay;
 
 		intType = int ? intType ? 'N';
 
