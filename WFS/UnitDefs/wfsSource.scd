@@ -48,6 +48,7 @@ staticPoint = HiddenFreeUdef( \staticPoint, [
 		[ \distanceFilter:	0,		[0,2,\lin,0,1].asSpec ],
 		[ \dbRollOff:		-6,		[ -24, 0, \lin, 1, -6 ].asSpec ],
 		[ \maxAmpRadius:	5,		[ 1, 5, \lin, 0, 5, "m" ].asSpec ],
+	    [ \minLatency:  false, BoolSpec(false), false, \init ],
 		[ \dynamic:		false,	BoolSpec(false), true, \nonsynth ], // force dynamic (hidden)
 		[ \renderMode:	\previewMode, renderModeSpec, notPreviewMode, \nonsynth ],
 		[ \busOffset:		0,	IntegerSpec(0,0,128), notPreviewMode, \nonsynth ], // bus offset
@@ -84,6 +85,7 @@ if(notPreviewMode) {
 		var focusMul;
 		var point;
 		var addDelay;
+		var addDelayNormal;
 
 		server = target.asTarget.server;
 
@@ -100,6 +102,11 @@ if(notPreviewMode) {
 		defNames = [ "wfsa_nsn_", "wfsa_usn_" ]; // normal and uni static n
 
 		addDelay = calcDelayFocused.value( server ) - 0.06;
+		if( unit.get( \minLatency ) == true ) {
+			addDelayNormal = calcDelayNormal.value( server ) - 0.06;
+		} {
+			addDelayNormal = addDelay;
+		};
 
 		normalLevels = crossfader.arraysShouldRun( false ) * crossfader.cornerfades;
 		focusLevels = crossfader.arraysShouldRun( true );
@@ -120,7 +127,7 @@ if(notPreviewMode) {
 							\outOffset, n + ac.outputOffset + WFSSpeakerConf.getOutputBusStartOffset( server ),
 							\amp, normalLevels[i],
 							\arrayLimit, WFSSpeakerConf.default.arrayLimit,
-					        \addDelay, addDelay,
+					        \addDelay, addDelayNormal,
 						] ++ U.formatArgs( [ \point, unit.point, \u_i_ar_0_bus, unit.u_i_ar_0_bus ], server, startPos ),
 						arrayGroup, addAction: \addToTail
 					)
@@ -204,6 +211,7 @@ dynamicPoint = HiddenFreeUdef( \dynamicPoint, [
 		[ \latencyComp:  	0,		[0,1].asSpec, false, \init ],
 		[ \dbRollOff:		-6,		[ -24, 0, \lin, 1, -6 ].asSpec ],
 		[ \maxAmpRadius:	5,		[ 1, 5, \lin, 0, 5, "m" ].asSpec ],
+	    [ \minLatency:  false, BoolSpec(false), false, \init ],
 		[ \dynamic:		false,	BoolSpec(false), true, \nonsynth ], // force dynamic (hidden)
 		[ \renderMode:			\previewMode, renderModeSpec, notPreviewMode, \nonsynth ],
 		[ \busOffset:		0,	IntegerSpec(0,0,128), notPreviewMode, \nonsynth ], // bus offset
@@ -235,6 +243,7 @@ if(notPreviewMode) {
 		var normalLevelBuses, focusLevelBuses;
 		var defNames;
 		var addDelay;
+		var addDelayNormal;
 
 		server = target.asTarget.server;
 
@@ -251,6 +260,11 @@ if(notPreviewMode) {
 		].flop.collect(_.join);
 
 		addDelay = calcDelayFocused.value( server ) - 0.06;
+		if( unit.get( \minLatency ) == true ) {
+			addDelayNormal = calcDelayNormal.value( server ) - 0.06;
+		} {
+			addDelayNormal = addDelay;
+		};
 
 		// make the panner synths, but don't send yet
 		normalSynths = arrayConfs.collect({ |item|
@@ -285,7 +299,7 @@ if(notPreviewMode) {
 					\outOffset, n + arrayConfs[i].outputOffset + WFSSpeakerConf.getOutputBusStartOffset( server ),
 					\arrayLimit, WFSSpeakerConf.default.arrayLimit,
 					\focusWidth, WFSSpeakerConf.default.focusWidth,
-				    \addDelay, addDelay,
+				    \addDelay, addDelayNormal,
 				] ++ U.formatArgs( [ \point, unit.point, \u_i_ar_0_bus, unit.u_i_ar_0_bus ], server, startPos ),
 				\addToTail )
 			);
@@ -356,6 +370,7 @@ staticPlane = HiddenFreeUdef( \staticPlane, [
 		[ \latencyComp:  	0,		[0,1].asSpec, false, \init ],
 		[ \dbRollOff:		0,		[ -24, 0, \lin, 1, 0 ].asSpec ],
 		[ \maxAmpRadius:	5,		[ 1, 5, \lin, 0, 5, "m" ].asSpec ],
+	    [ \minLatency:  false, BoolSpec(false), false, \init ],
 		[ \dynamic:		false,	BoolSpec(false), true, \nonsynth ], // force dynamic (hidden)
 		[ \renderMode:			\previewMode, renderModeSpec, notPreviewMode, \nonsynth ],
 		[ \busOffset:		0,	IntegerSpec(0,0,128), notPreviewMode, \nonsynth ], // bus offset
@@ -405,7 +420,11 @@ if(notPreviewMode) {
 
 		defName = "wfsa_psn_";
 
-		addDelay = calcDelayFocused.value( server ) - 0.06;
+		if( unit.get( \minLatency ) == true ) {
+			addDelay = calcDelayNormal.value( server ) - 0.06;
+		} {
+			addDelay = calcDelayFocused.value( server ) - 0.06;
+		};
 
 		planeLevels = crossfader.crossfades;
 
@@ -490,6 +509,7 @@ dynamicPlane = HiddenFreeUdef( \dynamicPlane, [
 		[ \latencyComp:  	0,		[0,1].asSpec, false, \init ],
 		[ \dbRollOff:		0,		[ -24, 0, \lin, 1, 0 ].asSpec ],
 		[ \maxAmpRadius:	5,		[ 1, 5, \lin, 0, 5, "m" ].asSpec ],
+	    [ \minLatency:  false, BoolSpec(false), false, \init ],
 		[ \dynamic:		false,	BoolSpec(false), true, \nonsynth ], // force dynamic (hidden)
 		[ \renderMode:			\previewMode, renderModeSpec, notPreviewMode, \nonsynth ],
 		[ \busOffset:		0,	IntegerSpec(0,0,128), notPreviewMode, \nonsynth ], // bus offset
@@ -535,7 +555,11 @@ if(notPreviewMode) {
 
 		defName =  "wfsa_pd" ++ switch( unit.get( \quality ), \good, \l_, \better, \c_, \l_ );
 
-		addDelay = calcDelayFocused.value( server ) - 0.06;
+		if( unit.get( \minLatency ) == true ) {
+			addDelay = calcDelayNormal.value( server ) - 0.06;
+		} {
+			addDelay = calcDelayFocused.value( server ) - 0.06;
+		};
 
 		// make the panner synths, but don't send yet
 		planeSynths = arrayConfs.collect({ |item|
