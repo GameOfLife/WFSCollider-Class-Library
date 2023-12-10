@@ -339,10 +339,6 @@ WFSLib {
 						WFSOptionsGUI.newOrCurrent;
 					});
 				} {
-					if (thisProcess.platform.name === 'windows' ) {
-						UMenuBarIDE.mode = \toolbar;
-					};
-
 					UMenuBarIDE("WFSCollider");
 
 					UMenuBarIDE.add("WFS", \separator, "View" );
