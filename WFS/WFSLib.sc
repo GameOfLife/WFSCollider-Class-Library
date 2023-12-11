@@ -465,8 +465,12 @@ WFSLib {
 		paths = [
 			File.getcwd,
 			"/Library/Application Support/WFSCollider",
-			"~/Library/Application Support/WFSCollider".spath
+			"~/Library/Application Support/WFSCollider".standardizePath
 		].collect(_ +/+ "preferences.scd");
+
+		paths = paths ++ [
+			Platform.userConfigDir +/+ "wfscollider_prefs.scd";
+		];
 
 		paths.do({ |path|
 			if( File.exists( path ) ) {
@@ -518,7 +522,7 @@ WFSLib {
 	*writePrefs { |path|
 		var file;
 		path = path ? this.getCurrentPrefsPath ?
-			"~/Library/Application Support/WFSCollider/preferences.scd".spath;
+		    (Platform.userConfigDir +/+ "wfscollider_prefs.scd");
 		path.dirname.makeDir;
 		"writing preferences file:\n%\n".postf( path );
 		file = File( path, "w" );
@@ -529,7 +533,7 @@ WFSLib {
 	*deletePrefs { |path|
 		var file;
 		path = path ? this.getCurrentPrefsPath ?
-			"~/Library/Application Support/WFSCollider/preferences.scd".spath;
+			(Platform.userConfigDir +/+ "wfscollider_prefs.scd");
 		"rm %".format( path.asString.escapeChar( $ ) ).unixCmd;
 	}
 
