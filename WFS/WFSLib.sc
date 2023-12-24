@@ -47,6 +47,7 @@ WFSLib {
 						.blockSize_( wfsOptions.blockSize )
 						.sampleRate_( wfsOptions.sampleRate )
 						.maxSynthDefs_(2048)
+					    .numWireBufs_(2048)
 						.hardwareBufferSize_( item.hardwareBufferSize );
 					if( item.device.isString or: item.device.isNil ) {
 						WFSServers.default[ 0 ][ i ].options.device = item.device;
