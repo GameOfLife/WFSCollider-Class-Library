@@ -371,7 +371,9 @@ WFSLib {
 	  File.mkdir( Platform.userAppSupportDir +/+ "wfs_synthdefs" );
 
 	  WFSSynthDefs.generateAllOrCopyFromResources({
-	  	StartUp.defer({ WFSServers.default.boot; })
+	  	StartUp.defer({
+			ULib.servers.do(_.boot);
+		})
 	  }, Platform.userAppSupportDir +/+ "wfs_synthdefs" );
 
       UEvent.nrtStartBundle = [ [ "/d_loadDir", Platform.userAppSupportDir +/+ "wfs_synthdefs" ] ];
