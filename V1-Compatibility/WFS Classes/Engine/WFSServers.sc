@@ -421,9 +421,11 @@ WFSServers {
 
 			multiServer.servers.do({ |server, ii|
 				if( this.isMaster && { SyncCenter.mode === \sample } ) {
-					widgets.add(SyncCenterServerWidget(window,70@17,server,true))
-				};
-				server.uView( window );
+					widgets.add(SyncCenterServerWidget(window,70@17,server,true));
+					server.uView( window, 386 - 74 );
+				} {
+					server.uView( window );
+				}
 				});
 			});
 
