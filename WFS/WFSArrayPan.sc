@@ -292,6 +292,8 @@ WFSPrePan : WFSBasicPan {
 
 WFSBasicArrayPan : WFSBasicPan {
 
+	classvar <>tapering = 0;
+
 	// point source on single array, without large delay
 
 	var <n, <dist, <angle, <offset, <spWidth;
@@ -390,7 +392,6 @@ WFSArrayPan : WFSBasicArrayPan {
 	*/
 
 	classvar <>useFocusFades = true; // need to rebuild synthdefs after changing this
-	classvar <>tapering = 0;
 
 	var <>focus; // nil, true or false
 	var <>dbRollOff = -9; // per speaker roll-off
@@ -494,6 +495,12 @@ WFSArrayPanPlane : WFSBasicArrayPan {
 
 		// calculate amplitudes
 		amplitudes = 1/n; // normalize sum for fixed average number of speakers
+
+		// apply tapering
+		amplitudes = amplitudes * (1..n).fold(0,(n/2) + 0.5)
+				.linlin(0, (n+1) * tapering, -0.5pi, 0.5pi )
+				.sin
+				.linlin(-1,1,0,1);
 
 		// subtract large delay
 		delayOffset = preDelay + addDelay;
