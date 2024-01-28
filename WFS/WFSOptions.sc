@@ -64,6 +64,9 @@ WFSMasterOptions : AbstractWFSOptions {
 
 	*presets { ^Dictionary[] }
 
+	inDevice { ^if( device.isString or: device.isNil ) { device } { device[0] } }
+	outDevice { ^if( device.isString or: device.isNil ) { device } { device[1] } }
+
 }
 
 WFSServerOptions : AbstractWFSOptions {
@@ -107,6 +110,9 @@ WFSServerOptions : AbstractWFSOptions {
 	}
 
 	useForWFS { ^true }
+
+	inDevice { ^if( device.isString or: device.isNil ) { device } { device[0] } }
+	outDevice { ^if( device.isString or: device.isNil ) { device } { device[1] } }
 
 }
 

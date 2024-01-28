@@ -2,7 +2,215 @@ WFSLib {
 
 	classvar <>previewMode;
 
+
 	*startup { |wfsOptions, useMenuWindow = false|
+		var servers, wfsServers, ms, o;
+		var bootFunc;
+
+		if( Platform.ideName == "scapp" ) { ^this.startupOld( wfsOptions, useMenuWindow = false ) };
+
+		if( Server.respondsTo( \nodeAllocClass_ ) ) {
+			Server.nodeAllocClass = UNodeIDAllocator;
+		};
+
+		WFSOptions.presetManager.filePath = Platform.userConfigDir +/+ "default" ++ "." ++ WFSOptions.presetManager.id ++ ".presets";
+		WFSOptions.presetManager.readAdd( silent: true );
+
+		WFSOptions.makeCurrentAtInit = true;
+
+		this.loadOldPrefs;
+		this.loadPrefs;
+
+		ULib.closeServers;
+
+		if( WFSSpeakerConf.default.isNil ) {
+			WFSSpeakerConf.default = WFSSpeakerConf.fromPreset( \default );
+		};
+
+		if( wfsOptions.isNil ) {
+			wfsOptions = WFSOptions.current ?? { WFSOptions.fromPreset( \default ); };
+		};
+
+		wfsOptions.makeCurrent;
+
+		WFSOptions.makeCurrentAtInit = false;
+
+		if( wfsOptions.masterOptions.notNil ) {
+			ms = Server( 'wfs_master', NetAddr( "127.0.0.1", 57999 ) );
+			servers = servers.add( ms );
+
+			ms.options
+			.numInputBusChannels_( wfsOptions.masterOptions.numInputBusChannels )
+			.numOutputBusChannels_( wfsOptions.masterOptions.numOutputBusChannels )
+			.inDevice_( wfsOptions.masterOptions.inDevice )
+			.outDevice_( wfsOptions.masterOptions.outDevice )
+			.hardwareBufferSize_( wfsOptions.masterOptions.hardwareBufferSize )
+			.blockSize_( wfsOptions.blockSize )
+			.sampleRate_( wfsOptions.sampleRate )
+			.maxSynthDefs_(2048)
+		    .numWireBufs_(2048)
+			.memSize_( (2**19).asInteger ) // 256MB
+			.maxNodes_( (2**16).asInteger );
+
+			if( ms.options.respondsTo( \maxLogins ) ) {
+				ms.options
+				.maxLogins_(2)
+				.bindAddress_("0.0.0.0");
+			};
+
+			WFSSpeakerConf.setOutputBusStartOffset( ms, wfsOptions.masterOptions.outputBusStartOffset );
+			WFSServers.pulsesOutputBus = wfsOptions.masterOptions.toServersBus;
+			SyncCenter.outBus = wfsOptions.masterOptions.toServersBus;
+			if( wfsOptions.masterOptions.useForWFS ) { wfsServers = wfsServers.add( ms ) };
+		};
+
+		wfsOptions.serverOptions.do({ |so,i|
+			var lb;
+			if( so.n == 1 ) {
+				lb = Server( so.name, NetAddr( so.ip, so.startPort ) );
+			} {
+				lb = LoadBalancer.fill( so.n, "wfs"++(i+1), NetAddr( so.ip, so.startPort ) );
+				lb.name = so.name;
+			};
+			servers = servers.add( lb );
+
+			lb.options
+			.numInputBusChannels_( so.numInputBusChannels )
+			.numOutputBusChannels_( so.numOutputBusChannels )
+			.inDevice_( so.inDevice )
+			.outDevice_( so.outDevice )
+			.hardwareBufferSize_( so.hardwareBufferSize )
+			.blockSize_( wfsOptions.blockSize )
+			.sampleRate_( wfsOptions.sampleRate )
+			.maxSynthDefs_(2048)
+		    .numWireBufs_(2048)
+			.memSize_( (2**19).asInteger ) // 256MB
+			.maxNodes_( (2**16).asInteger );
+
+			if( lb.options.respondsTo( \maxLogins ) ) {
+				lb.options
+				.maxLogins_(2)
+				.bindAddress_("0.0.0.0");
+			};
+
+			if( so.n == 1 ) {
+				WFSSpeakerConf.setOutputBusStartOffset( lb, so.outputBusStartOffset );
+			} {
+				lb.servers.do({ |srv|
+					WFSSpeakerConf.setOutputBusStartOffset( srv, so.outputBusStartOffset );
+				});
+			};
+
+			wfsServers = wfsServers.add( lb );
+		});
+
+		WFSLib.previewMode = wfsOptions.previewMode;
+
+		UEvent.renderNumChannels = {
+			var num;
+			num = WFSPreviewSynthDefs.pannerFuncs[ \n ][ WFSLib.previewMode ].value(0,0@0) !?
+				{ |x| x.asArray.size };
+			num = num ?? {
+				WFSSpeakerConf.default.getArraysFor(
+					ULib.servers[0].asTarget.server
+				).collect(_.n).sum
+			};
+			if( num == 0 ) {
+				SCAlert( "Can't export audio file with current setting. Please try again with a different previewMode.",
+					[ "open prefs", "ok" ],
+					[ { WFSOptionsGUI.newOrCurrent }, { } ]
+				);
+			};
+			num;
+		};
+
+		WFSSpeakerConf.resetServers;
+		WFSSpeakerConf.numSystems = wfsServers.size;
+		wfsServers.do({ |srv, i| WFSSpeakerConf.addServer( srv, i ); });
+
+		Udef.userDefsFolder = File.getcwd +/+ "UnitDefs";
+		UMapDef.userDefsFolder = File.getcwd +/+ "UMapDefs";
+
+		[ Udef, "UnitDefs", UMapDef, "UMapDefs", UnitRack, "UnitRacks" ].pairsDo({ |a,b|
+			a.defsFolders = a.defsFolders.add( WFSArrayPan.filenameSymbol.asString.dirname +/+ b );
+		});
+
+		GlobalPathDict.put( \wfs, WFSOptions.current.wfsSoundFilesLocation );
+
+		if( SyncCenter.mode == 'sample' ) {
+			SyncCenter.writeDefs;
+		};
+
+		Udef.synthDefDir = Platform.userAppSupportDir +/+ "u_synthdefs/";
+
+		if( Udef.synthDefDir.notNil ) { File.mkdir( Udef.synthDefDir ); };
+
+		this.loadUDefs( false );
+
+		if( WFSOptions.current.showGUI ) { this.initDefaults };
+
+		ULib.servers = servers;
+
+		if( wfsOptions.showServerWindow ) {
+			ULib.serversWindow;
+		};
+
+		UMenuBar.remove;
+
+		UScore.openFunc = { |path| // old xml format compatibility
+			if( File(path,"r").readAllString[..8] == "<xml:wfs>") {
+				WFSScore.readWFSFile(path).asUEvent;
+			} {
+				UScore.readTextArchive( path );
+			};
+		};
+
+		if( wfsOptions.showGUI ) { this.initGUI( useMenuWindow ) };
+
+		wfsOptions.startupAction.value( this );
+
+		File.mkdir( Platform.userAppSupportDir +/+ "wfs_synthdefs" );
+
+		WFSSynthDefs.generateAllOrCopyFromResources({
+			StartUp.defer({
+				ULib.servers.do(_.boot);
+			})
+		}, Platform.userAppSupportDir +/+ "wfs_synthdefs" );
+
+		UEvent.nrtStartBundle = [ [ "/d_loadDir", Platform.userAppSupportDir +/+ "wfs_synthdefs" ] ];
+
+		if( Udef.synthDefDir.notNil ) {
+			UEvent.nrtStartBundle = UEvent.nrtStartBundle.add( [ "/d_loadDir", Udef.synthDefDir ] )
+		};
+
+		ServerBoot.add( this );
+
+		CmdPeriod.add( this );
+
+		if( wfsOptions.playSoundWhenReady or: { wfsOptions.serverAction.notNil } ) {
+			Routine({
+				var allTypes, defs;
+				var servers;
+				servers = ULib.allServers;
+				while {
+					servers.collect( _.serverRunning ).every( _ == true ).not;
+				} {
+					0.2.wait;
+				};
+				"System ready".postln;
+				if( wfsOptions.playSoundWhenReady ) {
+					"playing lifesign".postln;
+					"say 'server %, ready'".format( ULib.servers.first.name ).unixCmd;
+				};
+				servers.do({ |srv| wfsOptions.serverAction.value( srv ) });
+			}).play( AppClock );
+		};
+
+		Server.default = ULib.allServers.first;
+
+	}
+
+	*startupOld { |wfsOptions, useMenuWindow = false|
 		var servers, o;
 		var bootFunc;
 
@@ -138,7 +346,11 @@ WFSLib {
 		};
 
 		servers = servers ++ WFSServers.default.multiServers.collect({ |ms|
-			LoadBalancer( *ms.servers ).name_( ms.hostName.asSymbol )
+			if( ms.servers.size > 1 ) {
+				LoadBalancer( *ms.servers ).name_( ms.hostName.asSymbol )
+			} {
+				ms.servers[0];
+			};
 		});
 
 		WFSSpeakerConf.resetServers;
@@ -186,116 +398,7 @@ WFSLib {
 
 		this.loadUDefs( false );
 
-		if( WFSOptions.current.showGUI ) {
-
-			UChain.makeDefaultFunc = {
-				UChain( \bufSoundFile,
-					[ \wfsSource,
-						[ \point, 5.0.rand2@(5.0 rrand: 10) ] // always behind array
-					]
-				).useSndFileDur
-			};
-
-			UChain.presetManager
-				.putRaw( \dynamicPoint, {
-					UChain(
-						[ \bufSoundFile, [
-							\soundFile, BufSndFile.newBasic("@resources/sounds/a11wlk01-44_1.aiff",
-								107520, 1, 44100, 0, nil, 1, true)
-						] ],
-						[ \wfsSource,
-							[
-								\point, [
-									\lag_point, [
-										\point, 5.0.rand2@(5.0 rrand: 10),
-										\time, 1
-									]
-								],
-								\quality, \better
-							] // always behind array
-						]
-					).useSndFileDur
-				})
-				.putRaw( \staticPlane, {
-					UChain(
-						\bufSoundFile,
-						[ \wfsSource, [  \point, 5.0.rand2@(5.0 rrand: 10), \type, \plane ] ]
-					).useSndFileDur
-				})
-				.putRaw( \circlePath, {
-					UChain(
-						[ \bufSoundFile, [
-							\soundFile, BufSndFile.newBasic("@resources/sounds/a11wlk01-44_1.aiff",
-								107520, 1, 44100, 0, nil, 1, true)
-						] ],
-						[ \wfsSource, [
-							\point, UMap( \circle_trajectory, [ \speed, 0.4 ] ),
-							\quality, \better
-						] ]
-					).useSndFileDur
-				})
-				.putRaw( \trajectory, {
-					UChain(
-						\bufSoundFile,
-						[ \wfsSource, [
-							\point, UMap( 'trajectory', [ \trajectory,
-								WFSPathBuffer(
-									WFSPath2.generate( 5, 2.4380952380952,
-										[ \random, [\seed, 100000.rand, \radius, 10@10] ]
-									), 0, 1, true
-								)
-							] ),
-							\quality, \better
-						] ]
-					).useSndFileDur
-				})
-				.putRaw( \sinewave, { UChain(
-					\sine,
-					[ \wfsSource,
-							[
-								\point, [ \lag_point, [
-									\point, 5.0.rand2@(5.0 rrand: 10), \time, 1
-								] ],
-								\quality, \better
-							] // always behind array
-						]
-					).useSndFileDur
-				})
-				.putRaw( \noiseband, { UChain(
-					\pinkNoise,
-					[ \cutFilter, [
-						\freq, 1.0.rand.linexp( 0,1, 200, 2000 ).round(200) + [0,200]
-					] ],
-					[ \wfsSource, [
-						\point, [ \lag_point, [
-							\point, 5.0.rand2@(5.0 rrand: 10), \time, 1
-						] ],
-						\quality, \better
-					] ]
-					).useSndFileDur
-				})
-				.putRaw( \dualdelay, UChain(
-					'bufSoundFile',
-					[ 'delay',
-						[ 'time', 0.3, 'maxTime', 0.3, 'dry', 0.0, 'amp', 0.5, 'u_o_ar_0_bus', 1 ]
-					],
-					[ 'delay',
-						[ 'time', 0.5, 'maxTime', 0.5, 'dry', 0.0, 'amp', 0.5, 'u_o_ar_0_bus', 2 ]
-					],
-					[ 'wfsSource', [ 'point', Point(-6, 6) ] ],
-					[ 'wfsSource', [ 'type', 'plane', 'point', Point(6, 6), 'u_i_ar_0_bus', 1 ] ],
-					[ 'wfsSource', [ 'type', 'plane', 'point', Point(-6, -6), 'u_i_ar_0_bus', 2 ] ]
-					)
-				);
-
-			PresetManager.all.do({ |pm|
-				if( pm.object != WFSOptions ) {
-					pm.filePath = Platform.userConfigDir +/+ "default" ++ "." ++ pm.id ++ ".presets";
-					pm.readAdd( silent: true );
-				};
-			});
-
-		};
+		if( WFSOptions.current.showGUI ) { this.initDefaults };
 
 		ULib.servers = servers;
 
@@ -318,53 +421,7 @@ WFSLib {
 			};
 		};
 
-		if( wfsOptions.showGUI ) {
-
-			if(thisProcess.platform.class.asSymbol === 'OSXPlatform' && {
-					thisProcess.platform.ideName.asSymbol === \scapp
-				}) {
-			    UMenuBar();
-			    SCMenuItem.new(UMenuBar.viewMenu, "WFS Position tracker").action_({
-					WFSPositionTrackerGUI.newOrCurrent;
-					WFSPositionTracker.start;
-				});
-			} {
-				if( useMenuWindow ) {
-					UMenuWindow();
-
-					UMenuWindow.viewMenu.tree.put( 'WFS Position tracker', {
-						WFSPositionTrackerGUI.newOrCurrent;
-						WFSPositionTracker.start;
-					});
-					UMenuWindow.viewMenu.tree.put( 'WFS Preferences...', {
-						WFSOptionsGUI.newOrCurrent;
-					});
-				} {
-					UMenuBarIDE("WFSCollider");
-
-					UMenuBarIDE.add("WFS", \separator, "View" );
-
-					UMenuBarIDE.add("WFSServers", {
-						WFSServers.default.makeWindow;
-					}, "View");
-
-					UMenuBarIDE.add("WFS Position tracker", {
-						WFSPositionTrackerGUI.newOrCurrent;
-						WFSPositionTracker.start;
-					}, "View");
-
-					UMenuBarIDE.add("Preferences", \separator );
-
-					UMenuBarIDE.add("Preferences...", {
-						WFSOptionsGUI.newOrCurrent;
-					});
-
-				};
-			};
-
-			UGlobalGain.gui;
-			UGlobalEQ.gui;
-		};
+		if( wfsOptions.showGUI ) { this.initGUI( useMenuWindow ) };
 
 	  wfsOptions.startupAction.value( this );
 
@@ -462,6 +519,163 @@ WFSLib {
 			ULib.allServers.do(_.loadDirectory( Udef.synthDefDir ? SynthDef.synthDefDir ));
 		};
      }
+
+	*initDefaults {
+		UChain.makeDefaultFunc = {
+			UChain( \bufSoundFile,
+				[ \wfsSource,
+					[ \point, 5.0.rand2@(5.0 rrand: 10) ] // always behind array
+				]
+			).useSndFileDur
+		};
+
+		UChain.presetManager
+		.putRaw( \dynamicPoint, {
+			UChain(
+				[ \bufSoundFile, [
+					\soundFile, BufSndFile.newBasic("@resources/sounds/a11wlk01-44_1.aiff",
+						107520, 1, 44100, 0, nil, 1, true)
+				] ],
+				[ \wfsSource,
+					[
+						\point, [
+							\lag_point, [
+								\point, 5.0.rand2@(5.0 rrand: 10),
+								\time, 1
+							]
+						],
+						\quality, \better
+					] // always behind array
+				]
+			).useSndFileDur
+		})
+		.putRaw( \staticPlane, {
+			UChain(
+				\bufSoundFile,
+				[ \wfsSource, [  \point, 5.0.rand2@(5.0 rrand: 10), \type, \plane ] ]
+			).useSndFileDur
+		})
+		.putRaw( \circlePath, {
+			UChain(
+				[ \bufSoundFile, [
+					\soundFile, BufSndFile.newBasic("@resources/sounds/a11wlk01-44_1.aiff",
+						107520, 1, 44100, 0, nil, 1, true)
+				] ],
+				[ \wfsSource, [
+					\point, UMap( \circle_trajectory, [ \speed, 0.4 ] ),
+					\quality, \better
+				] ]
+			).useSndFileDur
+		})
+		.putRaw( \trajectory, {
+			UChain(
+				\bufSoundFile,
+				[ \wfsSource, [
+					\point, UMap( 'trajectory', [ \trajectory,
+						WFSPathBuffer(
+							WFSPath2.generate( 5, 2.4380952380952,
+								[ \random, [\seed, 100000.rand, \radius, 10@10] ]
+							), 0, 1, true
+						)
+					] ),
+					\quality, \better
+				] ]
+			).useSndFileDur
+		})
+		.putRaw( \sinewave, { UChain(
+			\sine,
+			[ \wfsSource,
+				[
+					\point, [ \lag_point, [
+						\point, 5.0.rand2@(5.0 rrand: 10), \time, 1
+					] ],
+					\quality, \better
+				] // always behind array
+			]
+		).useSndFileDur
+		})
+		.putRaw( \noiseband, { UChain(
+			\pinkNoise,
+			[ \cutFilter, [
+				\freq, 1.0.rand.linexp( 0,1, 200, 2000 ).round(200) + [0,200]
+			] ],
+			[ \wfsSource, [
+				\point, [ \lag_point, [
+					\point, 5.0.rand2@(5.0 rrand: 10), \time, 1
+				] ],
+				\quality, \better
+			] ]
+		).useSndFileDur
+		})
+		.putRaw( \dualdelay, UChain(
+			'bufSoundFile',
+			[ 'delay',
+				[ 'time', 0.3, 'maxTime', 0.3, 'dry', 0.0, 'amp', 0.5, 'u_o_ar_0_bus', 1 ]
+			],
+			[ 'delay',
+				[ 'time', 0.5, 'maxTime', 0.5, 'dry', 0.0, 'amp', 0.5, 'u_o_ar_0_bus', 2 ]
+			],
+			[ 'wfsSource', [ 'point', Point(-6, 6) ] ],
+			[ 'wfsSource', [ 'type', 'plane', 'point', Point(6, 6), 'u_i_ar_0_bus', 1 ] ],
+			[ 'wfsSource', [ 'type', 'plane', 'point', Point(-6, -6), 'u_i_ar_0_bus', 2 ] ]
+		)
+		);
+
+		PresetManager.all.do({ |pm|
+			if( pm.object != WFSOptions ) {
+				pm.filePath = Platform.userConfigDir +/+ "default" ++ "." ++ pm.id ++ ".presets";
+				pm.readAdd( silent: true );
+			};
+		});
+	}
+
+	*initGUI { |useMenuWindow = false|
+
+		if(thisProcess.platform.class.asSymbol === 'OSXPlatform' && {
+			thisProcess.platform.ideName.asSymbol === \scapp
+		}) {
+			UMenuBar();
+			SCMenuItem.new(UMenuBar.viewMenu, "WFS Position tracker").action_({
+				WFSPositionTrackerGUI.newOrCurrent;
+				WFSPositionTracker.start;
+			});
+		} {
+			if( useMenuWindow ) {
+				UMenuWindow();
+
+				UMenuWindow.viewMenu.tree.put( 'WFS Position tracker', {
+					WFSPositionTrackerGUI.newOrCurrent;
+					WFSPositionTracker.start;
+				});
+				UMenuWindow.viewMenu.tree.put( 'WFS Preferences...', {
+					WFSOptionsGUI.newOrCurrent;
+				});
+			} {
+				UMenuBarIDE("WFSCollider");
+
+				UMenuBarIDE.add("WFS", \separator, "View" );
+
+				UMenuBarIDE.add("WFSServers", {
+					WFSServers.default.makeWindow;
+				}, "View");
+
+				UMenuBarIDE.add("WFS Position tracker", {
+					WFSPositionTrackerGUI.newOrCurrent;
+					WFSPositionTracker.start;
+				}, "View");
+
+				UMenuBarIDE.add("Preferences", \separator );
+
+				UMenuBarIDE.add("Preferences...", {
+					WFSOptionsGUI.newOrCurrent;
+				});
+
+			};
+		};
+
+		UGlobalGain.gui;
+		UGlobalEQ.gui;
+	}
 
 	*getCurrentPrefsPath { |action|
 		var paths;

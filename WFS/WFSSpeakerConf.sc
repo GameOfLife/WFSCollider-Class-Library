@@ -545,7 +545,7 @@ WFSSpeakerConf {
 	}
 
 	*addServer { |server, system = 0, outputBusStartOffset|
-		server = server.asCollection.collect(_.asTarget).collect(_.server);
+		server = server.asArray.collect(_.asTarget).collect(_.server);
 		server.do({ |server|
 			serverGroups[ system ].add( server );
 			if( outputBusStartOffset.notNil ) {
@@ -555,7 +555,7 @@ WFSSpeakerConf {
 	}
 
 	*removeServer { |server|
-		server = server.asCollection.collect(_.asTarget).collect(_.server);
+		server = server.asArray.collect(_.asTarget).collect(_.server);
 		server.do({ |server|
 			serverGroups.do(_.remove(server));
 			this.removeOutputBusStartOffset( server );
