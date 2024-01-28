@@ -152,7 +152,7 @@ WFSLib {
 		ULib.servers = servers;
 
 		if( wfsOptions.showServerWindow ) {
-			ULib.serversWindow;
+			ULib.serversWindow( "WFSCollider Servers" );
 		};
 
 		UMenuBar.remove;
