@@ -655,8 +655,8 @@ WFSLib {
 
 				UMenuBarIDE.add("WFS", \separator, "View" );
 
-				UMenuBarIDE.add("WFSServers", {
-					WFSServers.default.makeWindow;
+				UMenuBarIDE.add("WFSCollider Servers", {
+					ULib.window !? _.front ?? { ULib.serversWindow( "WFSCollider Servers" ) };
 				}, "View");
 
 				UMenuBarIDE.add("WFS Position tracker", {
