@@ -106,7 +106,7 @@ WFSServerOptionsGUI : AbstractWFSOptionsGUI {
 	*initClass {
 		specs = OEM(
 			\name, StringSpec("Game Of Life 1"),
-			\ip, StringSpec("127.0.0.1"),
+			\ip, IPSpec("127.0.0.1"),
 			\startPort, IntegerSpec( 58000, 7000, 100000 ),
 			\n, IntegerSpec( 8, 1, 16 ),
 			\numInputBusChannels, IntegerSpec( 8, 8, 512 ),
