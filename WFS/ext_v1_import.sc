@@ -94,13 +94,13 @@
 	}
 
 	asBufSndFile {
-		^BufSndFile.newBasic( filePath, sfNumFrames, 1, sfSampleRate, startFrame,
+		^BufSndFile.newBasic( filePath.replace( "/WFSSoundFiles", "@wfs" ), sfNumFrames, 1, sfSampleRate, startFrame,
 			startFrame + this.samplesPlayed, pbRate, loop.asInteger.booleanValue
 		);
 	}
 
 	asDiskSndFile {
-		^BufSndFile.newBasic( filePath, sfNumFrames, 1, sfSampleRate, startFrame,
+		^BufSndFile.newBasic( filePath.replace( "/WFSSoundFiles", "@wfs" ), sfNumFrames, 1, sfSampleRate, startFrame,
 			startFrame + this.samplesPlayed, pbRate, loop.asInteger.booleanValue
 		);
 	}
@@ -119,7 +119,7 @@
 		if( clickTrackPath.notNil ) {
 			uevts = [
 				UChain( 0, maxTrack + 1, inf, false,
-					[ \diskSoundFile, [ \soundFile, clickTrackPath ] ],
+					[ \diskSoundFile, [ \soundFile, clickTrackPath.replace( "/WFSSoundFiles", "@wfs" ) ] ],
 					[ \wfsMasterOut, [ \toServers, false ] ]
 				)
 			] ++ uevts
