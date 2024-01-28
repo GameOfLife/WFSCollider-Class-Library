@@ -158,6 +158,7 @@ WFSServers {
 
 	close {
 		this.quit;
+		Server.default = Server.local;
 		this.allServers.do({ |item|
 			Server.all.remove( item );
 			ServerTree.objects !? _.removeAt( item );
