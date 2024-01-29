@@ -26,7 +26,7 @@ MultiChannelUdef( \wfsMasterOut, { |bus = 0, toServers = 1, u_busOffset = 14|
 
 	Out.ar( bus, UIn.ar( 0, Udef.numChannels ) * UEnv.kr( useGlobalGain: useGlobalGain ) );
 }, channels: (1..8))
-	.category_( \wfs_io )
+	.category_( \private )
 	.setSpec( \u_busOffset, PositiveIntegerSpec( 14 ) )
 	.setSpec( \bus, PositiveIntegerSpec( 0 ) )
 	.setSpec( \toServers, BoolSpec( true ) )
