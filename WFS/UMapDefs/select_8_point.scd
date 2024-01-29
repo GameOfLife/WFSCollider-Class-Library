@@ -29,6 +29,9 @@ UMapDef( \select_8_point, {
 	);
 	UMapOut.kr( sig, false );
 }).category_( \point_utility )
+    .canUseUMapFunc_({ |unit, key, umapdef|
+		unit.getSpec( key ).isKindOf( PointSpec );
+	})
 	.setSpec( \interpolation, BoolSpec(true) )
 	.setSpec( \index, [0,7].asSpec )
 	.setSpec( \point0, WFSPointSpec(200, 0.1) )
