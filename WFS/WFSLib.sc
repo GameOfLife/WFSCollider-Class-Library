@@ -151,12 +151,6 @@ WFSLib {
 
 		ULib.servers = servers;
 
-		if( wfsOptions.showServerWindow ) {
-			ULib.serversWindow( "WFSCollider Servers" );
-		};
-
-		UMenuBar.remove;
-
 		UScore.openFunc = { |path| // old xml format compatibility
 			if( File(path,"r").readAllString[..8] == "<xml:wfs>") {
 				WFSScore.readWFSFile(path).asUEvent;
@@ -165,7 +159,11 @@ WFSLib {
 			};
 		};
 
-		if( wfsOptions.showGUI ) { this.initGUI( useMenuWindow ) };
+		if( wfsOptions.showGUI ) { this.initGUI };
+
+		if( wfsOptions.showServerWindow ) {
+			ULib.serversWindow( "WFSCollider Servers" );
+		};
 
 		wfsOptions.startupAction.value( this );
 
