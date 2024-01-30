@@ -469,10 +469,9 @@ WFSLib {
 
 	*cmdPeriod {
 		if( WFSOptions.current.notNil ) {
-			WFSServers.default.multiServers
-				.collect(_.servers).flatten(1).do({ |srv|
-					WFSOptions.current.serverAction.value( srv )
-				});
+			ULib.allServers.do({ |srv|
+				WFSOptions.current.serverAction.value( srv )
+			});
 		};
 	}
 
