@@ -3,11 +3,11 @@ WFSLib {
 	classvar <>previewMode;
 
 
-	*startup { |wfsOptions, useMenuWindow = false|
+	*startup { |wfsOptions|
 		var servers, wfsServers, ms, o;
 		var bootFunc;
 
-		if( Platform.ideName == "scapp" ) { ^this.startupOld( wfsOptions, useMenuWindow ) };
+		if( Platform.ideName == "scapp" ) { ^this.startupOld( wfsOptions ) };
 
 		if( Server.respondsTo( \nodeAllocClass_ ) ) {
 			Server.nodeAllocClass = UNodeIDAllocator;
@@ -626,7 +626,7 @@ WFSLib {
 		});
 	}
 
-	*initGUI { |useMenuWindow = false|
+	*initGUI {
 
 		if(thisProcess.platform.class.asSymbol === 'OSXPlatform' && {
 			thisProcess.platform.ideName.asSymbol === \scapp
@@ -637,37 +637,24 @@ WFSLib {
 				WFSPositionTracker.start;
 			});
 		} {
-			if( useMenuWindow ) {
-				UMenuWindow();
+			UMenuBarIDE("WFSCollider");
 
-				UMenuWindow.viewMenu.tree.put( 'WFS Position tracker', {
-					WFSPositionTrackerGUI.newOrCurrent;
-					WFSPositionTracker.start;
-				});
-				UMenuWindow.viewMenu.tree.put( 'WFS Preferences...', {
-					WFSOptionsGUI.newOrCurrent;
-				});
-			} {
-				UMenuBarIDE("WFSCollider");
+			UMenuBarIDE.add("WFS", \separator, "View" );
 
-				UMenuBarIDE.add("WFS", \separator, "View" );
+			UMenuBarIDE.add("WFSCollider Servers", {
+				ULib.window !? _.front ?? { ULib.serversWindow( "WFSCollider Servers" ) };
+			}, "View");
 
-				UMenuBarIDE.add("WFSCollider Servers", {
-					ULib.window !? _.front ?? { ULib.serversWindow( "WFSCollider Servers" ) };
-				}, "View");
+			UMenuBarIDE.add("WFS Position tracker", {
+				WFSPositionTrackerGUI.newOrCurrent;
+				WFSPositionTracker.start;
+			}, "View");
 
-				UMenuBarIDE.add("WFS Position tracker", {
-					WFSPositionTrackerGUI.newOrCurrent;
-					WFSPositionTracker.start;
-				}, "View");
+			UMenuBarIDE.add("Preferences", \separator );
 
-				UMenuBarIDE.add("Preferences", \separator );
-
-				UMenuBarIDE.add("Preferences...", {
-					WFSOptionsGUI.newOrCurrent;
-				});
-
-			};
+			UMenuBarIDE.add("Preferences...", {
+				WFSOptionsGUI.newOrCurrent;
+			});
 		};
 
 		UGlobalGain.gui;
