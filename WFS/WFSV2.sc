@@ -81,7 +81,10 @@ WFS {
 
     }
 
-	*startup { ^WFSLib.startup }
+	*startup {
+		"WFS.startup is depricated. please use:\nWFSLib.startup".warn;
+		^WFSLib.startup;
+	}
 
 	*startupOld {
 		var file, speakers,ip,name, dict, wfsConf;
