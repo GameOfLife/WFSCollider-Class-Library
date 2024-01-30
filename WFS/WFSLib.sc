@@ -7,7 +7,7 @@ WFSLib {
 		var servers, wfsServers, ms, o;
 		var bootFunc;
 
-		if( Platform.ideName == "scapp" ) { ^this.startupOld( wfsOptions, useMenuWindow = false ) };
+		if( Platform.ideName == "scapp" ) { ^this.startupOld( wfsOptions, useMenuWindow ) };
 
 		if( Server.respondsTo( \nodeAllocClass_ ) ) {
 			Server.nodeAllocClass = UNodeIDAllocator;
