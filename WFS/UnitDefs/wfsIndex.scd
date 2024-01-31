@@ -97,6 +97,7 @@ staticIndex = HiddenFreeUdef( \static, [
 	.createSynthFunc_({ |unit, target, startPos = 0|
 		var startIndex;
 		startIndex = WFSSpeakerConf.default.firstSpeakerIndexOf( target.asTarget.server );
+	    startIndex = startIndex - WFSSpeakerConf.default.outputOffsetForSpeakerIndex( unit.get( \index ) );
 		Synth( "wfsi_is", [
 			\startIndex, startIndex - WFSSpeakerConf.getOutputBusStartOffset( target ),
 			\i_gain, WFSSpeakerConf.default.gain

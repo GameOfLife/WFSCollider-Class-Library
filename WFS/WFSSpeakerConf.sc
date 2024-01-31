@@ -492,7 +492,11 @@ WFSSpeakerConf {
 
 	firstSpeakerIndexOf { |server|
 		var i;
-		i = this.class.systemOfServer( server );
+		if( server.isNumber ) {
+			i = server;
+		} {
+			i = this.class.systemOfServer( server );
+		};
 		if( i.notNil ) {
 			^this.divideArrays[..i-1].flatten(1).collect(_.n).sum;
 		} {
@@ -502,11 +506,43 @@ WFSSpeakerConf {
 
 	lastSpeakerIndexOf { |server|
 		var i;
-		i = this.class.systemOfServer( server );
+		if( server.isNumber ) {
+			i = server;
+		} {
+			i = this.class.systemOfServer( server );
+		};
 		if( i.notNil ) {
 			^this.divideArrays[..i].flatten(1).collect(_.n).sum - 1;
 		} {
 			^nil; // nil if not found
+		};
+	}
+
+	arrayIndexOfSpeakerIndex { |index = 0|
+		var count = -1, i = 0;
+		while {
+			i < arrayConfs.size && { index > (count = count + arrayConfs[i].n) }
+		} {
+			i = i+1;
+		};
+		^i
+	}
+
+	serverIndexOfSpeakerIndex { |index = 0|
+		^this.divideArrays.collect({ |arrs| arrs.collect(_.n).sum }).integrate.detectIndex({ |item| item > index }) ?? { serverGroups.size-1 };
+	}
+
+	outputOffsetForSpeakerIndex { |index = 0|
+		^arrayConfs.clipAt( this.arrayIndexOfSpeakerIndex( index ) ).outputOffset;
+	}
+
+	outputOfSpeakerIndex { |index = 0|
+		var offset;
+		offset = this.outputOffsetForSpeakerIndex( index );
+		if( serverGroups.size == 1 ) {
+			^index + offset;
+		} {
+			^index + offset - this.firstSpeakerIndexOf( this.serverIndexOfSpeakerIndex( index ) );
 		};
 	}
 
