@@ -70,7 +70,7 @@ WFSSpeakerConfView : WFSBasicEditView {
 							Pen.translate( item.x, item.y );
 							Pen.scale(scale,scale.neg);
 							Pen.stringCenteredIn(
-								counts[ii].asString,
+								(counts[ii] - arrayConf.outputOffset).asString,
 								Rect.aboutPoint( movePt, 20, 15)
 							);
 						});
