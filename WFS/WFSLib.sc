@@ -5,7 +5,7 @@ WFSLib {
 
 	*startup { |wfsOptions|
 		var servers, wfsServers, ms, o;
-		var bootFunc;
+		var bootFunc, speakerConfBackup;
 
 		if( Platform.ideName == "scapp" ) { ^this.startupOld( wfsOptions ) };
 
@@ -18,6 +18,8 @@ WFSLib {
 
 		WFSOptions.makeCurrentAtInit = true;
 
+		speakerConfBackup = WFSSpeakerConf.default;
+
 		this.loadOldPrefs;
 		this.loadPrefs;
 
@@ -29,6 +31,8 @@ WFSLib {
 
 		if( wfsOptions.isNil ) {
 			wfsOptions = WFSOptions.current ?? { WFSOptions.fromPreset( \default ); };
+		} {
+			WFSSpeakerConf.default = speakerConfBackup ? WFSSpeakerConf.default;
 		};
 
 		wfsOptions.makeCurrent;
@@ -654,7 +658,7 @@ WFSLib {
 
 			UMenuBarIDE.add( "Servers", \separator, "WFSCollider" );
 
-			UMenuBarIDE.add( "Restart Servers", { WFSLib.startup; }, "WFSCollider" );
+			UMenuBarIDE.add( "Restart Servers", { WFSLib.startup( WFSOptions.current ); }, "WFSCollider" );
 
 			UMenuBarIDE.add( "Close Servers", { ULib.closeServers; }, "WFSCollider" );
 		};
