@@ -171,6 +171,15 @@ WFSOptionsGUI {
 			});
 
 		firstColumn.decorator.nextLine;
+		firstColumn.decorator.shift( 80, 0);
+
+		SmoothButton( firstColumn, (firstColumn.bounds.width - 80) @ 14 )
+			.label_( "create speaker test" )
+			.action_({ |bt|
+				WFSSpeakerConf.default.makeTestScore.gui;
+			});
+
+		firstColumn.decorator.nextLine;
 		firstColumn.decorator.top_( firstColumn.bounds.height - 34);
 
 		presetManagerGUI = PresetManagerGUI(

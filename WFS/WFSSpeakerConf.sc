@@ -643,6 +643,21 @@ WFSSpeakerConf {
 	plot {
 	}
 
+	makeTestScore {
+		var count = 0, score;
+		score = UScore();
+		WFSSpeakerConf.default.arrayConfs.do({ |arr, ii|
+			score.add( (arr.n / 8).asInteger.collect({ |i|
+				UPattern( (i + (count/8)) * 6, ii, 5.9,
+					[ 'pinkNoise', [ 'amp', 0.25, 'seed', 12345 ] ],
+					[ 'wfsIndex', [ 'index', [ 'p_int_step', [ 'lo', i*8 + count, 'hi', (i*8)+7 + count ] ] ] ]
+				).pattern_([ 'sustain_time', [ 'sustain', 0.3, 'timeToNext', [ 'p_time_step', [ 'time', 3.0, 'n', 8, 'spread', 0.8 ] ] ] ])
+			}) );
+			count = count + arr.n;
+		});
+		^score;
+	}
+
 	storeArgs { ^arrayConfs.collect(_.storeArgs) }
 	storeModifiersOn { |stream|
 		if( arrayLimit != 1 ) {
