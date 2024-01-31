@@ -650,11 +650,13 @@ WFSLib {
 				WFSPositionTracker.start;
 			}, "View");
 
-			UMenuBarIDE.add("Preferences", \separator );
+			UMenuBarIDE.preferencesFunc = { WFSOptionsGUI.newOrCurrent; };
 
-			UMenuBarIDE.add("Preferences...", {
-				WFSOptionsGUI.newOrCurrent;
-			});
+			UMenuBarIDE.add( "Servers", \separator, "WFSCollider" );
+
+			UMenuBarIDE.add( "Restart Servers", { WFSLib.startup; }, "WFSCollider" );
+
+			UMenuBarIDE.add( "Close Servers", { ULib.closeServers; }, "WFSCollider" );
 		};
 
 		UGlobalGain.gui;
