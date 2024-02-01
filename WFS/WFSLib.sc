@@ -725,8 +725,7 @@ WFSLib {
 		which.do({ |name|
 			var quark;
 			quark = Quark( name );
-			quark.fetch;
-			quark.git.checkout( quark.git.remoteLatest );
+			quark.git.pull;
 		});
 		action.value;
 	}
