@@ -661,6 +661,10 @@ WFSLib {
 			UMenuBarIDE.add( "Restart Servers", { WFSLib.startup( WFSOptions.current ); }, "WFSCollider" );
 
 			UMenuBarIDE.add( "Close Servers", { ULib.closeServers; }, "WFSCollider" );
+
+			UMenuBarIDE.add( "Updates", \separator, "WFSCollider" );
+
+			UMenuBarIDE.add( "Check for updates...", { WFSLib.checkForUpdatesGUI }, "WFSCollider" );
 		};
 
 		UGlobalGain.gui;
@@ -689,14 +693,17 @@ WFSLib {
 		^nil;
 	}
 
-	*checkForUpdates { |updatesFoundAction, noUpdatesAction|
+	*checkForUpdates { |updatesFoundAction, noUpdatesAction, noConnectionAction|
 		var updates;
 		updates = [ "Unit-Lib", "WFSCollider-Class-Library", "wslib" ].collect({ |name|
 			var status, index, path;
 			path = Quarks.quarkNameAsLocalPath(name);
 			status = "cd % && git fetch && git status -s -b".format(
 				thisProcess.platform.formatPathForCmdLine(path)
-			).unixCmdGetStdOutLines.first ? "";
+			).unixCmdGetStdOutLines.first;
+			if( status.isNil ) {
+				^noConnectionAction.value;
+			};
 			index = status.find("[behind");
 			if( index.notNil ) {
 				[ name, status[index+8..status.size-2].interpret ]
@@ -742,7 +749,14 @@ WFSLib {
 			SCAlert("WFSCollider is up-to-date", ["OK"], [nil],
 				Color.green, iconName: 'clock'
 			)
-		});
+		}, {
+			SCAlert("WFSCollider can't check for updates...\n"
+				"Most probably there is no internet\n"
+				"connection available", ["OK"], [nil],
+				Color.green, iconName: 'warning'
+			)
+		}
+		);
 	}
 
 	*loadPrefs {
