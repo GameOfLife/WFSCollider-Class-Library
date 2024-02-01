@@ -643,9 +643,9 @@ WFSSpeakerConf {
 	plot {
 	}
 
-	makeTestScore {
+	makeTestScore { |name = "speakertest"|
 		var count = 0, score;
-		score = UScore();
+		score = UScore().name_( name );
 		WFSSpeakerConf.default.arrayConfs.do({ |arr, ii|
 			score.add( (arr.n / 8).asInteger.collect({ |i|
 				UPattern( (i + (count/8)) * 6, ii, 5.9,
