@@ -689,6 +689,62 @@ WFSLib {
 		^nil;
 	}
 
+	*checkForUpdates { |updatesFoundAction, noUpdatesAction|
+		var updates;
+		updates = [ "Unit-Lib", "WFSCollider-Class-Library", "wslib" ].collect({ |name|
+			var status, index, path;
+			path = Quarks.quarkNameAsLocalPath(name);
+			status = "cd % && git fetch && git status -s -b".format(
+				thisProcess.platform.formatPathForCmdLine(path)
+			).unixCmdGetStdOutLines.first ? "";
+			index = status.find("[behind");
+			if( index.notNil ) {
+				[ name, status[index+8..status.size-2].interpret ]
+			};
+		}).select(_.notNil);
+		if( updates.size > 0 ) {
+			updatesFoundAction.value( updates );
+			"WFSCollider updates available:".postln;
+			updates.do({ |update|
+				"\t%: behind % commits\n".postf( *update );
+			});
+		} {
+			noUpdatesAction.value;
+			"WFSCollider is up-to-date".postln;
+		};
+	}
+
+	*updateQuarks { |which, action| // run checkForUpdates first
+		which.do({ |name|
+			var quark;
+			quark = Quark( name );
+			quark.git.checkout( quark.git.remoteLatest );
+		});
+		action.value;
+	}
+
+	*checkForUpdatesGUI {
+		this.checkForUpdates( { |upd|
+			SCAlert("Updates found for:\n%".format(
+				upd.collect({ |item| "  % (behind %)".format( *item ) }).join("\n") ),
+			[ "cancel", "update now" ],
+			[
+				nil,
+				{  this.updateQuarks( upd.flop[0], {
+					SCAlert( "finished updating, recompile to install\n"
+						"WARNING: unsaved changes will be\n"
+						"lost at recompile",
+						[ "later", "recompile" ],
+						[ nil, { thisProcess.recompile }]
+				)})
+			} ], Color.green, Color.white, 'roundArrow', true );
+		}, {
+			SCAlert("WFSCollider is up-to-date", ["OK"], [nil],
+				Color.green, iconName: 'clock'
+			)
+		});
+	}
+
 	*loadPrefs {
 		this.getCurrentPrefsPath(_.load);
 	}
