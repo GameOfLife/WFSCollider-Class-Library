@@ -734,7 +734,7 @@ WFSLib {
 		this.checkForUpdates( { |upd|
 			SCAlert("Updates found for:\n%".format(
 				upd.collect({ |item| "  % (behind %)".format( *item ) }).join("\n") ),
-			[ "cancel", "update now" ],
+			[ "cancel", "update" ],
 			[
 				nil,
 				{  this.updateQuarks( upd.flop[0], {
