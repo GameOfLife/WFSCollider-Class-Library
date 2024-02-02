@@ -709,7 +709,7 @@ WFSLib {
 				status = status.split( $\n ).first;
 				index = status.find("[behind");
 				if( index.notNil ) {
-					[ name, status[index..] ]
+					[ quark, status[index..] ]
 				};
 			}
 		}).select(_.notNil);
