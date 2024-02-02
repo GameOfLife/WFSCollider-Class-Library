@@ -696,24 +696,28 @@ WFSLib {
 	*checkForUpdates { |updatesFoundAction, noUpdatesAction, noConnectionAction|
 		var updates;
 		updates = [ "Unit-Lib", "WFSCollider-Class-Library", "wslib" ].collect({ |name|
-			var status, index, path;
-			path = Quarks.quarkNameAsLocalPath(name);
-			status = "cd % && git fetch && git status -s -b".format(
-				thisProcess.platform.formatPathForCmdLine(path)
-			).unixCmdGetStdOutLines.first;
-			if( status.isNil ) {
-				^noConnectionAction.value;
-			};
-			index = status.find("[behind");
-			if( index.notNil ) {
-				[ name, status[index+8..status.size-2].interpret ]
-			};
+			var status, index, quark;
+			quark = Quark(name);
+			if( quark.git.branch == "HEAD" ) {
+				[ quark, "(no branch)" ]
+			} {
+				status = quark.git.git( [ "fetch && git status -s -b" ] );
+				if( status.size == 0 ) {
+					"WFSLib.checkForUpdates; no internet connection".postln;
+					^noConnectionAction.value;
+				};
+				status = status.split( $\n ).first;
+				index = status.find("[behind");
+				if( index.notNil ) {
+					[ name, status[index..] ]
+				};
+			}
 		}).select(_.notNil);
 		if( updates.size > 0 ) {
 			updatesFoundAction.value( updates );
 			"WFSCollider updates available:".postln;
 			updates.do({ |update|
-				"\t%: behind % commits\n".postf( *update );
+				"\t% %\n".postf( update[0].name, update[1] );
 			});
 		} {
 			noUpdatesAction.value;
@@ -721,19 +725,34 @@ WFSLib {
 		};
 	}
 
-	*updateQuarks { |which, action| // run checkForUpdates first
-		which.do({ |name|
-			var quark;
-			quark = Quark( name );
-			quark.git.pull;
+	*updateQuarks { |which, action, noConnectionAction| // run checkForUpdates first
+		which.do({ |quark|
+			var res;
+			if( quark.isString ) { quark = Quark( name ) };
+			if( quark.git.branch == "HEAD" ) { quark.git.checkout( "master" ); };
+			"updating %\n".postf( quark );
+			res = quark.git.git( ["pull", "origin", "master"] );
+			if( res.size == 0 ) {
+				"WFSLib.updateQuarks; no internet connection".postln;
+				^noConnectionAction.value;
+			};
+			res.postln;
 		});
 		action.value;
 	}
 
 	*checkForUpdatesGUI {
+		var cantCheck;
+		cantCheck = {
+			SCAlert("WFSCollider can't check for updates...\n"
+				"Most probably there is no internet\n"
+				"connection available", ["OK"], [nil],
+				Color.green, iconName: 'warning'
+			)
+		};
 		this.checkForUpdates( { |upd|
 			SCAlert("Updates found for:\n%".format(
-				upd.collect({ |item| "  % (behind %)".format( *item ) }).join("\n") ),
+				upd.collect({ |item| "  % %".format( *item ) }).join("\n") ),
 			[ "cancel", "update" ],
 			[
 				nil,
@@ -743,20 +762,13 @@ WFSLib {
 						"lost at recompile",
 						[ "later", "recompile" ],
 						[ nil, { thisProcess.recompile }]
-				)})
+				)}, cantCheck )
 			} ], Color.green, Color.white, 'roundArrow', true );
 		}, {
 			SCAlert("WFSCollider is up-to-date", ["OK"], [nil],
 				Color.green, iconName: 'clock'
 			)
-		}, {
-			SCAlert("WFSCollider can't check for updates...\n"
-				"Most probably there is no internet\n"
-				"connection available", ["OK"], [nil],
-				Color.green, iconName: 'warning'
-			)
-		}
-		);
+		}, cantCheck );
 	}
 
 	*loadPrefs {
