@@ -730,7 +730,7 @@ WFSLib {
 			var res;
 			if( quark.isString ) { quark = Quark( name ) };
 			if( quark.git.branch == "HEAD" ) {
-				"changing branch of % to 'master'".postf;
+				"changing branch of % to 'master'\n".postf;
 				quark.git.git( [ "checkout", "master" ] ).postln;
 			};
 			"updating %\n".postf( quark );
@@ -755,7 +755,7 @@ WFSLib {
 		};
 		this.checkForUpdates( { |upd|
 			SCAlert("Updates found for:\n%".format(
-				upd.collect({ |item| "  % %".format( *item ) }).join("\n") ),
+				upd.collect({ |item| "  % %".format( item[0].name, item[1] ) }).join("\n") ),
 			[ "cancel", "update" ],
 			[
 				nil,
