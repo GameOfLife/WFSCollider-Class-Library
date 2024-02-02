@@ -726,9 +726,10 @@ WFSLib {
 	}
 
 	*updateQuarks { |which, action, noConnectionAction| // run checkForUpdates first
+		which = which ? [ "Unit-Lib", "WFSCollider-Class-Library", "wslib" ];
 		which.do({ |quark|
 			var res;
-			if( quark.isString ) { quark = Quark( name ) };
+			if( quark.isString ) { quark = Quark( quark ) };
 			if( quark.git.branch == "HEAD" ) {
 				"changing branch of % to 'master'\n".postf( quark.name );
 				quark.git.git( [ "checkout", "master" ] );
