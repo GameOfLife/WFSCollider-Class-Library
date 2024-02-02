@@ -729,7 +729,10 @@ WFSLib {
 		which.do({ |quark|
 			var res;
 			if( quark.isString ) { quark = Quark( name ) };
-			if( quark.git.branch == "HEAD" ) { quark.git.checkout( "master" ); };
+			if( quark.git.branch == "HEAD" ) {
+				"changing branch of % to 'master'".postf;
+				quark.git.git( [ "checkout", "master" ] ).postln;
+			};
 			"updating %\n".postf( quark );
 			res = quark.git.git( ["pull", "origin", "master"] );
 			if( res.size == 0 ) {
