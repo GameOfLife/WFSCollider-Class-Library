@@ -1,7 +1,7 @@
 WFSOptionsGUI {
 
 	classvar <>current;
-	classvar <>columnWidth = 220, <>footerHeight = 24;
+	classvar <>columnWidth = 260, <>footerHeight = 24;
 
 	var <object, <>ctrl;
 	var <view, <firstColumn, <secondColumn, <footer, <presetManagerGUI;
