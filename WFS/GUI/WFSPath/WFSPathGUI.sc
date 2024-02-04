@@ -23,7 +23,7 @@ WFSPathGUI {
 
 	var <view, <pathView, <editView;
 	var <generatorView;
-	var <editWidth = 210;
+	var <editWidth = 230;
 	var <>action;
 	var <>onClose;
 
@@ -106,7 +106,7 @@ WFSPathGUI {
 			action.value(this);
 		};
 
-		view.view.decorator.shift(editWidth.neg + 67, editView.view.bounds.height );
+		view.view.decorator.shift(editWidth.neg + 4 + RoundView.skin.labelWidth, editView.view.bounds.height );
 
 		SmoothButton( view, 82 @ 14 )
 			.radius_( 2 )

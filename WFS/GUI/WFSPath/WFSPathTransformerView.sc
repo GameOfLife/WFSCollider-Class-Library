@@ -144,7 +144,7 @@ WFSPathTransformerView {
 
 		view.view.decorator.nextLine;
 
-		view.decorator.shift( 65, 0 );
+		view.decorator.shift( RoundView.skin.labelWidth + 2, 0 );
 
 		views[ \apply ] = SmoothButton( view, 40@14 )
 			.font_( Font( Font.defaultSansFace, 10 ) )
@@ -186,7 +186,7 @@ WFSPathTransformerView {
 				this.apply( false );
 				action.value( this, \changeDefName );
 			};
-			views[ key ] = func.makeViews( view, view.bounds );
+			views[ key ] = func.makeViews( view, view.bounds.copy.insetBy( 4, 0 ) );
 			view.view.decorator.nextLine;
 		});
 

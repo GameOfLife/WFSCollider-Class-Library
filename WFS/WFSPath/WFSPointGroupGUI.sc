@@ -23,7 +23,7 @@ WFSPointGroupGUI {
 
 	var <view, <pathView, <editView;
 	var <generatorView;
-	var <editWidth = 177;
+	var <editWidth = 207;
 	var <>action;
 	var <>onClose;
 
