@@ -305,6 +305,8 @@ WFSBasicArrayPan : WFSBasicPan {
 
 	var <>preDelay = 0.06; // in s (= 20m)
 
+	var <>ampmask;
+
 	*new { |n = 48, dist = 5, angle = 0.5pi, offset = 0, spWidth| // angle: 0-2pi (CCW)
 		^super.newCopyArgs().init(  n, dist, angle, offset, spWidth );
 	}
@@ -318,6 +320,13 @@ WFSBasicArrayPan : WFSBasicPan {
 		spWidth = inSpWidth ? spWidth ? defaultSpWidth; // width of individual speakers
 
 		speakerArray = { |i| (i.linlin(0, n-1, spWidth / 2, spWidth.neg / 2 ) * n) - offset } ! n;
+	}
+
+	initSub { |subIndices|
+		speakerArray = subIndices.collect({ |i|
+			(i.linlin(0, n-1, spWidth / 2, spWidth.neg / 2 ) * n) - offset
+		});
+		ampmask = subIndices.collect({ |item| if( item < 0, 0, 1 ) });
 	}
 
 }
@@ -442,7 +451,9 @@ WFSArrayPan : WFSBasicArrayPan {
 				.sin
 				.linlin(-1,1,0,1);
 
-		amplitudes = amplitudes * ( mul / amplitudes.sum ); // normalize amps (sum == mul)
+		if( ampmask.size > 0 ) { amplitudes = amplitudes * ampmask };
+
+		amplitudes = amplitudes * ( mul / amplitudes.sum.max(1.0e-12) ); // normalize amps (sum == mul)
 
 		// focus crossfades (per speaker, dependent on angle)
 		//
