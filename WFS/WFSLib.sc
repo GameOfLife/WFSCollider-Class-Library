@@ -210,8 +210,6 @@ WFSLib {
 
 		Server.default = ULib.allServers.first;
 
-		this.makePreviewModeCtrl;
-
 	}
 
 	*previewMode_ { |pm| previewMode = pm; this.changed( \previewMode, previewMode ); }
