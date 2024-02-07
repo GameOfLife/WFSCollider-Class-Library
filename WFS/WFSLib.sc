@@ -1,6 +1,6 @@
 WFSLib {
 
-	classvar <>previewMode;
+	classvar <previewMode, <previewModeCtrl;
 
 
 	*startup { |wfsOptions|
@@ -210,6 +210,17 @@ WFSLib {
 
 		Server.default = ULib.allServers.first;
 
+		this.makePreviewModeCtrl;
+
+	}
+
+	*previewMode_ { |pm| previewMode = pm; this.changed( \previewMode, previewMode ); }
+
+	*makePreviewModeCtrl {
+		previewModeCtrl.remove;
+		previewModeCtrl = SimpleController( this ).put( \previewMode, {
+			{ UChainGUI.all.do({ |item| item.chain.changed( \units ) }); }.defer;
+		});
 	}
 
 	*startupOld { |wfsOptions, useMenuWindow = false|

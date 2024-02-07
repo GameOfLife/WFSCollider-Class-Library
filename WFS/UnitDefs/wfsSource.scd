@@ -23,14 +23,14 @@ part of the WFSCollider Class Library default Udefs set
 var staticPoint, dynamicPoint, staticPlane, dynamicPlane, multiDef;
 var notPreviewMode, getPreviewMode, renderModeSpec, calcDelayNormal, calcDelayFocused;
 
-notPreviewMode = WFSPreviewSynthDefs.pannerFuncs[\n].keys.includes( WFSLib.previewMode ).not;
+notPreviewMode = { WFSLib.previewMode === \off };
 
 getPreviewMode = { |unit| if( unit.renderMode == \previewMode ) { WFSLib.previewMode } { unit.renderMode } };
 
 renderModeSpec = ListSpec(
 	[ \previewMode ] ++ WFSOptionsObjectGUI.specs.previewMode.list[1..],
 	0,
-	[ "previewMode (%)".format( WFSLib.previewMode ).asSymbol ] ++ WFSOptionsObjectGUI.specs.previewMode.list[1..]
+	[ { "previewMode (%)".format( WFSLib.previewMode ).asSymbol } ] ++ WFSOptionsObjectGUI.specs.previewMode.list[1..]
 );
 
 calcDelayNormal = { |server|

@@ -76,18 +76,8 @@ WFSOptionsGUI {
 		optionsView = WFSOptionsObjectGUI( firstColumn, columnWidth @ bounds.height, object );
 
 		optionsView.views.previewMode.action = optionsView.views.previewMode.action.addFunc({ |vw, mode|
-			if( WFSLib.previewMode === \off ) {
-				if( mode != \off ) {
-					"WFSOptionsGUI: press 'apply' to start using previewMode '%'\n".postf( mode )
-				};
-			} {
-				if( mode === \off ) {
-					"WFSOptionsGUI: press 'apply' to start using previewMode 'off'".postln
-				} {
-					WFSLib.previewMode = mode;
-					"WFSOptionsGUI: changing previewMode to '%' (effective immediately)\n".postf( mode );
-				};
-			};
+			WFSLib.previewMode = mode;
+			"WFSOptionsGUI: changing previewMode to '%' (effective immediately)\n".postf( mode );
 		});
 
 
