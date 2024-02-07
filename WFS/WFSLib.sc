@@ -667,7 +667,6 @@ WFSLib {
 			UMenuBarIDE.add( "Check for updates...", { WFSLib.checkForUpdatesGUI }, "WFSCollider" );
 		};
 
-		UGlobalGain.gui;
 		UGlobalEQ.gui;
 	}
 
