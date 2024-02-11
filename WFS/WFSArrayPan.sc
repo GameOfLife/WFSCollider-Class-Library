@@ -48,7 +48,9 @@ WFSCrossfader {
 
 		// for the focusFades
 		globalAngle = point.angle;
-		fadeArea = point.rho.linlin(0.5,1,pi,focusWidth/2,\none).clip(focusWidth/2,pi);
+		if( WFSArrayPan.useFocusFades && { WFSArrayPan.efficientFocusFades.not } ) {
+			fadeArea = point.rho.linlin(0.5,1,pi,focusWidth/2,\none).clip(focusWidth/2,pi);
+		};
 
 		cornerPoints = arrayConfs.collect( _.cornerPoints );
 
@@ -83,18 +85,11 @@ WFSCrossfader {
 
 			// focused active
 			if( WFSArrayPan.useFocusFades ) {
-
-				rotatedAngle = (globalAngle - angle).wrap(-pi,pi);
-				firstAngle = (arrayConfs[i].lastPoint.angle - angle).wrap(-pi,pi);
-				lastAngle = (arrayConfs[i].firstPoint.angle - angle).wrap(-pi,pi);
-				angleIsPositive = (rotatedAngle > 0).binaryValue;
-
-				focusedActive = [
-					((rotatedAngle - fadeArea) < firstAngle).binaryValue,
-					((rotatedAngle + fadeArea) > lastAngle).binaryValue,
-				] * [ angleIsPositive, 1 - angleIsPositive ];
-
-				focusedActive = focusedActive[0].max( focusedActive[1] );
+				if( WFSArrayPan.efficientFocusFades ) {
+					focusedActive = this.calcEfficientFocusFades( point, pts );
+				} {
+					focusedActive = this.calcFocusedActive( globalAngle, fadeArea, arrayConfs[i] );
+				};
 			} {
 				focusedActive = 1;
 			};
@@ -103,6 +98,37 @@ WFSCrossfader {
 
 		});
 
+	}
+
+	calcFocusedActive { |globalAngle, fadeArea, arrayConf|
+		var rotatedAngle, firstAngle, lastAngle, angleIsPositive;
+		var focusedActive, angle;
+
+		angle = arrayConf.angle;
+
+		rotatedAngle = (globalAngle - angle).wrap(-pi,pi);
+		firstAngle = (arrayConf.lastPoint.angle - angle).wrap(-pi,pi);
+		lastAngle = (arrayConf.firstPoint.angle - angle).wrap(-pi,pi);
+		angleIsPositive = (rotatedAngle > 0).binaryValue;
+
+		focusedActive = [
+			((rotatedAngle - fadeArea) < firstAngle).binaryValue,
+			((rotatedAngle + fadeArea) > lastAngle).binaryValue,
+		] * [ angleIsPositive, 1 - angleIsPositive ];
+
+		^focusedActive[0].max( focusedActive[1] );
+	}
+
+	calcEfficientFocusFades { |pt, cornerPoints|
+		var dist1, dist2, x0, y0, x1, y1, x2, y2;
+		#x0, y0 = pt.asArray;
+		#x1, y1 = cornerPoints[0].asArray;
+		#x2, y2 = cornerPoints[1].asArray;
+
+		dist1 = ((x1 * (y1-y0)) - ((x1-x0) * y1)) / ((x1.squared) + (y1.squared)).sqrt;
+		dist2 = ((x2 * (y2-y0)) - ((x2-x0) * y2)) / ((x2.squared) + (y2.squared)).sqrt;
+
+		^dist1.neg.max( dist2 ).linlin(-1,1,1,0,\minmax).sqrt;
 	}
 
 	focusWidth_ { |new = 0.5pi|
@@ -401,6 +427,7 @@ WFSArrayPan : WFSBasicArrayPan {
 	*/
 
 	classvar <>useFocusFades = true; // need to rebuild synthdefs after changing this
+	classvar <>efficientFocusFades = false;
 
 	var <>focus; // nil, true or false
 	var <>dbRollOff = -9; // per speaker roll-off
@@ -462,7 +489,7 @@ WFSArrayPan : WFSBasicArrayPan {
 		// go to all speakers when source is 0.5m to 1m from the center
 		// approximation of angles, saves n * atan2 calc. Now we only calculate the corner angles and
 		// draw a straight line for the rest. This might cause inconsistencies with tunnel-shaped setups.
-		if( useFocusFades && { focus != false } ) { // disabled when forced unfocused
+		if( useFocusFades && { focus != false && { efficientFocusFades.not } } ) { // disabled when forced unfocused
 			globalAngle = pos.angle;
 			speakerAngleRange = [ (dist@speakerArray[0]).angle, (dist@speakerArray.last).angle ];
 			fadeArea = globalDist.linlin(0.5,1,pi,focusWidth/2,\none).clip(focusWidth/2,pi);
