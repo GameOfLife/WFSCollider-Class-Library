@@ -21,11 +21,11 @@ UPatDef( \p_randomwalk_point, { |unit,
 		radius = (10@10)|
 	{
 		var point, step, rradius, ccenter, scaledPoint;
-		point = startPoint.next; // only polled once
+		point = startPoint.next.asPoint; // only polled once
 		point.yield;
 		loop {
-			rradius = radius.next;
-			ccenter = center.next;
+			rradius = radius.next.asPoint;
+			ccenter = center.next.asPoint;
 			step = stepSize.next;
 			step = (step[0].asFloat rrand: step[1]) @ (step[0].asFloat rrand: step[1]);
 			step = step * rradius;
