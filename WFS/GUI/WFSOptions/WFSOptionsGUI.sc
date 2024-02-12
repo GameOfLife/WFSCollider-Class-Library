@@ -2,6 +2,7 @@ WFSOptionsGUI {
 
 	classvar <>current;
 	classvar <>columnWidth = 260, <>footerHeight = 24;
+	classvar <synthdefOldSettings;
 
 	var <object, <>ctrl;
 	var <view, <firstColumn, <secondColumn, <footer, <presetManagerGUI;
@@ -25,6 +26,7 @@ WFSOptionsGUI {
 	}
 
 	init { |parent, bounds, inObject|
+		var setRebuildColor;
 
 		if( parent.isNil ) {
 			parent = this.class.asString;
@@ -116,11 +118,13 @@ WFSOptionsGUI {
 		wfsHeader = CompositeView( firstColumn, columnWidth @ 14 )
 			.background_( Color.gray(0.8).alpha_(0.5) );
 
-		RoundView.pushSkin( UChainGUI.skin ++ ( 'labelWidth': 140 ) );
+		wfsHeader.addFlowLayout(0@0, 2@2);
 
 		StaticText( wfsHeader, columnWidth - (2 + 14) @ 14 )
 			.applySkin( RoundView.skin )
 			.string_( " wfs settings" );
+
+		RoundView.pushSkin( UChainGUI.skin ++ ( 'labelWidth': 140 ) );
 
 		SmoothButton( firstColumn, firstColumn.bounds.width @ 24 )
 			.label_( "edit speaker configuration" )
@@ -128,23 +132,45 @@ WFSOptionsGUI {
 				WFSSpeakerConfGUI.newOrCurrent
 			});
 
+		footer.addFlowLayout(0@0, 2@2);
+
+		synthdefOldSettings = synthdefOldSettings ?? {
+			[
+				WFSArrayPan.useFocusFades,
+				WFSArrayPan.efficientFocusFades,
+				WFSArrayPan.tapering
+			]
+		};
+
+		setRebuildColor = {
+			if( synthdefOldSettings != [
+				WFSArrayPan.useFocusFades,
+				WFSArrayPan.efficientFocusFades,
+				WFSArrayPan.tapering
+			] ) {
+				rebuildButton.stringColor = Color.red(0.66);
+			} {
+				rebuildButton.stringColor = Color.black;
+			};
+		};
+
 		BoolSpec( WFSArrayPan.useFocusFades )
 			.makeView( firstColumn, firstColumn.bounds.width @ 14, "useFocusFades", { |vw, value|
 				WFSArrayPan.useFocusFades = value;
-			    rebuildButton.stringColor = Color.red(0.66);
+			    setRebuildColor.value;
 			} );
 
 		BoolSpec( WFSArrayPan.efficientFocusFades )
 			.makeView( firstColumn, firstColumn.bounds.width @ 14, "efficientFocusFades", { |vw, value|
 				WFSArrayPan.efficientFocusFades = value;
-			rebuildButton.stringColor = Color.red(0.66);
+			    setRebuildColor.value
 			} );
 
 		taperingSpec = ControlSpec( 0, 0.5, \lin, 0.05, 0 );
 		taperingView = taperingSpec.makeView( firstColumn, firstColumn.bounds.width @ 14,
 			"tapering", { |vw, value|
 				WFSArrayPan.tapering = value;
-				rebuildButton.stringColor = Color.red(0.66);
+				setRebuildColor.value;
 			}
 		);
 		taperingSpec.setView( taperingView, WFSArrayPan.tapering );
@@ -165,11 +191,18 @@ WFSOptionsGUI {
 						waitView.stop;
 						if( bt.isClosed.not ) {
 						     bt.enabled = true;
-						     rebuildButton.stringColor = Color.black;
+						     synthdefOldSettings = [
+							    WFSArrayPan.useFocusFades,
+							    WFSArrayPan.efficientFocusFades,
+							    WFSArrayPan.tapering
+						     ];
+						     setRebuildColor.value;
 					    };
 					});
 				}.defer(0.1);
 			});
+
+		setRebuildColor.value;
 
 		firstColumn.decorator.nextLine;
 		firstColumn.decorator.shift( 80, 0);
