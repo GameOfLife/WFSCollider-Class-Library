@@ -813,6 +813,9 @@ WFSLib {
 		if( WFSArrayPan.useFocusFades != true ) {
 			stream << "\n\nWFSArrayPan.useFocusFades = " << WFSArrayPan.useFocusFades << ";";
 		};
+		if( WFSArrayPan.efficientFocusFades != false ) {
+			stream << "\n\nWFSArrayPan.efficientFocusFades = " << WFSArrayPan.efficientFocusFades << ";";
+		};
 		if( WFSArrayPan.tapering != 0 ) {
 			stream << "\n\nWFSArrayPan.tapering = " <<< WFSArrayPan.tapering << ";";
 		};

@@ -7,7 +7,7 @@ WFSOptionsGUI {
 	var <view, <firstColumn, <secondColumn, <footer, <presetManagerGUI;
 	var <optionsView;
 	var <masterComp, <masterHeader, <masterView, <masterButton;
-	var <wfsHeader, <taperingSpec, <taperingView, <waitView;
+	var <wfsHeader, <taperingSpec, <taperingView, <waitView, <rebuildButton;
 	var <serverComp, <serverHeader, <serverViews;
 	var <>savedMasterOptions;
 
@@ -116,7 +116,7 @@ WFSOptionsGUI {
 		wfsHeader = CompositeView( firstColumn, columnWidth @ 14 )
 			.background_( Color.gray(0.8).alpha_(0.5) );
 
-		masterHeader.addFlowLayout( 0@0, 2@2 );
+		RoundView.pushSkin( UChainGUI.skin ++ ( 'labelWidth': 140 ) );
 
 		StaticText( wfsHeader, columnWidth - (2 + 14) @ 14 )
 			.applySkin( RoundView.skin )
@@ -131,12 +131,20 @@ WFSOptionsGUI {
 		BoolSpec( WFSArrayPan.useFocusFades )
 			.makeView( firstColumn, firstColumn.bounds.width @ 14, "useFocusFades", { |vw, value|
 				WFSArrayPan.useFocusFades = value;
+			    rebuildButton.stringColor = Color.red(0.66);
+			} );
+
+		BoolSpec( WFSArrayPan.efficientFocusFades )
+			.makeView( firstColumn, firstColumn.bounds.width @ 14, "efficientFocusFades", { |vw, value|
+				WFSArrayPan.efficientFocusFades = value;
+			rebuildButton.stringColor = Color.red(0.66);
 			} );
 
 		taperingSpec = ControlSpec( 0, 0.5, \lin, 0.05, 0 );
 		taperingView = taperingSpec.makeView( firstColumn, firstColumn.bounds.width @ 14,
 			"tapering", { |vw, value|
 				WFSArrayPan.tapering = value;
+				rebuildButton.stringColor = Color.red(0.66);
 			}
 		);
 		taperingSpec.setView( taperingView, WFSArrayPan.tapering );
@@ -147,7 +155,7 @@ WFSOptionsGUI {
 		waitView = WaitView( firstColumn, 14 @ 14 )
 			.alphaWhenStopped_(0);
 
-		SmoothButton( firstColumn, (firstColumn.bounds.width - 80) @ 14 )
+		rebuildButton = SmoothButton( firstColumn, (firstColumn.bounds.width - 80) @ 14 )
 			.label_( "rebuild SynthDefs" )
 			.action_({ |bt|
 				bt.enabled = false;
@@ -155,7 +163,10 @@ WFSOptionsGUI {
 				{
 					WFSSynthDefs.loadAll({
 						waitView.stop;
-						if( bt.isClosed.not ) { bt.enabled = true; };
+						if( bt.isClosed.not ) {
+						     bt.enabled = true;
+						     rebuildButton.stringColor = Color.black;
+					    };
 					});
 				}.defer(0.1);
 			});
@@ -180,6 +191,8 @@ WFSOptionsGUI {
 		);
 
 		presetManagerGUI.resize_(7);
+
+		RoundView.popSkin;
 
 		serverHeader = CompositeView( secondColumn, columnWidth @ 14 )
 			.background_( Color.gray(0.8).alpha_(0.5) )
