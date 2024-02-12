@@ -1,13 +1,12 @@
 /*
 \p_randomwalk_point
 
-Creates an pattern UMap for a circular movement of points. New values are generated each time the chain is started, or in a UPattern for each of the generated events.
+Creates a random walk movement for UPatterns with (WFS) Point arguments. The walk starts at 'startPoint' and goes in random steps from there. The algorithm is tuned in such a way that it gravitates to the 'center' and tries to stay within the 'radius'. If the startPoint or next point for some reason is outside the center/radius area the point will try to walk back in. center, radius and stepSize can all be changed during the walk, but startPoint is only used at the start.
 
-speed: speed in periods per next point
-startAngle: the start angle in radians
-clockwise: rotate clockwise if true, counterclockwise if false
-center: center of the circle
-radius: radius of the circle (can be an ellipse too)
+startPoint: the first point. This will only be polled once per time the pattern plays
+stepSize: a range from 0-1, indicating the possible step sizes relative to the radius
+center: center of the area where the random walk takes place
+radius: radius of the area where the random walk takes place
 
 --
 this is an UMapDef definition file
