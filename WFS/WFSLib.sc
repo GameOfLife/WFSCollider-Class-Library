@@ -175,7 +175,7 @@ WFSLib {
 
 		WFSSynthDefs.generateAllOrCopyFromResources({
 			StartUp.defer({
-				ULib.servers.do(_.boot);
+				{ ULib.servers.do(_.bootSync); }.fork( AppClock );
 			})
 		}, Platform.userAppSupportDir +/+ "wfs_synthdefs" );
 
