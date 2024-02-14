@@ -62,7 +62,7 @@ WFSLib {
 				.bindAddress_("0.0.0.0");
 			};
 
-			WFSSpeakerConf.setOutputBusStartOffset( ms, wfsOptions.masterOptions.outputBusStartOffset );
+			this.setOutputBusStartOffset( ms, wfsOptions.masterOptions.outputBusStartOffset );
 			WFSServers.pulsesOutputBus = wfsOptions.masterOptions.toServersBus;
 			SyncCenter.outBus = wfsOptions.masterOptions.toServersBus;
 			if( wfsOptions.masterOptions.useForWFS ) { wfsServers = wfsServers.add( ms ) };
@@ -97,14 +97,7 @@ WFSLib {
 				.bindAddress_("0.0.0.0");
 			};
 
-			if( so.n == 1 ) {
-				WFSSpeakerConf.setOutputBusStartOffset( lb, so.outputBusStartOffset );
-			} {
-				lb.servers.do({ |srv|
-					WFSSpeakerConf.setOutputBusStartOffset( srv, so.outputBusStartOffset );
-				});
-			};
-
+			this.setOutputBusStartOffset( lb, so.outputBusStartOffset );
 			wfsServers = wfsServers.add( lb );
 		});
 
@@ -490,6 +483,34 @@ WFSLib {
 		if( ULib.allServers.includes( server ) ) {
 			server.loadDirectory( Platform.userAppSupportDir +/+ "wfs_synthdefs" );
 			if( Udef.synthDefDir.notNil ) { server.loadDirectory( Udef.synthDefDir ); };
+		};
+	}
+
+	*setOutputBusStartOffset { |server, bus|
+		if( bus == 0 ) {
+			if( thisProcess.platform.name == \linux && { server.isKindOf( LoadBalancer ) } ) {
+				server.beforeBootAction = {
+					"SC_JACK_DEFAULT_OUTPUTS".setenv( "system" );
+				};
+			};
+		} {
+			if( server.isKindOf( LoadBalancer ) ) {
+				if( thisProcess.platform.name == \linux ) { // set jack outputs instead
+					server.beforeBootAction = { |srv|
+						"SC_JACK_DEFAULT_OUTPUTS".setenv(
+							(1..srv.options.numOutputBusChannels).collect({ |item|
+								"system:playback_%".format( item + bus)
+							}).join(", ")
+						);
+					}
+				} {
+					server.servers.do({ |srv|
+						WFSSpeakerConf.setOutputBusStartOffset( srv, bus );
+					});
+				};
+			} {
+				WFSSpeakerConf.setOutputBusStartOffset( server, bus );
+			};
 		};
 	}
 
