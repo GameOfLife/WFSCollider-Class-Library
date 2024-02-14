@@ -487,22 +487,22 @@ WFSLib {
 	}
 
 	*setOutputBusStartOffset { |server, bus|
-		if( bus == 0 ) {
-			if( thisProcess.platform.name == \linux && { server.isKindOf( LoadBalancer ) } ) {
-				server.beforeBootAction = {
-					"SC_JACK_DEFAULT_OUTPUTS".setenv( "system" );
-				};
-			};
-		} {
+		var normalServerProgram;
+		if( bus != 0 ) {
 			if( server.isKindOf( LoadBalancer ) ) {
 				if( thisProcess.platform.name == \linux ) { // set jack outputs instead
+					normalServerProgram = Server.program;
 					server.beforeBootAction = { |srv|
-						"SC_JACK_DEFAULT_OUTPUTS".setenv(
+						Server.program = "export SC_JACK_DEFAULT_OUTPUTS=\"%\"; %".format(
 							(1..srv.options.numOutputBusChannels).collect({ |item|
 								"system:playback_%".format( item + bus)
-							}).join(", ")
+							}).join(","),
+							normalServerProgram
 						);
-					}
+					};
+					server.afterBootAction = {
+						Sever.program = normalServerProgram;
+					};
 				} {
 					server.servers.do({ |srv|
 						WFSSpeakerConf.setOutputBusStartOffset( srv, bus );
