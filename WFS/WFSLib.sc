@@ -501,7 +501,7 @@ WFSLib {
 						);
 					};
 					server.afterBootAction = {
-						Sever.program = normalServerProgram;
+						Server.program = normalServerProgram;
 					};
 				} {
 					server.servers.do({ |srv|
