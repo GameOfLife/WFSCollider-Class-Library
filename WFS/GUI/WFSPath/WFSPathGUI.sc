@@ -49,6 +49,8 @@ WFSPathGUI {
 			bounds = parent.asView.bounds;
 		};
 
+		RoundView.pushSkin( UChainGUI.skin );
+
 		view = EZCompositeView( parent, bounds, gap: 2@2, margin: 2@2 );
 		view.resize_(5);
 		bounds = view.asView.bounds;
@@ -117,6 +119,8 @@ WFSPathGUI {
 			.action_({
 				this.openGeneratorView;
 			});
+
+		RoundView.popSkin( UChainGUI.skin );
 
 		pathView.action = {
 			action.value( this );

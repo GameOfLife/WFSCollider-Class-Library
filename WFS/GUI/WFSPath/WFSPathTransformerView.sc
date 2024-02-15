@@ -137,6 +137,8 @@ WFSPathTransformerView {
 			bounds = bounds ?? { 177 @ 280 };
 		};
 
+		RoundView.pushSkin( UChainGUI.skin );
+
 		view = EZCompositeView( parent ? this.class.name.asString, bounds, true, 2@2, 2@2 );
 
 
@@ -165,6 +167,8 @@ WFSPathTransformerView {
 				this.reset;
 				action.value( this, \reset );
 			});
+
+		RoundView.popSkin;
 
 		view.view.bounds = view.view.bounds.height_( view.view.children.last.bounds.bottom );
 
