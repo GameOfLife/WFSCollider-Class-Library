@@ -48,6 +48,8 @@ WFSPositionTrackerGUI {
 
 		bounds = bounds ?? { parent.asView.bounds.insetBy(4,4) };
 
+		RoundView.pushSkin( UChainGUI.skin );
+
 		composite = CompositeView( parent, bounds ).resize_(5);
 		composite.addFlowLayout( 0@0, 4@4 );
 		composite.onClose = {
@@ -119,6 +121,8 @@ WFSPositionTrackerGUI {
 				paths.do(_.draw(1, pixelScale: scale));
 			};
 		};
+
+		RoundView.popSkin;
 
 		controller = SimpleController( WFSPositionTracker )
 			.put( \active, {
