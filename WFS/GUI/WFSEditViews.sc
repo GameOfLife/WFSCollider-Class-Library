@@ -48,7 +48,7 @@ WFSBasicEditView : UBasicEditView {
 	}
 
 	setViewProperties {
-		gridColor = gridColor ?? { Color.white.alpha_(0.25) };
+		gridColor = gridColor ?? { Color.gray(0.8).alpha_(0.33) };
 		view
 			.move_( [0.5,0.5] )
 			.scale_( [10,10] )
@@ -77,7 +77,7 @@ WFSBasicEditView : UBasicEditView {
 	}
 
 	gridColor_ { |aColor|
-		gridColor = aColor ?? { Color.white.alpha_(0.25) };
+		gridColor = aColor ?? { Color.gray(0.8).alpha_(0.33) };
 		view.gridColor = aColor;
 	}
 
@@ -87,7 +87,7 @@ WFSBasicEditView : UBasicEditView {
 
 	prDrawContents { |vw|
 		Pen.use({
-			Pen.color = Color.white.alpha_(0.4);
+			Pen.color = Color.gray(0.7).alpha_(0.5);
 			Pen.width = vw.pixelScale.asArray.mean;
 			Pen.line( -200 @ 0, 200 @ 0 );
 			Pen.line( 0 @ -200, 0 @ 200 );
