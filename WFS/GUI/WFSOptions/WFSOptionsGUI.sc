@@ -26,7 +26,7 @@ WFSOptionsGUI {
 	}
 
 	init { |parent, bounds, inObject|
-		var setRebuildColor;
+		var setRebuildColor, stringColor;
 
 		if( parent.isNil ) {
 			parent = this.class.asString;
@@ -51,6 +51,8 @@ WFSOptionsGUI {
 		ctrl = SimpleController( object );
 
 		RoundView.pushSkin( UChainGUI.skin );
+
+		stringColor = RoundView.skin.stringColor ?? { Color.black };
 
 		firstColumn = CompositeView( view, columnWidth @ (bounds.height - (footerHeight + 4)) )
 			.background_( Color.gray(1).alpha_(0.125) )
@@ -97,6 +99,7 @@ WFSOptionsGUI {
 		masterButton = SmoothButton( masterHeader, 14 @ 14 )
 			.label_([ "", 'x' ])
 			.radius_(2)
+		    .hiliteColor_( RoundView.skin.hiliteColor ? Color.gray(0.2,0.5) )
 			.value_( object.masterOptions.notNil.binaryValue )
 			.action_({ |bt|
 				if( bt.value == 1 ) {
@@ -150,7 +153,7 @@ WFSOptionsGUI {
 			] ) {
 				rebuildButton.stringColor = Color.red(0.66);
 			} {
-				rebuildButton.stringColor = Color.black;
+				rebuildButton.stringColor = stringColor;
 			};
 		};
 

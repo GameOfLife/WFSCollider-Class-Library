@@ -127,6 +127,7 @@ WFSOptionsObjectGUI : AbstractWFSOptionsGUI {
 		specs = OEM(
 			\previewMode, ListSpec( [ \off, \headphone, \stereo, \lrs, \quad, \quad_crossed, \hexa, \hexa_pairs, \octo, \octo_pairs, \hexa_deci, \twentyfour, \thirtytwo, \sixtyfour, \b_format, \ambix, \mono ] ),
 			\showGUI, BoolSpec(true),
+			\darkMode, BoolSpec(false),
 			\showServerWindow, BoolSpec(true),
 			\playSoundWhenReady, BoolSpec(true),
 			\startupAction, CodeSpec(),
