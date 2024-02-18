@@ -124,6 +124,7 @@ WFSOptions : AbstractWFSOptions {
 	var <masterOptions;
 	var <serverOptions = #[];
 	var <showGUI = true;
+	var <darkMode = false;
 	var <showServerWindow = true;
 	var <previewMode = \off;
 	var <playSoundWhenReady = false;

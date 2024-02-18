@@ -34,7 +34,7 @@ WFSOptionsGUI {
 					190 rrand: 220,
 					300 rrand: 350,
 					(2 * (columnWidth + 6)) + 2,
-					550
+					570
  				 )
 			};
 		} {
@@ -84,6 +84,9 @@ WFSOptionsGUI {
 			"WFSOptionsGUI: changing previewMode to '%' (effective immediately)\n".postf( mode );
 		});
 
+		optionsView.views.darkMode.action = optionsView.views.previewMode.action.addFunc({ |vw, mode|
+			{ WFSLib.setGUISkin( if( mode ) { \dark } { \light }, true ) }.defer;
+		});
 
 		firstColumn.decorator.shift( 0, 14 );
 

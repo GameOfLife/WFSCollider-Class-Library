@@ -144,6 +144,8 @@ WFSLib {
 
 		this.loadUDefs( false );
 
+		this.setGUISkin( if( WFSOptions.current.darkMode == true ) { \dark } { \light }, false );
+
 		if( WFSOptions.current.showGUI ) { this.initDefaults };
 
 		ULib.servers = servers;
@@ -699,6 +701,46 @@ WFSLib {
 
 		UGlobalEQ.gui;
 	}
+
+	*setGUISkin { |mode = \light, refresh = true|
+		if( UChainGUI.skin != UChainGUI.skins[ mode ] ) {
+			UChainGUI.skin = UChainGUI.skins[ mode ];
+			QtGUI.palette = QPalette.perform( mode );
+			if( refresh ) {
+				UScoreEditorGUI.all.copy.do({ |editor|
+					var score;
+					score = editor.score;
+					editor.askForSave_( false );
+					editor.close;
+					score.gui;
+				});
+
+				UChainGUI.all.copy.do(_.rebuild);
+
+				if( UGlobalEQ.view.view.isClosed.not ) {
+					UGlobalEQ.view.view.findWindow.close;
+					UGlobalEQ.gui;
+				};
+
+				if( ULib.eWindow.notNil && { ULib.eWindow.isClosed.not } ) {
+					ULib.envirWindow;
+				};
+
+				ULib.serversWindow( "WFSCollider Servers" );
+
+				if( WFSPositionTrackerGUI.current.notNil ) {
+					WFSPositionTrackerGUI.current.parent.close;
+					WFSPositionTrackerGUI();
+				};
+
+				if( WFSOptionsGUI.current.notNil ) {
+					WFSOptionsGUI.current.view.findWindow.close;
+					WFSOptionsGUI();
+				};
+			}
+		}
+	}
+
 
 	*getCurrentPrefsPath { |action|
 		var paths;
