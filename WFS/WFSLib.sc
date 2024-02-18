@@ -780,7 +780,7 @@ WFSLib {
 			SCAlert("WFSCollider can't check for updates...\n"
 				"Most probably there is no internet\n"
 				"connection available", ["OK"], [nil],
-				Color.green, iconName: 'warning'
+				Color.green, UChainGUI.skin[ 'SCAlert' ] !? _.background ?? { Color.white }, iconName: 'warning'
 			)
 		};
 		this.checkForUpdates( { |upd|
@@ -796,10 +796,10 @@ WFSLib {
 						[ "later", "recompile" ],
 						[ nil, { thisProcess.recompile }]
 				)}, cantCheck )
-			} ], Color.green, Color.white, 'roundArrow', true );
+			} ], Color.green, UChainGUI.skin[ 'SCAlert' ] !? _.background ?? { Color.white }, 'roundArrow', true );
 		}, {
 			SCAlert("WFSCollider is up-to-date", ["OK"], [nil],
-				Color.green, iconName: 'clock'
+				Color.green, UChainGUI.skin[ 'SCAlert' ] !? _.background ?? { Color.white }, 'clock'
 			)
 		}, cantCheck );
 	}
