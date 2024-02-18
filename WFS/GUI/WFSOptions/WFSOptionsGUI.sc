@@ -84,7 +84,7 @@ WFSOptionsGUI {
 			"WFSOptionsGUI: changing previewMode to '%' (effective immediately)\n".postf( mode );
 		});
 
-		optionsView.views.darkMode.action = optionsView.views.previewMode.action.addFunc({ |vw, mode|
+		optionsView.views.darkMode.action = optionsView.views.darkMode.action.addFunc({ |vw, mode|
 			{ WFSLib.setGUISkin( if( mode ) { \dark } { \light }, true ) }.defer;
 		});
 
