@@ -82,6 +82,7 @@ WFSServerOptions : AbstractWFSOptions {
 	var <outputBusStartOffset = 0;
 	var <device;
 	var <hardwareBufferSize = 512;
+	var <useForWFS = true;
 
 
 	*initClass {
@@ -109,8 +110,6 @@ WFSServerOptions : AbstractWFSOptions {
 		];
 	}
 
-	useForWFS { ^true }
-
 	inDevice { ^if( device.isString or: device.isNil ) { device } { device[0] } }
 	outDevice { ^if( device.isString or: device.isNil ) { device } { device[1] } }
 
@@ -127,7 +126,6 @@ WFSOptions : AbstractWFSOptions {
 	var <darkMode = false;
 	var <showServerWindow = true;
 	var <previewMode = \off;
-	var <playSoundWhenReady = false;
 	var <startupAction;
 	var <serverAction;
 	var <blockSize = 128;
@@ -146,13 +144,36 @@ WFSOptions : AbstractWFSOptions {
 
 	*presets { ^presetManager.presets.as(IdentityDictionary) }
 
-	*fromPreset { |name| ^presetManager.apply( name ).makeCurrent }
+	*fromPreset { |name| ^presetManager.apply( name ).removeMasterOptions.makeCurrent }
 
-	fromPreset { |name| ^presetManager.apply( name, this ); }
+	fromPreset { |name| var res = presetManager.apply( name, this ); this.removeMasterOptions; ^res; }
 
 	matchPreset {
 		^presetManager.match(this);
 	}
+
+	removeMasterOptions {
+		if( this.masterOptions.notNil ) {
+			this.serverOptions = [
+				WFSServerOptions()
+				.name_( "wfs_master" )
+				.ip_( "127.0.0.1" )
+				.startPort_( 57999 )
+				.n_( 1 )
+				.numInputBusChannels_( this.masterOptions.numInputBusChannels )
+				.numOutputBusChannels_( this.masterOptions.numOutputBusChannels )
+				.outputBusStartOffset_( this.masterOptions.outputBusStartOffset )
+				.device_( this.masterOptions.device )
+				.hardwareBufferSize_(this.masterOptions.hardwareBufferSize )
+				.useForWFS_( this.masterOptions.useForWFS )
+			] ++ this.serverOptions;
+
+			this.masterOptions = nil;
+		};
+	}
+
+	playSoundWhenReady { ^false }
+	playSoundWhenReady_ { }
 
 	*initClass {
 		Class.initClassTree( WFSServerOptions );
@@ -160,18 +181,20 @@ WFSOptions : AbstractWFSOptions {
 		presetManager = PresetManager( WFSOptions );
 		presetManager.applyFunc_( { |object, preset|
 			 	if( object === WFSOptions ) {
-				 	preset.deepCopy;
+				 	preset.deepCopy.removeMasterOptions;
 			 	} {
-				 	object.fromObject( preset );
+				 	object.fromObject( preset ).removeMasterOptions;
 				}
 		 	} );
 
 		presetManager.presets = [
 			'default', WFSOptions() // offline
-				.masterOptions_(
-					WFSMasterOptions()
-						.useForWFS_(true)
-				)
+				.serverOptions_([
+				    WFSServerOptions()
+				   .n_( 1 )
+				   .numInputBusChannels_(32)
+				   .numOutputBusChannels_(32)
+			    ])
 				.previewMode_( \headphone ),
 			'game_of_life_master', WFSOptions()
 				.masterOptions_(

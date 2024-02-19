@@ -114,6 +114,7 @@ WFSServerOptionsGUI : AbstractWFSOptionsGUI {
 			\outputBusStartOffset, IntegerSpec( 0, 0, 512 ),
 			\device, UAudioDeviceSpec("JackRouter"),
 			\hardwareBufferSize, ListSpec( [64, 128, 256, 512, 1024, nil] ),
+			\useForWFS, BoolSpec(true),
 		);
 	}
 
@@ -129,7 +130,6 @@ WFSOptionsObjectGUI : AbstractWFSOptionsGUI {
 			\showGUI, BoolSpec(true),
 			\darkMode, BoolSpec(false),
 			\showServerWindow, BoolSpec(true),
-			\playSoundWhenReady, BoolSpec(true),
 			\startupAction, CodeSpec(),
 			\serverAction, CodeSpec(),
 			\blockSize, ListSpec( [ 1, 64, 128 ] ),

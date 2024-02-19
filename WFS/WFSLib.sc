@@ -39,34 +39,7 @@ WFSLib {
 
 		WFSOptions.makeCurrentAtInit = false;
 
-		if( wfsOptions.masterOptions.notNil ) {
-			ms = Server( 'wfs_master', NetAddr( "127.0.0.1", 57999 ) );
-			servers = servers.add( ms );
-
-			ms.options
-			.numInputBusChannels_( wfsOptions.masterOptions.numInputBusChannels )
-			.numOutputBusChannels_( wfsOptions.masterOptions.numOutputBusChannels )
-			.inDevice_( wfsOptions.masterOptions.inDevice )
-			.outDevice_( wfsOptions.masterOptions.outDevice )
-			.hardwareBufferSize_( wfsOptions.masterOptions.hardwareBufferSize )
-			.blockSize_( wfsOptions.blockSize )
-			.sampleRate_( wfsOptions.sampleRate )
-			.maxSynthDefs_(2048)
-		    .numWireBufs_(2048)
-			.memSize_( (2**19).asInteger ) // 256MB
-			.maxNodes_( (2**16).asInteger );
-
-			if( ms.options.respondsTo( \maxLogins ) ) {
-				ms.options
-				.maxLogins_(2)
-				.bindAddress_("0.0.0.0");
-			};
-
-			this.setOutputBusStartOffset( ms, wfsOptions.masterOptions.outputBusStartOffset );
-			WFSServers.pulsesOutputBus = wfsOptions.masterOptions.toServersBus;
-			SyncCenter.outBus = wfsOptions.masterOptions.toServersBus;
-			if( wfsOptions.masterOptions.useForWFS ) { wfsServers = wfsServers.add( ms ) };
-		};
+		wfsOptions.removeMasterOptions;
 
 		wfsOptions.serverOptions.do({ |so,i|
 			var lb;
@@ -98,7 +71,7 @@ WFSLib {
 			};
 
 			this.setOutputBusStartOffset( lb, so.outputBusStartOffset );
-			wfsServers = wfsServers.add( lb );
+			if( so.useForWFS ) { wfsServers = wfsServers.add( lb ); };
 		});
 
 		WFSLib.previewMode = wfsOptions.previewMode;

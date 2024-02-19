@@ -90,37 +90,6 @@ WFSOptionsGUI {
 
 		firstColumn.decorator.shift( 0, 14 );
 
-		masterHeader = CompositeView( firstColumn, columnWidth @ 14 )
-			.background_( Color.gray(0.8).alpha_(0.5) );
-
-		masterHeader.addFlowLayout( 0@0, 2@2 );
-
-		StaticText( masterHeader, columnWidth - (2 + 14) @ 14 )
-			.applySkin( RoundView.skin )
-			.string_( " master server" );
-
-		masterButton = SmoothButton( masterHeader, 14 @ 14 )
-			.label_([ "", 'x' ])
-			.radius_(2)
-		    .hiliteColor_( RoundView.skin.hiliteColor ? Color.gray(0.2,0.5) )
-			.value_( object.masterOptions.notNil.binaryValue )
-			.action_({ |bt|
-				if( bt.value == 1 ) {
-					object.masterOptions = object.masterOptions ? savedMasterOptions ??
-						 { WFSMasterOptions().useForWFS_(true) };
-				} {
-					savedMasterOptions = object.masterOptions;
-					object.masterOptions = nil;
-				};
-				//this.makeMasterGUI;
-			});
-
-		masterComp = CompositeView( firstColumn, columnWidth @ WFSMasterOptionsGUI.getHeight );
-
-		this.makeMasterGUI;
-
-		firstColumn.decorator.shift(0, 14);
-
 		wfsHeader = CompositeView( firstColumn, columnWidth @ 14 )
 			.background_( Color.gray(0.8).alpha_(0.5) );
 
@@ -284,15 +253,6 @@ WFSOptionsGUI {
 
 		footer.decorator.left_( footer.bounds.width - 154 );
 
-		/*
-		SmoothButton( footer, 100 @ 14 )
-			.label_( "delete prefs" )
-			.action_({
-				WFSLib.deletePrefs;
-			})
-			.resize_(9);
-		*/
-
 		SmoothButton( footer, 50 @ 24 )
 			.states_( [ [ "save", Color.black, Color.red(1,0.25) ] ] )
 			.action_({
@@ -309,12 +269,9 @@ WFSOptionsGUI {
 
 		RoundView.popSkin;
 
-		ctrl.put( \masterOptions, {
-				masterButton.value = object.masterOptions.notNil.binaryValue;
-				this.makeMasterGUI;
-			})
-			.put( \serverOptions, {
+		ctrl.put( \serverOptions, {
 				this.makeServersGUI;
+			    { WFSLib.setGUISkin( if( object.darkMode == true ) { \dark } { \light }, true ) }.defer;
 			});
 
 		current = this;
@@ -352,7 +309,8 @@ WFSOptionsGUI {
 		serverComp.refresh;
 		serverComp.decorator.reset;
 
-		serverViews = object.serverOptions.collect({ |item|
+		serverViews = object.serverOptions.collect({ |item, i|
+			if( i != 0 ) { serverComp.decorator.shift(0,14); };
 			WFSServerOptionsGUI( serverComp, serverComp.bounds.width @ 14, item )
 				.background_( Color.gray(0.3).alpha_(0.25) );
 		});
