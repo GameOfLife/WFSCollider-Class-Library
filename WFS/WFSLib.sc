@@ -790,12 +790,14 @@ WFSLib {
 	}
 
 	*checkForUpdatesGUI {
-		var cantCheck;
+		var cantCheck, bgColor;
+		bgColor = UChainGUI.skin[ 'SCAlert' ] !? _.background ?? { Color.white };
+
 		cantCheck = {
 			SCAlert("WFSCollider can't check for updates...\n"
 				"Most probably there is no internet\n"
 				"connection available", ["OK"], [nil],
-				Color.green, UChainGUI.skin[ 'SCAlert' ] !? _.background ?? { Color.white }, iconName: 'warning'
+				Color.green, bgColor, iconName: 'warning'
 			)
 		};
 		this.checkForUpdates( { |upd|
@@ -809,12 +811,13 @@ WFSLib {
 						"WARNING: unsaved changes will be\n"
 						"lost at recompile",
 						[ "later", "recompile" ],
-						[ nil, { thisProcess.recompile }]
+						[ nil, { thisProcess.recompile }],
+						background: bgColor
 				)}, cantCheck )
-			} ], Color.green, UChainGUI.skin[ 'SCAlert' ] !? _.background ?? { Color.white }, 'roundArrow', true );
+			} ], Color.green, bgColor, 'roundArrow', true );
 		}, {
 			SCAlert("WFSCollider is up-to-date", ["OK"], [nil],
-				Color.green, UChainGUI.skin[ 'SCAlert' ] !? _.background ?? { Color.white }, 'clock'
+				Color.green, bgColor, 'clock'
 			)
 		}, cantCheck );
 	}
