@@ -178,6 +178,12 @@ WFSLib {
 
 		Server.default = ULib.allServers.first;
 
+		Document.initAction = { |doc|
+			if( doc.path.split( $. ).last == "uscore" ) {
+				UScore.open( doc.path, _.gui );
+				doc.close;
+			};
+		};
 	}
 
 	*previewMode_ { |pm| previewMode = pm; this.changed( \previewMode, previewMode ); }
