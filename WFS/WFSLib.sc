@@ -179,7 +179,7 @@ WFSLib {
 		Server.default = ULib.allServers.first;
 
 		Document.initAction = { |doc|
-			if( doc.path.split( $. ).last == "uscore" ) {
+			if( doc.path !? { |x| x.split( $. ).last == "uscore" } ? false ) {
 				UScore.open( doc.path, _.gui );
 				doc.close;
 			};
