@@ -682,6 +682,7 @@ WFSLib {
 	}
 
 	*setGUISkin { |mode = \light, refresh = true|
+		Font.default = Font( Font.defaultSansFace, 13 );
 		if( UChainGUI.skin != UChainGUI.skins[ mode ] ) {
 			UChainGUI.skin = UChainGUI.skins[ mode ];
 			QtGUI.palette = QPalette.perform( mode );
