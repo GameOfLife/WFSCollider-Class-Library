@@ -245,7 +245,7 @@ WFSPathBuffer : AbstractRichBuffer {
 		path = path ? this.filePath;
 
 		writeFunc = { |buf|
-			buf.write( path.getGPath, "aiff", "float32", -1, 0, false );
+			buf.write( path.getGPath, "aiff", "float", -1, 0, false );
 		};
 
 		buf = this.sendBuffer( server, writeFunc, forWriting: true );

@@ -123,6 +123,14 @@ WFSLib {
 
 		ULib.servers = servers;
 
+		WFSPathBuffer.writeServers = ULib.servers.collect({ |srv|
+			if( srv.isKindOf( LoadBalancer ) ) {
+				srv[0];
+			} {
+				srv;
+			};
+		});
+
 		UScore.openFunc = { |path| // old xml format compatibility
 			if( File(path,"r").readAllString[..8] == "<xml:wfs>") {
 				WFSScore.readWFSFile(path).asUEvent;
