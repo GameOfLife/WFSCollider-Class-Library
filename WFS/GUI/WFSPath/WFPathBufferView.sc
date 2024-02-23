@@ -22,6 +22,7 @@ WFSPathBufferView {
 	// this is not finished yet, just a copy of BufSndFileView for now
 	classvar <timeMode = \seconds; // or \frames
 	classvar <all;
+	classvar <clipBoard;
 
 	var <wfsPathBuffer;
 	var <parent, <view, <views;
@@ -30,6 +31,11 @@ WFSPathBufferView {
 
 	*new { |parent, bounds, action, wfsPathBuffer|
 		^super.new.init( parent, bounds, action ).value_( wfsPathBuffer ).addToAll;
+	}
+
+	*clipBoard_ { |new|
+		clipBoard = new;
+		this.changed( \clipBoard, new );
 	}
 
 	init { |parent, bounds, inAction|
@@ -106,9 +112,9 @@ WFSPathBufferView {
 
 	setWriteButtonColor { |inWFSPathBuffer|
 		if( inWFSPathBuffer.wfsPath.dirty ) {
-			views[ \write ].background_( Color.red.alpha_(0.25) );
+			views[ \write ].states_([ [ "write data", nil, Color.red.alpha_(0.25) ] ])
 		} {
-			views[ \write ].background_( Color.clear );
+			views[ \write ].states_([ ["write data"] ])
 		};
 
 	}
@@ -140,7 +146,7 @@ WFSPathBufferView {
 		}.defer;
 
 		views[ \loop ].font = font;
-		views[ \plot ].font = font;
+		//views[ \plot ].font = font;
 		views[ \edit ].font = font;
 		views[ \write ].font = font;
 		views[ \read ].font = font;
@@ -165,12 +171,16 @@ WFSPathBufferView {
 	*viewNumLines { ^8 }
 
 	makeView { |parent, bounds, resize|
+		var ctrl;
+
+		ctrl = SimpleController( this.class );
 
 		if( bounds.isNil ) { bounds= 350 @ (this.class.viewNumLines * (viewHeight + 4)) };
 
 		view = EZCompositeView( parent, bounds, gap: 4@4 );
 		bounds = view.asView.bounds;
 		view.onClose_({
+			ctrl.remove;
 			this.remove;
 		}).resize_( resize ? 5 );
 		views = ();
@@ -181,9 +191,17 @@ WFSPathBufferView {
 				this.setViews( wfsPathBuffer );
 			});
 
-		views[ \buttonComp ] = CompositeView( view, 104@ ((viewHeight * 2) + 4) );
+		views[ \buttonComp ] = CompositeView( view, 148@ ((viewHeight * 2) + 4) );
 		views[ \buttonComp ].addFlowLayout( 0@0, 4@4 );
 
+		views[ \edit ] = SmoothButton( views[ \buttonComp ], 40 @ viewHeight )
+			.radius_( 3 )
+			.label_( "edit" )
+			.action_({ |bt|
+				views[ \miniPlot ].openEditor;
+			});
+
+		/*
 		views[ \plot ] = SmoothButton( views[ \buttonComp ], 40 @ viewHeight )
 			.radius_( 3 )
 			.border_( 1 )
@@ -194,10 +212,10 @@ WFSPathBufferView {
 					.editMode_( \lock )
 					.mouseMode_( \zoom );
 			});
+		*/
 
 		views[ \write ] = SmoothButton( views[ \buttonComp ], 60 @ viewHeight )
 			.radius_( 3 )
-			.border_( 1 )
 			.label_( "write data" )
 			.action_({ |bt|
 				ULib.savePanel({ |path|
@@ -206,26 +224,23 @@ WFSPathBufferView {
 				});
 			});
 
-		views[ \loop ] = SmoothButton( view, 40 @ viewHeight )
+		views[ \copy ] = SmoothButton(  views[ \buttonComp ], 40 @ viewHeight )
 			.radius_( 3 )
-			.border_( 1 )
-			.label_( [ "loop", "loop" ] )
-			.hiliteColor_( Color.green )
+			.label_( "copy" )
 			.action_({ |bt|
-				this.performWFSPathBuffer( \loop_ , bt.value.booleanValue );
-				action.value( this );
+			    this.class.clipBoard = wfsPathBuffer.wfsPath.deepCopy;
 			});
 
 		views[ \buttonComp ].decorator.nextLine;
 
-		views[ \edit ] = SmoothButton( views[ \buttonComp ], 40 @ viewHeight )
+		views[ \loop ] = SmoothButton( views[ \buttonComp ], 40 @ viewHeight )
 			.radius_( 3 )
-			.border_( 1 )
-			.label_( "edit" )
+			.label_( [ "loop", "loop" ] )
+		    .hiliteColor_( Color.green.alpha_(0.7) )
 			.action_({ |bt|
-				views[ \miniPlot ].openEditor;
+				this.performWFSPathBuffer( \loop_ , bt.value.booleanValue );
+				action.value( this );
 			});
-
 
 		views[ \read ] = SmoothButton( views[ \buttonComp ], 60 @ viewHeight )
 			.radius_( 3 )
@@ -260,6 +275,20 @@ WFSPathBufferView {
 				});
 			});
 
+		views[ \paste ] = SmoothButton( views[ \buttonComp ], 40 @ viewHeight )
+			.radius_( 3 )
+			.label_( "paste" )
+		    .action_({ |bt|
+			    if( clipBoard.notNil ) {
+				    this.performWFSPathBuffer( \wfsPath_, clipBoard.deepCopy );
+			    };
+		    });
+
+		if( clipBoard.isNil ) {
+			views[ \paste ].enabled_( false );
+		};
+
+		ctrl.put( \clipBoard, { views[ \paste ].enabled_( clipBoard.notNil ); });
 
 		view.view.decorator.nextLine;
 
