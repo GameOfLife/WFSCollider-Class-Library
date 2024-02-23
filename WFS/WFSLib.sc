@@ -131,6 +131,16 @@ WFSLib {
 			};
 		});
 
+		ULib.envirSpecs = [
+			'value', [0,1].asSpec,
+			'freq', FreqSpec(2,20000),
+			'amp', \amp.asSpec,
+			'integer', IntegerSpec(),
+			'boolean', BoolSpec(),
+			'time', SMPTESpec(),
+			'point', WFSPointSpec(200),
+		];
+
 		UScore.openFunc = { |path| // old xml format compatibility
 			if( File(path,"r").readAllString[..8] == "<xml:wfs>") {
 				WFSScore.readWFSFile(path).asUEvent;
