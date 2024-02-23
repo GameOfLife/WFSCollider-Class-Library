@@ -51,7 +51,7 @@ staticPoint = HiddenFreeUdef( \staticPoint, [
 	[ \minLatency:  false, BoolSpec(false), false, \init ],
 	[ \dynamic:		false,	BoolSpec(false), true, \nonsynth ], // force dynamic (hidden)
 	[ \renderMode:	\previewMode, renderModeSpec, notPreviewMode, \nonsynth ],
-	[ \busOffset:		0,	IntegerSpec(0,0,128), notPreviewMode, \nonsynth ], // bus offset
+	[ \busOffset:		0,	HardwareBusSpec(), notPreviewMode, \nonsynth ], // bus offset
 ] )
 .addUEnv
 .addUGlobalEQ
@@ -212,7 +212,7 @@ dynamicPoint = HiddenFreeUdef( \dynamicPoint, [
 	[ \minLatency:  false, BoolSpec(false), false, \init ],
 	[ \dynamic:		false,	BoolSpec(false), true, \nonsynth ], // force dynamic (hidden)
 	[ \renderMode:			\previewMode, renderModeSpec, notPreviewMode, \nonsynth ],
-	[ \busOffset:		0,	IntegerSpec(0,0,128), notPreviewMode, \nonsynth ], // bus offset
+	[ \busOffset:		0,	HardwareBusSpec(), notPreviewMode, \nonsynth ], // bus offset
 ], true )
 .addUGlobalEQ
 .addUIO( UIn, \ar, 0, 1 )
@@ -369,7 +369,7 @@ staticPlane = HiddenFreeUdef( \staticPlane, [
 	[ \minLatency:  false, BoolSpec(false), false, \init ],
 	[ \dynamic:		false,	BoolSpec(false), true, \nonsynth ], // force dynamic (hidden)
 	[ \renderMode:			\previewMode, renderModeSpec, notPreviewMode, \nonsynth ],
-	[ \busOffset:		0,	IntegerSpec(0,0,128), notPreviewMode, \nonsynth ], // bus offset
+	[ \busOffset:		0,	HardwareBusSpec(), notPreviewMode, \nonsynth ], // bus offset
 ] )
 .addUEnv
 .addUGlobalEQ
@@ -506,7 +506,7 @@ dynamicPlane = HiddenFreeUdef( \dynamicPlane, [
 	[ \minLatency:  false, BoolSpec(false), false, \init ],
 	[ \dynamic:		false,	BoolSpec(false), true, \nonsynth ], // force dynamic (hidden)
 	[ \renderMode:			\previewMode, renderModeSpec, notPreviewMode, \nonsynth ],
-	[ \busOffset:		0,	IntegerSpec(0,0,128), notPreviewMode, \nonsynth ], // bus offset
+	[ \busOffset:		0,	HardwareBusSpec(), notPreviewMode, \nonsynth ], // bus offset
 ] )
 .addUEnv
 .addUGlobalEQ
