@@ -325,6 +325,7 @@ WFSPathBufferView {
 		views[ \startSecond ] = SMPTEBox( views[ \startComp ],
 				views[ \startComp ].bounds.moveTo(0,0) )
 			.applySmoothSkin
+		    .applySkin( RoundView.skin )
 			.resize_( 5 )
 			.clipLo_( 0 )
 			.action_({ |nb|
@@ -369,6 +370,7 @@ WFSPathBufferView {
 
 		views[ \delay ] = SMPTEBox( view, (bounds.width - 82) @ viewHeight )
 			.applySmoothSkin
+		    .applySkin( RoundView.skin )
 			.resize_( 5 )
 			.clipLo_( 0 )
 			.action_({ |nb|
