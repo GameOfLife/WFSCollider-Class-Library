@@ -31,8 +31,8 @@ WFSOptionsGUI {
 		if( parent.isNil ) {
 			parent = this.class.asString;
 			bounds = bounds ?? { Rect(
-					190 rrand: 220,
-					300 rrand: 350,
+					190,
+					300,
 					(2 * (columnWidth + 6)) + 2,
 					570
  				 )
