@@ -46,7 +46,7 @@ WFSLib {
 			if( so.n == 1 ) {
 				lb = Server( so.name, NetAddr( so.ip, so.startPort ) );
 			} {
-				lb = LoadBalancer.fill( so.n, "wfs"++(i+1), NetAddr( so.ip, so.startPort ) );
+				lb = LoadBalancer.fill( so.n, so.name.split($ ).collect(_[0]).join.toLower, NetAddr( so.ip, so.startPort ) );
 				lb.name = so.name;
 			};
 			servers = servers.add( lb );
