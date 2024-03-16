@@ -93,6 +93,7 @@ WFSPathBuffer : AbstractRichBuffer {
 			this.changed( \filePath, this.filePath );
 		} {
 			this.duplicatePath;
+			this.changed( \filePath, nil );
 		};
 	}
 
@@ -100,7 +101,7 @@ WFSPathBuffer : AbstractRichBuffer {
 
 	duplicatePath {
 		if( wfsPath.class == WFSPathURL ) {
-			this.wfsPath = wfsPath.wfsPath.deepCopy;
+			this.wfsPath = wfsPath.wfsPath.deepCopy.asWFSPath2;
 		} {
 			this.wfsPath = wfsPath.deepCopy;
 		};

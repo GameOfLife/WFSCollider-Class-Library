@@ -168,7 +168,7 @@ WFSPathBufferView {
 		};
 	}
 
-	*viewNumLines { ^8 }
+	*viewNumLines { ^7 }
 
 	makeView { |parent, bounds, resize|
 		var ctrl;
@@ -298,11 +298,17 @@ WFSPathBufferView {
 			.string_( "file" );
 
 		views[ \filePath ] = FilePathView( view,
-			(bounds.width - (30 + 4)) @ ( (viewHeight * 2) + 4 ) )
+			(bounds.width - (30 + 4)) @ viewHeight )
 			.resize_( 2 )
 			.action_({ |fv|
-				this.performWFSPathBuffer( \filePath_ , fv.value );
-				action.value( this );
+			    if( fv.value.size == 0 ) {
+				    this.performWFSPathBuffer( \filePath_ , nil );
+				    fv.value = nil;
+				    action.value( this );
+				} {
+				    this.performWFSPathBuffer( \filePath_ , fv.value );
+				    action.value( this );
+			    };
 			});
 
 		views[ \durLabel ] = StaticText( view, 30 @ viewHeight )
