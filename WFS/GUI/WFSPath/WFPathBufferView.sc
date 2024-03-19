@@ -300,6 +300,7 @@ WFSPathBufferView {
 		views[ \filePath ] = FilePathView( view,
 			(bounds.width - (30 + 4)) @ viewHeight )
 			.resize_( 2 )
+		    .allowEmpty_( true )
 			.action_({ |fv|
 			    if( fv.value.size == 0 ) {
 				    this.performWFSPathBuffer( \filePath_ , nil );
