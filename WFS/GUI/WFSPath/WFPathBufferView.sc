@@ -195,7 +195,7 @@ WFSPathBufferView {
 		views[ \buttonComp ].addFlowLayout( 0@0, 4@4 );
 
 		views[ \edit ] = SmoothButton( views[ \buttonComp ], 40 @ viewHeight )
-			.radius_( 3 )
+			.radius_( 2 )
 			.label_( "edit" )
 			.action_({ |bt|
 				views[ \miniPlot ].openEditor;
@@ -203,8 +203,7 @@ WFSPathBufferView {
 
 		/*
 		views[ \plot ] = SmoothButton( views[ \buttonComp ], 40 @ viewHeight )
-			.radius_( 3 )
-			.border_( 1 )
+			.radius_( 2 )
 			.label_( "plot" )
 			.action_({ |bt|
 				WFSPathView( )
@@ -215,7 +214,7 @@ WFSPathBufferView {
 		*/
 
 		views[ \write ] = SmoothButton( views[ \buttonComp ], 60 @ viewHeight )
-			.radius_( 3 )
+			.radius_( 2 )
 			.label_( "write data" )
 			.action_({ |bt|
 				ULib.savePanel({ |path|
@@ -225,7 +224,7 @@ WFSPathBufferView {
 			});
 
 		views[ \copy ] = SmoothButton(  views[ \buttonComp ], 40 @ viewHeight )
-			.radius_( 3 )
+			.radius_( 2 )
 			.label_( "copy" )
 			.action_({ |bt|
 			    this.class.clipBoard = wfsPathBuffer.wfsPath.deepCopy;
@@ -234,7 +233,7 @@ WFSPathBufferView {
 		views[ \buttonComp ].decorator.nextLine;
 
 		views[ \loop ] = SmoothButton( views[ \buttonComp ], 40 @ viewHeight )
-			.radius_( 3 )
+			.radius_( 2 )
 			.label_( [ "loop", "loop" ] )
 		    .hiliteColor_( Color.green.alpha_(0.7) )
 			.action_({ |bt|
@@ -243,8 +242,7 @@ WFSPathBufferView {
 			});
 
 		views[ \read ] = SmoothButton( views[ \buttonComp ], 60 @ viewHeight )
-			.radius_( 3 )
-			.border_( 1 )
+			.radius_( 2 )
 			.label_( "read data" )
 			.action_({ |bt|
 				ULib.openPanel({ |pth|
@@ -276,7 +274,7 @@ WFSPathBufferView {
 			});
 
 		views[ \paste ] = SmoothButton( views[ \buttonComp ], 40 @ viewHeight )
-			.radius_( 3 )
+			.radius_( 2 )
 			.label_( "paste" )
 		    .action_({ |bt|
 			    if( clipBoard.notNil ) {

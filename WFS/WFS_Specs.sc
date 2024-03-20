@@ -145,7 +145,6 @@ WFSMultiPathSpec : Spec {
 
 		vws[ \plot ] = SmoothButton( view, 40 @ (bounds.height) )
 			.label_( "plot" )
-			.border_( 1 )
 			.radius_( 2 )
 			.font_( font )
 			.action_({
@@ -167,7 +166,6 @@ WFSMultiPathSpec : Spec {
 
 		vws[ \write ] = SmoothButton( view, 60 @ (bounds.height) )
 			.label_( "write all" )
-			.border_( 1 )
 			.radius_( 2 )
 			.font_( font )
 			.action_({
@@ -236,7 +234,7 @@ WFSPointSpec : PointSpec {
 		if( step.y == 0 ) { localStep.y = 1 };
 		bounds.isNil.if{bounds= 320@20};
 
-		view = EZCompositeView( parent, bounds, gap: 2@2 );
+		view = EZCompositeView( parent, bounds, gap: 4@4 );
 		bounds = view.asView.bounds;
 
 		vws[ \view ] = view;
@@ -271,7 +269,7 @@ WFSPointSpec : PointSpec {
 
 		vws[ \comp2 ] = CompositeView( view, 60 @ (bounds.height) );
 
-		view.decorator.left = bounds.width - 60 - 2 - 40;
+		view.decorator.left = bounds.width - 60 - 4 - 40;
 
 		vws[ \mode ] = PopUpMenu( view, 60 @ (bounds.height) )
 			.font_( font )
@@ -363,7 +361,6 @@ WFSPointSpec : PointSpec {
 
 		vws[ \edit ] = SmoothButton( view, 40 @ (bounds.height) )
 			.label_( "edit" )
-			.border_( 1 )
 			.radius_( 2 )
 			.font_( font )
 			.action_({
@@ -551,7 +548,6 @@ WFSMultiPointSpec : PointSpec {
 
 		vws[ \edit ] = SmoothButton( view, 40 @ (bounds.height) )
 			.label_( "edit" )
-			.border_( 1 )
 			.radius_( 2 )
 			.font_( font )
 			.action_({
@@ -788,7 +784,6 @@ WFSRectSpec : RectSpec {
 
 		vws[ \edit ] = SmoothButton( view, 40 @ (bounds.height) )
 			.label_( "edit" )
-			.border_( 1 )
 			.radius_( 2 )
 			.font_( font )
 			.action_({
