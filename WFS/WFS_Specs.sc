@@ -504,7 +504,20 @@ WFSMultiPointSpec : PointSpec {
 		^this.constrain( value ).linlin( rect.leftTop, rect.rightBottom, 0, 1, \none );
 	}
 
-	massEditSpec { ^nil }
+	massEditSpec { |inArray|
+		^GenericMassEditSpec()
+		.default_( inArray )
+		.size_( inArray.size )
+		.originalSpec_( this )
+	}
+
+	massEditValue { |inArray|
+		^inArray
+	}
+
+	massEdit { |inArray, params|
+		^params;
+	}
 
 	canChangeAmount { ^false }
 
