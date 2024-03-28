@@ -202,4 +202,6 @@ RadiationPatternSpec : Spec {
 			ArgSpec( item[0], item[1], [0,1,\lin].asSpec );
 		}) ++ [ ArgSpec( \n, 1, [1,8,\lin,1,1].asSpec ) ];
 	}
+
+	massEditSpec { ^nil }
 }
