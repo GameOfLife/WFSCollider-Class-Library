@@ -44,7 +44,7 @@ RadiationPatternSpec : Spec {
 
 		vws[ \val ] = default.copy;
 
-		view = EZCompositeView( parent, bounds );
+		view = EZCompositeView( parent, bounds, true, 4@4 );
 		vws[ \view ] = view.view;
 		bounds = view.view.bounds;
 
@@ -60,15 +60,16 @@ RadiationPatternSpec : Spec {
 		};
 
 		subViewHeight = bounds.height / 4;
-		subViewWidth = bounds.width - (labelWidth + 4) - (subViewHeight * 3) - 2;
+		subViewWidth = bounds.width - (labelWidth + 4) - (subViewHeight * 4) - 4;
 
 		currentUnit = UGUI.nowBuildingUnit;
 
 		if( currentUnit.notNil ) {
 			direction = currentUnit.get( \direction );
 			if( direction.notNil ) {
-				if( direction.isUMap.not ) { angle = direction; };
-				angleCtrl = SimpleController( currentUnit )
+				if( direction.isNumber ) {
+					angle = direction;
+					angleCtrl = SimpleController( currentUnit )
 					.put( \direction, {
 						direction = currentUnit.get( \direction );
 						if( direction.isUMap.not ) {
@@ -78,8 +79,9 @@ RadiationPatternSpec : Spec {
 						};
 						{ vws[ \plot ].refresh }.defer;
 					});
+				};
+				view.onClose_( { angleCtrl.remove } );
 			};
-			view.onClose_( { angleCtrl.remove } );
 		};
 
 		getPoint = { |inAngle = 0|
@@ -92,7 +94,7 @@ RadiationPatternSpec : Spec {
 			}).sum;
 		};
 
-		vws[ \plot ] = UserView( view, (subViewHeight@subViewHeight) * 3 )
+		vws[ \plot ] = UserView( view, (subViewHeight@subViewHeight) * 4 )
 			.background_( Color.gray(0.5) )
 			.drawFunc_({ |vw|
 				var radius, points, pos, n = 64;
@@ -143,38 +145,43 @@ RadiationPatternSpec : Spec {
 			});
 
 		vws[ \controls ] = CompositeView( view,
-			subViewWidth @ (subViewHeight * 3)
+			subViewWidth @ (subViewHeight * 4)
 		).resize_(2);
 
-		vws[ \controls ].addFlowLayout( 0@0, 2@2 );
+		vws[ \controls ].addFlowLayout( 0@0, 4@4 );
+
+		RoundView.pushSkin( RoundView.skin ++ ( labelWidth: 10 ) );
 
 		[ \omni, \dipole, \quadrupole ].do({ |name, i|
 			vws[ name ] = EZSmoothSlider( vws[ \controls ],
-				subViewWidth @ (subViewHeight - 2),
+				subViewWidth @ (subViewHeight - 3),
 				name.asString[0].asString,
 				[0,1].asSpec,
 				{ |vw|
 					vws[ \val ][ i ] = vw.value;
-		        		action.value( vws, vws[ \val ] );
-		    		},
-		    		vws[ \val ][ i ]
-			).labelWidth_( 10 );
+					action.value( vws, vws[ \val ] );
+				},
+				vws[ \val ][ i ],
+				numberWidth: 40
+			);
 			vws[ name ].view.resize = 2;
 		});
 
-		view.view.decorator.nextLine;
-		view.view.decorator.shift( labelWidth + 4 + (subViewHeight * 3), -2 );
-		vws[ \n ] = EZSmoothSlider( view,
-			subViewWidth @ subViewHeight,
+		vws[ \n ] = EZSmoothSlider( vws[ \controls ],
+			subViewWidth @ (subViewHeight - 3),
 			"n",
 			[1,8,\lin,1,1].asSpec,
 			{ |vw|
 				vws[ \val ][ 3 ] = vw.value;
-	        		action.value( vws, vws[ \val ] );
-	    		},
-	    		vws[ \val ][ 3 ]
-		).labelWidth_( 10 );
+				action.value( vws, vws[ \val ] );
+			},
+			vws[ \val ][ 3 ],
+			numberWidth: 40
+		);
 		vws[ \n ].view.resize = 2;
+
+		RoundView.popSkin;
+
 		^vws;
 	}
 
@@ -203,5 +210,5 @@ RadiationPatternSpec : Spec {
 		}) ++ [ ArgSpec( \n, 1, [1,8,\lin,1,1].asSpec ) ];
 	}
 
-	massEditSpec { ^nil }
+	//massEditSpec { ^nil }
 }
