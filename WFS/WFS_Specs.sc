@@ -269,16 +269,27 @@ WFSPointSpec : PointSpec {
 
 		vws[ \comp2 ] = CompositeView( view, 60 @ (bounds.height) );
 
-		view.decorator.left = bounds.width - 60 - 4 - 40;
+		view.decorator.left = bounds.width - 45 - 4 - 40;
 
-		vws[ \mode ] = PopUpMenu( view, 60 @ (bounds.height) )
-			.font_( font )
-			.applySkin( RoundView.skin ? () )
-			.items_([ 'point', 'polar', 'deg_cw' ])
-			.action_({ |pu|
-				mode = pu.item;
-				this.setMode( vws, mode );
+		vws[ \mode ] = StaticText( view, 45 @ bounds.height )
+		.applySkin( RoundView.skin )
+		.background_( Color.white.alpha_(0.25) )
+		.string_( " point" )
+		.mouseDownAction_({ |vw|
+			var actions, selected;
+			actions = [ \point, \polar, \deg_cw ].collect({ |key|
+				var act;
+				act = MenuAction( key.asString, {
+					mode = key;
+					this.setMode( vws, mode );
+				}).enabled_( mode != key );
+				if( mode == key ) { selected = act };
+				act;
 			});
+			Menu( *actions ).front( action: selected );
+		});
+
+		vws[ \mode ].setProperty(\wordWrap, false);
 
 		// point mode
 		vws[ \x ] = SmoothNumberBox( vws[ \comp1 ], 40 @ (bounds.height) )
@@ -354,6 +365,10 @@ WFSPointSpec : PointSpec {
 			.wrap_(true)
 			.value_(0);
 
+		vws[ \dec_cwLabel ] = StaticText( vws[ \comp2 ], Rect( 42, 0, 18, bounds.height) )
+			.applySkin( RoundView.skin ? () )
+			.string_( "°" );
+
 		editAction = { |vw|
 			this.setView( vws, this.constrain( vw.object[0].copy ) );
 			action.value( vws, vws[ \val ]  );
@@ -393,12 +408,13 @@ WFSPointSpec : PointSpec {
 	}
 
 	setMode { |view, newMode|
+		view[ \mode ].string = " %".format( newMode );
 		switch( newMode,
 			\point, {
 				[ \x, \y ].do({ |item|
 					view[ item ].visible = true;
 				});
-				[ \rho, \theta, \thetaLabel, \deg_cw ].do({ |item|
+				[ \rho, \theta, \thetaLabel, \deg_cw, \dec_cwLabel ].do({ |item|
 					view[ item ].visible = false;
 				});
 			},
@@ -406,12 +422,12 @@ WFSPointSpec : PointSpec {
 				[ \rho, \theta, \thetaLabel ].do({ |item|
 					view[ item ].visible = true;
 				});
-				[ \x, \y, \deg_cw ].do({ |item|
+				[ \x, \y, \deg_cw, \dec_cwLabel ].do({ |item|
 					view[ item ].visible = false;
 				});
 			},
 			\deg_cw, {
-				[ \rho, \deg_cw, \thetaLabel ].do({ |item|
+				[ \rho, \deg_cw, \dec_cwLabel ].do({ |item|
 					view[ item ].visible = true;
 				});
 				[ \x, \y, \theta, \thetaLabel ].do({ |item|
@@ -437,10 +453,7 @@ WFSPointSpec : PointSpec {
 			view[ \editor ].object[ 0 ] = value;
 			{ view[ \editor ].refresh; }.defer;
 		};
-		{
-			this.setMode( view, mode );
-			view[ \mode ].value = view[ \mode ].items.indexOf( mode ) ? 0;
-		}.defer;
+		{ this.setMode( view, mode ); }.defer;
 		if( active ) { view[ \x ].doAction };
 	}
 
