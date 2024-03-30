@@ -47,7 +47,7 @@ WFSSpeakerConfGUI {
 					400 rrand: 450,
 					120 rrand: 150,
 					806,
-					500
+					572
  				 )
 			};
 		} {

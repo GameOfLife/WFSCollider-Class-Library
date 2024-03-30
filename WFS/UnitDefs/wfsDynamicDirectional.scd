@@ -172,7 +172,7 @@ if( WFSPreviewSynthDefs.pannerFuncs[\n].keys.includes( WFSLib.previewMode ).not 
 		n = 0;
 		normalSynths.do({ |sn, i|
 			server.sendMsg( *sn.newMsg( arrayGroup, [
-					\gain, WFSSpeakerConf.default.gain.dbamp,
+				    \gain, (WFSSpeakerConf.default.gain + arrayConfs[i].gain).dbamp,
 					\arrayConf, arrayConfs[i],
 					\amp, ("c" ++ normalLevelBuses[i]).asSymbol,
 					\outOffset, n + arrayConfs[i].outputOffset + WFSSpeakerConf.getOutputBusStartOffset( server ),
@@ -187,7 +187,7 @@ if( WFSPreviewSynthDefs.pannerFuncs[\n].keys.includes( WFSLib.previewMode ).not 
 		n = 0;
 		focusSynths.do({ |sn, i|
 			server.sendMsg( *sn.newMsg( arrayGroup, [
-					\gain, WFSSpeakerConf.default.gain.dbamp,
+					\gain, (WFSSpeakerConf.default.gain + arrayConfs[i].gain).dbamp,
 					\arrayConf, arrayConfs[i],
 					\amp, ("c" ++ focusLevelBuses[i]).asSymbol,
 					\outOffset, n + arrayConfs[i].outputOffset + WFSSpeakerConf.getOutputBusStartOffset( server ),

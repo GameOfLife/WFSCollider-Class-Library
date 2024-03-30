@@ -121,7 +121,7 @@ staticPoint.env[ \wfsCreateSynthFunc ] = { |unit, target, startPos = 0|
 	arrayConfs.do({ |ac, i|
 		if( normalLevels[i] > 0 ) {
 			normalSynths = normalSynths.add(							Synth( defNames[0] ++ ac.n, [
-				\gain, WFSSpeakerConf.default.gain.dbamp,
+				\gain, (WFSSpeakerConf.default.gain + ac.gain).dbamp,
 				\arrayConf, ac,
 				\outOffset, n + ac.outputOffset + WFSSpeakerConf.getOutputBusStartOffset( server ),
 				\amp, normalLevels[i],
@@ -140,7 +140,7 @@ staticPoint.env[ \wfsCreateSynthFunc ] = { |unit, target, startPos = 0|
 		arrayConfs.do({ |ac, i|
 			if( focusLevels[i] > 0 ) {
 				focusSynths = focusSynths.add(							Synth( defNames[1] ++ ac.n, [
-					\gain, WFSSpeakerConf.default.gain.dbamp,
+					\gain, (WFSSpeakerConf.default.gain + ac.gain).dbamp,
 					\arrayConf, ac,
 					\outOffset, n + ac.outputOffset + WFSSpeakerConf.getOutputBusStartOffset( server ),
 					\amp, focusLevels[i],
@@ -290,7 +290,7 @@ dynamicPoint.env[ \wfsCreateSynthFunc ] = { |unit, target, startPos = 0|
 	n = 0;
 	normalSynths.do({ |sn, i|
 		server.sendMsg( *sn.newMsg( arrayGroup, [
-			\gain, WFSSpeakerConf.default.gain.dbamp,
+			\gain, (WFSSpeakerConf.default.gain + arrayConfs[i].gain).dbamp,
 			\arrayConf, arrayConfs[i],
 			\amp, ("c" ++ normalLevelBuses[i]).asSymbol,
 			\outOffset, n + arrayConfs[i].outputOffset + WFSSpeakerConf.getOutputBusStartOffset( server ),
@@ -306,7 +306,7 @@ dynamicPoint.env[ \wfsCreateSynthFunc ] = { |unit, target, startPos = 0|
 	n = 0;
 	focusSynths.do({ |sn, i|
 		server.sendMsg( *sn.newMsg( arrayGroup, [
-			\gain, WFSSpeakerConf.default.gain.dbamp,
+			\gain, (WFSSpeakerConf.default.gain + arrayConfs[i].gain).dbamp,
 			\arrayConf, arrayConfs[i],
 			\amp, ("c" ++ focusLevelBuses[i]).asSymbol,
 			\outOffset, n + arrayConfs[i].outputOffset + WFSSpeakerConf.getOutputBusStartOffset( server ),
@@ -436,7 +436,7 @@ staticPlane.env[ \wfsCreateSynthFunc ] = { |unit, target, startPos = 0|
 	arrayConfs.do({ |ac, i|
 		if( planeLevels[i] > 0 ) {
 			planeSynths = planeSynths.add(							Synth( defName ++ ac.n, [
-				\gain, gain,
+				\gain, gain * (ac.gain.dbamp),
 				\arrayConf, ac,
 				\outOffset, n + ac.outputOffset + WFSSpeakerConf.getOutputBusStartOffset( server ),
 				\amp, planeLevels[i],
@@ -575,7 +575,7 @@ dynamicPlane.env[ \wfsCreateSynthFunc ] = { |unit, target, startPos = 0|
 	n = 0;
 	planeSynths.do({ |sn, i|
 		server.sendMsg( *sn.newMsg( arrayGroup, [
-			\gain, gain,
+			\gain, gain * (arrayConfs[i].gain.dbamp),
 			\arrayConf, arrayConfs[i],
 			\amp, ("c" ++planeLevelBuses[i]).asSymbol,
 			\outOffset, n + arrayConfs[i].outputOffset + WFSSpeakerConf.getOutputBusStartOffset( server ),

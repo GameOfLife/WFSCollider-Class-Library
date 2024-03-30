@@ -19,7 +19,7 @@
 
 WFSArrayConf { // configuration for one single speaker array
 
-	var <n = 48, <dist = 5, <angle = 0.5pi, <offset = 0, <spWidth, <outputOffset = 0;
+	var <n = 48, <dist = 5, <angle = 0.5pi, <offset = 0, <spWidth, <outputOffset = 0, <gain;
 	var <>corners;
 	var <>cornerAngles; // angle to next array
 	var <>oppositeDist = -inf;
@@ -89,8 +89,8 @@ WFSArrayConf { // configuration for one single speaker array
 	           |y
 	*/
 
-	*new { |n = 48, dist = 5, angle = 0.5pi, offset = 0, spWidth, outputOffset|
-		^super.newCopyArgs( n, dist, angle, offset, spWidth ? WFSBasicPan.defaultSpWidth, outputOffset ? 0 )
+	*new { |n = 48, dist = 5, angle = 0.5pi, offset = 0, spWidth, outputOffset, gain = 0|
+		^super.newCopyArgs( n, dist, angle, offset, spWidth ? WFSBasicPan.defaultSpWidth, outputOffset ? 0, gain ? 0)
 			.init;
 	}
 
@@ -171,6 +171,7 @@ WFSArrayConf { // configuration for one single speaker array
 	offset_ { |newOffset| offset = newOffset; this.changed( \offset, offset ); }
 	spWidth_ { |newSpWidth| spWidth = newSpWidth; this.changed( \spWidth, spWidth ); }
 	outputOffset_ { |newOutputOffset| outputOffset = newOutputOffset ? 0; this.changed( \outputOffset, outputOffset ); }
+	gain_ { |newGain = 0| gain = newGain ? 0; this.changed( \gain, gain ); }
 
 	center { ^Polar( dist, angle ).asPoint; }
 	center_ { |newCenter|
@@ -268,7 +269,7 @@ WFSArrayConf { // configuration for one single speaker array
 		});
 	}
 
-	storeArgs { ^[n, dist, Angle(angle), offset, spWidth, outputOffset ] }
+	storeArgs { ^[n, dist, Angle(angle), offset, spWidth, outputOffset, gain ] }
 
 }
 
