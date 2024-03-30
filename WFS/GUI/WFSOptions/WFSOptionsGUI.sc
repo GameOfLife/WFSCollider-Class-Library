@@ -189,11 +189,11 @@ WFSOptionsGUI {
 			});
 
 		firstColumn.decorator.nextLine;
-		firstColumn.decorator.top_( firstColumn.bounds.height - 34);
+		firstColumn.decorator.top_( firstColumn.bounds.height - 16);
 
 		presetManagerGUI = PresetManagerGUI(
 			firstColumn,
-			firstColumn.bounds.width @ 32,
+			(firstColumn.bounds.width - 2) @ 32,
 			object.class.presetManager,
 			object
 		);
