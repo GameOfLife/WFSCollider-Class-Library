@@ -19,12 +19,14 @@
 
 + WFSPath2 {
 
-	draw { |drawMode = 0, selected, pos, showControls = false, pixelScale = 1|
+	draw { |drawMode = 0, selected, pos, showControls = false, pixelScale = 1, color|
 
 		var curves;
 		var selectColor = Color.yellow;
 		var pospt, times;
 		var points, controls, scale;
+
+		color = color ? Color.gray(0.25);
 
 		selected = selected ? [];
 
@@ -71,7 +73,7 @@
 			// lines
 			if( [0,1].includes( drawMode ) ) {
 				Pen.width = scale * 0.5;
-				Pen.color = Color.gray(0.25);
+				Pen.color = color;
 				Pen.moveTo( curves[0][0] );
 				curves[1..].do({ |item, i|
 					Pen.curveTo( item[0], *curves[i][1..] );

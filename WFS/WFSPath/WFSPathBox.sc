@@ -80,6 +80,7 @@ WFSPathBox {
 	}
 
 	makeView { |parent, bounds, resize|
+		var color;
 
 		if( bounds.isNil ) { bounds= 40 @ 40 };
 
@@ -89,10 +90,12 @@ WFSPathBox {
 			this.remove;
 		}).resize_( resize ? 5 );
 
+		color = RoundView.skin.stringColor ? Color.gray(0.25);
+
 		view = ScaledUserView( composite, composite.bounds.moveTo(0,0) )
 			.fromBounds_( Rect.aboutPoint( 0@0, 100, 100 ) )
 			.keepRatio_( true )
-			.background_( Color.gray(0.9) )
+		    .background_( Color.white.alpha_( 0.25 ) )
 			.drawFunc_({ |vw|
 				var path;
 				path = this.wfsPath;
@@ -106,7 +109,7 @@ WFSPathBox {
 						WFSSpeakerConf.rect(48,48,5,5);
 					}).draw;
 
-					path.asWFSPath2.draw( 1, pixelScale: vw.pixelScale * 1.5);
+					path.asWFSPath2.draw( 1, pixelScale: vw.pixelScale * 1.5, color: color);
 				} {
 					Pen.font = Font( Font.defaultSansFace, 16 );
 					Pen.color = Color.red(0.66);
