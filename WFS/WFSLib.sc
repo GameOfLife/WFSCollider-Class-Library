@@ -702,7 +702,7 @@ WFSLib {
 	*setGUISkin { |mode = \light, refresh = true|
 		Font.default = Font( Font.defaultSansFace, 13 );
 		if( UChainGUI.skin != UChainGUI.skins[ mode ] ) {
-			UChainGUI.skin = UChainGUI.skins[ mode ];
+			UChainGUI.skin = UChainGUI.skins[ mode ] ? UChainGUI.skins[ \light ];
 			QtGUI.palette = UChainGUI.skin.qPalette ?? { QPalette.light };
 			if( refresh ) {
 				UScoreEditorGUI.all.copy.do({ |editor|
