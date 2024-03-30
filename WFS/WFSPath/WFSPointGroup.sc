@@ -71,6 +71,15 @@ WFSPointGroup {
 
 	at { |index| ^positions[ index ] }
 
+	collect { |func| // beware, does not copy
+		positions = positions.collect( func );
+		this.changed( \positions );
+	}
+
+	every { |func|
+		^positions.every( func );
+	}
+
 	copySelection { |indices | // indices should not be out of range!
 		var pos, tim;
 		indices = indices ?? { (..positions.size-1) };

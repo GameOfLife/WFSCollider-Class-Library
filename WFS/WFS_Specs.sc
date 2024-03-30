@@ -218,7 +218,7 @@ WFSMultiPathSpec : Spec {
 
 WFSPointSpec : PointSpec {
 
-	makeView { |parent, bounds, label, action, resize|
+	makeView { |parent, bounds, label, action, resize, hasEdit = true|
 		var vws, view, labelWidth;
 		var localStep;
 		var modeFunc;
@@ -374,7 +374,8 @@ WFSPointSpec : PointSpec {
 			action.value( vws, vws[ \val ]  );
 		};
 
-		vws[ \edit ] = SmoothButton( view, 40 @ (bounds.height) )
+		if( hasEdit ) {
+			vws[ \edit ] = SmoothButton( view, 40 @ (bounds.height) )
 			.label_( "edit" )
 			.radius_( 2 )
 			.font_( font )
@@ -382,19 +383,20 @@ WFSPointSpec : PointSpec {
 				var editor;
 				if( vws[ \editor ].isNil or: { vws[ \editor ].isClosed } ) {
 					editor = this.makeEditor( [ vws[ \val ] ] )						.canChangeAmount_( false )
-						.editMode_( 'move' )
-						.action_( editAction )
-						.onClose_({
-							if( vws[ \editor ] == editor ) {
-								vws[ \editor ] = nil;
-							};
-						});
+					.editMode_( 'move' )
+					.action_( editAction )
+					.onClose_({
+						if( vws[ \editor ] == editor ) {
+							vws[ \editor ] = nil;
+						};
+					});
 					vws[ \editor ] = editor;
 				} {
 					vws[ \editor ].front;
 				};
 
 			});
+		};
 
 		view.view.onClose_({
 			if( vws[ \editor ].notNil ) {
@@ -505,6 +507,8 @@ WFSMultiPointSpec : PointSpec {
 		^obj.isCollection && { obj[0].class == Point };
 	}
 
+	originalSpec { ^WFSPointSpec( ) }
+
 	constrain { |value|
 		^value.collect(_.clip( clipRect.leftTop, clipRect.rightBottom )); //.round( step );
 	}
@@ -539,6 +543,7 @@ WFSMultiPointSpec : PointSpec {
 		var localStep;
 		var font;
 		var editAction;
+		var singleSpec, compWidth;
 		vws = ();
 
 		font =  (RoundView.skin ? ()).font ?? { Font( Font.defaultSansFace, 10 ); };
@@ -550,6 +555,8 @@ WFSMultiPointSpec : PointSpec {
 
 		view = EZCompositeView( parent, bounds, gap: 2@2 );
 		bounds = view.asView.bounds;
+
+		singleSpec = this.originalSpec;
 
 		vws[ \view ] = view;
 
@@ -566,11 +573,49 @@ WFSMultiPointSpec : PointSpec {
 			labelWidth = 0;
 		};
 
+		compWidth = bounds.width - labelWidth - 8 - 40;
+
+		vws[ \singleComp ] = CompositeView( view, (compWidth + 44) @ (bounds.height) );
+		vws[ \singleView ] = singleSpec.makeView( vws[ \singleComp ],
+			vws[ \singleComp ].bounds.moveTo(2,0), action: { |vwx, val|
+				vws[ \val ] = vws[ \val ].collect({
+					val.copy;
+				});
+				vws[ \setViews ].value;
+				action.value( vws, vws[ \val ] );
+			}, hasEdit: false
+		);
+
+		view.asView.decorator.shift( (compWidth + 2 + 44 ).neg, 0 );
+
+		vws[ \multiComp ] = CompositeView( view, compWidth @ (bounds.height) );
+
+		vws[ \multiText ] = StaticText( vws[ \multiComp ], vws[ \multiComp ].bounds.moveTo( 0,0 ) )
+		.applySkin( RoundView.skin );
+
+		vws[ \multiText ].setProperty(\wordWrap, false );
 
 		editAction = { |vw|
 			vws[ \val ] = this.getPointsFromEditor(vw);
+			vws[ \setViews ].value;
 			action.value( vws, vws[ \val ] );
 		};
+
+		vws[ \setViews ] = {
+			{
+				if( vws[ \val ].every({ |item| item == vws[ \val ][ 0 ] }) ) {
+					vws[ \singleComp ].visible = true;
+					vws[ \multiComp ].visible = false;
+					singleSpec.setView( vws[ \singleView ], vws[ \val ][ 0 ] );
+				} {
+					vws[ \singleComp ].visible = false;
+					vws[ \multiComp ].visible = true;
+					vws[ \multiText ].string = ( " mixed ( % points)".format( vws[ \val ].size ) )
+				}
+			}.defer;
+		};
+
+		view.asView.decorator.left = bounds.width - 40;
 
 		vws[ \edit ] = SmoothButton( view, 40 @ (bounds.height) )
 			.label_( "edit" )
@@ -600,6 +645,8 @@ WFSMultiPointSpec : PointSpec {
 			};
 		});
 
+		vws[ \setViews ].value;
+
 		^vws;
 	}
 
@@ -609,6 +656,7 @@ WFSMultiPointSpec : PointSpec {
 
 	setView { |view, value, active = false|
 		view[ \val ] = value.deepCopy;
+		view[ \setViews ].value;
 		view[ \editor ] !? {
 			view[ \editor ].points_( value, false );
 			view[ \editor ].refresh;
@@ -624,6 +672,8 @@ WFSMultiPlaneSpec : WFSMultiPointSpec {
 
 	classvar <>defaultMode = \deg_cw;
 
+	originalSpec { ^WFSPlaneSpec( ) }
+
 	makeEditor { |object|
 		^WFSPointGroupGUI( object: WFSPointGroup( object ) )
 			.type_( \plane )
@@ -632,6 +682,8 @@ WFSMultiPlaneSpec : WFSMultiPointSpec {
 }
 
 WFSMultiRadiusSpec : WFSMultiPointSpec {
+
+	originalSpec { ^WFSRadiusSpec( ) }
 
 	makeEditor { |object|
 		^WFSPointGroupGUI( object: WFSPointGroup( object ) )
