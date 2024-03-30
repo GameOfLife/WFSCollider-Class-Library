@@ -124,13 +124,13 @@ WFSPathBufferView {
 			$s, { // \seconds
 				views[ \startSecond ].visible_( true );
 				views[ \startFrame ].visible_( false );
-				{ views[ \timeMode ].value = 0 }.defer;
+				{ views[ \timeMode ].string = " s"; }.defer;
 
 			},
 			$f, { // \frames
 				views[ \startSecond ].visible_( false );
 				views[ \startFrame ].visible_( true );
-				{ views[ \timeMode ].value = 1 }.defer;
+				{ views[ \timeMode ].string = " pt"; }.defer;
 			}
 		);
 	}
@@ -349,13 +349,21 @@ WFSPathBufferView {
 			})
 			.visible_( false );
 
-		views[ \timeMode ] = PopUpMenu( view, 44 @ viewHeight )
-			.applySkin( RoundView.skin )
-			.items_( [ "s", "pt" ] )
-			.resize_( 3 )
-			.action_({ |pu|
-				this.class.timeMode = [ \seconds, \frames ][ pu.value ];
+		views[ \timeMode ] = StaticText( view, 44 @ viewHeight )
+		.applySkin( RoundView.skin )
+		.string_( ( \seconds: " s", \frames: " pt" )[ this.class.timeMode ] )
+		.background_( Color.white.alpha_( 0.25 ) )
+		.resize_( 3 )
+		.mouseDownAction_({
+			var actions, selected;
+			actions = [ \seconds, \frames ].collect({ |item|
+				MenuAction( item.asString, {
+					this.class.timeMode = item;
+				}).enabled_( this.class.timeMode != item );
 			});
+			selected = actions.detect(_.enabled.not);
+			Menu( *actions ).front( QtGUI.cursorPosition - (20@0), action: selected );
+		});
 
 		views[ \rate ] = EZSmoothSlider( view, bounds.width@viewHeight,
 				"rate", [ 0.125, 8, \exp, 0.125, 1 ].asSpec, 1 )
