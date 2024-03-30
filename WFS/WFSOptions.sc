@@ -123,7 +123,7 @@ WFSOptions : AbstractWFSOptions {
 	var <masterOptions;
 	var <serverOptions = #[];
 	var <showGUI = true;
-	var <darkMode = false;
+	var <skin = \light;
 	var <showServerWindow = true;
 	var <previewMode = \off;
 	var <startupAction;
@@ -150,6 +150,15 @@ WFSOptions : AbstractWFSOptions {
 
 	matchPreset {
 		^presetManager.match(this);
+	}
+
+	darkMode { ^skin != \light }
+	darkMode_ { |bool = false|
+		if( bool ) {
+			this.skin = \dark;
+		} {
+			this.skin = \light;
+		};
 	}
 
 	removeMasterOptions {
