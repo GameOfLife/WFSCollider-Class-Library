@@ -151,7 +151,6 @@ WFSPathTransformerView {
 		views[ \apply ] = SmoothButton( view, 40@14 )
 			.font_( Font( Font.defaultSansFace, 10 ) )
 			.label_( "apply" )
-			.border_( 1 )
 			.radius_( 2 )
 			.action_({
 				this.apply( true );
@@ -161,7 +160,6 @@ WFSPathTransformerView {
 		views[ \reset ] = SmoothButton( view, 40@14 )
 			.font_( Font( Font.defaultSansFace, 10 ) )
 			.label_( "reset" )
-			.border_( 1 )
 			.radius_( 2 )
 			.action_({
 				this.reset;

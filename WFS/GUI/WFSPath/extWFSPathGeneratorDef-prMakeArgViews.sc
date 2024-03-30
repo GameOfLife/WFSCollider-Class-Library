@@ -33,9 +33,9 @@
 
 		labelWidth =(RoundView.skin ? ()).labelWidth ? labelWidth;
 
-		views[ \label ] = PopUpMenu( composite, labelWidth @ viewHeight )
-			.applySkin( RoundView.skin ? () )
+		views[ \label ] = UPopUpMenu( composite, labelWidth @ viewHeight )
 			.font_( font.boldVariant )
+		    .align_( \right )
 			.items_( this.class.all.keys.as( Array ).select({ |key|
 					this.class.all[ key ].class == this.class;
 				}).sort
@@ -72,7 +72,7 @@
 					.applySkin( RoundView.skin ? () )
 					.string_( key ++ " " )
 					.align_( \right );
-				views[ key ] = PopUpMenu( composite,
+				views[ key ] = UPopUpMenu( composite,
 						(composite.bounds.width - labelWidth - 4) @ viewHeight )
 					.items_([ 'bypass', 'replace', 'lin_xfade', '+', '-', '*', 'min', 'max' ])
 					.applySkin( RoundView.skin ? () )

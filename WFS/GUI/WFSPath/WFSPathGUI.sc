@@ -108,11 +108,10 @@ WFSPathGUI {
 			action.value(this);
 		};
 
-		view.view.decorator.shift(editWidth.neg + 4 + RoundView.skin.labelWidth, editView.view.bounds.height );
+		view.view.decorator.shift(editWidth.neg + 4 + RoundView.skin.labelWidth, editView.view.bounds.height + 2 );
 
 		SmoothButton( view, 82 @ 14 )
 			.radius_( 2 )
-			.border_( 1 )
 			.label_( "generate" )
 			.font_( Font( Font.defaultSansFace, 10 ) )
 			.resize_( 3 )

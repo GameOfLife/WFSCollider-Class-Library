@@ -325,7 +325,7 @@ WFSPointGroupView_TopBar {
 
 		font = UChainGUI.skin.font;
 
-		views[ \editMode ] = PopUpMenu( view, 60 @ bounds.height )
+		views[ \editMode ] = UPopUpMenu( view, 60 @ bounds.height )
 			.font_( font )
 			.canFocus_( false )
 			.items_( this.class.editModes )
