@@ -337,11 +337,10 @@ WFSPointGroupView_TopBar {
 		this.class.mouseModes.do({ |item|
 			views[ item ] = SmoothButton( view, bounds.height @ bounds.height )
 				.radius_(2)
-				.border_(1)
 				.canFocus_( false )
 				.states_([
-					[ icons[item], Color.black ],
-					[ icons[item], Color.white, Color.gray(0.4) ]
+					[ icons[item] ],
+					[ icons[item] ]
 				])
 				.action_({ |bt|
 					this.setMouseModeViews( item );
@@ -385,11 +384,10 @@ WFSPathView_TopBar : WFSPointGroupView_TopBar {
 
 		views[ \play ] = SmoothButton( view, bounds.height @ bounds.height )
 			.radius_(2)
-			.border_(1)
 			.canFocus_( false )
 			.states_([
-				[ icons[\play], Color.black ],
-				[ icons[\play], Color.white, Color.gray(0.4) ]
+				[ icons[\play] ],
+				[ icons[\play] ]
 			])
 			.action_({ |bt|
 				switch( bt.value.asInteger,
@@ -401,11 +399,10 @@ WFSPathView_TopBar : WFSPointGroupView_TopBar {
 		views[ \pos ] = SmoothSlider( view, 60@16 )
 				.knobSize_(0)
 				.thumbSize_(0)
-				.border_(1)
-				.borderColor_(Color.gray(0.25) )
+				//.border_(1)
+				//.borderColor_( RoundView.skin.stringColor ? Color.gray(0.25) )
 				.baseWidth_(1)
 				.canFocus_(false)
-				.hilightColor_( Color.gray(0.2).alpha_(0.5) )
 				.action_({ |sl|
 					object.pos = sl.value.linlin( 0, 1, 0, object.object.dur );
 				})

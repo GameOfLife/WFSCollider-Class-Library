@@ -53,6 +53,8 @@ WFSPointGroupGUI {
 			bounds = parent.asView.bounds;
 		};
 
+		RoundView.pushSkin( UChainGUI.skin );
+
 		view = EZCompositeView( parent, bounds, gap: 2@2, margin: 2@2 );
 		view.resize_(5);
 		bounds = view.asView.bounds;
@@ -68,6 +70,8 @@ WFSPointGroupGUI {
 		editView.duplicateAction_({ |ev|
 			this.editViewClass.new( object: ev.object.deepCopy )
 		});
+
+		RoundView.popSkin;
 
 		ctrl = SimpleController( pathView.xyView )
 			.put( \select, { editView.selected = pathView.selected })
