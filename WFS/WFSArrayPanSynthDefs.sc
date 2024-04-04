@@ -43,13 +43,20 @@ AbstractWFSSynthDefs {
 WFSSynthDefs {
 
 	*generateAllOrCopyFromResources { |action, dir|
-		if( File.exists( Platform.resourceDir +/+ "wfs_synthdefs.zip" ) ) {
-			"copying WFS synthdefs from resources directory (if missing)".postln;
-			if( dir.notNil ) { dir = dir.dirname; } { dir = SynthDef.synthDefDir.dirname };
-			"unzip -ou % -d %".format(
-				Platform.resourceDir.escapeChar( $ ) +/+ "wfs_synthdefs.zip",
-				dir.escapeChar( $ )
-			).unixCmd( action: action );
+		var zippath;
+		if( thisProcess.platform.name == \osx && {
+			WFSPrePanSynthDefs.checkIfExists( dir: dir ).not;
+		}) {
+			zippath = this.filenameSymbol.asString.dirname +/+ "wfs_synthdefs.zip";
+			if( File.exists( zippath ) ) {
+				"WFSSynthDefs: copying WFS synthdefs from resources directory (if missing)".postln;
+				if( dir.notNil ) { dir = dir.dirname; } { dir = SynthDef.synthDefDir.dirname };
+				"unzip -ou % -d %".format( zippath.escapeChar( $ ), dir.escapeChar( $ ) )
+				.unixCmd( action: action );
+			} {
+				"WFSSynthDefs: no wfs_synthdefs.zip available, generating if needed".postln;
+				this.generateAllOnce( action, dir );
+			};
 		} {
 			this.generateAllOnce( action, dir );
 		};
