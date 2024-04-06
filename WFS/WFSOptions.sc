@@ -64,8 +64,21 @@ WFSMasterOptions : AbstractWFSOptions {
 
 	*presets { ^Dictionary[] }
 
-	inDevice { ^if( device.isString or: device.isNil ) { device } { device[0] } }
-	outDevice { ^if( device.isString or: device.isNil ) { device } { device[1] } }
+	inDevice {
+		^if( thisProcess.platform.name == \linux ) {
+			nil
+		} {
+			if( device.isString or: device.isNil ) { device } { device[0] }
+		}
+	}
+
+	outDevice {
+		^if( thisProcess.platform.name == \linux ) {
+			nil
+		} {
+			if( device.isString or: device.isNil ) { device } { device[1] }
+		}
+	}
 
 }
 
@@ -110,8 +123,21 @@ WFSServerOptions : AbstractWFSOptions {
 		];
 	}
 
-	inDevice { ^if( device.isString or: device.isNil ) { device } { device[0] } }
-	outDevice { ^if( device.isString or: device.isNil ) { device } { device[1] } }
+	inDevice {
+		^if( thisProcess.platform.name == \linux ) {
+			nil
+		} {
+			if( device.isString or: device.isNil ) { device } { device[0] }
+		}
+	}
+
+	outDevice {
+		^if( thisProcess.platform.name == \linux ) {
+			nil
+		} {
+			if( device.isString or: device.isNil ) { device } { device[1] }
+		}
+	}
 
 }
 
