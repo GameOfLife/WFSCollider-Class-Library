@@ -16,7 +16,8 @@ WFSCollider is distributed as a 'Quark' for SuperCollider. For installation inst
 
 ## System Requirements ##
 
-macOS 10.14 or later, Linux or Windows
+macOS 10.14 or later, Linux or Windows 64bits
+
 Depends on:
 
 * [SuperCollider 3.13](https://supercollider.github.io/)
