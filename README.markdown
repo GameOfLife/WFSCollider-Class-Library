@@ -1,9 +1,9 @@
 GameOfLife WFSCollider - Wave Field Synthesis spatialization for SuperCollider.
 ===============================================================================
 
-GameOfLife WFSCollider is an adapted version of SuperCollider, the audio synthesis engine and programming language, for Wave Field Synthesis spatialization.
+GameOfLife WFSCollider is a library for SuperCollider, the audio synthesis engine and programming language, for Wave Field Synthesis spatialization.
 
-It's currently being used in the 192 speakers system of the [Game Of Life Foundation](http://gameoflife.nl/en), based in The Hague, the Netherlands.
+It's currently being used in the 192 speakers system of the [Game Of Life Foundation](http://www.gameoflife.nl), based in The Hague, the Netherlands.
 
 WFSCollider consists of an audio spatialization engine that places individual sound sources in space according to the principles of [Wave Field Synthesis](http://en.wikipedia.org/wiki/Wave_field_synthesis).
 
@@ -11,34 +11,27 @@ The system allows soundfiles, live input and synthesis processes to be placed in
 
 Score files are saved as executable SuperCollider code. The system is setup in a modular way and can be scripted and expanded using the SuperCollider language.
 
+WFSCollider is distributed as a 'Quark' for SuperCollider. For installation instructions see: [www.gameoflife.nl/software](http://www.gameoflife.nl/software).
+
+
 ## System Requirements ##
 
-Mac OS X 10.6 or greater
+macOS 10.14 or later, Linux or Windows
 Depends on:
 
-* the MathLib, NetLib, PopUpTreeMenu, VectorSpace, wslib and XML quarks.
-* Unit Lib.
-* sc3plugins.
-
-## Download ##
-
-A prepackaged version is available from [SourceForge](https://sourceforge.net/projects/wfscollider/).
+* [SuperCollider 3.13](https://supercollider.github.io/)
+* the Unit-Lib, NetLib, wslib and XML quarks.
+* [sc3plugins](https://supercollider.github.io/sc3-plugins/) (optional)
 
 ## Installation ##
 
-To install, just drag the application to your applications folder.
-
-## Building ##
-
-Get the source:
-
-	git clone --recursive git://github.com/GameOfLife/WFSCollider.git
-
-switch to the wfscurrent branch
-
-	git checkout wfscurrent
-
-Then build according to the general SuperCollider instructions (see readme): In XCode, first build the Synth project, then the plugins project and finally in the language project build the target "WFSCollider". You should then have the application ready in the build folder.
+- Install SuperCollider
+- Install sc3plugins (optional)
+- in SuperCollider, run the following line:
+`Quarks.install( "WFSCollider-Class-Library" );`
+- Recompile Class Library (via menu option in SuperCollider)
+- to use WFSCollider, run the following line in SuperCollider
+`WFSLib.startup;`
 
 ## Acknowledgments ##
 WFSCollider was conceived by the Game Of Life Foundation, and developed by W. Snoei, R. Ganchrow and J. Truetzler and M. Negrão.
