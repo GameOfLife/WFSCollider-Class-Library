@@ -670,30 +670,33 @@ WFSLib {
 				WFSPositionTracker.start;
 			});
 		} {
-			UMenuBarIDE("WFSCollider");
+			if( UMenuBarIDE.isEmpty ) {
 
-			UMenuBarIDE.add("WFS", \separator, "View" );
+				UMenuBarIDE("WFSCollider");
 
-			UMenuBarIDE.add("WFSCollider Servers", {
-				ULib.window !? _.front ?? { ULib.serversWindow( "WFSCollider Servers" ) };
-			}, "View");
+				UMenuBarIDE.add("WFS", \separator, "View" );
 
-			UMenuBarIDE.add("WFS Position tracker", {
-				WFSPositionTrackerGUI.newOrCurrent;
-				WFSPositionTracker.start;
-			}, "View");
+				UMenuBarIDE.add("WFSCollider Servers", {
+					ULib.window !? _.front ?? { ULib.serversWindow( "WFSCollider Servers" ) };
+				}, "View");
 
-			UMenuBarIDE.preferencesFunc = { WFSOptionsGUI.newOrCurrent; };
+				UMenuBarIDE.add("WFS Position tracker", {
+					WFSPositionTrackerGUI.newOrCurrent;
+					WFSPositionTracker.start;
+				}, "View");
 
-			UMenuBarIDE.add( "Servers", \separator, "WFSCollider" );
+				UMenuBarIDE.preferencesFunc = { WFSOptionsGUI.newOrCurrent; };
 
-			UMenuBarIDE.add( "Restart Servers", { WFSLib.startup( WFSOptions.current ); }, "WFSCollider" );
+				UMenuBarIDE.add( "Servers", \separator, "WFSCollider" );
 
-			UMenuBarIDE.add( "Close Servers", { ULib.closeServers; }, "WFSCollider" );
+				UMenuBarIDE.add( "Restart Servers", { WFSLib.startup( WFSOptions.current ); }, "WFSCollider" );
 
-			UMenuBarIDE.add( "Updates", \separator, "WFSCollider" );
+				UMenuBarIDE.add( "Close Servers", { ULib.closeServers; }, "WFSCollider" );
 
-			UMenuBarIDE.add( "Check for updates...", { WFSLib.checkForUpdatesGUI }, "WFSCollider" );
+				UMenuBarIDE.add( "Updates", \separator, "WFSCollider" );
+
+				UMenuBarIDE.add( "Check for updates...", { WFSLib.checkForUpdatesGUI }, "WFSCollider" );
+			}
 		};
 
 		UGlobalEQ.gui;
