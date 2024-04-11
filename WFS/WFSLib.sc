@@ -696,6 +696,8 @@ WFSLib {
 				UMenuBarIDE.add( "Updates", \separator, "WFSCollider" );
 
 				UMenuBarIDE.add( "Check for updates...", { WFSLib.checkForUpdatesGUI }, "WFSCollider" );
+
+				if( UMenuBarIDE.mode == \mainmenu ) { MainMenu.prUpdate(); };
 			}
 		};
 
