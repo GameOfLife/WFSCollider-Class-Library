@@ -271,25 +271,10 @@ WFSPointSpec : PointSpec {
 
 		view.decorator.left = bounds.width - 45 - 4 - 40;
 
-		vws[ \mode ] = StaticText( view, 45 @ bounds.height )
-		.applySkin( RoundView.skin )
-		.background_( Color.white.alpha_(0.25) )
-		.string_( " point" )
-		.mouseDownAction_({ |vw|
-			var actions, selected;
-			actions = [ \point, \polar, \deg_cw ].collect({ |key|
-				var act;
-				act = MenuAction( key.asString, {
-					mode = key;
-					this.setMode( vws, mode );
-				}).enabled_( mode != key );
-				if( mode == key ) { selected = act };
-				act;
-			});
-			Menu( *actions ).front( action: selected );
-		});
-
-		vws[ \mode ].setProperty(\wordWrap, false);
+		vws[ \mode ] = UPopUpMenu( view, 45 @ bounds.height )
+		.items_( [ \point, \polar, \deg_cw ] )
+		.title_( "mode" )
+		.action_({ |pu| mode = pu.item; this.setMode( vws, mode ); });
 
 		// point mode
 		vws[ \x ] = SmoothNumberBox( vws[ \comp1 ], 40 @ (bounds.height) )
@@ -410,7 +395,7 @@ WFSPointSpec : PointSpec {
 	}
 
 	setMode { |view, newMode|
-		view[ \mode ].string = " %".format( newMode );
+		view[ \mode ].item = newMode;
 		switch( newMode,
 			\point, {
 				[ \x, \y ].do({ |item|
