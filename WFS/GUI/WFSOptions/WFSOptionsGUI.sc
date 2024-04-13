@@ -269,10 +269,7 @@ WFSOptionsGUI {
 
 		RoundView.popSkin;
 
-		ctrl.put( \serverOptions, {
-				this.makeServersGUI;
-			    { WFSLib.setGUISkin( if( object.darkMode == true ) { \dark } { \light }, true ) }.defer;
-			});
+		ctrl.put( \serverOptions, { this.makeServersGUI; });
 
 		current = this;
 		this.class.changed( \current );
