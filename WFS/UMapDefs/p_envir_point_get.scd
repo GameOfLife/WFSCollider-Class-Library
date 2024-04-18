@@ -14,13 +14,17 @@ part of the WFSCollider Class Library default UMapDefs set
 
 UPatDef( \p_envir_point_get, { |unit, key = 'p'|
 	{
-		var kkey, val, spec, fromSpec;
+		var kkey, val, spec, fromSpec, ii = 0;
 		spec = unit.spec ?? { WFSPointSpec(200) };
 		loop {
 			kkey = key.next.asSymbol;
 			if( kkey.notNil ) {
 				val = currentEnvironment[ kkey ] ? (spec.default);
 				fromSpec = currentEnvironment[ \u_specs ] !? _[ kkey ] ? spec;
+				if( val.isCollection ) {
+					val = val.wrapAt( ii );
+					ii = ii+1;
+				};
 				if( val.isKindOf( Point ).not ) {
 					val = spec.constrain( val.asPoint );
 				};
