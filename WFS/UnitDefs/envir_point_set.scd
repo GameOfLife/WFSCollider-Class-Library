@@ -13,7 +13,9 @@ this is an Udef definition file
 part of the WFSCollider Class Library default UDefs set
 */
 
-var defs, makeDef;
+var defs, makeDef, multiDefault;
+
+multiDefault = WFSPointGroup.generate( 8, \circle ).positions;
 
 makeDef = { |name, argname, default, spec|
 	FreeUdef( name, [
@@ -39,7 +41,7 @@ makeDef = { |name, argname, default, spec|
 
 defs = [
 	makeDef.value( \single, \point, 0@0, WFSPointSpec(200) ),
-	makeDef.value( \array, \points, { 0@0 }!8, WFSMultiPointSpec(200, default: { 0@0 }!8 ) ),
+	makeDef.value( \array, \points, multiDefault, WFSMultiPointSpec(200, default: multiDefault ) ),
 ];
 
 MultiUdef( \envir_point_set, defs, \envir, \type, false )

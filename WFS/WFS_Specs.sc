@@ -529,6 +529,20 @@ WFSMultiPointSpec : PointSpec {
 
 	canChangeAmount { ^size.isNil }
 
+	expandArgSpecs {
+		^(size ? 8).collect({ |i| ArgSpec( "point%".format(i).asSymbol, 0@0, this.originalSpec ) })
+	}
+
+	expandValues { |obj|
+		^(size ? 8).collect({ |i|
+			obj.wrapAt(i)
+		});
+	}
+
+	objFromExpandValues { |values|
+		^values.collect(_.asPoint);
+	}
+
 	makeView { |parent, bounds, label, action, resize|
 		var vws, view, labelWidth;
 		var localStep;
