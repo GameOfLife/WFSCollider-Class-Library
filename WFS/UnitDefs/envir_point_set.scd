@@ -15,15 +15,15 @@ part of the WFSCollider Class Library default UDefs set
 
 var defs, makeDef;
 
-makeDef = { |name, default, spec|
+makeDef = { |name, argname, default, spec|
 	FreeUdef( name, [
-		[ \point, default, spec, false, \init ],
+		[ argname, default, spec, false, \init ],
 		[ \key, \p, EnvirSpec() ],
 	], addToAll: false )
 	.apxCPU_( 0 )
 	.prepareFunc_({ |server, unit, action, startPos = 0|
 		var value;
-		value = unit.get( \point );
+		value = unit.get( argname );
 		unit.get( \key ).asSymbol.uEnvirPut( value.value, WFSPointSpec(200) );
 		if( value.isKindOf( UMap ) ) {
 			value.start
@@ -32,14 +32,14 @@ makeDef = { |name, default, spec|
 	})
 	.createsSynth_( false )
 	.setSynthFunc_({ |unit ...keyValuePairs|
-		unit.get( \key ).asSymbol.uEnvirPut( unit.get( \point ).value, WFSPointSpec(200) );
+		unit.get( \key ).asSymbol.uEnvirPut( unit.get( argname ).value, WFSPointSpec(200) );
 	})
 	.category_( 'envir' )
 };
 
 defs = [
-	makeDef.value( \single, 0@0, WFSPointSpec(200) ),
-	makeDef.value( \array, { 0@0 }!8, WFSMultiPointSpec(200, default: { 0@0 }!8 ) ),
+	makeDef.value( \single, \point, 0@0, WFSPointSpec(200) ),
+	makeDef.value( \array, \points, { 0@0 }!8, WFSMultiPointSpec(200, default: { 0@0 }!8 ) ),
 ];
 
 MultiUdef( \envir_point_set, defs, \envir, \type, false )
