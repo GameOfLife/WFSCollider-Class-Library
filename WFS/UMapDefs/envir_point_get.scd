@@ -22,7 +22,7 @@ ValueUMapDef( \envir_point_get, { |unit, ctrl|
 			val = currentEnvironment[ kkey ] ? (spec.default);
 			fromSpec = currentEnvironment[ \u_specs ] !? _[ kkey ] ? spec;
 			if( val.isCollection ) {
-				val = val[0];
+			    val = val.wrapAt( unit.get( \index ).asInteger );
 			};
 			if( val.isKindOf( Point ).not ) {
 				val = spec.constrain( val.asPoint );
@@ -35,7 +35,8 @@ ValueUMapDef( \envir_point_get, { |unit, ctrl|
 	ctrl.remove;
 	nil;
 },[
-	[ \key, \p, EnvirSpec() ]
+	[ \key, \p, EnvirSpec() ],
+	[ \index, 0, IntegerSpec(0,0,1024) ],
 ], \control )
 	.numChannels_( 2 )
 	.setSpec( \value, WFSPointSpec(200) )
