@@ -21,6 +21,9 @@ ValueUMapDef( \envir_point_get, { |unit, ctrl|
 		.put( kkey, {
 			val = currentEnvironment[ kkey ] ? (spec.default);
 			fromSpec = currentEnvironment[ \u_specs ] !? _[ kkey ] ? spec;
+			if( val.isCollection ) {
+				val = val[0];
+			};
 			if( val.isKindOf( Point ).not ) {
 				val = spec.constrain( val.asPoint );
 			};
