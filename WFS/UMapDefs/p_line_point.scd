@@ -80,7 +80,7 @@ UPatDef( \p_line_point, { |unit,
 	.setSpec( \loop, ListSpec( [ \off, \loop, \backwards, \alternate ], 1 ) )
 	.category_( 'pattern_point' )
 	.canUseUMapFunc_({ |unit, key, umapdef|
-		var spec;
-		spec = unit.getSpec( key );
-		[ PointSpec, UAdaptSpec ].any({ |class| spec.isKindOf( class ); });
+		[ PointSpec, WFSPointSpec, WFSRadiusSpec, WFSPlaneSpec, UAdaptSpec ].any({ |class|
+			unit.getSpec( key ).isMemberOf( class )
+		});
 	});

@@ -57,7 +57,7 @@ UPatDef( \p_sequencer_point, { |unit,
 	)
 	.setDefault( \points, WFSPointGroup.generate( 8, \circle ) )
 	.canUseUMapFunc_({ |unit, key, umapdef|
-		var spec;
-		spec = unit.getSpec( key );
-		[ PointSpec, UAdaptSpec ].any({ |class| spec.isKindOf( class ); });
+		[ PointSpec, WFSPointSpec, WFSRadiusSpec, WFSPlaneSpec, UAdaptSpec ].any({ |class|
+			unit.getSpec( key ).isMemberOf( class )
+		});
 	});

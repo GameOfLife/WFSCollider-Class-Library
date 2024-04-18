@@ -41,6 +41,8 @@ ValueUMapDef( \envir_point_get, { |unit, ctrl|
 	.numChannels_( 2 )
 	.setSpec( \value, WFSPointSpec(200) )
 	.canUseUMapFunc_({ |unit, key, umapdef|
-		unit.getSpec( key ).isKindOf( PointSpec );
+		[ PointSpec, WFSPointSpec, WFSRadiusSpec, WFSPlaneSpec, UAdaptSpec ].any({ |class|
+			unit.getSpec( key ).isMemberOf( class )
+		});
 	})
 	.category_( 'envir' );

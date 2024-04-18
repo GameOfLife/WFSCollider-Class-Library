@@ -50,7 +50,7 @@ UPatDef( \p_randomwalk_point, { |unit,
 	.setSpec( \radius, WFSRadiusSpec(200) )
     .setSpec( \startPoint, WFSPointSpec(200) )
 	.canUseUMapFunc_({ |unit, key, umapdef|
-		var spec;
-		spec = unit.getSpec( key );
-		[ PointSpec, UAdaptSpec ].any({ |class| spec.isKindOf( class ); });
+		[ PointSpec, WFSPointSpec, WFSRadiusSpec, WFSPlaneSpec, UAdaptSpec ].any({ |class|
+			unit.getSpec( key ).isMemberOf( class )
+		});
 	});

@@ -41,6 +41,8 @@ UPatDef( \p_envir_point_get, { |unit, key = 'p', index = 0|
 	.valueIsMapped_( false )
 	.mappedArgs_([])
 	.canUseUMapFunc_({ |unit, key, umapdef|
-		unit.getSpec( key ).isKindOf( PointSpec );
+		[ PointSpec, WFSPointSpec, WFSRadiusSpec, WFSPlaneSpec, UAdaptSpec ].any({ |class|
+			unit.getSpec( key ).isMemberOf( class )
+		});
 	})
 	.category_( 'pattern_envir' );

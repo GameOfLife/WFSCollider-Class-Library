@@ -20,9 +20,9 @@ FuncUMapDef( \random_point, { |
 })
 	.category_( 'random' )
 	.canUseUMapFunc_({ |unit, key, umapdef|
-		unit.getSpec( key ).isKindOf( PointSpec ) or: {
-			unit.getSpec( key ).isKindOf( UAdaptSpec )
-		}
+		[ PointSpec, WFSPointSpec, WFSRadiusSpec, WFSPlaneSpec, UAdaptSpec ].any({ |class|
+			unit.getSpec( key ).isMemberOf( class )
+		});
 	})
 	.valueIsMapped_( false )
 	.numChannels_( 2 )

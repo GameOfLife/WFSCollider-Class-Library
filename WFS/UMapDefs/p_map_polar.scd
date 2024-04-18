@@ -35,7 +35,7 @@ UPatDef( \p_map_polar, { |unit,
 	.setSpec( \rho, [0,1,\lin,0,0].asSpec )
 	.setSpec( \theta, AngleSpec() )
 	.canUseUMapFunc_({ |unit, key, umapdef|
-		var spec;
-		spec = unit.getSpec( key );
-		[ PointSpec, UAdaptSpec ].any({ |class| spec.isKindOf( class ); });
+		[ PointSpec, WFSPointSpec, WFSRadiusSpec, WFSPlaneSpec, UAdaptSpec ].any({ |class|
+			unit.getSpec( key ).isMemberOf( class )
+		});
 	});
