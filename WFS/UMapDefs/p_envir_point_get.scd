@@ -35,7 +35,7 @@ UPatDef( \p_envir_point_get, { |unit, key = 'p', index = 0|
 		};
 	}.r
 })
-	.setSpec( \key, SymbolSpec() )
+    .setSpec( \key, EnvirSpec() )
     .setSpec( \index, IntegerSpec(0,0,1024) )
 	.numChannels_( 2 )
 	.valueIsMapped_( false )
