@@ -451,7 +451,7 @@ WFSPointSpec : PointSpec {
 	}
 
 	massEditSpec { |inArray|
-		^WFSMultiPointSpec( rect, step, inArray, units, mode );
+		^WFSMultiPointSpec( rect, step, inArray, units, mode ).size_( inArray.size );
 	}
 
 	massEditValue { |inArray|
@@ -471,7 +471,7 @@ WFSPlaneSpec : WFSPointSpec {
 	makeEditor { |object| ^WFSPlaneView( object: object ) }
 
 	massEditSpec { |inArray|
-		^WFSMultiPlaneSpec( rect, step, inArray, units, mode );
+		^WFSMultiPlaneSpec( rect, step, inArray, units, mode ).size_( inArray.size );
 	}
 }
 
@@ -480,11 +480,13 @@ WFSRadiusSpec : WFSPointSpec {
 	makeEditor { |object| ^WFSMixedView( object: object ).type_( \radius ) }
 
 	massEditSpec { |inArray|
-		^WFSMultiRadiusSpec( rect, step, inArray, units, mode );
+		^WFSMultiRadiusSpec( rect, step, inArray, units, mode ).size_( inArray.size );
 	}
 }
 
 WFSMultiPointSpec : PointSpec {
+
+	var <>size;
 
 	// array of points instead of a single point
 
@@ -495,6 +497,10 @@ WFSMultiPointSpec : PointSpec {
 	originalSpec { ^WFSPointSpec( ) }
 
 	constrain { |value|
+		if( value.isCollection.not ) { value = [ value ] };
+		if( size.notNil ) {
+			value = value.wrapExtend( size );
+		};
 		^value.collect(_.clip( clipRect.leftTop, clipRect.rightBottom )); //.round( step );
 	}
 
@@ -521,7 +527,7 @@ WFSMultiPointSpec : PointSpec {
 		^params;
 	}
 
-	canChangeAmount { ^false }
+	canChangeAmount { ^size.isNil }
 
 	makeView { |parent, bounds, label, action, resize|
 		var vws, view, labelWidth;

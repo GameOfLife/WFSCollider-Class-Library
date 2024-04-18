@@ -13,10 +13,13 @@ this is an Udef definition file
 part of the WFSCollider Class Library default UDefs set
 */
 
-FreeUdef( \envir_point_set, [
-		[ \point, 0@0, WFSPointSpec(200), false, \init ],
-		[ \key, \p, SymbolSpec() ],
-	])
+var defs, makeDef;
+
+makeDef = { |name, default, spec|
+	FreeUdef( name, [
+		[ \point, default, spec, false, \init ],
+		[ \key, \p, EnvirSpec() ],
+	], addToAll: false )
 	.apxCPU_( 0 )
 	.prepareFunc_({ |server, unit, action, startPos = 0|
 		var value;
@@ -31,4 +34,13 @@ FreeUdef( \envir_point_set, [
 	.setSynthFunc_({ |unit ...keyValuePairs|
 		unit.get( \key ).asSymbol.uEnvirPut( unit.get( \point ).value, WFSPointSpec(200) );
 	})
-	.category_( 'envir' );
+	.category_( 'envir' )
+};
+
+defs = [
+	makeDef.value( \single, 0@0, WFSPointSpec(200) ),
+	makeDef.value( \array, { 0@0 }!8, WFSMultiPointSpec(200, default: { 0@0 }!8 ) ),
+];
+
+MultiUdef( \envir_point_set, defs, \envir, \type, false )
+.apxCPU_( 0 );

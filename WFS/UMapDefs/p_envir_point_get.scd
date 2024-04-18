@@ -12,7 +12,7 @@ this is an UMapDef definition file
 part of the WFSCollider Class Library default UMapDefs set
 */
 
-UPatDef( \p_envir_point_get, { |unit, key = 'p'|
+UPatDef( \p_envir_point_get, { |unit, key = 'p', index = 0|
 	{
 		var kkey, val, spec, fromSpec, ii = 0;
 		spec = unit.spec ?? { WFSPointSpec(200) };
@@ -36,6 +36,7 @@ UPatDef( \p_envir_point_get, { |unit, key = 'p'|
 	}.r
 })
 	.setSpec( \key, SymbolSpec() )
+    .setSpec( \index, IntegerSpec(0,0,1024) )
 	.numChannels_( 2 )
 	.valueIsMapped_( false )
 	.mappedArgs_([])
