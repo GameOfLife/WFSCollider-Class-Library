@@ -497,6 +497,8 @@ WFSMultiPointSpec : PointSpec {
 	originalSpec { ^WFSPointSpec( ) }
 
 	constrain { |value|
+		if( value.isKindOf( WFSPointGroup ) ) { value = value.positions };
+		if( value.isNil ) { value = [] };
 		if( value.isCollection.not ) { value = [ value ] };
 		if( size.notNil ) {
 			value = value.wrapExtend( size );
@@ -717,6 +719,17 @@ WFSPointGroupSpec : WFSMultiPointSpec {
 
 	unmap { |value|
 		^this.constrain( value );
+	}
+
+	asControlSpec {
+		^ControlSpec(
+			this.minval.asArray.mean.max( (2**24).neg ),
+			this.maxval.asArray.mean.min( 2**24 ),
+			\lin,
+			0,
+			default.positions.asArray.mean,
+			units
+		);
 	}
 
 	expandArgSpecs {

@@ -127,6 +127,10 @@ WFSPointGroup {
 
 + Object {
 	isWFSPointGroup { ^false }
+
+	asWFSPointGroup {
+		^WFSPointGroup( { |i| Polar( 8, i.linlin(0,15,0,2pi) ).asPoint  } ! 15 );
+	}
 }
 
 + WFSPath2 {
@@ -144,12 +148,6 @@ WFSPointGroup {
 + Symbol {
 	asWFSPointGroup { |size = 20|
 		^WFSPointGroup.generate( size, this );
-	}
-}
-
-+ Nil {
-	asWFSPointGroup {
-		^WFSPointGroup( { |i| Polar( 8, i.linlin(0,15,0,2pi) ).asPoint  } ! 15 );
 	}
 }
 

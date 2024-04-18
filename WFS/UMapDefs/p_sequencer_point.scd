@@ -21,11 +21,11 @@ UPatDef( \p_sequencer_point, { |unit,
 
 	{
 		var current = 0, direction = 1;
-		points.next.asWFSPointGroup.at( current ).yield;
+		points.next.wrapAt( current ).yield;
 		inf.do { |i|
 			var pointsNext, size = 0;
 			current = current + direction;
-			pointsNext = points.next.asWFSPointGroup;
+			pointsNext = points.next;
 			if( pointsNext.notNil ) {
 				size = pointsNext.size;
 			};
@@ -41,21 +41,21 @@ UPatDef( \p_sequencer_point, { |unit,
 						direction = 1;
 					};
 				},
+				\random, {
+					current = size.rand;
+				},
 				\off, { current = current.clip(0,size-1); direction = 1; }
 			);
-			pointsNext.positions.wrapAt( current ).yield;
+			pointsNext.wrapAt( current ).yield;
 		};
 	}.r
 }).category_( 'pattern_point' )
 	.valueIsMapped_( false )
 	.numChannels_( 2 )
-	.setSpec( \loop, ListSpec( [ \off, \loop, \backwards, \alternate ], 1 ) )
+	.setSpec( \loop, ListSpec( [ \off, \loop, \backwards, \alternate, \random ], 1 ) )
 	.setDefault( \value, 0.0@0.0 )
-	.setSpec( \points, WFSPointGroupSpec(
-		WFSPointGroup.generate( 8, \circle ),
-		canChangeAmount: true )
-	)
-	.setDefault( \points, WFSPointGroup.generate( 8, \circle ) )
+    .setSpec( \points, WFSMultiPointSpec( 200, default: WFSPointGroup.generate( 8, \circle ).positions  ) )
+	.setDefault( \points, WFSPointGroup.generate( 8, \circle ).positions )
 	.canUseUMapFunc_({ |unit, key, umapdef|
 		[ PointSpec, WFSPointSpec, WFSRadiusSpec, WFSPlaneSpec, UAdaptSpec ].any({ |class|
 			unit.getSpec( key ).isMemberOf( class )
