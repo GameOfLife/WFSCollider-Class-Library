@@ -21,7 +21,7 @@ WFSPointGroupGUI {
 
 	classvar <>current;
 
-	var <view, <pathView, <editView;
+	var <view, <pathView, <editView, <>views2D;
 	var <generatorView;
 	var <editWidth = 207;
 	var <>action;
@@ -38,7 +38,7 @@ WFSPointGroupGUI {
 
 	init { |parent, bounds, object, addUndoManager|
 
-		var ctrl, ctrl2, ctrl3;
+		var ctrl, ctrl2, ctrl3, update2d;
 
 		if( parent.isNil ) {
 			parent = this.class.asString;
@@ -46,7 +46,7 @@ WFSPointGroupGUI {
 					190 rrand: 220,
 					70 rrand: 100,
 				 	(420 + (editWidth + 4)),
-				 	460
+				    460 + (4 * 18)
 				 )
 			};
 		} {
@@ -60,8 +60,13 @@ WFSPointGroupGUI {
 		bounds = view.asView.bounds;
 		view.addFlowLayout(0@0, 2@2);
 
-		pathView = this.editViewClass.new( view,
-			bounds.copy.width_( bounds.width - (editWidth + 4) ), object );
+		pathView = this.editViewClass.new(
+			view,
+			bounds.copy
+			.width_( bounds.width - (editWidth + 4) )
+			.height_( bounds.height - (4*18) ),
+			object
+		);
 
 		editView = WFSPointGroupTransformerView( view, editWidth @ bounds.height, object );
 
@@ -69,6 +74,46 @@ WFSPointGroupGUI {
 
 		editView.duplicateAction_({ |ev|
 			this.editViewClass.new( object: ev.object.deepCopy )
+		});
+
+		view.decorator.shift( 0, (-4 * 18) + 4 );
+
+		views2D = [
+			\x, [-200,200, SegWarp(
+				Env([-200,0,200], [0.5,0.5], 5.calcCurve(0,200) * [-1,1])
+			) ,0,0].asSpec, { this.object.positions.collect(_.x) }, { |vw, vals|
+				this.object.positions = this.object.positions.collect({ |pt, i| pt.x = vals.wrapAt(i) });
+				this.object = this.object;
+				action.value(this);
+			},
+			\y, [-200,200, SegWarp(
+				Env([-200,0,200], [0.5,0.5], 5.calcCurve(0,200) * [-1,1])
+			) ,0,0].asSpec, { this.object.positions.collect(_.y) }, { |vw, vals|
+				this.object.positions = this.object.positions.collect({ |pt, i| pt.y = vals.wrapAt(i) });
+				this.object = this.object;
+				action.value(this);
+			},
+			\angle, AngleSpec( ), { this.object.positions.collect(_.angle) }, { |vw, vals|
+				this.object.positions = this.object.positions.collect({ |pt, i| pt.angle = vals.wrapAt(i) });
+				this.object = this.object;
+				action.value(this);
+			},
+			\distance, [0,200,5.calcCurve(0,200),0,0].asSpec, { this.object.positions.collect(_.rho) }, { |vw, vals|
+				this.object.positions = this.object.positions.collect({ |pt, i| pt.rho = vals.wrapAt(i) });
+				this.object = this.object;
+				action.value(this);
+			},
+		].clump(4).collect({ |arr|
+			var label, spec, values, vw;
+			#label, spec, values, action = arr;
+			spec = spec.massEditSpec( values.value );
+			spec.size = nil;
+			vw = spec.makeView( view, bounds.width - editWidth - 16 @ 14, label, action, 8 );
+			view.decorator.shift( 0, 4 );
+			update2d = update2d.addFunc({
+				spec.setView( vw, values.value );
+			});
+			vw;
 		});
 
 		RoundView.popSkin;
@@ -86,6 +131,11 @@ WFSPointGroupGUI {
 			.put( \undo, {
 				editView.object = pathView.object;
 			});
+
+		ctrl2 = SimpleController( this.object )
+		.put( \positions, {
+			update2d.value;
+		});
 
 		ctrl3 = SimpleController( editView )
 			.put( \apply, { pathView.edited( \numerical_edit ); } );
