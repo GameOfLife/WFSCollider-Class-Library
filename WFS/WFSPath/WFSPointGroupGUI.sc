@@ -79,35 +79,36 @@ WFSPointGroupGUI {
 		view.decorator.shift( 0, (-4 * 18) + 4 );
 
 		views2D = [
-			\x, [-200,200, SegWarp(
-				Env([-200,0,200], [0.5,0.5], 5.calcCurve(0,200) * [-1,1])
-			) ,0,0].asSpec, { this.object.positions.collect(_.x) }, { |vw, vals|
+			\x, [-200, 200, \lin, 0, 0].asSpec, { this.object.positions.collect(_.x) }, { |vw, vals|
 				this.object.positions = this.object.positions.collect({ |pt, i| pt.x = vals.wrapAt(i) });
 				this.object = this.object;
 				action.value(this);
-			},
-			\y, [-200,200, SegWarp(
+			}, [-200,200, SegWarp(
 				Env([-200,0,200], [0.5,0.5], 5.calcCurve(0,200) * [-1,1])
-			) ,0,0].asSpec, { this.object.positions.collect(_.y) }, { |vw, vals|
+			) ,0,0].asSpec,
+			\y, [-200,200, \lin ,0,0].asSpec, { this.object.positions.collect(_.y) }, { |vw, vals|
 				this.object.positions = this.object.positions.collect({ |pt, i| pt.y = vals.wrapAt(i) });
 				this.object = this.object;
 				action.value(this);
-			},
+			}, [-200,200, SegWarp(
+				Env([-200,0,200], [0.5,0.5], 5.calcCurve(0,200) * [-1,1])
+			),0,0].asSpec,
 			\angle, AngleSpec( ), { this.object.positions.collect(_.angle) }, { |vw, vals|
 				this.object.positions = this.object.positions.collect({ |pt, i| pt.angle = vals.wrapAt(i) });
 				this.object = this.object;
 				action.value(this);
-			},
-			\distance, [0,200,5.calcCurve(0,200),0,0].asSpec, { this.object.positions.collect(_.rho) }, { |vw, vals|
+			}, nil,
+			\distance, [0,200,\lin,0,0].asSpec, { this.object.positions.collect(_.rho) }, { |vw, vals|
 				this.object.positions = this.object.positions.collect({ |pt, i| pt.rho = vals.wrapAt(i) });
 				this.object = this.object;
 				action.value(this);
-			},
-		].clump(4).collect({ |arr|
-			var label, spec, values, vw;
-			#label, spec, values, action = arr;
+			}, [0,200,5.calcCurve(0,200),0,0].asSpec,
+		].clump(5).collect({ |arr|
+			var label, spec, values, action, sliderSpec, vw;
+			#label, spec, values, action, sliderSpec = arr;
 			spec = spec.massEditSpec( values.value );
 			spec.size = nil;
+			if( sliderSpec.notNil ) { spec.sliderSpec = sliderSpec };
 			vw = spec.makeView( view, bounds.width - editWidth - 16 @ 14, label, action, 8 );
 			view.decorator.shift( 0, 4 );
 			update2d = update2d.addFunc({
