@@ -255,6 +255,7 @@ WFSPointSpec : PointSpec {
 		vws[ \comp1 ] = CompositeView( view, 40 @ (bounds.height) );
 
 		vws[ \xy ] = XYView( view, bounds.height.asPoint )
+		    .applySkin( RoundView.skin )
 			.action_({ |xy|
 				var newVal, theta;
 				tempVal = tempVal ?? { vws[ \val ].copy };
