@@ -210,7 +210,7 @@ WFSPathView {
 
 }
 
-WFSPointGroupView_TopBar {
+WFSView_TopBar {
 
 	classvar <>icons;
 
@@ -354,8 +354,50 @@ WFSPointGroupView_TopBar {
 	}
 }
 
+WFSPointGroupView_TopBar : WFSView_TopBar {
 
-WFSPathView_TopBar : WFSPointGroupView_TopBar {
+	*new { |parent, bounds, object|
+		^super.new( parent, bounds, object ).makeAddRemove;
+	}
+
+	makeCtrl {
+		ctrl.remove;
+		ctrl = SimpleController( object )
+		.put( \canChangeAmount, { |obj|
+			views.atAll( [\removeButton, \addButton] ).do(_.visible_( obj.canChangeAmount ))
+		})
+		.put( \select, { |obj|
+			if( obj.canChangeAmount ) {
+				views[ \addButton ].enabled_( obj.selected.size > 0 );
+				views[ \removeButton ].enabled_( obj.selected.size > 0 && {
+					obj.selected.size < (obj.object !? _.size ? 0)
+				});
+			};
+		})
+		.put( \mouseMode, { this.setMouseModeViews( object.mouseMode ) })
+		.put( \editMode, { this.setEditModeView( object.editMode ) });
+	}
+
+	makeAddRemove {
+		view.decorator.shift( bounds.height * 2, 0 );
+
+		views[ \removeButton ] = SmoothButton( view, bounds.height @ bounds.height )
+		.canFocus_( false )
+		.visible_( false )
+		.enabled_( false )
+		.action_({ object.removeSelected })
+		.label_( '-' );
+
+		views[ \addButton ] = SmoothButton( view, bounds.height @ bounds.height )
+		.canFocus_( false )
+		.visible_( false )
+		.enabled_( false )
+		.action_({ object.duplicateSelected })
+		.label_( '+' );
+	}
+}
+
+WFSPathView_TopBar : WFSView_TopBar {
 
 	*new { |parent, bounds, object|
 		^super.new( parent, bounds, object ).makePlayView;

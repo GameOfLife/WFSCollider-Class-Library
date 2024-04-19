@@ -959,7 +959,7 @@ WFSPathTimeView : WFSPathXYView {
 
 WFSPointView : WFSBasicEditView {
 
-	var <>canChangeAmount = true;
+	var <canChangeAmount = true;
 	var <showLabels = true;
 	var <labels;
 
@@ -1073,6 +1073,10 @@ WFSPointView : WFSBasicEditView {
 		this.object = object;
 	}
 
+	canChangeAmount_ { |bool = true|
+		canChangeAmount = bool;
+		this.changed( \canChangeAmount, bool );
+	}
 
 	drawContents { |scale = 1|
 		var points, controls;
