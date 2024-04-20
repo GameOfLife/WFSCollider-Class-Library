@@ -98,9 +98,20 @@ WFSPointGroupGUI {
 			}, [-200,200, SegWarp(
 				Env([-200,0,200], [0.5,0.5], 5.calcCurve(0,200) * [-1,1])
 			),0,0].asSpec,
-			\angle, [-180,180,\lin,0,0].asSpec, { this.object.positions.collect({ |pt|
-				((pt.angle.neg + 0.5pi / pi) * 180.0).wrap(-180.0,180.0)
-			}) }, { |vw, vals|
+			\angle, [-180,180,\lin,0,0].asSpec, { |currentVals|
+				currentVals = currentVals ? [];
+				this.object.positions.collect({ |pt, i|
+					var res = ((pt.angle.neg + 0.5pi / pi) * 180.0).wrap(-180.0,180.0);
+					if( currentVals[i].notNil ) {
+						case { res == -180 && { currentVals[i] == 180 } } {
+							res = 180;
+						} { res == 180 && { currentVals[i] == -180 } } {
+							res = -180;
+						};
+					};
+					res;
+				});
+			}, { |vw, vals|
 				this.object.positions = this.object.positions.collect({ |pt, i|
 					pt.angle = vals.wrapAt(i) / 180 * -1pi + 0.5pi;
 				});
@@ -113,15 +124,19 @@ WFSPointGroupGUI {
 				action.value(this);
 			}, [0,200,5.calcCurve(0,200),0,0].asSpec,
 		].clump(5).collect({ |arr|
-			var label, spec, values, action, sliderSpec, vw;
+			var label, spec, values, action, sliderSpec, vw, vwvals, act;
 			#label, spec, values, action, sliderSpec = arr;
 			spec = spec.massEditSpec( values.value );
 			spec.size = nil;
+			act = { |vw, vals|
+				vwvals = vals;
+				action.value( vw, vals );
+			};
 			if( sliderSpec.notNil ) { spec.sliderSpec = sliderSpec };
-			vw = spec.makeView( subview2, bounds.width - editWidth - 16 @ 14, label, action, 8 );
+			vw = spec.makeView( subview2, bounds.width - editWidth - 16 @ 14, label, act, 8 );
 			view.decorator.shift( 0, 4 );
 			update2d = update2d.addFunc({
-				spec.setView( vw, values.value );
+				spec.setView( vw, values.value( vwvals ) );
 			});
 			vw;
 		});
