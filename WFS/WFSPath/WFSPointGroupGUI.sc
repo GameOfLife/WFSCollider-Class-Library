@@ -38,7 +38,7 @@ WFSPointGroupGUI {
 
 	init { |parent, bounds, object, addUndoManager|
 
-		var ctrl, ctrl2, ctrl3, update2d;
+		var ctrl, ctrl2, ctrl3, update2d, subview1, subview2;
 
 		if( parent.isNil ) {
 			parent = this.class.asString;
@@ -68,15 +68,20 @@ WFSPointGroupGUI {
 			object
 		);
 
-		editView = WFSPointGroupTransformerView( view, editWidth @ bounds.height, object );
+		subview1 = CompositeView( view, editWidth @ bounds.height ).resize_(3);
 
-		editView.resize_(3);
+		editView = WFSPointGroupTransformerView( subview1, editWidth @ bounds.height, object );
+
+		editView.resize_(5);
 
 		editView.duplicateAction_({ |ev|
 			this.editViewClass.new( object: ev.object.deepCopy )
 		});
 
-		view.decorator.shift( 0, (-4 * 18) + 4 );
+		view.decorator.shift( 0, (-4 * 18) );
+
+		subview2 = CompositeView( view, (bounds.width - editWidth - 16) @ (4 * 18) );
+		subview2.addFlowLayout( 0@4, 4@4 );
 
 		views2D = [
 			\x, [-200, 200, \lin, 0, 0].asSpec, { this.object.positions.collect(_.x) }, { |vw, vals|
@@ -109,7 +114,7 @@ WFSPointGroupGUI {
 			spec = spec.massEditSpec( values.value );
 			spec.size = nil;
 			if( sliderSpec.notNil ) { spec.sliderSpec = sliderSpec };
-			vw = spec.makeView( view, bounds.width - editWidth - 16 @ 14, label, action, 8 );
+			vw = spec.makeView( subview2, bounds.width - editWidth - 16 @ 14, label, action, 8 );
 			view.decorator.shift( 0, 4 );
 			update2d = update2d.addFunc({
 				spec.setView( vw, values.value );
