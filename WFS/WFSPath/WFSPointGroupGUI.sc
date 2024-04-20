@@ -98,8 +98,12 @@ WFSPointGroupGUI {
 			}, [-200,200, SegWarp(
 				Env([-200,0,200], [0.5,0.5], 5.calcCurve(0,200) * [-1,1])
 			),0,0].asSpec,
-			\angle, AngleSpec( ), { this.object.positions.collect(_.angle) }, { |vw, vals|
-				this.object.positions = this.object.positions.collect({ |pt, i| pt.angle = vals.wrapAt(i) });
+			\angle, [-180,180,\lin,0,0].asSpec, { this.object.positions.collect({ |pt|
+				((pt.angle.neg + 0.5pi / pi) * 180.0).wrap(-180.0,180.0)
+			}) }, { |vw, vals|
+				this.object.positions = this.object.positions.collect({ |pt, i|
+					pt.angle = vals.wrapAt(i) / 180 * -1pi + 0.5pi;
+				});
 				this.object = this.object;
 				action.value(this);
 			}, nil,
