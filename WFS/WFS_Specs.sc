@@ -277,6 +277,37 @@ WFSPointSpec : PointSpec {
 		.title_( "mode" )
 		.action_({ |pu| mode = pu.item; this.setMode( vws, mode ); });
 
+		vws[ \mode ].extraMenuActions = {
+			var makeAction = { |name, func|
+				MenuAction( name, {
+					func.value;
+					this.setView( vws, vws[ \val ]  );
+					action.value( vws, vws[ \val ] );
+				})
+			};
+			[
+				MenuAction.separator,
+				Menu(
+					*[ 180, 135, 90, 45, -45, -90, -135 ].collect({ |item|
+						makeAction.value( "%°".format( item ), {
+							vws[ \val ] = vws[ \val ].rotate( item.neg / 180 * pi)
+						});
+					});
+				).title_( "rotate" ),
+				Menu(
+					*[ \x, \y ].collect({ |item|
+						makeAction.value( item.asString, {
+							vws[ \val ] = switch( item,
+								\x, { (vws[ \val ].x.neg) @ (vws[ \val ].y) },
+								\y, { (vws[ \val ].x) @ (vws[ \val ].y.neg) }
+							);
+						});
+					});
+				).title_( "mirror" ),
+				makeAction.value( "center", { vws[ \val ] = 0@0; }),
+				makeAction.value( "random", { vws[ \val ] = Point.rand(10.0, 10.0 ); }),
+			]
+		};
 		// point mode
 		vws[ \x ] = SmoothNumberBox( vws[ \comp1 ], 40 @ (bounds.height) )
 			.action_({ |nb|
