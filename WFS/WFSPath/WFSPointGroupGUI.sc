@@ -80,7 +80,7 @@ WFSPointGroupGUI {
 
 		view.decorator.shift( 0, (-4 * 18) );
 
-		subview2 = CompositeView( view, (bounds.width - editWidth - 16) @ (4 * 18) );
+		subview2 = CompositeView( view, (bounds.width - editWidth - 16) @ (4 * 18) ).resize_(8);
 		subview2.addFlowLayout( 0@4, 4@4 );
 
 		views2D = [
@@ -133,7 +133,7 @@ WFSPointGroupGUI {
 				action.value( vw, vals );
 			};
 			if( sliderSpec.notNil ) { spec.sliderSpec = sliderSpec };
-			vw = spec.makeView( subview2, bounds.width - editWidth - 16 @ 14, label, act, 8 );
+			vw = spec.makeView( subview2, bounds.width - editWidth - 16 @ 14, label, act, 2 );
 			view.decorator.shift( 0, 4 );
 			update2d = update2d.addFunc({
 				spec.setView( vw, values.value( vwvals ) );
