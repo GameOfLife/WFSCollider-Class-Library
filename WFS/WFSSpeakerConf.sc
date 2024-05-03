@@ -652,7 +652,7 @@ WFSSpeakerConf {
 				UPattern( (i + (count/8)) * 6, ii, 5.9,
 					[ 'pinkNoise', [ 'amp', 0.25, 'seed', 12345 ] ],
 					[ 'wfsIndex', [ 'index', [ 'p_int_step', [ 'lo', i*8 + count, 'hi', (i*8)+7 + count ] ] ] ]
-				).pattern_([ 'sustain_time', [ 'sustain', 0.3, 'timeToNext', [ 'p_time_step', [ 'time', 3.0, 'n', 8, 'spread', 0.8 ] ] ] ])
+				).pattern_([ 'sustain_time', [ 'sustain', 0.15, 'timeToNext', [ 'p_time_step', [ 'time', 3.0, 'n', 8, 'spread', 0.8 ] ] ] ])
 			}) );
 			count = count + arr.n;
 		});
