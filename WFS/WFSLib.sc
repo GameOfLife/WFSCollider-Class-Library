@@ -115,7 +115,7 @@ WFSLib {
 
 		if( Udef.synthDefDir.notNil ) { File.mkdir( Udef.synthDefDir ); };
 
-		this.loadUDefs( false );
+		ULib.loadUDefs( false );
 
 		this.setGUISkin( WFSOptions.current.skin ? \light, false );
 
@@ -399,7 +399,7 @@ WFSLib {
 
 		if( Udef.synthDefDir.notNil ) { File.mkdir( Udef.synthDefDir ); };
 
-		this.loadUDefs( false );
+		ULib.loadUDefs( false );
 
 		if( WFSOptions.current.showGUI ) { this.initDefaults };
 
@@ -530,24 +530,6 @@ WFSLib {
 			Server.default.options.bindAddress_("0.0.0.0");
 		};
 
-     }
-
-     *loadUDefs { |loadDir = true|
-	     var defs;
-
-	     Udef.loadOnInit = false;
-
-		defs = Udef.loadAllFromDefaultDirectory.select(_.notNil).collect(_.synthDef).flat.select(_.notNil);
-		defs = defs ++ UMapDef.loadAllFromDefaultDirectory.select(_.notNil).collect(_.synthDef).flat.select(_.notNil);
-		UnitRack.loadAllFromDefaultDirectory;
-
-		Udef.loadOnInit = true;
-
-		defs.do({|def| def.justWriteDefFile( Udef.synthDefDir ); });
-
-		if( loadDir == true ) {
-			ULib.allServers.do(_.loadDirectory( Udef.synthDefDir ? SynthDef.synthDefDir ));
-		};
      }
 
 	*initDefaults {
