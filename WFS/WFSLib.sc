@@ -117,7 +117,7 @@ WFSLib {
 
 		ULib.loadUDefs( false );
 
-		this.setGUISkin( WFSOptions.current.skin ? \light, false );
+		this.setGUISkin( /* WFSOptions.current.skin ? */ \light, false );
 
 		if( WFSOptions.current.showGUI ) { this.initDefaults };
 
