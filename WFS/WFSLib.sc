@@ -117,7 +117,7 @@ WFSLib {
 
 		ULib.loadUDefs( false );
 
-		this.setGUISkin( /* WFSOptions.current.skin ? */ \light, false );
+		this.setGUISkin( WFSOptions.current.skin ? \light, false );
 
 		if( WFSOptions.current.showGUI ) { this.initDefaults };
 
@@ -690,7 +690,7 @@ WFSLib {
 		Font.default = Font( Font.defaultSansFace, 13 );
 		if( UChainGUI.skin != UChainGUI.skins[ mode ] ) {
 			UChainGUI.skin = UChainGUI.skins[ mode ] ? UChainGUI.skins[ \light ];
-			//QtGUI.palette = UChainGUI.skin.qPalette ?? { QPalette.light };
+			QtGUI.palette = UChainGUI.skin.qPalette ?? { QPalette.light };
 			if( refresh ) {
 				UScoreEditorGUI.all.copy.do({ |editor|
 					var score;
