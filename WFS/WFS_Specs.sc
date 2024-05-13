@@ -305,7 +305,7 @@ WFSPointSpec : PointSpec {
 					});
 				).title_( "mirror" ),
 				makeAction.value( "center", { vws[ \val ] = 0@0; }),
-				makeAction.value( "random", { vws[ \val ] = Point.rand(10.0, 10.0 ); }),
+				makeAction.value( "random", { vws[ \val ] = Point(10.0.rand2, 10.0.rand2 ); }),
 			]
 		};
 		// point mode
