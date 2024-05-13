@@ -304,6 +304,28 @@ WFSPointSpec : PointSpec {
 						});
 					});
 				).title_( "mirror" ),
+				makeAction.value( "round", {
+					switch( mode,
+						\point, {
+							vws[ \val ] = Point(
+								vws[ \val ].x.round(1),
+								vws[ \val ].y.round(1)
+							)
+						},
+						\polar, {
+							vws[ \val ] = Polar(
+								vws[ \val ].rho.round(1),
+								vws[ \val ].theta.round(0.125pi)
+							).asPoint;
+						},
+						\deg_cw, {
+							vws[ \val ] = Polar(
+								vws[ \val ].rho.round(1),
+								vws[ \val ].theta.round(pi/180)
+							)
+						},
+					);
+				}),
 				makeAction.value( "center", { vws[ \val ] = 0@0; }),
 				makeAction.value( "random", { vws[ \val ] = Point(10.0.rand2, 10.0.rand2 ); }),
 			]
