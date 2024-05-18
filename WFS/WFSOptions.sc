@@ -3,7 +3,7 @@ AbstractWFSOptions {
 	classvar <>usePresetsForCS = false;
 	classvar <>makeCurrentAtInit = false;
 
-	*fromPreset { |name| ^this.presets[ name ].deepCopy; }
+	*fromPreset { |name| ^(this.presets[ name ] ?? { this.presets[ \default ] }).deepCopy; }
 
 	== { |that| // use === for identity
 		^this.compareObject(that);
