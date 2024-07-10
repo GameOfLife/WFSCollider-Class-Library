@@ -108,6 +108,19 @@ WFSPreviewSynthDefs : AbstractWFSSynthDefs {
 				amplitudes = amplitudes.max( globalDist.linlin(0.5,1,1,0).clip(0,1) );
 				(in * amplitudes)[[ 0, 1, 5, 2, 4, 3 ]];
 			},
+			\hepta: { |in, point| // clockwise 7-speaker panning, first speaker straight front
+				var distances, globalDist, delays, amplitudes;
+				var radius = panDist; // should be < 1
+				distances = ((..6) * -2pi/7).collect({ |item|
+					Polar(radius,item + 0.5pi).asPoint.dist( point )
+				});
+				globalDist = (0@0).dist( point );
+				delays = ((distances + radius - globalDist) / WFSBasicPan.speedOfSound);
+				in = DelayC.ar( in, 0.12, delays + ControlDur.ir);
+				amplitudes = PanAz.kr( 7, 1, (point.angle - 0.5pi).neg / pi, orientation: 0);
+				amplitudes = amplitudes.max( globalDist.linlin(0.5,1,1,0).clip(0,1) );
+				in * amplitudes;
+			},
 			\octo: { |in, point| // clockwise octophonic panning, first speaker straight front
 				var distances, globalDist, delays, amplitudes;
 				var radius = panDist; // should be < 1
@@ -271,6 +284,11 @@ WFSPreviewSynthDefs : AbstractWFSSynthDefs {
 				var w,x,y,z;
 				#w,x,y,z = PanB.ar( in, (point.angle - 0.5pi).neg / pi, (0@0).dist( point ).linlin( 0,2,1,0,\minmax ) );
 				DecodeB2.ar( 6, w, x, y, 0.5 )[[ 0, 1, 5, 2, 4, 3 ]];
+			},
+			\hepta: { |in, point| // clockwise 7-speaker AEP panning, first speaker straight front
+				var w,x,y,z;
+				#w,x,y,z = PanB.ar( in, (point.angle - 0.5pi).neg / pi, (0@0).dist( point ).linlin( 0,2,1,0,\minmax ) );
+				DecodeB2.ar( 7, w, x, y, 0 );
 			},
 			\octo: { |in, point| // clockwise octophonic AEP panning, first speaker straight front
 				var w,x,y,z;
