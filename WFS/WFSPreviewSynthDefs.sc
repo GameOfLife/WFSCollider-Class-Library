@@ -147,6 +147,19 @@ WFSPreviewSynthDefs : AbstractWFSSynthDefs {
 				amplitudes = amplitudes.max( globalDist.linlin(0.5,1,1,0).clip(0,1) );
 				(in * amplitudes)[[ 0, 1, 7, 2, 6, 3, 5, 4 ]];
 			},
+			\duo_deci: { |in, point| // clockwise 16-channel panning, first speaker straight front
+				var distances, globalDist, delays, amplitudes;
+				var radius = panDist; // should be < 1
+				distances = ((..11) * -2pi/12).collect({ |item|
+					Polar(radius,item + 0.5pi).asPoint.dist( point )
+				});
+				globalDist = (0@0).dist( point );
+				delays = ((distances + radius - globalDist) / WFSBasicPan.speedOfSound);
+				in = DelayC.ar( in, 0.12, delays + ControlDur.ir);
+				amplitudes = PanAz.kr( 12, 1, (point.angle - 0.5pi).neg / pi, orientation: 0);
+				amplitudes = amplitudes.max( globalDist.linlin(0.5,1,1,0).clip(0,1) );
+				in * amplitudes;
+			},
 			\hexa_deci: { |in, point| // clockwise 16-channel panning, first speaker straight front
 				var distances, globalDist, delays, amplitudes;
 				var radius = panDist; // should be < 1
@@ -299,6 +312,11 @@ WFSPreviewSynthDefs : AbstractWFSSynthDefs {
 				var w,x,y,z;
 				#w,x,y,z = PanB.ar( in, (point.angle - 0.5pi).neg / pi, (0@0).dist( point ).linlin( 0,2,1,0,\minmax ) );
 				DecodeB2.ar( 8, w, x, y, 0 )[[ 0, 1, 7, 2, 6, 3, 5, 4 ]];
+			},
+			\duo_deci: { |in, point| // clockwise 16-channel AEP panning, first speaker straight front
+				var w,x,y,z;
+				#w,x,y,z = PanB.ar( in, (point.angle - 0.5pi).neg / pi, (0@0).dist( point ).linlin( 0,2,1,0,\minmax ) );
+				DecodeB2.ar( 12, w, x, y, 0 );
 			},
 			\hexa_deci: { |in, point| // clockwise 16-channel AEP panning, first speaker straight front
 				var w,x,y,z;
