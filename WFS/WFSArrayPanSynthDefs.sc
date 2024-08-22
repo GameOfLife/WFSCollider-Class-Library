@@ -42,29 +42,36 @@ AbstractWFSSynthDefs {
 
 WFSSynthDefs {
 
-	*generateAllOrCopyFromResources { |action, dir|
-		var zippath;
+	*generateAllOrCopyFromResources { |action, dir, alwaysGeneratePreviewDefs = true|
+		var zippath, udir;
 		if( thisProcess.platform.name == \osx && {
 			WFSPrePanSynthDefs.checkIfExists( dir: dir ).not;
 		}) {
 			zippath = this.filenameSymbol.asString.dirname +/+ "wfs_synthdefs.zip";
 			if( File.exists( zippath ) ) {
 				"WFSSynthDefs: copying WFS synthdefs from resources directory (if missing)".postln;
-				if( dir.notNil ) { dir = dir.dirname; } { dir = SynthDef.synthDefDir.dirname };
-				"unzip -ou % -d %".format( zippath.escapeChar( $ ), dir.escapeChar( $ ) )
-				.unixCmd( action: action );
+				if( dir.notNil ) { udir = dir.dirname; } { udir = SynthDef.synthDefDir.dirname };
+				"unzip -ou % -d %".format( zippath.escapeChar( $ ), udir.escapeChar( $ ) )
+				.unixCmd( action: {
+					if( alwaysGeneratePreviewDefs ) { WFSPreviewSynthDefs.generateAll( dir: dir ); };
+					action.value;
+				});
 			} {
 				"WFSSynthDefs: no wfs_synthdefs.zip available, generating if needed".postln;
-				this.generateAllOnce( action, dir );
+				this.generateAllOnce( action, dir, alwaysGeneratePreviewDefs );
 			};
 		} {
-			this.generateAllOnce( action, dir );
+			this.generateAllOnce( action, dir, alwaysGeneratePreviewDefs );
 		};
 	}
 
-	*generateAllOnce { |action, dir|
+	*generateAllOnce { |action, dir, alwaysGeneratePreviewDefs = true|
 		WFSPrePanSynthDefs.generateAllOnce( dir: dir );
-		WFSPreviewSynthDefs.generateAllOnce( dir: dir );
+		if( alwaysGeneratePreviewDefs ) {
+			WFSPreviewSynthDefs.generateAll( dir: dir );
+		} {
+			WFSPreviewSynthDefs.generateAllOnce( dir: dir );
+		};
 		WFSArrayPanSynthDefs.generateAllOnce( { |synthDefs|
 			WFSArrayPanDirSynthDefs.generateAllOnce( action, dir );
 		}, dir );
