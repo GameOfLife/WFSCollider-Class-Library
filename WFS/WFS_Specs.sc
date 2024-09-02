@@ -554,6 +554,11 @@ WFSMultiPointSpec : PointSpec {
 		if( value.isKindOf( WFSPointGroup ) ) { value = value.positions };
 		if( value.isNil ) { value = [] };
 		if( value.isCollection.not ) { value = [ value ] };
+		if( value.every(_.isKindOf( Point )).not ) {
+			value = value.clump(2).collect({ |item|
+				this.originalSpec.constrain( item );
+			})
+		};
 		if( size.notNil ) {
 			value = value.wrapExtend( size );
 		};
