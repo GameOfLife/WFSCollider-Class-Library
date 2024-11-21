@@ -40,6 +40,29 @@ WFSPreviewSynthDefs : AbstractWFSSynthDefs {
 				amplitudes = amplitudes.max( globalDist.linlin(0.5,1,1,0).clip(0,1) );
 				in * amplitudes;
 			},
+			'2.1': { |in, point| // L, R, (silent), Sub
+				var distances, globalDist, delays, amplitudes;
+				var radius = panDist; // should be < 1
+				distances = [ -0.3@0, 0.3@0, 0@0 ].collect(_.dist( point ));
+				globalDist = (0@0).dist( point );
+				delays = ((distances + 0.3 - globalDist) / WFSBasicPan.speedOfSound);
+				in = DelayC.ar( in, 0.12, delays + ControlDur.ir);
+				amplitudes = Pan2.kr( 1, (point.angle - 0.5pi).neg.fold(-0.5pi,0.5pi) / 0.5pi );
+				amplitudes = amplitudes.max( globalDist.linlin(0.5,1,1,0).clip(0,1) );
+				((in[[0,1]] * amplitudes) ++ [ Silent.ar, LPF.ar( in[2], 120 ) ])
+			},
+			'3.1': { |in, point| // L, R, C, Sub
+				var distances, globalDist, delays, amplitudes;
+				var radius = panDist; // should be < 1
+				distances = [ -0.3@0, 0.3@0, 0@0 ].collect(_.dist( point ));
+				globalDist = (0@0).dist( point );
+				delays = ((distances + radius - globalDist) / WFSBasicPan.speedOfSound);
+				in = DelayC.ar( in, 0.12, delays + ControlDur.ir);
+				amplitudes = PanAz.kr( 3, 1, ((point.angle - 0.5pi).neg.fold(-0.5pi,0.5pi) / 0.5pi) * 2/3, orientation: 0);
+				amplitudes = amplitudes[[2,1,0]];
+				amplitudes = amplitudes.max( globalDist.linlin(0.5,1,1,0).clip(0,1) );
+				((in * amplitudes) ++ [ LPF.ar( in[2], 120 ) ])
+			},
 			\lrs: { |in, point| // left, right, surround/back
 				var distances, globalDist, delays, amplitudes;
 				var radius = panDist; // should be < 1
@@ -82,6 +105,33 @@ WFSPreviewSynthDefs : AbstractWFSSynthDefs {
 				amplitudes = amplitudes.max( globalDist.linlin(0.5,1,1,0).clip(0,1) );
 				(in * amplitudes)[[0,1,3,2]];
 			},
+			'4.1': { |in, point| // L, R, (silent), Sub, Ls, Rs
+				var distances, globalDist, delays, amplitudes;
+				var radius = panDist; // should be < 1
+				distances = [
+					(radius.neg)@radius, radius@radius,
+					radius@(radius.neg), (radius.neg)@(radius.neg), 0@0
+				].collect(_.dist( point ));
+				globalDist = (0@0).dist( point );
+				delays = ((distances + radius - globalDist) / WFSBasicPan.speedOfSound);
+				in = DelayC.ar( in, 0.12, delays + ControlDur.ir);
+				amplitudes = PanAz.kr( 4, 1, (point.angle - 0.5pi).neg / pi);
+				amplitudes = amplitudes.max( globalDist.linlin(0.5,1,1,0).clip(0,1) );
+				((in[..3] * amplitudes) ++ [ Silent.ar, LPF.ar( in[4], 120 ) ])[[0,1,4,5,3,2]];
+			},
+			'5.1': { |in, point| // L, R, C, Sub, Ls, Rs
+				var distances, globalDist, delays, amplitudes;
+				var radius = panDist; // should be < 1
+				distances = ((..4) * -2pi/5).collect({ |item|
+					Polar(radius,item + 0.5pi).asPoint.dist( point )
+				}) ++ [ (0@0).dist( point ) ];
+				globalDist = (0@0).dist( point );
+				delays = ((distances + radius - globalDist) / WFSBasicPan.speedOfSound);
+				in = DelayC.ar( in, 0.12, delays + ControlDur.ir);
+				amplitudes = PanAz.kr( 5, 1, (point.angle - 0.5pi).neg / pi, orientation: 0);
+				amplitudes = amplitudes.max( globalDist.linlin(0.5,1,1,0).clip(0,1) );
+				((in[..4] * amplitudes) ++ [ LPF.ar( in[5], 120 ) ])[[ 4, 1, 0, 5, 3, 2 ]];
+			},
 			\hexa: { |in, point| // clockwise hexaphonic panning, first two speakers left and right of front
 				var distances, globalDist, delays, amplitudes;
 				var radius = panDist; // should be < 1
@@ -120,6 +170,19 @@ WFSPreviewSynthDefs : AbstractWFSSynthDefs {
 				amplitudes = PanAz.kr( 7, 1, (point.angle - 0.5pi).neg / pi, orientation: 0);
 				amplitudes = amplitudes.max( globalDist.linlin(0.5,1,1,0).clip(0,1) );
 				in * amplitudes;
+			},
+			'7.1': { |in, point| // L, R, C, Sub, Lm, Rm, Ls, Rs
+				var distances, globalDist, delays, amplitudes;
+				var radius = panDist; // should be < 1
+				distances = ((..6) * -2pi/7).collect({ |item|
+					Polar(radius,item + 0.5pi).asPoint.dist( point )
+				}) ++ [ (0@0).dist( point ) ];
+				globalDist = (0@0).dist( point );
+				delays = ((distances + radius - globalDist) / WFSBasicPan.speedOfSound);
+				in = DelayC.ar( in, 0.12, delays + ControlDur.ir);
+				amplitudes = PanAz.kr( 7, 1, (point.angle - 0.5pi).neg / pi, orientation: 0);
+				amplitudes = amplitudes.max( globalDist.linlin(0.5,1,1,0).clip(0,1) );
+				((in[..6] * amplitudes) ++ [ LPF.ar( in[7], 120 ) ])[[ 6, 1, 0, 7, 5, 2, 4, 3 ]];
 			},
 			\octo: { |in, point| // clockwise octophonic panning, first speaker straight front
 				var distances, globalDist, delays, amplitudes;
@@ -257,20 +320,33 @@ WFSPreviewSynthDefs : AbstractWFSSynthDefs {
 			\headphone: { |in, point|
 				// simple headphone panner (ear distance 0.19cm)
 				// no HRTFs involved (yet..)
-				var distances, globalDist, amplitudes;
-				distances = [ -0.095@0, 0.095@0 ].collect(_.dist( point ));
+				var globalDist, amplitudes;
 				globalDist = (0@0).dist( point );
 				amplitudes = Pan2.kr( 1, (point.angle - 0.5pi).neg.fold(-0.5pi,0.5pi) / 0.5pi );
 				amplitudes = amplitudes.max( globalDist.linlin(0.5,1,1,0).clip(0,1) );
 				in * amplitudes;
 			},
 			\stereo: { |in, point|
-				var distances, globalDist, amplitudes;
-				distances = [ -0.3@0, 0.3@0 ].collect(_.dist( point ));
+				var globalDist, amplitudes;
 				globalDist = (0@0).dist( point );
 				amplitudes = Pan2.kr( 1, (point.angle - 0.5pi).neg.fold(-0.5pi,0.5pi) / 0.5pi );
 				amplitudes = amplitudes.max( globalDist.linlin(0.5,1,1,0).clip(0,1) );
 				in * amplitudes;
+			},
+			'2.1': { |in, point| // L, R, (silent), Sub
+				var globalDist, amplitudes;
+				globalDist = (0@0).dist( point );
+				amplitudes = Pan2.kr( 1, (point.angle - 0.5pi).neg.fold(-0.5pi,0.5pi) / 0.5pi );
+				amplitudes = amplitudes.max( globalDist.linlin(0.5,1,1,0).clip(0,1) );
+				(in * amplitudes) ++ [ DC.ar(0), LPF.ar( in, 120 ) ]
+			},
+			'3.1': { |in, point| // L, R, C, Sub
+				var globalDist, amplitudes;
+				globalDist = (0@0).dist( point );
+				amplitudes = PanAz.kr( 3, 1, ((point.angle - 0.5pi).neg.fold(-0.5pi,0.5pi) / 0.5pi) * 2/3, orientation: 0);
+				amplitudes = amplitudes[[2,1,0]];
+				amplitudes = amplitudes.max( globalDist.linlin(0.5,1,1,0).clip(0,1) );
+				((in * amplitudes) ++ [ LPF.ar( in, 120 ) ])
 			},
 			\lrs: { |in, point| // left, right, surround/back
 				var w,x,y,z;
@@ -287,6 +363,18 @@ WFSPreviewSynthDefs : AbstractWFSSynthDefs {
 				#w,x,y,z = PanB.ar( in, (point.angle - 0.5pi).neg / pi, (0@0).dist( point ).linlin( 0,2,1,0,\minmax ) );
 				DecodeB2.ar( 4, w, x, y, 0.5 )[[0,1,3,2]];
 			},
+			'4.1': { |in, point| // L, R, (silent), Sub, Lm, Rm, Ls, Rs
+				var w,x,y,z, panned;
+				#w,x,y,z = PanB.ar( in, (point.angle - 0.5pi).neg / pi, (0@0).dist( point ).linlin( 0,2,1,0,\minmax ) );
+				panned = DecodeB2.ar( 4, w, x, y, 0.5 );
+				(panned ++ [ Silent.ar, LPF.ar( in, 120 ) ])[[0,1,4,5,3,2]];
+			},
+			'5.1': { |in, point| // L, R, C, Sub, Lm, Rm, Ls, Rs
+				var w,x,y,z, panned;
+				#w,x,y,z = PanB.ar( in, (point.angle - 0.5pi).neg / pi, (0@0).dist( point ).linlin( 0,2,1,0,\minmax ) );
+				panned = DecodeB2.ar( 5, w, x, y, 0 );
+				(panned ++ [ LPF.ar( in, 120 ) ])[[ 4, 1, 0, 5, 3, 2 ]];
+			},
 			\hexa: { |in, point| // clockwise hexaphonic AEP panning, first two speakers left and right of front
 				var w,x,y,z;
 				#w,x,y,z = PanB.ar( in, (point.angle - 0.5pi).neg / pi, (0@0).dist( point ).linlin( 0,2,1,0,\minmax ) );
@@ -302,6 +390,12 @@ WFSPreviewSynthDefs : AbstractWFSSynthDefs {
 				var w,x,y,z;
 				#w,x,y,z = PanB.ar( in, (point.angle - 0.5pi).neg / pi, (0@0).dist( point ).linlin( 0,2,1,0,\minmax ) );
 				DecodeB2.ar( 7, w, x, y, 0 );
+			},
+			'7.1': { |in, point| // L, R, C, Sub, Lm, Rm, Ls, Rs
+				var w,x,y,z, panned;
+				#w,x,y,z = PanB.ar( in, (point.angle - 0.5pi).neg / pi, (0@0).dist( point ).linlin( 0,2,1,0,\minmax ) );
+				panned = DecodeB2.ar( 7, w, x, y, 0 );
+				(panned ++ [ LPF.ar( in, 120 ) ])[[ 6, 1, 0, 7, 5, 2, 4, 3 ]];
 			},
 			\octo: { |in, point| // clockwise octophonic AEP panning, first speaker straight front
 				var w,x,y,z;
