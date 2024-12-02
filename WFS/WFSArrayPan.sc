@@ -345,12 +345,12 @@ WFSBasicArrayPan : WFSBasicPan {
 		offset = inOffset ? offset; // offset in m (to the right if angle == 0.5pi)
 		spWidth = inSpWidth ? spWidth ? defaultSpWidth; // width of individual speakers
 
-		speakerArray = { |i| (i.linlin(0, n-1, spWidth / 2, spWidth.neg / 2 ) * n) - offset } ! n;
+		speakerArray = { |i| (i.linlin(0, n-1, spWidth / 2, spWidth.neg / 2 ) * (n-1)) - offset } ! n;
 	}
 
 	initSub { |subIndices|
 		speakerArray = subIndices.collect({ |i|
-			(i.linlin(0, n-1, spWidth / 2, spWidth.neg / 2 ) * n) - offset
+			(i.linlin(0, n-1, spWidth / 2, spWidth.neg / 2 ) * (n-1)) - offset
 		});
 		ampmask = subIndices.collect({ |item| if( item < 0, 0, 1 ) });
 	}
