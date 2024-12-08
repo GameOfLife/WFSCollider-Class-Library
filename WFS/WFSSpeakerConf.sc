@@ -20,6 +20,7 @@
 WFSArrayConf { // configuration for one single speaker array
 
 	var <n = 48, <dist = 5, <angle = 0.5pi, <offset = 0, <spWidth, <outputOffset = 0, <gain;
+	var <subSpacing = 16, <subOffset = 11;
 	var <>corners;
 	var <>cornerAngles; // angle to next array
 	var <>oppositeDist = -inf;
@@ -89,8 +90,8 @@ WFSArrayConf { // configuration for one single speaker array
 	           |y
 	*/
 
-	*new { |n = 48, dist = 5, angle = 0.5pi, offset = 0, spWidth, outputOffset, gain = 0|
-		^super.newCopyArgs( n, dist, angle, offset, spWidth ? WFSBasicPan.defaultSpWidth, outputOffset ? 0, gain ? 0)
+	*new { |n = 48, dist = 5, angle = 0.5pi, offset = 0, spWidth, outputOffset, gain = 0, subSpacing = 16, subOffset = 11|
+		^super.newCopyArgs( n, dist, angle, offset, spWidth ? WFSBasicPan.defaultSpWidth, outputOffset ? 0, gain ? 0, subSpacing, subOffset)
 			.init;
 	}
 
@@ -173,6 +174,9 @@ WFSArrayConf { // configuration for one single speaker array
 	outputOffset_ { |newOutputOffset| outputOffset = newOutputOffset ? 0; this.changed( \outputOffset, outputOffset ); }
 	gain_ { |newGain = 0| gain = newGain ? 0; this.changed( \gain, gain ); }
 
+	subSpacing_ { |newSubSpacing| subSpacing = newSubSpacing ? 16; this.changed( \subSpacing, subSpacing ); }
+	subOffset_ { |newSubOffset| subOffset = newSubOffset ? 11; this.changed( \subOffset, subOffset ); }
+
 	center { ^Polar( dist, angle ).asPoint; }
 	center_ { |newCenter|
 		newCenter = newCenter.asPolar;
@@ -214,6 +218,8 @@ WFSArrayConf { // configuration for one single speaker array
 	}
 
 	asPoints { // for plotting
+		// warning: these are in reverse order
+		// this could be fixed in the future but a lot depends on this eratic behavior
 		^n.collect({ |i| this.pointAt(i)});
 	}
 	asLine { // for plotting; start point and end point
@@ -253,6 +259,13 @@ WFSArrayConf { // configuration for one single speaker array
 		corners = array.collect({ |pt| pt.rotate( angle.neg ).y });
 	}
 
+	subPoints {
+		var subPan, subArray, nn;
+		subPan = WFSArrayPan( *this.asArray ).asSubArray( this.subSpacing, this.subOffset );
+		subArray = WFSArrayConf( subPan.n, subPan.dist, subPan.angle, subPan.offset, subPan.spWidth );
+		^subArray.n.collect({ |item| subArray.pointAt( item ) }).reverse.select({ |item, i| subPan.ampmask[i] > 0.5 });
+	}
+
 	draw { |mode = \lines| // 1m = 1px
 		Pen.use({
 			Pen.scale(1,-1);
@@ -269,7 +282,7 @@ WFSArrayConf { // configuration for one single speaker array
 		});
 	}
 
-	storeArgs { ^[n, dist, Angle(angle), offset, spWidth, outputOffset, gain ] }
+	storeArgs { ^[n, dist, Angle(angle), offset, spWidth, outputOffset, gain, subSpacing, subOffset ] }
 
 }
 
@@ -294,6 +307,8 @@ WFSSpeakerConf {
 
 	var <>gain = 0; // in db
 
+	var <hasSubs = true;
+	var <>subFreq = 70;
 
 	*initClass {
 		Class.initClassTree( PresetManager );
@@ -321,6 +336,9 @@ WFSSpeakerConf {
 				 	object.focusWidth = preset.focusWidth;
 				 	object.gain = preset.gain;
 				 	object.arrayConfs = preset.arrayConfs.deepCopy;
+				    object.hasSubs = preset.hasSubs;
+				    object.subFreq = preset.subFreq;
+				    object.init;
 				 }
 		 	} );
 
@@ -383,6 +401,8 @@ WFSSpeakerConf {
 			[ (nsp / n).asInteger, r, i.linlin(0, n, 0.5pi, -1.5pi) ]
 		}) );
 	}
+
+	hasSubs_ { |newHasSubs = true| hasSubs = newHasSubs; this.changed( \hasSubs, hasSubs ); }
 
 	makeDefault { default = this; }
 
