@@ -6,7 +6,8 @@ WFSSpeakerConfEditor {
 	var <>action, <>onClose;
 	var <presetManagerGUI;
 	var <rotateSlider, <scaleSlider, <rotateVal = 0, <scaleVal = 1;
-	var <gain, <arrayLimit, <focusWidth;
+	var <gain, <arrayLimit, <softLimit, <focusWidth;
+	var <hasSubs, <subFreq;
 	var <speakerCount, <speakersUnits, <numArraysInc, <numArraysDec, <numArraysBox, <slideInc, <slideDec;
 
 
@@ -63,7 +64,7 @@ WFSSpeakerConfEditor {
 		composite.onClose = { |vw| controller.remove; onClose.value( this ); };
 
 		scrollView = ScrollView( composite,
-			composite.bounds.width @  (composite.bounds.height - ((7 * 18)))
+			composite.bounds.width @  (composite.bounds.height - ((8 * 18)))
 		).resize_(5);
 
 		scrollView.addFlowLayout( margin, gap );
@@ -89,6 +90,34 @@ WFSSpeakerConfEditor {
 
 		StaticText( composite, 80@14 )
 			.applySkin( RoundView.skin )
+		    .string_( "subFreq (Hz)" )
+			.align_( \right )
+			.resize_( 7 );
+
+		subFreq = SmoothNumberBox( composite, 50@14 )
+			.clipLo_(20)
+			.clipHi_(120)
+			.step_(1)
+			.scroll_step_(1)
+			.value_( speakerConf.subFreq )
+			.action_({ |nb|
+				speakerConf.subFreq_( nb.value );
+			})
+			.resize_( 7 );
+
+		hasSubs = SmoothButton( composite, 76@14 )
+		.applySkin( RoundView.skin )
+		.label_([ "hasSubs", "hasSubs" ])
+		.value_( speakerConf.hasSubs.binaryValue )
+		.radius_( 2 )
+		.action_({ |bt|
+			speakerConf.hasSubs = bt.value.booleanValue;
+		});
+
+		composite.decorator.nextLine;
+
+		StaticText( composite, 50@14 )
+			.applySkin( RoundView.skin )
 			.string_( "arrayLimit" )
 			.align_( \right )
 			.resize_( 7 );
@@ -101,6 +130,23 @@ WFSSpeakerConfEditor {
 			.value_( speakerConf.arrayLimit )
 			.action_({ |nb|
 				speakerConf.arrayLimit_( nb.value );
+			})
+			.resize_( 7 );
+
+		StaticText( composite, 80@14 )
+			.applySkin( RoundView.skin )
+			.string_( "arraySoftLimit" )
+			.align_( \right )
+			.resize_( 7 );
+
+		softLimit = SmoothNumberBox( composite, 50@14 )
+			.clipLo_(0)
+			.clipHi_(1)
+			.step_(0.1)
+			.scroll_step_(0.1)
+			.value_( speakerConf.arraySoftLimit )
+			.action_({ |nb|
+				speakerConf.arraySoftLimit_( nb.value );
 			})
 			.resize_( 7 );
 
@@ -270,7 +316,10 @@ WFSSpeakerConfEditor {
 			speakerCount.clipLo = WFSArrayConfGUI.specs.n.step * speakerConf.size;
 			numArraysBox.string = speakerConf.size;
 			gain.value = speakerConf.gain;
+			hasSubs.value = speakerConf.hasSubs.binaryValue;
+			subFreq.value = speakerConf.subFreq;
 			arrayLimit.value = speakerConf.arrayLimit;
+			softLimit.value = speakerConf.arraySoftLimit;
 			focusWidth.value = speakerConf.focusWidth/pi;
 		});
 	}

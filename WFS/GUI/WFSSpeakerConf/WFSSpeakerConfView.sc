@@ -33,6 +33,7 @@ WFSSpeakerConfView : WFSBasicEditView {
 
 		if( conf.notNil ) {
 			Pen.use({
+				var subArrays;
 				// show selection
 				Pen.scale(1,-1);
 				lines = conf.asLines;
@@ -49,6 +50,17 @@ WFSSpeakerConfView : WFSBasicEditView {
 					});
 					Pen.stroke;
 
+				};
+
+				if( conf.hasSubs ) {
+					Pen.color = Color.red(0.5, 0.5);
+					conf.arrayConfs.do({ |arrayConf|
+						arrayConf.subPoints.do({ |item|
+							//Pen.scale(scale,scale.neg);
+							Pen.addRect( Rect.aboutPoint( item + Polar(0.3, arrayConf.angle).asPoint, 0.3, 0.3) );
+							Pen.fill;
+						});
+					});
 				};
 
 				Pen.color = Color.black;
