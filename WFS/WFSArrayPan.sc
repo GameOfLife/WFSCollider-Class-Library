@@ -355,6 +355,21 @@ WFSBasicArrayPan : WFSBasicPan {
 		ampmask = subIndices.collect({ |item| if( item < 0, 0, 1 ) });
 	}
 
+	asSubArray { |division = 16, index = 11, minDivision = 16| // #speakers per sub, speakerindex to which sub is connected
+		var newN, newPan;
+		newN = (this.n / minDivision).ceil.asInteger;
+		//if( (((newN - 1) * division) + index) >= this.n ) { newN = newN - 1 };
+		newPan = this.class.new(
+			newN, this.dist, this.angle,
+			this.offset + ( ( (((newN - 1) / 2) * division) - ((this.n - 1) / 2) + index ) * this.spWidth ),
+			this.spWidth * division
+		);
+		newPan.ampmask = newN.collect({ |i|
+			((index + (division * i)) < this.n).binaryValue
+		});
+		^newPan;
+	}
+
 }
 
 
@@ -435,7 +450,7 @@ WFSArrayPan : WFSBasicArrayPan {
 	var <>softLimitRange = 0.5;
 	var <>focusWidth = 0.5pi;
 
-	ar { |source, inPos, int, mul = 1, add = 0| // inPos: Point or Polar
+	ar { |source, inPos, int, mul = 1, add = 0, taper = true| // inPos: Point or Polar
 		var difx, dify, sqrdifx, inFront, crossing, delayOffset;
 		var globalDist, globalAngle, speakerAngleRange, focusFades, fadeArea;
 
@@ -476,10 +491,12 @@ WFSArrayPan : WFSBasicArrayPan {
 		amplitudes = this.softClip( amplitudes );
 
 		// apply tapering
-		amplitudes = amplitudes * (1..n).fold(0,(n/2) + 0.5)
-				.linlin(0, (n+1) * tapering, -0.5pi, 0.5pi )
-				.sin
-				.linlin(-1,1,0,1);
+		if( taper ) {
+			amplitudes = amplitudes * (1..n).fold(0,(n/2) + 0.5)
+			.linlin(0, (n+1) * tapering, -0.5pi, 0.5pi )
+			.sin
+			.linlin(-1,1,0,1);
+		};
 
 		if( ampmask.size > 0 ) { amplitudes = amplitudes * ampmask };
 
