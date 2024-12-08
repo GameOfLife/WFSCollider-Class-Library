@@ -110,7 +110,7 @@ WFSArrayPanSynthDefs : AbstractWFSSynthDefs {
 
 	classvar <>minSize = 1, <>maxSize = 96, <>division = 8;
 		// if we get > 64 we might want to combine multiple
-	classvar <>types, <>modes, <>intTypes;
+	classvar <>types, <>modes, <>intTypes, <>subTypes;
 
 	*prefix { ^"wfsa" }
 
@@ -118,6 +118,7 @@ WFSArrayPanSynthDefs : AbstractWFSSynthDefs {
 		types = [ \n, \f, \u, \p ]; // normal, focused, uni (= normal and focused), plane
 		modes = [ \s, \d ];  // static, dynamic
 		intTypes = [ \n, \l, \c ];  // non-int, linear, cubic
+		subTypes = [ \, \s ]; // without sub, with sub
 	}
 
 	*allSizes {
@@ -133,20 +134,22 @@ WFSArrayPanSynthDefs : AbstractWFSSynthDefs {
 		^sizes;
 	}
 
-	*getDefName { |size = 8, type = \u, mode = \s, int = \n|
+	*getDefName { |size = 8, type = \u, mode = \s, int = \n, sub = false |
 
 		#type, mode, int = [ type, mode, int ].collect({ |item|
 			item.asString[0].toLower;
 		});
 
+		sub = if( sub == true ) { \s } { \ };
+
 		// example of synthdef name:
 		// 'wfsa_fdl_32' : focused dynamic linear point, 32 speakers
 		// 'wfsa_psn_40' : static non-interpolating plane, 40 speakers
 
-		^[ this.prefix, [type, mode, int].join(""), size ].join("_");
+		^[ this.prefix, [type, mode, int, sub].join(""), size ].join("_");
 	}
 
-	*generateDef { |size = 8, type = \uni, mode = \static, int = \n|
+	*generateDef { |size = 8, type = \uni, mode = \static, int = \n, sub = false|
 		var conf;
 
 		#type, mode, int = [ type, mode, int ].collect({ |item, i|
@@ -160,15 +163,16 @@ WFSArrayPanSynthDefs : AbstractWFSSynthDefs {
 			out;
 		});
 
-		^SynthDef( this.getDefName(size, type, mode, int), {
+		^SynthDef( this.getDefName(size, type, mode, int, sub), {
 
 			// synth args:
 			var arrayConf, outOffset = 0, addDelay = 0;
-			var point = 0@0, amp = 1, arrayRollOff = -9, arrayLimit = 1;
+			var point = 0@0, amp = 1, arrayRollOff = -9, arrayLimit = 1, arraySoftLimit = 0.5;
+			var subSpacing = 16, subOffset = 11, subFreq = 70;
 
 			// local variables
 			var gain = 0.dbamp; // hard-wired for now
-			var panner, input;
+			var panner, input, subSig, subPanner;
 
 			// always static
 			arrayConf = \arrayConf.ir( [ size, 5, 0.5pi, 0, 0.164 ] ); // size is fixed in def
@@ -187,10 +191,20 @@ WFSArrayPanSynthDefs : AbstractWFSSynthDefs {
 			if( type != \p ) { // only for points, not planes
 				arrayRollOff = \arrayDbRollOff.ir( arrayRollOff );
 				arrayLimit = \arrayLimit.ir( arrayLimit );
+				arraySoftLimit = \arraySoftLimit.ir( arraySoftLimit );
 			};
 
 			gain = \gain.kr( gain );
 			input = UIn.ar(0, 1) * gain * amp;
+
+			if( sub ) {
+				subSpacing = \subSpacing.ir( subSpacing );
+				subOffset = \subOffset.ir( subOffset );
+				subFreq = \subFreq.ir( subFreq );
+
+				subSig = LRHiCut.ar( input, subFreq );
+				input = LRLowCut.ar( input, subFreq );
+			};
 
 			if( type === \p ) {
 				panner = WFSArrayPanPlane( size, *arrayConf[1..] ).addDelay_( addDelay );
@@ -199,8 +213,28 @@ WFSArrayPanSynthDefs : AbstractWFSSynthDefs {
 					.addDelay_( addDelay )
 					.dbRollOff_( arrayRollOff )
 					.limit_( arrayLimit )
+				    .softLimitRange_( arraySoftLimit )
 					.focusWidth_( \focusWidth.ir( 0.5pi ) )
 					.focus_( switch( type, \f, { true }, \n, { false }, { nil } ) );
+			};
+
+			if( sub ) {
+				if( type === \p ) {
+				} {
+					subPanner = panner.asSubArray( subSpacing, subOffset, 16 )
+					.addDelay_( addDelay )
+					.dbRollOff_( arrayRollOff )
+					.limit_( arrayLimit )
+					.softLimitRange_( arraySoftLimit )
+					.focusWidth_( \focusWidth.ir( 0.5pi ) )
+					.focus_( switch( type, \f, { true }, \n, { false }, { nil } ) );
+
+					subSig = subPanner.ar( subSig, point, int, 1, taper: false );
+					subSig = subSig * subSig.size / size;
+					subSig.do({ |item,i|
+						Out.ar( outOffset + subOffset + (i * subSpacing), item );
+					});
+				};
 			};
 
 			Out.ar( outOffset, panner.ar( input, point, int, 1 ) );
@@ -217,15 +251,25 @@ WFSArrayPanSynthDefs : AbstractWFSSynthDefs {
 		var all, waitTime;
 		dir = dir ? defaultDir ? SynthDef.synthDefDir;
 		all = #[ // these are the all types we'll probably need
-			[ uni, static, n ],    // use this for any static
-			[ normal, static, n ], // use this for normal static
-			[ focus, dynamic, l ],
-			[ normal, dynamic, l ],
-			[ focus, dynamic, c ],
-			[ normal, dynamic, c ],
-			[ plane, static, n ],
-			[ plane, dynamic, l ],
-			[ plane, dynamic, c ]
+			[ uni, static, n, false ],    // use this for any static
+			[ normal, static, n, false ], // use this for normal static
+			[ focus, dynamic, l, false ],
+			[ normal, dynamic, l, false ],
+			[ focus, dynamic, c, false ],
+			[ normal, dynamic, c, false ],
+			[ plane, static, n, false ],
+			[ plane, dynamic, l, false ],
+			[ plane, dynamic, c, false ],
+
+			[ uni, static, n, true ],    // use this for any static
+			[ normal, static, n, true ], // use this for normal static
+			[ focus, dynamic, l, true ],
+			[ normal, dynamic, l, true ],
+			[ focus, dynamic, c, true ],
+			[ normal, dynamic, c, true ],
+			[ plane, static, n, true ],
+			[ plane, dynamic, l, true ],
+			[ plane, dynamic, c, true ]
 		];
 		waitTime = estimatedTime / all.size;
 
