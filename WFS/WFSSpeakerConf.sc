@@ -286,6 +286,7 @@ WFSSpeakerConf {
 
 	var <arrayConfs;
 	var <>arrayLimit = 1;
+	var <>arraySoftLimit = 0.5;
 	var <>focusWidth = 0.5pi;
 
 	var <>focusDetector;
@@ -316,6 +317,7 @@ WFSSpeakerConf {
 				 	preset.deepCopy;
 			 	} {
 				 	object.arrayLimit = preset.arrayLimit;
+				    object.arraySoftLimit = preset.arraySoftLimit;
 				 	object.focusWidth = preset.focusWidth;
 				 	object.gain = preset.gain;
 				 	object.arrayConfs = preset.arrayConfs.deepCopy;

@@ -432,6 +432,7 @@ WFSArrayPan : WFSBasicArrayPan {
 	var <>focus; // nil, true or false
 	var <>dbRollOff = -9; // per speaker roll-off
 	var <>limit = 1; // in m, clipping amplitude from here to prevent inf
+	var <>softLimitRange = 0.5;
 	var <>focusWidth = 0.5pi;
 
 	ar { |source, inPos, int, mul = 1, add = 0| // inPos: Point or Polar
@@ -470,7 +471,9 @@ WFSArrayPan : WFSBasicArrayPan {
 
 
 		// ------- calculate amplitudes --------
-		amplitudes = distances.pow(dbRollOff/6).min( limit.pow(dbRollOff/6) );
+		amplitudes = distances.pow(dbRollOff/6); //.min( limit.pow(dbRollOff/6) );
+
+		amplitudes = this.softClip( amplitudes );
 
 		// apply tapering
 		amplitudes = amplitudes * (1..n).fold(0,(n/2) + 0.5)
@@ -513,6 +516,16 @@ WFSArrayPan : WFSBasicArrayPan {
 			delayTimes + delayOffset,
 			amplitudes,
 			add  );
+	}
+
+	softClip { |in|
+		var clip, range, exc;
+		clip = limit.pow( dbRollOff/6 );
+		range = clip - ( (limit + softLimitRange).pow( dbRollOff/6 ) );
+		range = range.clip(1.0e-12, clip );
+		exc = clip - range;
+		//^in.min( clip );
+		^in.min( exc ) + ( ( in.excess( exc ) / range ).distort * range );
 	}
 
 }
