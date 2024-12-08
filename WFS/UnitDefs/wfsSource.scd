@@ -98,7 +98,11 @@ staticPoint.env[ \wfsCreateSynthFunc ] = { |unit, target, startPos = 0|
 
 	arrayGroup = Group(target, addAction: \addToTail);
 
-	defNames = [ "wfsa_nsn_", "wfsa_usn_" ]; // normal and uni static n
+	if( WFSSpeakerConf.default.hasSubs ) {
+		defNames = [ "wfsa_nsns_", "wfsa_usns_" ]; // normal and uni static n
+	} {
+		defNames = [ "wfsa_nsn_", "wfsa_usn_" ]; // normal and uni static n
+	};
 
 	addDelay = calcDelayFocused.value( server ) - 0.06;
 	if( unit.get( \minLatency ) == true ) {
@@ -120,16 +124,22 @@ staticPoint.env[ \wfsCreateSynthFunc ] = { |unit, target, startPos = 0|
 	n = 0;
 	arrayConfs.do({ |ac, i|
 		if( normalLevels[i] > 0 ) {
-			normalSynths = normalSynths.add(							Synth( defNames[0] ++ ac.n, [
-				\gain, (WFSSpeakerConf.default.gain + ac.gain).dbamp,
-				\arrayConf, ac,
-				\outOffset, n + ac.outputOffset + WFSSpeakerConf.getOutputBusStartOffset( server ),
-				\amp, normalLevels[i],
-				\arrayLimit, WFSSpeakerConf.default.arrayLimit,
-				\addDelay, addDelayNormal,
-			] ++ U.formatArgs( [ \point, unit.point, \u_i_ar_0_bus, unit.u_i_ar_0_bus ], server, startPos ),
-			arrayGroup, addAction: \addToTail
-			)
+			normalSynths = normalSynths.add(
+				Synth( defNames[0] ++ ac.n, [
+					\gain, (WFSSpeakerConf.default.gain + ac.gain).dbamp,
+					\arrayConf, ac,
+					\outOffset, n + ac.outputOffset + WFSSpeakerConf.getOutputBusStartOffset( server ),
+					\amp, normalLevels[i],
+					\arrayLimit, WFSSpeakerConf.default.arrayLimit,
+					\arraySoftLimit, WFSSpeakerConf.default.arraySoftLimit,
+					\addDelay, addDelayNormal
+				] ++ if( WFSSpeakerConf.default.hasSubs ) { [
+					\subSpacing, ac.subSpacing,
+					\subOffset, ac.subOffset,
+					\subFreq, WFSSpeakerConf.default.subFreq,
+				] } { [] } ++ U.formatArgs( [ \point, unit.point, \u_i_ar_0_bus, unit.u_i_ar_0_bus ], server, startPos ),
+				arrayGroup, addAction: \addToTail
+				)
 			);
 		};
 		n = n + arrayConfs[i].n;
@@ -145,9 +155,14 @@ staticPoint.env[ \wfsCreateSynthFunc ] = { |unit, target, startPos = 0|
 					\outOffset, n + ac.outputOffset + WFSSpeakerConf.getOutputBusStartOffset( server ),
 					\amp, focusLevels[i],
 					\arrayLimit, WFSSpeakerConf.default.arrayLimit,
+					\arraySoftLimit, WFSSpeakerConf.default.arraySoftLimit,
 					\focusWidth, WFSSpeakerConf.default.focusWidth,
 					\addDelay, addDelay,
-				] ++ U.formatArgs( [ \point, unit.point, \u_i_ar_0_bus, unit.u_i_ar_0_bus ], server, startPos ),
+				] ++ if( WFSSpeakerConf.default.hasSubs ) { [
+					\subSpacing, ac.subSpacing,
+					\subOffset, ac.subOffset,
+					\subFreq, WFSSpeakerConf.default.subFreq,
+				] } { [] } ++ U.formatArgs( [ \point, unit.point, \u_i_ar_0_bus, unit.u_i_ar_0_bus ], server, startPos ),
 				arrayGroup, addAction: \addToTail
 				)
 				);
@@ -253,7 +268,11 @@ dynamicPoint.env[ \wfsCreateSynthFunc ] = { |unit, target, startPos = 0|
 
 	defNames = [
 		[ "wfsa_nd", "wfsa_fd" ],
-		[ switch( unit.get( \quality ), \good, \l_, \better, \c_, \l_ ) ]
+		if( WFSSpeakerConf.default.hasSubs ) {
+			[ switch( unit.get( \quality ), \good, \ls_, \better, \cs_, \ls_ ) ]
+		} {
+			[ switch( unit.get( \quality ), \good, \l_, \better, \c_, \l_ ) ]
+		}
 	].flop.collect(_.join);
 
 	addDelay = calcDelayFocused.value( server ) - 0.06;
@@ -295,9 +314,14 @@ dynamicPoint.env[ \wfsCreateSynthFunc ] = { |unit, target, startPos = 0|
 			\amp, ("c" ++ normalLevelBuses[i]).asSymbol,
 			\outOffset, n + arrayConfs[i].outputOffset + WFSSpeakerConf.getOutputBusStartOffset( server ),
 			\arrayLimit, WFSSpeakerConf.default.arrayLimit,
+			\arraySoftLimit, WFSSpeakerConf.default.arraySoftLimit,
 			\focusWidth, WFSSpeakerConf.default.focusWidth,
 			\addDelay, addDelayNormal,
-		] ++ U.formatArgs( [ \point, unit.point, \u_i_ar_0_bus, unit.u_i_ar_0_bus ], server, startPos ),
+		] ++ if( WFSSpeakerConf.default.hasSubs ) { [
+			\subSpacing, arrayConfs[i].subSpacing,
+			\subOffset, arrayConfs[i].subOffset,
+			\subFreq, WFSSpeakerConf.default.subFreq,
+		] } { [] } ++ U.formatArgs( [ \point, unit.point, \u_i_ar_0_bus, unit.u_i_ar_0_bus ], server, startPos ),
 		\addToTail )
 		);
 		n = n + arrayConfs[i].n;
@@ -311,9 +335,14 @@ dynamicPoint.env[ \wfsCreateSynthFunc ] = { |unit, target, startPos = 0|
 			\amp, ("c" ++ focusLevelBuses[i]).asSymbol,
 			\outOffset, n + arrayConfs[i].outputOffset + WFSSpeakerConf.getOutputBusStartOffset( server ),
 			\arrayLimit, WFSSpeakerConf.default.arrayLimit,
+			\arraySoftLimit, WFSSpeakerConf.default.arraySoftLimit,
 			\focusWidth, WFSSpeakerConf.default.focusWidth,
 			\addDelay, addDelay,
-		] ++ U.formatArgs( [ \point, unit.point, \u_i_ar_0_bus, unit.u_i_ar_0_bus ], server, startPos ),
+		] ++ if( WFSSpeakerConf.default.hasSubs ) { [
+			\subSpacing, arrayConfs[i].subSpacing,
+			\subOffset, arrayConfs[i].subOffset,
+			\subFreq, WFSSpeakerConf.default.subFreq,
+		] } { [] } ++ U.formatArgs( [ \point, unit.point, \u_i_ar_0_bus, unit.u_i_ar_0_bus ], server, startPos ),
 		\addToTail )
 		);
 		n = n + arrayConfs[i].n;
