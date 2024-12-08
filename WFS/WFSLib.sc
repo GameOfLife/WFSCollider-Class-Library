@@ -59,7 +59,7 @@ WFSLib {
 			.hardwareBufferSize_( so.hardwareBufferSize )
 			.blockSize_( wfsOptions.blockSize )
 			.sampleRate_( wfsOptions.sampleRate )
-			.maxSynthDefs_(2048)
+			.maxSynthDefs_(4096)
 		    .numWireBufs_(2048)
 			.memSize_( (2**19).asInteger ) // 256MB
 			.maxNodes_( (2**16).asInteger );
