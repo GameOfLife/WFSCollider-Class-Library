@@ -126,7 +126,7 @@ WFSOptionsObjectGUI : AbstractWFSOptionsGUI {
 
 	*initClass {
 		specs = OEM(
-			\previewMode, ListSpec( [ \off, \headphone, \stereo, '2.1', '3.1', \lrs, \quad, \quad_crossed, '4.1', '5.1', \hexa, \hexa_pairs, \hepta, '7.1', \octo, \octo_pairs, \duo_deci, \hexa_deci, \twentyfour, \thirtytwo, \sixtyfour, \b_format, \ambix, \mono ] ),
+			\previewMode, ListSpec( [ \off, \headphone, \stereo, '2.1', '3.1', '4.1', '5.1', '7.1', \lrs, \quad, \quad_crossed, \hexa, \hexa_pairs, \hepta, \octo, \octo_pairs, \duo_deci, \hexa_deci, \twentyfour, \thirtytwo, \sixtyfour, \b_format, \ambix, \mono ] ),
 			\showGUI, BoolSpec(true),
 			\skin, ListSpec( UChainGUI.skins.keys ),
 			\showServerWindow, BoolSpec(true),
