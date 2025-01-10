@@ -168,7 +168,7 @@ WFSArrayPanSynthDefs : AbstractWFSSynthDefs {
 			// synth args:
 			var arrayConf, outOffset = 0, addDelay = 0;
 			var point = 0@0, amp = 1, arrayRollOff = -9, arrayLimit = 1, arraySoftLimit = 0.5;
-			var subSpacing = 16, subOffset = 11, subFreq = 70;
+			var subSpacing = 16, subOffset = 11, subFreq = 70, subGain = 0;
 
 			// local variables
 			var gain = 0.dbamp; // hard-wired for now
@@ -201,6 +201,7 @@ WFSArrayPanSynthDefs : AbstractWFSSynthDefs {
 				subSpacing = \subSpacing.ir( subSpacing );
 				subOffset = \subOffset.ir( subOffset );
 				subFreq = \subFreq.ir( subFreq );
+				subGain = \subGain.ir( subGain );
 
 				subSig = LRHiCut.ar( input, subFreq );
 				input = LRLowCut.ar( input, subFreq );
@@ -230,7 +231,7 @@ WFSArrayPanSynthDefs : AbstractWFSSynthDefs {
 					.focus_( switch( type, \f, { true }, \n, { false }, { nil } ) );
 
 					subSig = subPanner.ar( subSig, point, int, 1, taper: false );
-					subSig = subSig * subSig.size / size;
+					subSig = subSig * subSig.size / size * subGain.dbamp;
 					subSig.do({ |item,i|
 						Out.ar( outOffset + subOffset + (i * subSpacing), item );
 					});

@@ -137,6 +137,7 @@ staticPoint.env[ \wfsCreateSynthFunc ] = { |unit, target, startPos = 0|
 					\subSpacing, ac.subSpacing,
 					\subOffset, ac.subOffset,
 					\subFreq, WFSSpeakerConf.default.subFreq,
+					\subGain, WFSArrayPan.subGain,
 				] } { [] } ++ U.formatArgs( [ \point, unit.point, \u_i_ar_0_bus, unit.u_i_ar_0_bus ], server, startPos ),
 				arrayGroup, addAction: \addToTail
 				)
@@ -162,6 +163,7 @@ staticPoint.env[ \wfsCreateSynthFunc ] = { |unit, target, startPos = 0|
 					\subSpacing, ac.subSpacing,
 					\subOffset, ac.subOffset,
 					\subFreq, WFSSpeakerConf.default.subFreq,
+					\subGain, WFSArrayPan.subGain,
 				] } { [] } ++ U.formatArgs( [ \point, unit.point, \u_i_ar_0_bus, unit.u_i_ar_0_bus ], server, startPos ),
 				arrayGroup, addAction: \addToTail
 				)
@@ -321,6 +323,7 @@ dynamicPoint.env[ \wfsCreateSynthFunc ] = { |unit, target, startPos = 0|
 			\subSpacing, arrayConfs[i].subSpacing,
 			\subOffset, arrayConfs[i].subOffset,
 			\subFreq, WFSSpeakerConf.default.subFreq,
+			\subGain, WFSArrayPan.subGain,
 		] } { [] } ++ U.formatArgs( [ \point, unit.point, \u_i_ar_0_bus, unit.u_i_ar_0_bus ], server, startPos ),
 		\addToTail )
 		);
@@ -342,6 +345,7 @@ dynamicPoint.env[ \wfsCreateSynthFunc ] = { |unit, target, startPos = 0|
 			\subSpacing, arrayConfs[i].subSpacing,
 			\subOffset, arrayConfs[i].subOffset,
 			\subFreq, WFSSpeakerConf.default.subFreq,
+			\subGain, WFSArrayPan.subGain,
 		] } { [] } ++ U.formatArgs( [ \point, unit.point, \u_i_ar_0_bus, unit.u_i_ar_0_bus ], server, startPos ),
 		\addToTail )
 		);
