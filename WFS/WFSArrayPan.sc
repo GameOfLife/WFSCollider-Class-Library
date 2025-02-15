@@ -443,6 +443,7 @@ WFSArrayPan : WFSBasicArrayPan {
 
 	classvar <>useFocusFades = true; // need to rebuild synthdefs after changing this
 	classvar <>efficientFocusFades = false;
+	classvar <>subGain = 0;
 
 	var <>focus; // nil, true or false
 	var <>dbRollOff = -9; // per speaker roll-off
