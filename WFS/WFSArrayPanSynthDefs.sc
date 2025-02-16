@@ -42,7 +42,7 @@ AbstractWFSSynthDefs {
 
 WFSSynthDefs {
 
-	*generateAllOrCopyFromResources { |action, dir, alwaysGeneratePreviewDefs = true|
+	*generateAllOrCopyFromResources { |action, dir, alwaysGeneratePreviewDefs = true, includeArrayPanners = true|
 		var zippath, udir;
 		if( thisProcess.platform.name == \osx && {
 			WFSPrePanSynthDefs.checkIfExists( dir: dir ).not;
@@ -58,23 +58,25 @@ WFSSynthDefs {
 				});
 			} {
 				"WFSSynthDefs: no wfs_synthdefs.zip available, generating if needed".postln;
-				this.generateAllOnce( action, dir, alwaysGeneratePreviewDefs );
+				this.generateAllOnce( action, dir, alwaysGeneratePreviewDefs, includeArrayPanners );
 			};
 		} {
-			this.generateAllOnce( action, dir, alwaysGeneratePreviewDefs );
+			this.generateAllOnce( action, dir, alwaysGeneratePreviewDefs, includeArrayPanners );
 		};
 	}
 
-	*generateAllOnce { |action, dir, alwaysGeneratePreviewDefs = true|
+	*generateAllOnce { |action, dir, alwaysGeneratePreviewDefs = true, includeArrayPanners = true|
 		WFSPrePanSynthDefs.generateAllOnce( dir: dir );
 		if( alwaysGeneratePreviewDefs ) {
 			WFSPreviewSynthDefs.generateAll( dir: dir );
 		} {
 			WFSPreviewSynthDefs.generateAllOnce( dir: dir );
 		};
-		WFSArrayPanSynthDefs.generateAllOnce( { |synthDefs|
-			WFSArrayPanDirSynthDefs.generateAllOnce( action, dir );
-		}, dir );
+		if( includeArrayPanners == true ) {
+			WFSArrayPanSynthDefs.generateAllOnce( { |synthDefs|
+				WFSArrayPanDirSynthDefs.generateAllOnce( action, dir );
+			}, dir );
+		};
 	}
 
 	*generateAll { |action, dir|

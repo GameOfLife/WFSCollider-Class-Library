@@ -3,7 +3,7 @@ WFSLib {
 	classvar <previewMode, <previewModeCtrl;
 
 
-	*startup { |wfsOptions|
+	*startup { |wfsOptions, buildArrayPanners = true|
 		var servers, wfsServers, ms, o;
 		var bootFunc, speakerConfBackup;
 
@@ -163,7 +163,7 @@ WFSLib {
 			StartUp.defer({
 				{ ULib.servers.do(_.bootSync); }.fork( AppClock );
 			})
-		}, Platform.userAppSupportDir +/+ "wfs_synthdefs" );
+		}, Platform.userAppSupportDir +/+ "wfs_synthdefs", true, buildArrayPanners );
 
 		UEvent.nrtStartBundle = [ [ "/d_loadDir", Platform.userAppSupportDir +/+ "wfs_synthdefs" ] ];
 
