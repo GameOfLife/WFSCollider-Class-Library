@@ -96,7 +96,7 @@ WFSSpeakerConfEditor {
 
 		subFreq = SmoothNumberBox( composite, 50@14 )
 			.clipLo_(20)
-			.clipHi_(120)
+			.clipHi_(200)
 			.step_(1)
 			.scroll_step_(1)
 			.value_( speakerConf.subFreq )
