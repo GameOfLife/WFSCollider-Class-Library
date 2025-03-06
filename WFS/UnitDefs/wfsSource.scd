@@ -52,6 +52,7 @@ staticPoint = HiddenFreeUdef( \staticPoint, [
 	[ \dynamic:		false,	BoolSpec(false), true, \nonsynth ], // force dynamic (hidden)
 	[ \renderMode:	\previewMode, renderModeSpec, notPreviewMode, \nonsynth ],
 	[ \busOffset:		0,	HardwareBusSpec(), notPreviewMode, \nonsynth ], // bus offset
+	[ \elevation: 0, AngleSpec( -0.5pi, 0.5pi), WFSLib.previewMode !== 'ambix' ],
 ] )
 .addUEnv
 .addUGlobalEQ
@@ -64,7 +65,7 @@ staticPoint = HiddenFreeUdef( \staticPoint, [
 		var args = keyValuePairs;
 		if( sn.class == Group ) { // is an array group or preview synth
 			args = (args ? []).clump(2)
-			.select({ |arr| arr[0] === \u_i_ar_0_bus }).flatten(1);
+			.select({ |arr| [ \elevation, \u_i_ar_0_bus ].includes( arr[0]  ) }).flatten(1);
 		};
 		if( args.size > 0 ) {
 			unit.subDef.prSetSynth( sn, *args );
@@ -208,7 +209,7 @@ staticPoint.env[ \previewCreateSynthFunc ] = { |unit, target, startPos = 0|
 	previewSynth = Synth(
 		WFSPreviewSynthDefs.getDefName( getPreviewMode.( unit ), \s, \n ),
 		U.formatArgs( [ \point, unit.point, \u_i_ar_0_bus, unit.u_i_ar_0_bus ], server, startPos ) ++
-		[ \out, WFSSpeakerConf.getOutputBusStartOffset( target ) + unit.busOffset ],
+		[ \out, WFSSpeakerConf.getOutputBusStartOffset( target ) + unit.busOffset, \elevation, unit.elevation ],
 		arrayGroup, \addToTail
 	);
 
@@ -230,6 +231,7 @@ dynamicPoint = HiddenFreeUdef( \dynamicPoint, [
 	[ \dynamic:		false,	BoolSpec(false), true, \nonsynth ], // force dynamic (hidden)
 	[ \renderMode:			\previewMode, renderModeSpec, notPreviewMode, \nonsynth ],
 	[ \busOffset:		0,	HardwareBusSpec(), notPreviewMode, \nonsynth ], // bus offset
+	[ \elevation: 0, AngleSpec( -0.5pi, 0.5pi), WFSLib.previewMode !== 'ambix' ],
 ], true )
 .addUGlobalEQ
 .addUIO( UIn, \ar, 0, 1 )
@@ -239,7 +241,7 @@ dynamicPoint = HiddenFreeUdef( \dynamicPoint, [
 		var args = keyValuePairs;
 		if( sn.class == Group ) { // is an array group or preview synth
 			args = (args ? []).clump(2)
-			.select({ |arr| [ \point, \u_i_ar_0_bus ].includes( arr[0] ) }).flatten(1);
+			.select({ |arr| [ \point, \elevation, \u_i_ar_0_bus ].includes( arr[0] ) }).flatten(1);
 		};
 		if( args.size > 0 ) {
 			unit.subDef.prSetSynth( sn, *args );
@@ -383,7 +385,7 @@ dynamicPoint.env[ \previewCreateSynthFunc ] = { |unit, target, startPos = 0|
 	previewSynth = Synth(
 		WFSPreviewSynthDefs.getDefName( getPreviewMode.( unit ), \d, \n ),
 		U.formatArgs( [ \point, unit.point, \u_i_ar_0_bus, unit.u_i_ar_0_bus ], server, startPos ) ++
-		[ \out, WFSSpeakerConf.getOutputBusStartOffset( target ) + unit.busOffset ],
+		[ \out, WFSSpeakerConf.getOutputBusStartOffset( target ) + unit.busOffset, \elevation, unit.elevation ],
 		arrayGroup, \addToTail
 	);
 

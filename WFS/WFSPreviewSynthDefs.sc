@@ -293,8 +293,9 @@ WFSPreviewSynthDefs : AbstractWFSSynthDefs {
 				};
 			},
 			\ambix: { |in, point| // 1st order b-format output WYZX (4-channels) with SN3D normalization
-				var encoder;
-				if( 'Atk'.asClass.notNil ) {
+				var encoder, az;
+				/*
+					if( 'Atk'.asClass.notNil ) {
 					encoder = FoaEncoderMatrix.newDirection( 0, 0 );
 					in = FoaEncode.ar( in, encoder );
 					in = FoaTransform.ar( in, 'directO',
@@ -310,7 +311,20 @@ WFSPreviewSynthDefs : AbstractWFSSynthDefs {
 				} {
 					(PanB2.ar( in, (point.angle - 0.5pi).neg / pi) ++ [DC.ar(0)])[[0,2,3,1]] *
 						[ 1, 0.5.sqrt, 0.5.sqrt, 0.5.sqrt ];
-				};
+				};*/
+					if( 'BFEncode2'.asClass.notNil ) {
+						if( point.theta.rate == 'control' ) {
+							az = 1.5pi + Unwrap.kr( point.theta, -pi, pi )
+						} {
+							az = 1.5pi + point.theta;
+						};
+
+						BFEncode1.ar( in, az, \elevation.kr( 0 ), 1, 2 )[[0,2,3,1]] *
+							[ 1, 0.5.sqrt, 0.5.sqrt, 0.5.sqrt ];
+					} {
+						(PanB2.ar( in, (point.angle - 0.5pi).neg / pi) ++ [DC.ar(0)])[[0,2,3,1]] *
+						[ 1, 0.5.sqrt, 0.5.sqrt, 0.5.sqrt ];
+					}
 			},
 			\mono: { |in, point|
 				in;
