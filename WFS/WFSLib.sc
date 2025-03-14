@@ -78,8 +78,10 @@ WFSLib {
 
 		UEvent.renderNumChannels = {
 			var num;
+			UGen.buildSynthDef = SynthDef("temp", {});
 			num = WFSPreviewSynthDefs.pannerFuncs[ \n ][ WFSLib.previewMode ].value(0,0@0) !?
 				{ |x| x.asArray.size };
+			UGen.buildSynthDef = nil;
 			num = num ?? {
 				WFSSpeakerConf.default.getArraysFor(
 					ULib.servers[0].asTarget.server
