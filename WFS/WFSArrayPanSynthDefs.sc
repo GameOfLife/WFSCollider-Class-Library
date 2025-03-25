@@ -45,7 +45,7 @@ WFSSynthDefs {
 	*generateAllOrCopyFromResources { |action, dir, alwaysGeneratePreviewDefs = true, includeArrayPanners = true|
 		var zippath, udir;
 		if( thisProcess.platform.name == \osx && {
-			WFSPrePanSynthDefs.checkIfExists( dir: dir ).not;
+			WFSArrayPanSynthDefs.checkIfExists( dir: dir ).not;
 		}) {
 			zippath = this.filenameSymbol.asString.dirname +/+ "wfs_synthdefs.zip";
 			if( File.exists( zippath ) ) {
@@ -76,6 +76,8 @@ WFSSynthDefs {
 			WFSArrayPanSynthDefs.generateAllOnce( { |synthDefs|
 				WFSArrayPanDirSynthDefs.generateAllOnce( action, dir );
 			}, dir );
+		} {
+			action.value
 		};
 	}
 

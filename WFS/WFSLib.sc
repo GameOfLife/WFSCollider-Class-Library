@@ -3,9 +3,10 @@ WFSLib {
 	classvar <previewMode, <previewModeCtrl;
 
 
-	*startup { |wfsOptions, buildArrayPanners = true|
+	*startup { |wfsOptions|
 		var servers, wfsServers, ms, o;
 		var bootFunc, speakerConfBackup;
+		var buildArrayPanners = false;
 
 		if( Platform.ideName == "scapp" ) { ^this.startupOld( wfsOptions ) };
 
@@ -160,6 +161,8 @@ WFSLib {
 		wfsOptions.startupAction.value( this );
 
 		File.mkdir( Platform.userAppSupportDir +/+ "wfs_synthdefs" );
+
+		buildArrayPanners = (WFSLib.previewMode == \off);
 
 		WFSSynthDefs.generateAllOrCopyFromResources({
 			StartUp.defer({
