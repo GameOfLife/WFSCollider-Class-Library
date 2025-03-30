@@ -43,6 +43,7 @@ calcDelayFocused = { |server|
 
 staticPoint = HiddenFreeUdef( \staticPoint, [
 	[ \point: 		0@0,  	WFSPointSpec( 200, 0.1 ) ],
+	[ \elevation: 0, AngleSpec( -0.5pi, 0.5pi), [ \ambix, \ambix_3o, \ambix_5o, \ambix_7o ].includes( WFSLib.previewMode ).not ],
 	[ \type, 			\point, 	ListSpec( [ \point, \plane ] ), false, \nonsynth ],
 	[ \latencyComp:  	0,		[0,1].asSpec, false, \init ],
 	[ \distanceFilter:	0,		[0,2,\lin,0,1].asSpec ],
@@ -52,7 +53,6 @@ staticPoint = HiddenFreeUdef( \staticPoint, [
 	[ \dynamic:		false,	BoolSpec(false), true, \nonsynth ], // force dynamic (hidden)
 	[ \renderMode:	\previewMode, renderModeSpec, notPreviewMode, \nonsynth ],
 	[ \busOffset:		0,	HardwareBusSpec(), notPreviewMode, \nonsynth ], // bus offset
-	[ \elevation: 0, AngleSpec( -0.5pi, 0.5pi), WFSLib.previewMode !== 'ambix' ],
 ] )
 .addUEnv
 .addUGlobalEQ
@@ -221,6 +221,7 @@ staticPoint.env[ \previewCreateSynthFunc ] = { |unit, target, startPos = 0|
 
 dynamicPoint = HiddenFreeUdef( \dynamicPoint, [
 	[ \point: 		0@0,  	WFSPointSpec( 200, 0.1 ) ],
+	[ \elevation: 0, AngleSpec( -0.5pi, 0.5pi), [ \ambix, \ambix_3o, \ambix_5o, \ambix_7o ].includes( WFSLib.previewMode ).not ],
 	[ \type, 			\point, 	ListSpec( [ \point, \plane ] ), false, \nonsynth ],
 	[ \quality:		0,		ListSpec([ \good, \better ], 0 ), false, \nonsynth ], // \l or \c
 	[ \distanceFilter:	0,		[0,2,\lin,0,1].asSpec ],
@@ -231,7 +232,6 @@ dynamicPoint = HiddenFreeUdef( \dynamicPoint, [
 	[ \dynamic:		false,	BoolSpec(false), true, \nonsynth ], // force dynamic (hidden)
 	[ \renderMode:			\previewMode, renderModeSpec, notPreviewMode, \nonsynth ],
 	[ \busOffset:		0,	HardwareBusSpec(), notPreviewMode, \nonsynth ], // bus offset
-	[ \elevation: 0, AngleSpec( -0.5pi, 0.5pi), WFSLib.previewMode !== 'ambix' ],
 ], true )
 .addUGlobalEQ
 .addUIO( UIn, \ar, 0, 1 )

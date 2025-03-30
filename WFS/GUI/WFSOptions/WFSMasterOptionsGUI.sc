@@ -136,6 +136,10 @@ WFSOptionsObjectGUI : AbstractWFSOptionsGUI {
 			\sampleRate, ListSpec( [ 44100, 48000, 88200, 96000 ] ),
 			\wfsSoundFilesLocation, StringSpec().default_( "/WFSSoundFiles" );
 		);
+		if( 'Atk'.asClass.notNil ) {
+			specs[ \previewMode ].list.pop;
+			specs[ \previewMode ].list = specs[ \previewMode ].list.addAll( [ \ambix_3o, \ambix_5o, \ambix_7o, \mono ] );
+		};
 	}
 
 }
