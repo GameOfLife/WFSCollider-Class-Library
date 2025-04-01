@@ -196,32 +196,11 @@ staticPoint.env[ \wfsShouldPlayOnFunc ] = { |unit, target|
 };
 // preview panner; exact same parameters, different panner synthdefs
 staticPoint.env[ \previewCreateSynthFunc ] = { |unit, target, startPos = 0|
-	var server, n = 0;
-	var prePanSynth;
-	var previewSynth;
-	var arrayGroup;
-
-	server = target.asTarget.server;
-
-	// make the pre-panner synth (has to know the nodeID's of the panner synths)
-	prePanSynth = Synth( "wfsp_n_0",
-		unit.getArgsFor( server, startPos ),
+	Synth( WFSPreviewSynthDefs.getDefName( getPreviewMode.( unit ), \s, \n ),
+		unit.getArgsFor(  target.asTarget.server, startPos ) ++
+		[ \out, WFSSpeakerConf.getOutputBusStartOffset( target ) + unit.busOffset ],
 		target, \addToTail
 	);
-
-	arrayGroup = Group(target, addAction: \addToTail);
-
-	previewSynth = Synth(
-		WFSPreviewSynthDefs.getDefName( getPreviewMode.( unit ), \s, \n ),
-		U.formatArgs( [ \point, unit.point, \u_i_ar_0_bus, unit.u_i_ar_0_bus ], server, startPos ) ++
-		[ \out, WFSSpeakerConf.getOutputBusStartOffset( target ) + unit.busOffset, \elevation, unit.elevation ],
-		arrayGroup, \addToTail
-	);
-
-	arrayGroup.freeAction_({ |synth| unit.removeSynth( synth ); });
-	unit.synths = unit.synths.add( arrayGroup );
-
-	prePanSynth;
 };
 
 dynamicPoint = HiddenFreeUdef( \dynamicPoint, [
@@ -371,33 +350,11 @@ dynamicPoint.env[ \wfsShouldPlayOnFunc ] = { |unit, target|
 
 // preview panner; exact same parameters, different panner synthdefs
 dynamicPoint.env[ \previewCreateSynthFunc ] = { |unit, target, startPos = 0|
-	var server, n = 0;
-	var prePanSynth;
-	var previewSynth;
-	var arrayGroup;
-
-	server = target.asTarget.server;
-
-	// make the pre-panner synth (has to know the nodeID's of the panner synths)
-	prePanSynth = Synth( "wfsp_d_0",
-		unit.getArgsFor( server, startPos ) ++
-		[ \sendPointRate, WFSPositionTracker.getRate ],
+	Synth( WFSPreviewSynthDefs.getDefName( getPreviewMode.( unit ), \d, \n ),
+		unit.getArgsFor( target.asTarget.server, startPos ) ++
+		[ \out, WFSSpeakerConf.getOutputBusStartOffset( target ) + unit.busOffset, \sendPointRate, WFSPositionTracker.getRate ],
 		target, \addToTail
 	);
-
-	arrayGroup = Group(target, addAction: \addToTail);
-
-	previewSynth = Synth(
-		WFSPreviewSynthDefs.getDefName( getPreviewMode.( unit ), \d, \n ),
-		U.formatArgs( [ \point, unit.point, \u_i_ar_0_bus, unit.u_i_ar_0_bus ], server, startPos ) ++
-		[ \out, WFSSpeakerConf.getOutputBusStartOffset( target ) + unit.busOffset, \elevation, unit.elevation ],
-		arrayGroup, \addToTail
-	);
-
-	arrayGroup.freeAction_({ |synth| unit.removeSynth( synth ); });
-	unit.addSynth( arrayGroup );
-
-	prePanSynth;
 };
 
 staticPlane = HiddenFreeUdef( \staticPlane, [
@@ -508,32 +465,11 @@ staticPlane.env[ \wfsShouldPlayOnFunc ] = { |unit, target|
 // the actual panning in this preview is no different to point sources
 // since there is no difference in a stereo situation in this case
 staticPlane.env[ \previewCreateSynthFunc ] = { |unit, target, startPos = 0|
-	var server, n = 0;
-	var prePanSynth;
-	var previewSynth;
-	var arrayGroup;
-
-	server = target.asTarget.server;
-
-	// make the pre-panner synth (has to know the nodeID's of the panner synths)
-	prePanSynth = Synth( "wfsp_n_0",
-		unit.getArgsFor( server, startPos ),
+	Synth( WFSPreviewSynthDefs.getDefName( getPreviewMode.( unit ), \s, \p ),
+		unit.getArgsFor( target.asTarget.server, startPos ) ++
+		[ \out, WFSSpeakerConf.getOutputBusStartOffset( target ) + unit.busOffset ],
 		target, \addToTail
 	);
-
-	arrayGroup = Group(target, addAction: \addToTail);
-
-	previewSynth = Synth(
-		WFSPreviewSynthDefs.getDefName( getPreviewMode.( unit ), \s, \p ),
-		U.formatArgs( [ \point, unit.point, \u_i_ar_0_bus, unit.u_i_ar_0_bus ], server, startPos ) ++
-		[ \out, WFSSpeakerConf.getOutputBusStartOffset( target ) + unit.busOffset ],
-		arrayGroup, \addToTail
-	);
-
-	arrayGroup.freeAction_({ |synth| unit.removeSynth( synth ); });
-	unit.synths = unit.synths.add( arrayGroup );
-
-	prePanSynth;
 };
 
 dynamicPlane = HiddenFreeUdef( \dynamicPlane, [
@@ -639,33 +575,11 @@ dynamicPlane.env[ \wfsShouldPlayOnFunc ] = { |unit, target|
 // the actual panning in this preview is no different to point sources
 // since there is no difference in a stereo situation in this case
 dynamicPlane.env[ \previewCreateSynthFunc ] = { |unit, target, startPos = 0|
-	var server, n = 0;
-	var prePanSynth;
-	var previewSynth;
-	var arrayGroup;
-
-	server = target.asTarget.server;
-
-	// make the pre-panner synth (has to know the nodeID's of the panner synths)
-	prePanSynth = Synth( "wfsp_p_0",
-		unit.getArgsFor( server, startPos ) ++
-		[ \sendPointRate, WFSPositionTracker.getRate ],
+	Synth( WFSPreviewSynthDefs.getDefName( getPreviewMode.( unit ), \d, \p ),
+		unit.getArgsFor(  target.asTarget.server, startPos ) ++
+		[ \out, WFSSpeakerConf.getOutputBusStartOffset( target ) + unit.busOffset, \sendPointRate, WFSPositionTracker.getRate ],
 		target, \addToTail
 	);
-
-	arrayGroup = Group(target, addAction: \addToTail);
-
-	previewSynth = Synth(
-		WFSPreviewSynthDefs.getDefName( getPreviewMode.( unit ), \d, \p ),
-		U.formatArgs( [ \point, unit.point, \u_i_ar_0_bus, unit.u_i_ar_0_bus ], server, startPos ) ++
-		[ \out, WFSSpeakerConf.getOutputBusStartOffset( target ) + unit.busOffset ],
-		arrayGroup, \addToTail
-	);
-
-	arrayGroup.freeAction_({ |synth| unit.removeSynth( synth ); });
-	unit.addSynth( arrayGroup );
-
-	prePanSynth;
 };
 
 [staticPoint, dynamicPoint, staticPlane, dynamicPlane ].do({ |def|

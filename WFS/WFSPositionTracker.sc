@@ -86,7 +86,7 @@ WFSPositionTracker {
 		if( pannerUnits.size > 0 ) {
 			repliers = pannerUnits.collect({ |unit, i|
 				var synth, unitIndex;
-				synth = unit.synths[1]; // prepan synth is always second synth
+				synth = unit.synths.last; // prepan synth is always last synth
 				unitIndex = uchain.units.indexOf( unit );
 				if( synth.notNil ) {
 					ReceiveReply( synth, { |point, time, resp, msg|

@@ -459,48 +459,82 @@ WFSPreviewSynthDefs : AbstractWFSSynthDefs {
 		};
 	}
 
-		*getDefName { |which = \headphone, mode = \s, type = \n|
-			^[ this.prefix, which, mode.asString[0].toLower, type ].join("_");
-		}
+	*getDefName { |which = \headphone, mode = \s, type = \n|
+		^[ this.prefix, which, mode.asString[0].toLower, type ].join("_");
+	}
 
-		*generateDef { |which = \headphone, mode = \s, type = \n|
+	*generateDef { |which = \headphone, mode = \s, type = \n|
 
-			mode = mode.asString[0].toLower.asSymbol;
+		mode = mode.asString[0].toLower.asSymbol;
 
-			^SynthDef( this.getDefName( which, mode, type ), {
+		^SynthDef( this.getDefName( which, mode, type ), {
 
-				var point = 0@0, amp = 1;
-				var input;
+			var point = 0@0, amp = 1;
+			var dbRollOff = -6, limit = 5, latencyComp = 0, pointLag = 0;
+			var input, output, rho, env, panner;
+			var sendPointRate = 0;
 
-				amp = \amp.kr( amp );
+			amp = \amp.kr( amp );
 
-				// depending on mode
-				if( mode === \d ) {
-					point = \point.kr([0,0]).asPoint;
-				} {
-					point = \point.ir([0,0]).asPoint;
-				};
+			// depending on mode
+			if( mode === \d ) {
+				point = \point.kr([0,0]);
+				SendReply.kr( Impulse.kr( \sendPointRate.kr(sendPointRate) ), '/point', point );
+			} {
+				point = \point.ir([0,0]);
+				SendReply.kr( Impulse.kr( 0 ), '/point', point );
+			};
 
-				input = UIn.ar(0, 1) * amp;
+			point = point.asPoint;
+			rho = point.rho;
 
-				Out.ar( \out.kr(0), pannerFuncs[ type ][ which ].value( input, point ) );
-			});
+			input = UIn.ar(0, 1) * amp;
 
-		}
+			if( type == \p ) { dbRollOff = 0 };
 
-		*generateAll { |action, dir|
-			dir = dir ? defaultDir ? SynthDef.synthDefDir;
-			synthDefs = modes.collect({ |mode|
-				types.collect({ |type|
-					pannerFuncs[ type ].keys.as(Array).collect({ |which|
-						this.generateDef( which, mode, type ).justWriteDefFile( dir );
-					})
-				})
-			}).flatten(2);
-			action.value(this);
-			^synthDefs;
+			dbRollOff = \dbRollOff.kr( dbRollOff );
+			limit = \maxAmpRadius.kr( limit );
+			latencyComp = \latencyComp.ir( latencyComp );
 
-		}
+			// the pre-panner and delayed/attenuated output
+			panner = WFSPrePan( dbRollOff, limit, latencyComp );
 
+			// filter and clip input for speaker protection
+			//input = LeakDC.ar( input, 0.997 );
+			input = UGlobalEQ.ar( input );
+			input = (input / 4).softclip * 4; // 6dB headroom, then softclip to 12dB
+			input = OnePole.ar( input,
+				( -2pi * ( ( 100000 / ( rho * \distanceFilter.kr(0).cubed ) )
+					.clip(0,10000000) / SampleRate.ir )
+				).exp
+			);
+			env = UEnv.kr( extraSilence:
+				( ( rho / WFSBasicPan.speedOfSound ) * (1 - latencyComp) ) + 0.12
+			);
+			input = input * env;
+			input = panner.ar( input, point );
+			output = pannerFuncs[ type ][ which ].value( input, point );
+
+			// end from prepan
+
+			Out.ar( \out.kr(0), output );
+		});
 
 	}
+
+	*generateAll { |action, dir|
+		dir = dir ? defaultDir ? SynthDef.synthDefDir;
+		synthDefs = modes.collect({ |mode|
+			types.collect({ |type|
+				pannerFuncs[ type ].keys.as(Array).collect({ |which|
+					this.generateDef( which, mode, type ).justWriteDefFile( dir );
+				})
+			})
+		}).flatten(2);
+		action.value(this);
+		^synthDefs;
+
+	}
+
+
+}
