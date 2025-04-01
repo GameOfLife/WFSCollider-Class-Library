@@ -48,7 +48,7 @@ hasElevation = {
 
 staticPoint = HiddenFreeUdef( \staticPoint, [
 	[ \point: 		0@0,  	WFSPointSpec( 200, 0.1 ) ],
-	[ \elevation: 0, AngleSpec( -0.5pi, 0.5pi), hasElevation.value.not ],
+	[ \elevation: 0, AngleSpec( -0.5pi, 0.5pi), { hasElevation.value.not } ],
 	[ \type, 			\point, 	ListSpec( [ \point, \plane ] ), false, \nonsynth ],
 	[ \latencyComp:  	0,		[0,1].asSpec, false, \init ],
 	[ \distanceFilter:	0,		[0,2,\lin,0,1].asSpec ],
@@ -205,7 +205,7 @@ staticPoint.env[ \previewCreateSynthFunc ] = { |unit, target, startPos = 0|
 
 dynamicPoint = HiddenFreeUdef( \dynamicPoint, [
 	[ \point: 		0@0,  	WFSPointSpec( 200, 0.1 ) ],
-	[ \elevation: 0, AngleSpec( -0.5pi, 0.5pi), hasElevation.value.not ],
+	[ \elevation: 0, AngleSpec( -0.5pi, 0.5pi), { hasElevation.value.not } ],
 	[ \type, 			\point, 	ListSpec( [ \point, \plane ] ), false, \nonsynth ],
 	[ \quality:		0,		ListSpec([ \good, \better ], 0 ), false, \nonsynth ], // \l or \c
 	[ \distanceFilter:	0,		[0,2,\lin,0,1].asSpec ],
