@@ -219,7 +219,19 @@ WFSLib {
 		};
 	}
 
-	*previewMode_ { |pm| previewMode = pm; this.changed( \previewMode, previewMode ); }
+	*previewMode_ { |pm| previewMode = pm;
+		this.changed( \previewMode, previewMode );
+		this.checkPreviewMode;
+	}
+
+	*checkPreviewMode {
+		var ncha = UEvent().renderNumChannels;
+		if( previewMode != \off && {
+			ncha > WFSOptions.current.serverOptions.first.numOutputBusChannels
+		}) {
+			"previewMode '%' needs at least % output channels to function properly.\n!! Please set numOutputBusChannels to % or higher !!".format(previewMode, ncha, ncha ).warn;
+		};
+	}
 
 	*makePreviewModeCtrl {
 		previewModeCtrl.remove;
