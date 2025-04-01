@@ -138,7 +138,9 @@ WFSOptionsObjectGUI : AbstractWFSOptionsGUI {
 		);
 		if( 'Atk'.asClass.notNil ) {
 			specs[ \previewMode ].list.pop;
-			specs[ \previewMode ].list = specs[ \previewMode ].list.addAll( [ \ambix_3o, \ambix_5o, \ambix_7o, \mono ] );
+			specs[ \previewMode ].list = specs[ \previewMode ].list.addAll( [
+				\ambix_2o, \ambix_3o, \ambix_4o, \ambix_5o, \ambix_6o, \ambix_7o, \mono
+			] );
 		};
 	}
 

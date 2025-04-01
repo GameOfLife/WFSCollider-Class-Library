@@ -441,7 +441,7 @@ WFSPreviewSynthDefs : AbstractWFSSynthDefs {
 			)
 		);
 		if( 'Atk'.asClass.notNil ) {
-			[3,5,7].collect({ |order|
+			[2,3,4,5,6,7].collect({ |order|
 				var func;
 				func = { |in, point|
 					var hoa;
