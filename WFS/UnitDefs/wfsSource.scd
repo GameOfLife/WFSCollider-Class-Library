@@ -22,6 +22,7 @@ part of the WFSCollider Class Library default Udefs set
 
 var staticPoint, dynamicPoint, staticPlane, dynamicPlane, multiDef;
 var notPreviewMode, getPreviewMode, renderModeSpec, calcDelayNormal, calcDelayFocused;
+var hasElevation;
 
 notPreviewMode = { WFSLib.previewMode === \off };
 
@@ -41,9 +42,13 @@ calcDelayFocused = { |server|
 	((WFSSpeakerConf.default.maxDistance * 2) / WFSBasicPan.speedOfSound) // + (server.options.blockSize/server.sampleRate)
 };
 
+hasElevation = {
+	[ \ambix, \ambix_2o, \ambix_3o, \ambix_4o, \ambix_5o, \ambix_6o, \ambix_7o ].includes( WFSLib.previewMode );
+};
+
 staticPoint = HiddenFreeUdef( \staticPoint, [
 	[ \point: 		0@0,  	WFSPointSpec( 200, 0.1 ) ],
-	[ \elevation: 0, AngleSpec( -0.5pi, 0.5pi), [ \ambix, \ambix_3o, \ambix_5o, \ambix_7o ].includes( WFSLib.previewMode ).not ],
+	[ \elevation: 0, AngleSpec( -0.5pi, 0.5pi), hasElevation.value.not ],
 	[ \type, 			\point, 	ListSpec( [ \point, \plane ] ), false, \nonsynth ],
 	[ \latencyComp:  	0,		[0,1].asSpec, false, \init ],
 	[ \distanceFilter:	0,		[0,2,\lin,0,1].asSpec ],
@@ -221,7 +226,7 @@ staticPoint.env[ \previewCreateSynthFunc ] = { |unit, target, startPos = 0|
 
 dynamicPoint = HiddenFreeUdef( \dynamicPoint, [
 	[ \point: 		0@0,  	WFSPointSpec( 200, 0.1 ) ],
-	[ \elevation: 0, AngleSpec( -0.5pi, 0.5pi), [ \ambix, \ambix_3o, \ambix_5o, \ambix_7o ].includes( WFSLib.previewMode ).not ],
+	[ \elevation: 0, AngleSpec( -0.5pi, 0.5pi), hasElevation.value.not ],
 	[ \type, 			\point, 	ListSpec( [ \point, \plane ] ), false, \nonsynth ],
 	[ \quality:		0,		ListSpec([ \good, \better ], 0 ), false, \nonsynth ], // \l or \c
 	[ \distanceFilter:	0,		[0,2,\lin,0,1].asSpec ],
