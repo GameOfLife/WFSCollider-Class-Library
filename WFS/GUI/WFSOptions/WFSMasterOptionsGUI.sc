@@ -136,7 +136,7 @@ WFSOptionsObjectGUI : AbstractWFSOptionsGUI {
 			\sampleRate, ListSpec( [ 44100, 48000, 88200, 96000 ] ),
 			\wfsSoundFilesLocation, StringSpec().default_( "/WFSSoundFiles" );
 		);
-		if( 'Atk'.asClass.notNil ) {
+		WFSLib.ifATK {
 			specs[ \previewMode ].list.pop;
 			specs[ \previewMode ].list = specs[ \previewMode ].list.addAll( [
 				\ambix_2o, \ambix_3o, \ambix_4o, \ambix_5o, \ambix_6o, \ambix_7o, \mono

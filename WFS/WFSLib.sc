@@ -776,6 +776,16 @@ WFSLib {
 		^nil;
 	}
 
+	*ifATK { |trueFunc, falseFunc|
+		^if( 'Atk'.asClass.notNil && {
+			this.ifSC3Plugins(true, false)
+		}, trueFunc, falseFunc );
+	}
+
+	*ifSC3Plugins { |trueFunc, falseFunc|
+		^if( 'BFEncode1'.asClass.notNil, trueFunc, falseFunc )
+	}
+
 	*checkForUpdates { |updatesFoundAction, noUpdatesAction, noConnectionAction|
 		var updates;
 		updates = [ "Unit-Lib", "WFSCollider-Class-Library", "wslib" ].collect({ |name|

@@ -280,7 +280,7 @@ WFSPreviewSynthDefs : AbstractWFSSynthDefs {
 				},
 				\ambix: { |in, point| // 1st order b-format output WYZX (4-channels) with SN3D normalization
 					var hoa;
-					if( 'Atk'.asClass.notNil ) {
+					WFSLib.ifATK {
 						hoa = HoaEncodeDirection.ar( in * 0.5.sqrt,
 							point.angle - 0.5pi,
 							\elevation.kr( 0 ), 1.5, 1
@@ -420,7 +420,7 @@ WFSPreviewSynthDefs : AbstractWFSSynthDefs {
 				},
 				\ambix: { |in, point| // 1st order b-format output WYZX (4-channels) with SN3D normalization
 					var hoa;
-					if( 'Atk'.asClass.notNil ) {
+					WFSLib.ifATK {
 						hoa = HoaEncodeDirection.ar( in * 0.5.sqrt,
 							point.angle - 0.5pi,
 							\elevation.kr( 0 ), 1.5, 1
@@ -440,7 +440,7 @@ WFSPreviewSynthDefs : AbstractWFSSynthDefs {
 				}
 			)
 		);
-		if( 'Atk'.asClass.notNil ) {
+		WFSLib.ifATK {
 			[2,3,4,5,6,7].collect({ |order|
 				var func;
 				func = { |in, point|
