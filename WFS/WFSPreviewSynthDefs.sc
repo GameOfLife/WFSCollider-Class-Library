@@ -278,20 +278,18 @@ WFSPreviewSynthDefs : AbstractWFSSynthDefs {
 				\b_format: { |in, point| // 1st order b-format output (2D; 3 channels)
 					PanB2.ar( in, (point.angle - 0.5pi).neg / pi);
 				},
-				\ambix: { |in, point| // 1st order b-format output WYZX (4-channels) with SN3D normalization
+				\ambix: { |in, point, elevation| // 1st order b-format output WYZX (4-channels) with SN3D normalization
 					var hoa;
 					WFSLib.ifATK {
 						hoa = HoaEncodeDirection.ar( in * 0.5.sqrt,
-							point.angle - 0.5pi,
-							\elevation.kr( 0 ), 1.5, 1
+							point.angle - 0.5pi, elevation, 1.5, 1
 						);
 						HoaDecodeMatrix.ar( hoa,
 							HoaMatrixDecoder.newFormat( \ambix, 1 )
 						);
 					} {
-						PanB.ar( in,
-							(point.angle - 0.5pi).neg / pi,
-							\elevation.kr( 0 ) / 0.5pi
+						PanB.ar( in * 0.5.sqrt,
+							(point.angle - 0.5pi).neg / pi, elevation / 0.5pi
 						)[ [ 0, 2, 3, 1 ] ] * [ 1, 0.5.sqrt, 0.5.sqrt, 0.5.sqrt ];
 					};
 				},
@@ -418,20 +416,20 @@ WFSPreviewSynthDefs : AbstractWFSSynthDefs {
 				\b_format: { |in, point| // 1st order b-format output (2D; 3 channels)
 					PanB2.ar( in, (point.angle - 0.5pi).neg / pi);
 				},
-				\ambix: { |in, point| // 1st order b-format output WYZX (4-channels) with SN3D normalization
+				\ambix: { |in, point, elevation| // 1st order b-format output WYZX (4-channels) with SN3D normalization
 					var hoa;
 					WFSLib.ifATK {
 						hoa = HoaEncodeDirection.ar( in * 0.5.sqrt,
 							point.angle - 0.5pi,
-							\elevation.kr( 0 ), 1.5, 1
+							elevation, 1.5, 1
 						);
 						HoaDecodeMatrix.ar( hoa,
 							HoaMatrixDecoder.newFormat( \ambix, 1 )
 						);
 					} {
-						PanB.ar( in,
+						PanB.ar( in * 0.5.sqrt,
 							(point.angle - 0.5pi).neg / pi,
-							\elevation.kr( 0 ) / 0.5pi
+							elevation / 0.5pi
 						)[ [ 0, 2, 3, 1 ] ] * [ 1, 0.5.sqrt, 0.5.sqrt, 0.5.sqrt ];
 					};
 				},
@@ -443,11 +441,10 @@ WFSPreviewSynthDefs : AbstractWFSSynthDefs {
 		WFSLib.ifATK {
 			[2,3,4,5,6,7].collect({ |order|
 				var func;
-				func = { |in, point|
+				func = { |in, point, elevation|
 					var hoa;
 					hoa = HoaEncodeDirection.ar( in * 0.5.sqrt,
-						point.angle - 0.5pi,
-						\elevation.kr( 0 ), 1.5, order
+						point.angle - 0.5pi, elevation, 1.5, order
 					);
 					HoaDecodeMatrix.ar( hoa,
 						HoaMatrixDecoder.newFormat( \ambix, order )
@@ -473,6 +470,7 @@ WFSPreviewSynthDefs : AbstractWFSSynthDefs {
 			var dbRollOff = -6, limit = 5, latencyComp = 0, pointLag = 0;
 			var input, output, rho, env, panner;
 			var sendPointRate = 0;
+			var elevation;
 
 			amp = \amp.kr( amp );
 
@@ -495,6 +493,7 @@ WFSPreviewSynthDefs : AbstractWFSSynthDefs {
 			dbRollOff = \dbRollOff.kr( dbRollOff );
 			limit = \maxAmpRadius.kr( limit );
 			latencyComp = \latencyComp.ir( latencyComp );
+			elevation = \elevation.kr( 0 );
 
 			// the pre-panner and delayed/attenuated output
 			panner = WFSPrePan( dbRollOff, limit, latencyComp );
@@ -513,7 +512,7 @@ WFSPreviewSynthDefs : AbstractWFSSynthDefs {
 			);
 			input = input * env;
 			input = panner.ar( input, point );
-			output = pannerFuncs[ type ][ which ].value( input, point );
+			output = pannerFuncs[ type ][ which ].value( input, point, elevation );
 
 			// end from prepan
 
