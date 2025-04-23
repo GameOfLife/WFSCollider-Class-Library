@@ -30,7 +30,7 @@ dynamicIndex = HiddenFreeUdef( \dynamic, [
 			index = \index.kr(index);
 
 			index = index - \startIndex.kr(0);
-			gain = gain * \i_gain.ir(0).dbamp;
+			gain = gain * \wfs_gain.ir(0).dbamp;
 			gain = gain * \gain.kr(-6).dbamp;
 			maxIndex = NumOutputBuses.ir; // only output to hardware outs
 
@@ -50,14 +50,14 @@ dynamicIndex = HiddenFreeUdef( \dynamic, [
 		startIndex = WFSSpeakerConf.default.firstSpeakerIndexOf( target.asTarget.server );
 		Synth( "wfsi_id", [
 				\startIndex, startIndex - WFSSpeakerConf.getOutputBusStartOffset( target ),
-				\i_gain, WFSSpeakerConf.default.gain
+				\wfs_gain, WFSSpeakerConf.default.gain
 			] ++ unit.getArgsFor( target, startPos ),
 			target, \addToTail );
 	})
 	.setControlInName( 0, 'index' );
 
 dynamicIndex.removeArgSpec( \startIndex ); // this is set by createSynthFunc
-dynamicIndex.removeArgSpec( \i_gain ); // this is set by createSynthFunc
+dynamicIndex.removeArgSpec( \wfs_gain ); // this is set by createSynthFunc
 
 
 staticIndex = HiddenFreeUdef( \static, [
@@ -73,7 +73,7 @@ staticIndex = HiddenFreeUdef( \static, [
 
 			index = \index.kr(index); // not really static
 			index = index - \startIndex.kr(0);
-			gain = gain * \i_gain.ir(0).dbamp;
+			gain = gain * \wfs_gain.ir(0).dbamp;
 			gain = gain * \gain.kr(-6).dbamp;
 			maxIndex = NumOutputBuses.ir; // only output to hardware outs
 
@@ -100,14 +100,14 @@ staticIndex = HiddenFreeUdef( \static, [
 	    startIndex = startIndex - WFSSpeakerConf.default.outputOffsetForSpeakerIndex( unit.get( \index ) );
 		Synth( "wfsi_is", [
 			\startIndex, startIndex - WFSSpeakerConf.getOutputBusStartOffset( target ),
-			\i_gain, WFSSpeakerConf.default.gain
+			\wfs_gain, WFSSpeakerConf.default.gain
 		] ++
 			unit.getArgsFor( target.asTarget.server, startPos ),
 			target, \addToTail );
 	});
 
 staticIndex.removeArgSpec( \startIndex ); // this is set by createSynthFunc
-staticIndex.removeArgSpec( \i_gain ); // this is set by createSynthFunc
+staticIndex.removeArgSpec( \wfs_gain ); // this is set by createSynthFunc
 
 
 multiDef = MultiUdef( \wfsIndex, [ staticIndex, dynamicIndex ], \wfs_panner, \mode, true )

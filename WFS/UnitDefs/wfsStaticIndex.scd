@@ -27,7 +27,7 @@ def = FreeUdef( \wfsStaticIndex, [
 
 			index = \index.kr(index); // not really static
 			index = index - \startIndex.kr(0);
-			gain = gain * \i_gain.ir(0).dbamp;
+			gain = gain * \wfs_gain.ir(0).dbamp;
 			gain = gain * \gain.kr(-6).dbamp;
 			maxIndex = NumOutputBuses.ir; // only output to hardware outs
 
@@ -54,14 +54,14 @@ def = FreeUdef( \wfsStaticIndex, [
 		startIndex = WFSSpeakerConf.default.firstSpeakerIndexOf( target.asTarget.server );
 		Synth( "wfsi_is", [
 			\startIndex, startIndex - WFSSpeakerConf.getOutputBusStartOffset( target ),
-			\i_gain, WFSSpeakerConf.default.gain
+			\wfs_gain, WFSSpeakerConf.default.gain
 		] ++
 			unit.getArgsFor( target.asTarget.server, startPos ),
 			target, \addToTail );
 	});
 
 def.removeArgSpec( \startIndex ); // this is set by createSynthFunc
-def.removeArgSpec( \i_gain ); // this is set by createSynthFunc
+def.removeArgSpec( \wfs_gain ); // this is set by createSynthFunc
 
 def.uchainInitFunc_({ |unit, chain|
 	unit.def = \wfsIndex.asUdef;

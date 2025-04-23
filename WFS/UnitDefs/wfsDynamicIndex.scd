@@ -27,7 +27,7 @@ def = FreeUdef( \wfsDynamicIndex, [
 			index = \index.kr(index);
 
 			index = index - \startIndex.kr(0);
-			gain = gain * \i_gain.ir(0).dbamp;
+			gain = gain * \wfs_gain.ir(0).dbamp;
 			gain = gain * \gain.kr(-6).dbamp;
 			maxIndex = NumOutputBuses.ir; // only output to hardware outs
 
@@ -47,14 +47,14 @@ def = FreeUdef( \wfsDynamicIndex, [
 		startIndex = WFSSpeakerConf.default.firstSpeakerIndexOf( target.asTarget.server );
 		Synth( "wfsi_id", [
 				\startIndex, startIndex - WFSSpeakerConf.getOutputBusStartOffset( target ),
-				\i_gain, WFSSpeakerConf.default.gain
+				\wfs_gain, WFSSpeakerConf.default.gain
 			] ++ unit.getArgsFor( target, startPos ),
 			target, \addToTail );
 	})
 	.setControlInName( 0, 'index' );
 
 def.removeArgSpec( \startIndex ); // this is set by createSynthFunc
-def.removeArgSpec( \i_gain ); // this is set by createSynthFunc
+def.removeArgSpec( \wfs_gain ); // this is set by createSynthFunc
 
 def.uchainInitFunc_({ |unit, chain|
 	if( unit.index.isUMap.not or: { unit.index.def.allowedModes.includes( \init ); } ) {
