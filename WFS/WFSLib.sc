@@ -204,7 +204,7 @@ WFSLib {
 		ULib.allServers.do({ |srv|
 			NotificationCenter.register(srv, \newAllocators, \ulib, {
 				// Substitute anything more meaningful here:
-				srv.audioBusAllocator.uReserve( srv.options.firstPrivateBus, 64 );
+				srv.audioBusAllocator.uReserve( srv.options.firstPrivateBus, 128 );
 				srv.controlBusAllocator.uReserve( 1500, 500 );
 				srv.controlBusAllocator.uReserve( 2000, 8 );
 				"WFSLib.startup: reserved audio and control buses".postln;
