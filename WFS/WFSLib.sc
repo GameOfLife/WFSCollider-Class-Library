@@ -164,11 +164,14 @@ WFSLib {
 
 		buildArrayPanners = (WFSLib.previewMode == \off);
 
-		WFSSynthDefs.generateAllOrCopyFromResources({
-			StartUp.defer({
-				{ ULib.servers.do(_.bootSync); }.fork( AppClock );
-			})
-		}, Platform.userAppSupportDir +/+ "wfs_synthdefs", true, buildArrayPanners );
+		"WFSLib: generating preview SynthDefs...".postln;
+		{
+			WFSSynthDefs.generateAllOrCopyFromResources({
+				StartUp.defer({
+					{ ULib.servers.do(_.bootSync); }.fork( AppClock );
+				})
+			}, Platform.userAppSupportDir +/+ "wfs_synthdefs", true, buildArrayPanners );
+		}.bench;
 
 		UEvent.nrtStartBundle = [ [ "/d_loadDir", Platform.userAppSupportDir +/+ "wfs_synthdefs" ] ];
 
