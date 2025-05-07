@@ -219,6 +219,10 @@ WFSLib {
 				UScore.open( doc.path, _.gui );
 				doc.close;
 			};
+			if( doc.path !? { |x| x.split( $. ).last == "usession" } ? false ) {
+				USession.read( doc.path, _.gui );
+				doc.close;
+			};
 		};
 	}
 
