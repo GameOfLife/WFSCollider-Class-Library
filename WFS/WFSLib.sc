@@ -85,14 +85,8 @@ WFSLib {
 			UGen.buildSynthDef = nil;
 			num = num ?? {
 				WFSSpeakerConf.default.getArraysFor(
-					ULib.servers[0].asTarget.server
+					ULib.servers !? { |x| x[0].asTarget.server } ? Server.default;
 				).collect(_.n).sum
-			};
-			if( num == 0 ) {
-				SCAlert( "Can't export audio file with current setting. Please try again with a different previewMode.",
-					[ "open prefs", "ok" ],
-					[ { WFSOptionsGUI.newOrCurrent }, { } ]
-				);
 			};
 			num;
 		};
