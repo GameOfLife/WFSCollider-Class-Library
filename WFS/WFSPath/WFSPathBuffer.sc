@@ -179,7 +179,7 @@ WFSPathBuffer : AbstractRichBuffer {
 
 	name { ^wfsPath.name }
 
-	makeBuffer { |server, action, bufnum|
+	makeBuffer { |server, startPos, action, bufnum|
 	    var buf;
 	    if( this.filePath.notNil && { wfsPath.dirty.not } ) {
 		    buf = this.readBuffer( server, action, bufnum );
