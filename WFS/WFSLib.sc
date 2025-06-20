@@ -75,6 +75,8 @@ WFSLib {
 			if( so.useForWFS ) { wfsServers = wfsServers.add( lb ); };
 		});
 
+		ULib.sampleRate = wfsOptions.sampleRate;
+
 		WFSLib.previewMode = wfsOptions.previewMode;
 
 		UEvent.renderNumChannels = {
