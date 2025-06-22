@@ -14,20 +14,19 @@ part of the WFSCollider-Class-Library default Udefs set
 
 (
 var defs, ambixMul, fumaOrder, fumaMul;
+var category = 'utility';
 
-ambixMul =  [
-	1.0, 1.7320508075688772, 2.2360679774997898, 2.6457513110645907,
-	3.0, 3.3166247903553998, 3.6055512754639891, 3.8729833462074170
-].collect({ |item,i| item!(i*2+1) }).flat;
+if( 'Atk'.asClass.notNil ) { category = 'ambisonics' };
+
+ambixMul = (1,3..15).collect({ |x| x.sqrt!x }).flat;
 
 fumaOrder = [ 0, 2, 3, 1, 8, 6, 4, 5, 7, 15, 13, 11, 9, 10, 12, 14 ];
 
 fumaMul = [
-	1.4142135623731, 1.7320508075689, 1.7320508075689, 1.7320508075689,
-	1.9364916731037, 1.9364916731037, 2.2360679774998, 1.9364916731037,
-	1.9364916731037, 2.0916500663352, 1.9720265943665, 2.2310934040909,
-	2.6457513110646, 2.2310934040909, 1.9720265943665, 2.0916500663352
-];
+	2, 3, 3, 3, 3.75, 3.75, 5, 3.75,
+	3.75, 4.375, 3 + (8/9), 4 + (44/45),
+	7, 4 + (44/45), 3 + (8/9), 4.375
+].sqrt;
 
 defs = [ 'ambix', 'acn-n3d', 'fuma' ].collect({ |mode|
 	var subdefs;
@@ -53,9 +52,9 @@ defs = [ 'ambix', 'acn-n3d', 'fuma' ].collect({ |mode|
 		extraPrefix: "decode_binaural_%".format(mode),
 		);
 	});
-	MultiUdef( mode, subdefs, 'utility', 'order', false, false );
+	MultiUdef( mode, subdefs, category, 'order', false, false );
 });
 
-MultiUdef( 'decode_binaural', defs, 'utility', 'mode', false, true )
+MultiUdef( 'decode_binaural', defs, category, 'mode', false, true )
 .dontStoreArgNames_( (1..7).collect({ |x| "hrtfs%".format( x ).asSymbol }) )
 )
