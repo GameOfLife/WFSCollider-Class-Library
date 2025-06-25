@@ -164,7 +164,10 @@ WFSLib {
 		{
 			WFSSynthDefs.generateAllOrCopyFromResources({
 				StartUp.defer({
-					{ ULib.servers.do(_.bootSync); }.fork( AppClock );
+					{
+						ULib.servers.do(_.bootSync);
+						"all servers booted".postln;
+					}.fork( AppClock );
 				})
 			}, Platform.userAppSupportDir +/+ "wfs_synthdefs", true, buildArrayPanners );
 		}.bench;
