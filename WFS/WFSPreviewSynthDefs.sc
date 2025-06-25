@@ -23,10 +23,10 @@ WFSPreviewSynthDefs : AbstractWFSSynthDefs {
 					// no HRTFs involved (yet..)
 					var distances, globalDist, delays, amplitudes;
 					globalDist = (0@0).dist( point );
-					distances = BinauralDistance( globalDist, point.angle.neg, 0.19/2 )[[0,1]];
-					delays = ((distances + 0.095 - globalDist) / WFSBasicPan.speedOfSound);
+					distances = BinauralDistance( globalDist, point.angle.neg, 0.18/2 )[[0,1]];
+					delays = ((distances + 0.09 - globalDist) / WFSBasicPan.speedOfSound);
 					in = DelayC.ar( in, 0.1, delays + ControlDur.ir);
-					amplitudes = Pan2.kr( 1, (point.angle - 0.5pi).neg.fold(-0.5pi,0.5pi) / pi );
+					amplitudes = Pan2.kr( 1, (point.angle - 0.5pi).neg.fold(-0.5pi,0.5pi) / 0.75pi );
 					amplitudes = amplitudes.max( globalDist.linlin(0.5,1,1,0).clip(0,1) );
 					in * amplitudes;
 				},
@@ -303,7 +303,7 @@ WFSPreviewSynthDefs : AbstractWFSSynthDefs {
 					// no HRTFs involved (yet..)
 					var globalDist, amplitudes;
 					globalDist = (0@0).dist( point );
-					amplitudes = Pan2.kr( 1, (point.angle - 0.5pi).neg.fold(-0.5pi,0.5pi) / 0.5pi );
+					amplitudes = Pan2.kr( 1, (point.angle - 0.5pi).neg.fold(-0.5pi,0.5pi) / 0.75pi );
 					amplitudes = amplitudes.max( globalDist.linlin(0.5,1,1,0).clip(0,1) );
 					in * amplitudes;
 				},
