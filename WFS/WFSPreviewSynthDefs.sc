@@ -30,6 +30,21 @@ WFSPreviewSynthDefs : AbstractWFSSynthDefs {
 					amplitudes = amplitudes.max( globalDist.linlin(0.5,1,1,0).clip(0,1) );
 					in * amplitudes;
 				},
+				\binaural: { |in, point, elevation|
+					var distances, globalDist, delays, angles, ambis;
+					globalDist = (0@0).dist( point );
+					distances = BinauralDistance( globalDist, point.angle.neg, 0.18/2 )[[0,1]];
+					delays = ((distances + 0.09 - globalDist) / WFSBasicPan.speedOfSound);
+					in = DelayC.ar( in, 0.1, delays + ControlDur.ir);
+					angles = [ -0.09@0, 0.09@0 ].collect({ |ear|
+						(point - ear).angle - 0.5pi
+					});
+					ambis = angles.collect({ |angle, i|
+						PanB.ar( in[i] * 0.25, angle.neg / pi, elevation / 0.5pi );
+					});
+					UPrivateOut.ar( 0, ambis.flatten(1) );
+					DC.ar(0.dup);
+				},
 				\stereo: { |in, point|
 					var distances, globalDist, delays, amplitudes;
 					distances = [ -0.3@0, 0.3@0 ].collect(_.dist( point ));
@@ -307,6 +322,21 @@ WFSPreviewSynthDefs : AbstractWFSSynthDefs {
 					amplitudes = amplitudes.max( globalDist.linlin(0.5,1,1,0).clip(0,1) );
 					in * amplitudes;
 				},
+				\binaural: { |in, point, elevation|
+					var distances, globalDist, delays, angles, ambis;
+					globalDist = 10;
+					point = point.asPolar.rho_(10).asPoint;
+					distances = BinauralDistance( globalDist, point.angle.neg, 0.19/2 )[[0,1]];
+					delays = ((distances + 0.09 - globalDist) / WFSBasicPan.speedOfSound);
+					in = DelayC.ar( in, 0.1, delays + ControlDur.ir);
+					angles = [ -0.09@0, 0.09@0 ].collect({ |ear|
+						(point - ear).angle - 0.5pi
+					});
+					ambis = angles.collect({ |angle, i|
+						PanB.ar( in[i] * 0.25, angle.neg / pi, elevation / 0.5pi );
+					});
+					UPrivateOut.ar( 0, ambis.flatten(1) );
+				},
 				\stereo: { |in, point|
 					var globalDist, amplitudes;
 					globalDist = (0@0).dist( point );
@@ -453,6 +483,35 @@ WFSPreviewSynthDefs : AbstractWFSSynthDefs {
 				pannerFuncs[ \n ].put( "ambix_%o".format( order ).asSymbol, func );
 				pannerFuncs[ \p ].put( "ambix_%o".format( order ).asSymbol, func );
 			});
+			[3,5,7].collect({ |order|
+				var func;
+				func = { |mode = \n|
+					{ |in, point, elevation|
+						var distances, globalDist, delays, angles, ambis;
+						if( mode == \n ) {
+							globalDist = (0@0).dist( point );
+						} {
+							globalDist = 10; // plane wave is always 10m away
+							point = point.asPolar.rho_(10).asPoint;
+						};
+						distances = BinauralDistance( globalDist, point.angle.neg, 0.18/2 )[[0,1]];
+						delays = ((distances + 0.09 - globalDist) / WFSBasicPan.speedOfSound);
+						in = DelayC.ar( in, 0.1, delays + ControlDur.ir);
+						angles = [ -0.09@0, 0.09@0 ].collect({ |ear|
+							(point - ear).angle - 0.5pi
+						});
+						ambis = angles.collect({ |angle, i|
+							HoaEncodeDirection.ar( in[i] * 0.25,
+								angle, elevation, 1.5, order
+							); // output in acn-n3d
+						});
+						UPrivateOut.ar( 0, ambis.flatten(1) );
+						DC.ar(0.dup);
+					};
+				};
+				pannerFuncs[ \n ].put( "binaural_%o".format( order ).asSymbol, func.value( \n ) );
+				pannerFuncs[ \p ].put( "binaural_%o".format( order ).asSymbol, func.value( \p ) );
+			})
 		};
 	}
 

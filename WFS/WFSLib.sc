@@ -1,6 +1,6 @@
 WFSLib {
 
-	classvar <previewMode, <previewModeCtrl;
+	classvar <previewMode, <previewModeCtrl, <>previewModeActive = false;
 
 
 	*startup { |wfsOptions|
@@ -182,6 +182,12 @@ WFSLib {
 
 		CmdPeriod.add( this );
 
+		UMaster.start;
+
+		this.startCurrentPreviewMode;
+
+		this.previewModeActive = true;
+
 		if( wfsOptions.playSoundWhenReady or: { wfsOptions.serverAction.notNil } ) {
 			Routine({
 				var allTypes, defs;
@@ -228,6 +234,26 @@ WFSLib {
 	*previewMode_ { |pm| previewMode = pm;
 		this.changed( \previewMode, previewMode );
 		this.checkPreviewMode;
+		if( this.previewModeActive ) { this.startCurrentPreviewMode };
+	}
+
+	*previewModeScorePath { |pm|
+		var path;
+		path = this.filenameSymbol.asString.dirname +/+ "WFSPreviewScores/%.uscore".format( pm );
+		if( File.exists( path ) ) { ^path; } { ^nil };
+	}
+
+	*startCurrentPreviewMode {
+		var path;
+		path = this.previewModeScorePath( this.previewMode );
+		if( path.notNil ) {
+			UScore.open( path, { |score|
+				"adding '%' to UMaster\n".format( path.basename );
+				UMaster.put( \wfsPreview, score );
+			});
+		} {
+			UMaster.removeAt( \wfsPreview );
+		};
 	}
 
 	*checkPreviewMode {

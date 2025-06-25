@@ -1,0 +1,3 @@
+UScore(
+	UChain([ 'privateIn', [ 'numChannels', 64 ] ], [ 'decode_binaural', [ 'order', 7, 'mode', 'acn-n3d' ] ], 'output').addAction_('addAfter').global_(true), 
+	UChain(0.0, 1.0, [ 'privateIn', [ 'bus', 64, 'numChannels', 64 ] ], [ 'decode_binaural', [ 'order', 7, 'mode', 'acn-n3d' ] ], [ 'output', [ 'bus', 1, 'u_i_ar_0_bus', 1 ] ]).addAction_('addAfter').global_(true)).name_("binaural_5o").displayBounds_(Rect(235.0, 228.0, 680.0, 315.0))

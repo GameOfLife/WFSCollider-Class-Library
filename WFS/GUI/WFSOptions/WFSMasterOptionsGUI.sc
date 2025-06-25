@@ -126,7 +126,7 @@ WFSOptionsObjectGUI : AbstractWFSOptionsGUI {
 
 	*initClass {
 		specs = OEM(
-			\previewMode, ListSpec( [ \off, \headphone, \stereo, '2.1', '3.1', '4.1', '5.1', '7.1', \lrs, \quad, \quad_crossed, \hexa, \hexa_pairs, \hepta, \octo, \octo_pairs, \duo_deci, \hexa_deci, \twentyfour, \thirtytwo, \sixtyfour, \b_format, \ambix, \mono ] ),
+			\previewMode, ListSpec( [ \off, \stereo, \headphone, \binaural, '2.1', '3.1', '4.1', '5.1', '7.1', \lrs, \quad, \quad_crossed, \hexa, \hexa_pairs, \hepta, \octo, \octo_pairs, \duo_deci, \hexa_deci, \twentyfour, \thirtytwo, \sixtyfour, \b_format, \ambix, \mono ] ),
 			\showGUI, BoolSpec(true),
 			\skin, ListSpec( UChainGUI.skins.keys ),
 			\showServerWindow, BoolSpec(true),
@@ -140,7 +140,7 @@ WFSOptionsObjectGUI : AbstractWFSOptionsGUI {
 			specs[ \previewMode ].list.pop;
 			specs[ \previewMode ].list = specs[ \previewMode ].list.addAll( [
 				\ambix_2o, \ambix_3o, \ambix_4o, \ambix_5o, \ambix_6o, \ambix_7o, \mono
-			] );
+			] ).insert( 4, [ \binaural_3o, \binaural_5o, \binaural_7o ] ).flatten(1)
 		};
 	}
 
