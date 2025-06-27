@@ -33,7 +33,10 @@ WFSPreviewSynthDefs : AbstractWFSSynthDefs {
 				\binaural: { |in, point, elevation|
 					var distances, globalDist, delays, angles, ambis;
 					globalDist = (0@0).dist( point );
-					distances = BinauralDistance( globalDist, point.angle.neg, 0.18/2 )[[0,1]];
+					distances = BinauralDistance( globalDist,
+						this.getFlatAngle( point.angle, elevation ).neg,
+						0.18/2
+					)[[0,1]];
 					delays = ((distances + 0.09 - globalDist) / WFSBasicPan.speedOfSound);
 					in = DelayC.ar( in, 0.1, delays + ControlDur.ir);
 					angles = [ -0.09@0, 0.09@0 ].collect({ |ear|
@@ -326,7 +329,10 @@ WFSPreviewSynthDefs : AbstractWFSSynthDefs {
 					var distances, globalDist, delays, angles, ambis;
 					globalDist = 10;
 					point = point.asPolar.rho_(10).asPoint;
-					distances = BinauralDistance( globalDist, point.angle.neg, 0.19/2 )[[0,1]];
+					distances = BinauralDistance( globalDist,
+						this.getFlatAngle( point.angle, elevation ).neg,
+						0.18/2
+					)[[0,1]];
 					delays = ((distances + 0.09 - globalDist) / WFSBasicPan.speedOfSound);
 					in = DelayC.ar( in, 0.1, delays + ControlDur.ir);
 					angles = [ -0.09@0, 0.09@0 ].collect({ |ear|
@@ -494,7 +500,10 @@ WFSPreviewSynthDefs : AbstractWFSSynthDefs {
 							globalDist = 10; // plane wave is always 10m away
 							point = point.asPolar.rho_(10).asPoint;
 						};
-						distances = BinauralDistance( globalDist, point.angle.neg, 0.18/2 )[[0,1]];
+						distances = BinauralDistance( globalDist,
+							this.getFlatAngle( point.angle, elevation ).neg,
+							0.18/2
+						)[[0,1]];
 						delays = ((distances + 0.09 - globalDist) / WFSBasicPan.speedOfSound);
 						in = DelayC.ar( in, 0.1, delays + ControlDur.ir);
 						angles = [ -0.09@0, 0.09@0 ].collect({ |ear|
@@ -513,6 +522,17 @@ WFSPreviewSynthDefs : AbstractWFSSynthDefs {
 				pannerFuncs[ \p ].put( "binaural_%o".format( order ).asSymbol, func.value( \p ) );
 			})
 		};
+	}
+
+	*getFlatAngle { |theta = 0, phi = 0|
+		var x,y,z, cosphi, tilt, ty;
+		cosphi = cos(phi);
+		x = cos(theta) * cosphi;
+		y = sin(theta) * cosphi;
+		z = sin(phi);
+		tilt = atan2(z, y).neg;
+		ty = (y * tilt.cos) - (z * tilt.sin);
+		^atan2(ty, x);
 	}
 
 	*getDefName { |which = \headphone, mode = \s, type = \n|

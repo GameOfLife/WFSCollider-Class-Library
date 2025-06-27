@@ -43,7 +43,10 @@ calcDelayFocused = { |server|
 };
 
 hasElevation = {
-	[ \ambix, \ambix_2o, \ambix_3o, \ambix_4o, \ambix_5o, \ambix_6o, \ambix_7o ].includes( WFSLib.previewMode );
+	[
+		\ambix, \ambix_2o, \ambix_3o, \ambix_4o, \ambix_5o, \ambix_6o, \ambix_7o,
+		\binaural, \binaural_3o, \binaural_5o, \binaural_7o
+	].includes( WFSLib.previewMode );
 };
 
 staticPoint = HiddenFreeUdef( \staticPoint, [
