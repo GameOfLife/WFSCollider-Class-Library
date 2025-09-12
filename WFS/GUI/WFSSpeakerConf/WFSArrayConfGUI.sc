@@ -33,7 +33,7 @@ WFSArrayConfGUI {
 			n: IntegerSpec( 48, 8, 96 ).step_(8).alt_step_(1),
 			center: WFSPlaneSpec( step: 0.1@0.1, mode: \polar ),
 			offset: [-10, 10, \lin, 0.001, 0, " m"].asSpec,
-			spWidth: [0.05,0.25,\lin, 0.001, 0.164, " m"].asSpec,
+			spWidth: [0.05,0.5,\lin, 0.001, 0.164, " m"].asSpec,
 			outputOffset: IntegerSpec(0, 0, 256).step_(8).alt_step_(1),
 			gain: IntegerSpec( 0, -20, 20),
 			subSpacing: IntegerSpec(16,16,128).step_(8).alt_step_(1),
