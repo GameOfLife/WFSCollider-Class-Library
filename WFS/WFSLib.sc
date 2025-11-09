@@ -738,6 +738,54 @@ WFSLib {
 
 				UMenuBarIDE.add( "Check for updates...", { WFSLib.checkForUpdatesGUI }, "WFSCollider" );
 
+				if( thisProcess.platform.name == \osx ) {
+
+					UMenuBarIDE.add( "System", \separator, "WFSCollider" );
+
+					UMenuBarIDE.add( "Quit WFSCollider", {
+						var quitFunc, dirtyScores;
+
+						quitFunc = {
+							"quitting WFSCollider".postln;
+							"delay 0.5\nquit app \"SuperCollider\"".appleScript;
+							0.exit;
+						};
+
+						dirtyScores = UScoreEditorGUI.all.collect(_.score).select({ |item| item.isDirty });
+
+						dirtyScores = dirtyScores.select({ |item|
+							item.events.size > 0;
+						});
+
+						if( dirtyScores.size > 0 ) {
+							SCAlert(
+								"There are % unsaved scores. Do you want to save them?".format( dirtyScores.size ),
+								[ "Cancel", "Don't save", "Save all" ],
+								[ {}, { quitFunc.value }, {
+									{
+										var cond;
+										cond = Condition( false );
+										dirtyScores.do({ |score|
+											{
+												score.save( {
+													cond.test = true; cond.signal
+												}, {
+													cond.test = true; cond.signal
+												} );
+											}.defer;
+											cond.wait;
+											cond.test = false;
+										});
+										quitFunc.value;
+									}.fork;
+							} ] );
+						} {
+							quitFunc.value;
+						};
+					}, "WFSCollider", "Ctrl+Q" );
+
+				};
+
 				if( UMenuBarIDE.mode == \mainmenu ) { MainMenu.prUpdate(); };
 			}
 		};
