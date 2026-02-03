@@ -27,7 +27,7 @@ USpeakerConf : WFSPointGroup {
 
 USpeakerConfView : WFSMixedView {
 
-	var <>type = \speaker;
+	type { ^\speaker }
 
 	points { ^(object !? _.positions) ? [] }
 

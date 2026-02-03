@@ -31,11 +31,6 @@ WFSBasicEditView : UBasicEditView {
 	var <>drawMode = 0; // 0: points+lines, 1: lines, 2: points, 3: none, 4: hi-res lines
 	var <>showControls = false;
 
-	var <gridColor;
-
-	var <>stepSize = 0.1;
-	var <>round = 0;
-
 	*new { |parent, bounds, object|
 		^this.newCopyArgs(object).init.makeView( parent, bounds ).setDefaults;
 	}
