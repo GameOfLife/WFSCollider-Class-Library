@@ -15,6 +15,11 @@ this Udef will only be loaded if the ATK library is installed
 
 if( 'Atk'.asClass.notNil ) {
 	var defs, df;
+	var hoaMatrixEncoder = 'HoaMatrixEncoder'.asClass;
+	var hoaEncodeMatrix = 'HoaEncodeMatrix'.asClass;
+	var hoaMatrixDecoder = 'HoaMatrixDecoder'.asClass;
+	var hoaDecodeMatrix = 'HoaDecodeMatrix'.asClass;
+	var hoaRotate = 'HoaRotate'.asClass;
 
 	defs = [ 'ambix', 'acn-n3d', 'fuma' ].collect({ |mode|
 		var subdefs;
@@ -25,13 +30,13 @@ if( 'Atk'.asClass.notNil ) {
 				sig = UIn.ar( 0, numInputs, endPoint: true );
 				n = Udef.numChannels;
 				if( mode != 'acn-n3d' ) {
-					sig = HoaEncodeMatrix.ar( sig,
-						HoaMatrixEncoder.newFormat( mode, order )
+					sig = hoaEncodeMatrix.ar( sig,
+						hoaMatrixEncoder.newFormat( mode, order )
 					);
 				};
-				sig = HoaRotate.ar( sig, rotate.neg, order );
+				sig = hoaRotate.ar( sig, rotate.neg, order );
 				if( ((n - 1) / 2).asInteger < order ) {
-					mtx = HoaMatrixDecoder.newPanto( n*2,
+					mtx = hoaMatrixDecoder.newPanto( n*2,
 						orientation: \point,
 						beamShape: \controlled,
 						match: \amp,
@@ -40,7 +45,7 @@ if( 'Atk'.asClass.notNil ) {
 					mtx.slotPut( \directions, mtx.directions.clump(2).flop[0] );
 					mtx.slotPut( \matrix, (mtx.matrix.asArray.clump(2).flop[0] * 2).as( Matrix ) );
 				} {
-					mtx = HoaMatrixDecoder.newPanto( n,
+					mtx = hoaMatrixDecoder.newPanto( n,
 						orientation: \point,
 						beamShape: \controlled,
 						match: \amp,
@@ -48,7 +53,7 @@ if( 'Atk'.asClass.notNil ) {
 					);
 				};
 
-				sig = HoaDecodeMatrix.ar( sig, mtx )[(1..n-1)++0].reverse;
+				sig = hoaDecodeMatrix.ar( sig, mtx )[(1..n-1)++0].reverse;
 
 				UOut.ar( 0, sig );
 

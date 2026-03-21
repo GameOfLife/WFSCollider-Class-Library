@@ -15,6 +15,9 @@ this Udef will only be loaded if the ATK library is installed
 
 if( 'Atk'.asClass.notNil ) {
 	var defs, df;
+	var hoaMatrixEncoder = 'HoaMatrixEncoder'.asClass;
+	var hoaEncodeMatrix = 'HoaEncodeMatrix'.asClass;
+	var hoaDecodeDirection = 'HoaDecodeDirection'.asClass;
 
 	defs = [ 'ambix', 'acn-n3d', 'fuma' ].collect({ |mode|
 		var subdefs;
@@ -25,12 +28,12 @@ if( 'Atk'.asClass.notNil ) {
 				sig = UIn.ar( 0, numInputs, endPoint: true );
 
 				if( mode != 'acn-n3d' ) {
-					sig = HoaEncodeMatrix.ar( sig,
-						HoaMatrixEncoder.newFormat( mode, order )
+					sig = hoaEncodeMatrix.ar( sig,
+						hoaMatrixEncoder.newFormat( mode, order )
 					);
 				};
 
-				sig = HoaDecodeDirection.ar( sig, angle, elevation,
+				sig = hoaDecodeDirection.ar( sig, angle, elevation,
 					beamShape: \controlled,
 					order: order
 				);

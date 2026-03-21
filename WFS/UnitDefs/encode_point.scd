@@ -17,6 +17,9 @@ this Udef will only be loaded if the ATK library is installed
 
 if( 'Atk'.asClass.notNil ) {
 	var defs, df;
+	var hoaMatrixDecoder = 'HoaMatrixDecoder'.asClass;
+	var hoaDecodeMatrix = 'HoaDecodeMatrix'.asClass;
+	var hoaEncodeDirection = 'HoaEncodeDirection'.asClass;
 
 	defs = [ 'ambix', 'acn-n3d', 'fuma' ].collect({ |mode|
 		var subdefs;
@@ -36,11 +39,11 @@ if( 'Atk'.asClass.notNil ) {
 				amp = (dist.pow(dbRollOff/6) / limitAmp).min( 1 );
 
 				sig = DelayC.ar(sig * amp,  0.6, ( dist / WFSBasicPan.speedOfSound ) * dopplerAmt );
-				sig = HoaEncodeDirection.ar( sig, point.angle - 0.5pi, elevation, order: order );
+				sig = hoaEncodeDirection.ar( sig, point.angle - 0.5pi, elevation, order: order );
 
 				if( mode != 'acn-n3d' ) {
-					sig = HoaDecodeMatrix.ar( sig,
-						HoaMatrixDecoder.newFormat( mode, order )
+					sig = hoaDecodeMatrix.ar( sig,
+						hoaMatrixDecoder.newFormat( mode, order )
 					);
 				};
 
