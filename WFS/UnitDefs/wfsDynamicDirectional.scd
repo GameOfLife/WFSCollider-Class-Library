@@ -142,7 +142,11 @@ if( WFSPreviewSynthDefs.pannerFuncs[\n].keys.includes( WFSLib.previewMode ).not 
 
 		defNames = [
 			[ "wfsd_nd", "wfsd_fd" ],
-			[ switch( unit.get( \quality ), \good, \l_, \better, \c_, \l_ ) ]
+			if( WFSSpeakerConf.default.hasSubs ) {
+				[ switch( unit.get( \quality ), \good, \ls_, \better, \cs_, \ls_ ) ]
+			} {
+				[ switch( unit.get( \quality ), \good, \l_, \better, \c_, \l_ ) ]
+			}
 		].flop.collect(_.join);
 
 		// make the panner synths, but don't send yet
@@ -172,14 +176,20 @@ if( WFSPreviewSynthDefs.pannerFuncs[\n].keys.includes( WFSLib.previewMode ).not 
 		n = 0;
 		normalSynths.do({ |sn, i|
 			server.sendMsg( *sn.newMsg( arrayGroup, [
-				    \gain, (WFSSpeakerConf.default.gain + arrayConfs[i].gain).dbamp,
-					\arrayConf, arrayConfs[i],
-					\amp, ("c" ++ normalLevelBuses[i]).asSymbol,
-					\outOffset, n + arrayConfs[i].outputOffset + WFSSpeakerConf.getOutputBusStartOffset( server ),
-					\arrayLimit, WFSSpeakerConf.default.arrayLimit,
-					\focusWidth, WFSSpeakerConf.default.focusWidth
-				] ++ unit.def.env.getInitArgsFor( \wfsd, unit.args, server, startPos ),
-				\addToTail )
+				\gain, (WFSSpeakerConf.default.gain + arrayConfs[i].gain).dbamp,
+				\arrayConf, arrayConfs[i],
+				\amp, ("c" ++ normalLevelBuses[i]).asSymbol,
+				\outOffset, n + arrayConfs[i].outputOffset + WFSSpeakerConf.getOutputBusStartOffset( server ),
+				\arrayLimit, WFSSpeakerConf.default.arrayLimit,
+				\focusWidth, WFSSpeakerConf.default.focusWidth
+			] ++ if( WFSSpeakerConf.default.hasSubs ) { [
+				\subSpacing, arrayConfs[i].subSpacing,
+				\subOffset, arrayConfs[i].subOffset,
+				\subOutBus, arrayConfs[i].subOutBus,
+				\subFreq, WFSSpeakerConf.default.subFreq,
+				\subGain, WFSArrayPan.subGain,
+			] } { [] } ++ unit.def.env.getInitArgsFor( \wfsd, unit.args, server, startPos ),
+			\addToTail )
 			);
 			n = n + arrayConfs[i].n;
 		});
@@ -187,14 +197,20 @@ if( WFSPreviewSynthDefs.pannerFuncs[\n].keys.includes( WFSLib.previewMode ).not 
 		n = 0;
 		focusSynths.do({ |sn, i|
 			server.sendMsg( *sn.newMsg( arrayGroup, [
-					\gain, (WFSSpeakerConf.default.gain + arrayConfs[i].gain).dbamp,
-					\arrayConf, arrayConfs[i],
-					\amp, ("c" ++ focusLevelBuses[i]).asSymbol,
-					\outOffset, n + arrayConfs[i].outputOffset + WFSSpeakerConf.getOutputBusStartOffset( server ),
-					\arrayLimit, WFSSpeakerConf.default.arrayLimit,
-					\focusWidth, WFSSpeakerConf.default.focusWidth
-				] ++ unit.def.env.getInitArgsFor( \wfsd, unit.args, server, startPos ),
-				\addToTail )
+				\gain, (WFSSpeakerConf.default.gain + arrayConfs[i].gain).dbamp,
+				\arrayConf, arrayConfs[i],
+				\amp, ("c" ++ focusLevelBuses[i]).asSymbol,
+				\outOffset, n + arrayConfs[i].outputOffset + WFSSpeakerConf.getOutputBusStartOffset( server ),
+				\arrayLimit, WFSSpeakerConf.default.arrayLimit,
+				\focusWidth, WFSSpeakerConf.default.focusWidth
+			] ++ if( WFSSpeakerConf.default.hasSubs ) { [
+				\subSpacing, arrayConfs[i].subSpacing,
+				\subOffset, arrayConfs[i].subOffset,
+				\subOutBus, arrayConfs[i].subOutBus,
+				\subFreq, WFSSpeakerConf.default.subFreq,
+				\subGain, WFSArrayPan.subGain,
+			] } { [] } ++ unit.def.env.getInitArgsFor( \wfsd, unit.args, server, startPos ),
+			\addToTail )
 			);
 			n = n + arrayConfs[i].n;
 		});
@@ -211,37 +227,13 @@ if( WFSPreviewSynthDefs.pannerFuncs[\n].keys.includes( WFSLib.previewMode ).not 
 } {
 	// preview panner; exact same parameters, different panner synthdefs
 	def.createSynthFunc_({ |unit, target, startPos = 0|
-		var server, n = 0;
-		var prePanSynth;
-		var previewSynth;
-		var arrayGroup;
-
-		server = target.asTarget.server;
-
-		// make the pre-panner synth (has to know the nodeID's of the panner synths)
-		prePanSynth = Synth( "wfsp_d_0",
-			unit.def.env.getInitArgsFor( \wfsp, unit.args, server, startPos ) ++
-				[ \sendPointRate, WFSPositionTracker.getRate ],
+		Synth( WFSPreviewSynthDefs.getDefName( WFSLib.previewMode, \d, \n ),
+			unit.getArgsFor(  target.asTarget.server, startPos ) ++
+			[ \out, WFSSpeakerConf.getOutputBusStartOffset( target ),
+				\sendPointRate, WFSPositionTracker.getRate ],
 			target, \addToTail
 		);
-
-		arrayGroup = Group(target, addAction: \addToTail);
-
-		previewSynth = Synth(
-			WFSPreviewSynthDefs.getDefName( WFSLib.previewMode, \d ),
-			unit.def.env.getInitArgsFor( \wfsd, unit.args, server, startPos ) ++
-				[ \out, WFSSpeakerConf.getOutputBusStartOffset( target ) ],
-			arrayGroup, \addToTail
-		);
-
-		arrayGroup.freeAction_({ |synth| unit.removeSynth( synth ); });
-		unit.addSynth( arrayGroup );
-
-		prePanSynth;
 	})
-	.shouldPlayOnFunc_({ |unit, target|
-		target.asTarget.server.isLocal; // safety measure: no output on wfs servers
-	});
 };
 
 def; // return def

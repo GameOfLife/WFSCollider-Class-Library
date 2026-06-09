@@ -38,6 +38,7 @@ WFSArrayConfGUI {
 			gain: IntegerSpec( 0, -20, 20),
 			subSpacing: IntegerSpec(16,16,128).step_(8).alt_step_(1),
 			subOffset: IntegerSpec(11,0,128).step_(8).alt_step_(1),
+			subOutBus: IntegerSpec(-1,-1,256).step_(8).alt_step_(1),
 		);
 	}
 
@@ -56,7 +57,7 @@ WFSArrayConfGUI {
 		margin = margin ?? {0@0};
 		gap = gap ??  {4@4};
 		^(margin.y * 2) + (
-			 8 * (viewHeight + gap.y)
+			 9 * (viewHeight + gap.y)
 		) - gap.y;
 	}
 
@@ -93,7 +94,7 @@ WFSArrayConfGUI {
 
 		composite.decorator.shift( (viewHeight + 4).neg, 0 );
 
-		[ \n, \center, \offset, \spWidth, \outputOffset, \gain, \subSpacing, \subOffset ].do({ |key, i|
+		[ \n, \center, \offset, \spWidth, \outputOffset, \gain, \subSpacing, \subOffset, \subOutBus ].do({ |key, i|
 			var vw, spec;
 
 			spec = specs[ key ];

@@ -551,7 +551,7 @@ WFSArrayPan : WFSBasicArrayPan {
 
 WFSArrayPanPlane : WFSBasicArrayPan {
 
-	ar { |source, inPos, int, mul = 1, add = 0|
+	ar { |source, inPos, int, mul = 1, add = 0, taper = true|
 		var delayOffset, angleOffsets, sinA, cosA, dist2;
 
 		// rotate point to array, collect angle differences
@@ -566,10 +566,15 @@ WFSArrayPanPlane : WFSBasicArrayPan {
 		amplitudes = 1/n; // normalize sum for fixed average number of speakers
 
 		// apply tapering
-		amplitudes = amplitudes * (1..n).fold(0,(n/2) + 0.5)
-				.linlin(0, (n+1) * tapering, -0.5pi, 0.5pi )
-				.sin
-				.linlin(-1,1,0,1);
+
+		if( taper ) {
+			amplitudes = amplitudes * (1..n).fold(0,(n/2) + 0.5)
+			.linlin(0, (n+1) * tapering, -0.5pi, 0.5pi )
+			.sin
+			.linlin(-1,1,0,1);
+		};
+
+		if( ampmask.size > 0 ) { amplitudes = amplitudes * ampmask };
 
 		// subtract large delay
 		delayOffset = preDelay + addDelay;

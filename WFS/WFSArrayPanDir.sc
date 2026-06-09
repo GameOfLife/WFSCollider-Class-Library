@@ -1,6 +1,6 @@
 WFSArrayPanDir : WFSArrayPan {
 
-	ar { |source, inPos, int, direction = 0, sines = #[0,1], sineMul = 1, mul = 1, add = 0| // inPos: Point or Polar
+	ar { |source, inPos, int, direction = 0, sines = #[0,1], sineMul = 1, mul = 1, add = 0, taper = true| // inPos: Point or Polar
 		var difx, dify, sqrdifx, inFront, crossing, delayOffset;
 		var globalDist, globalAngle, speakerAngleRange, focusFades, fadeArea;
 		var adifx, angles, angleAmplitudes, angleLimit = 1;
@@ -48,15 +48,21 @@ WFSArrayPanDir : WFSArrayPan {
 		delayOffset = addDelay + preDelay - ( globalDist / speedOfSound );
 
 		// ------- calculate amplitudes --------
-		amplitudes = distances.pow(dbRollOff/6).min( limit.pow(dbRollOff/6) );
+		amplitudes = distances.pow(dbRollOff/6); //.min( limit.pow(dbRollOff/6) );
+
+		amplitudes = this.softClip( amplitudes );
 
 		// apply tapering
-		amplitudes = amplitudes * (1..n).fold(0,(n/2) + 0.5)
-				.linlin(0, (n+1) * tapering, -0.5pi, 0.5pi )
-				.sin
-				.linlin(-1,1,0,1);
+		if( taper ) {
+			amplitudes = amplitudes * (1..n).fold(0,(n/2) + 0.5)
+			.linlin(0, (n+1) * tapering, -0.5pi, 0.5pi )
+			.sin
+			.linlin(-1,1,0,1);
+		};
 
-		amplitudes = amplitudes * ( mul / amplitudes.sum ); // normalize amps (sum == mul)
+		if( ampmask.size > 0 ) { amplitudes = amplitudes * ampmask };
+
+		amplitudes = amplitudes * ( mul / amplitudes.sum.max(1.0e-12) ); // normalize amps (sum == mul)
 
 		amplitudes = amplitudes * angleAmplitudes;
 
@@ -67,7 +73,7 @@ WFSArrayPanDir : WFSArrayPan {
 		// go to all speakers when source is 0.5m to 1m from the center
 		// approximation of angles, saves n * atan2 calc. Now we only calculate the corner angles and
 		// draw a straight line for the rest. This might cause inconsistencies with tunnel-shaped setups.
-		if( useFocusFades && { focus != false } ) { // disabled when forced unfocused
+		if( useFocusFades && { focus != false && { efficientFocusFades.not } } ) { // disabled when forced unfocused
 			globalAngle = pos.angle;
 			speakerAngleRange = [ (dist@speakerArray[0]).angle, (dist@speakerArray.last).angle ];
 			fadeArea = globalDist.linlin(0.5,1,pi,focusWidth/2,\none).clip(focusWidth/2,pi);

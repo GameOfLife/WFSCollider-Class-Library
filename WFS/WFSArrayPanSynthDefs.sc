@@ -172,7 +172,7 @@ WFSArrayPanSynthDefs : AbstractWFSSynthDefs {
 			// synth args:
 			var arrayConf, outOffset = 0, addDelay = 0;
 			var point = 0@0, amp = 1, arrayRollOff = -9, arrayLimit = 1, arraySoftLimit = 0.5;
-			var subSpacing = 16, subOffset = 11, subFreq = 70, subGain = 0;
+			var subSpacing = 16, subOffset = 11, subOutBus = -1, subFreq = 70, subGain = 0;
 
 			// local variables
 			var gain = 0.dbamp; // hard-wired for now
@@ -204,6 +204,7 @@ WFSArrayPanSynthDefs : AbstractWFSSynthDefs {
 			if( sub ) {
 				subSpacing = \subSpacing.ir( subSpacing );
 				subOffset = \subOffset.ir( subOffset );
+				subOutBus = \subOutBus.ir( subOutBus );
 				subFreq = \subFreq.ir( subFreq );
 				subGain = \subGain.ir( subGain );
 
@@ -225,6 +226,7 @@ WFSArrayPanSynthDefs : AbstractWFSSynthDefs {
 
 			if( sub ) {
 				if( type === \p ) {
+					subPanner = panner.asSubArray( subSpacing, subOffset, 16 ).addDelay_( addDelay );
 				} {
 					subPanner = panner.asSubArray( subSpacing, subOffset, 16 )
 					.addDelay_( addDelay )
@@ -233,13 +235,18 @@ WFSArrayPanSynthDefs : AbstractWFSSynthDefs {
 					.softLimitRange_( arraySoftLimit )
 					.focusWidth_( \focusWidth.ir( 0.5pi ) )
 					.focus_( switch( type, \f, { true }, \n, { false }, { nil } ) );
-
-					subSig = subPanner.ar( subSig, point, int, 1, taper: false );
-					subSig = subSig * subSig.size / size * subGain.dbamp;
-					subSig.do({ |item,i|
-						Out.ar( outOffset + subOffset + (i * subSpacing), item );
-					});
 				};
+
+				subSig = subPanner.ar( subSig, point, int, 1, taper: false );
+				subSig = subSig * subSig.size / size * subGain.dbamp;
+				subSig.do({ |item,i|
+					Out.ar(
+						if( subOutBus < 0,
+							outOffset + subOffset + (i * subSpacing),
+							subOutBus + i
+						), item
+					);
+				});
 			};
 
 			Out.ar( outOffset, panner.ar( input, point, int, 1 ) );
