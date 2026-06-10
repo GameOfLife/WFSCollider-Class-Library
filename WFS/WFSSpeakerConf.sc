@@ -673,10 +673,19 @@ WFSSpeakerConf {
 		score = UScore().name_( name );
 		WFSSpeakerConf.default.arrayConfs.do({ |arr, ii|
 			score.add( (arr.n / 8).asInteger.collect({ |i|
-				UPattern( (i + (count/8)) * 6, ii, 5.9,
-					[ 'pinkNoise', [ 'amp', 0.25, 'seed', 12345 ] ],
-					[ 'wfsIndex', [ 'index', [ 'p_int_step', [ 'lo', i*8 + count, 'hi', (i*8)+7 + count ] ] ] ]
-				).pattern_([ 'sustain_time', [ 'sustain', 0.15, 'timeToNext', [ 'p_time_step', [ 'time', 3.0, 'n', 8, 'spread', 0.8 ] ] ] ])
+				UScore(
+					*2.collect({ |iii|
+						8.collect({ |iiii|
+							UChain( (iiii * 0.3) + ( iii * 3 ), 0, 0.15, true,
+								[ 'pinkNoise', [ 'amp', 0.25, 'seed', 12345 ] ],
+								[ 'wfsIndex', [ 'index', (i*8) + count + iiii ] ]
+							)
+						});
+					}).flatten(2)
+				)
+				.startTime_( (i + (count/8)) * 6 )
+				.track_( ii )
+				.name_( (i+1).asString );
 			}) );
 			count = count + arr.n;
 		});
