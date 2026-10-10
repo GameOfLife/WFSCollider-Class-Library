@@ -157,6 +157,7 @@ WFSOptions : AbstractWFSOptions {
 	var <blockSize = 128;
 	var <sampleRate = 44100;
 	var <wfsSoundFilesLocation = "/WFSSoundFiles";
+	var <startupFiles = #[];
 
 	*new { ^super.new.init; }
 

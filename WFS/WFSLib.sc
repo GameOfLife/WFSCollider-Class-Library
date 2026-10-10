@@ -160,12 +160,26 @@ WFSLib {
 
 		buildArrayPanners = (WFSLib.previewMode == \off);
 
+		bootFunc = {
+			servers.do({ |srv| wfsOptions.serverAction.value( srv ) });
+			wfsOptions.startupFiles.do({ |item|
+				if( (UScoreEditorGUI.all ? []).any({ |g| g.score.filePath == item }).not ) {
+					if( File.exists( item ) ) {
+						UScore.open( item, _.gui );
+					} {
+						"startupFile '%' not found".format( item ).warn;
+					};
+				};
+			});
+		};
+
 		"WFSLib: generating preview SynthDefs...".postln;
 		{
 			WFSSynthDefs.generateAllOrCopyFromResources({
 				StartUp.defer({
 					{
 						ULib.servers.do(_.bootSync);
+						bootFunc.value;
 						"all servers booted".postln;
 					}.fork( AppClock );
 				})
@@ -187,25 +201,6 @@ WFSLib {
 		this.startCurrentPreviewMode;
 
 		this.previewModeActive = true;
-
-		if( wfsOptions.playSoundWhenReady or: { wfsOptions.serverAction.notNil } ) {
-			Routine({
-				var allTypes, defs;
-				var servers;
-				servers = ULib.allServers;
-				while {
-					servers.collect( _.serverRunning ).every( _ == true ).not;
-				} {
-					0.2.wait;
-				};
-				"System ready".postln;
-				if( wfsOptions.playSoundWhenReady ) {
-					"playing lifesign".postln;
-					"say 'server %, ready'".format( ULib.servers.first.name ).unixCmd;
-				};
-				servers.do({ |srv| wfsOptions.serverAction.value( srv ) });
-			}).play( AppClock );
-		};
 
 		Server.default = ULib.allServers.first;
 

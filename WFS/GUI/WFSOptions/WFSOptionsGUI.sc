@@ -7,6 +7,7 @@ WFSOptionsGUI {
 	var <object, <>ctrl;
 	var <view, <firstColumn, <secondColumn, <footer, <presetManagerGUI;
 	var <optionsView;
+	var <startupFilesViews, <startupFilesHeader;
 	var <masterComp, <masterHeader, <masterView, <masterButton;
 	var <wfsHeader, <taperingSpec, <taperingView, <waitView, <rebuildButton;
 	var <serverComp, <serverHeader, <serverViews;
@@ -188,6 +189,39 @@ WFSOptionsGUI {
 				WFSSpeakerConf.default.makeTestScore.gui;
 			});
 
+		firstColumn.decorator.shift( 0, 14 );
+
+		startupFilesHeader = CompositeView( firstColumn, columnWidth @ 14 )
+			.background_( Color.gray(0.8).alpha_(0.5) );
+
+		startupFilesHeader.addFlowLayout(0@0, 2@2);
+
+		StaticText( startupFilesHeader, columnWidth - (2 + 14) @ 14 )
+		.applySkin( RoundView.skin )
+		.string_( " startupFiles" );
+
+		SmoothButton( startupFilesHeader, 14 @ 14 )
+		.label_( '+' )
+		.action_({
+			var currentPath;
+			currentPath = UScore.current !? _.filePath;
+			if( object.startupFiles.includesEqual( currentPath ) ) {
+				currentPath = nil;
+			};
+			if( currentPath.notNil ) {
+				object.startupFiles = object.startupFiles ++ [ currentPath ];
+			} {
+				ULib.openPanel( { |paths|
+					paths = paths.select({ |item|
+						object.startupFiles.includesEqual( item ).not;
+					});
+					object.startupFiles = object.startupFiles ++ paths;
+				}, multipleSelection: true);
+			};
+		});
+
+		this.makeStartupFileGUI;
+
 		firstColumn.decorator.nextLine;
 		firstColumn.decorator.top_( firstColumn.bounds.height - 16);
 
@@ -271,6 +305,8 @@ WFSOptionsGUI {
 
 		ctrl.put( \serverOptions, { this.makeServersGUI; });
 
+		ctrl.put( \startupFiles, { this.makeStartupFileGUI; });
+
 		current = this;
 		this.class.changed( \current );
 
@@ -311,6 +347,29 @@ WFSOptionsGUI {
 			WFSServerOptionsGUI( serverComp, serverComp.bounds.width @ 14, item )
 				.background_( Color.gray(0.3).alpha_(0.25) );
 		});
+	}
+
+	makeStartupFileGUI {
+		startupFilesViews.do(_.do(_.remove));
+		firstColumn.decorator.nextLine;
+		firstColumn.decorator.top_( startupFilesHeader.bounds.bottom + 2 );
+		RoundView.pushSkin( UChainGUI.skin );
+		startupFilesViews = object.startupFiles.collect({ |path, i|
+			[
+				FilePathView( firstColumn, columnWidth - (2 + 14) @ 14 )
+				.value_( path )
+				.action_({ |fv|
+					object.startupFiles[i] = fv.value;
+				}),
+				SmoothButton( firstColumn, 14 @ 14 )
+				.label_( '-' )
+				.action_({ |bt|
+					object.startupFiles.removeAt( i );
+					this.makeStartupFileGUI;
+				});
+			];
+		});
+		RoundView.popSkin;
 	}
 
 	object_ { |obj|
