@@ -1,6 +1,7 @@
 WFSLib {
 
 	classvar <previewMode, <previewModeCtrl, <>previewModeActive = false;
+	classvar <>allowAutoPlay = true;
 
 
 	*startup { |wfsOptions|
@@ -145,7 +146,7 @@ WFSLib {
 			if( File(path,"r").readAllString[..8] == "<xml:wfs>") {
 				WFSScore.readWFSFile(path).asUEvent;
 			} {
-				if( path.find("_autoplay").notNil ) {
+				if( allowAutoPlay && { path.find("_autoplay").notNil }) {
 					score = UScore.readTextArchive( path );
 					score.prepareAndStart;
 					score;
