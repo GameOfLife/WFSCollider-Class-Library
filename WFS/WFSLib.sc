@@ -141,10 +141,17 @@ WFSLib {
 		];
 
 		UScore.openFunc = { |path| // old xml format compatibility
+			var score;
 			if( File(path,"r").readAllString[..8] == "<xml:wfs>") {
 				WFSScore.readWFSFile(path).asUEvent;
 			} {
-				UScore.readTextArchive( path );
+				if( path.find("_autoplay").notNil ) {
+					score = UScore.readTextArchive( path );
+					score.prepareAndStart;
+					score;
+				} {
+					UScore.readTextArchive( path );
+				};
 			};
 		};
 
