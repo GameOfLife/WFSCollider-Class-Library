@@ -603,6 +603,36 @@ WFSLib {
 			).useSndFileDur
 		};
 
+		UChain.fromSoundFileFunc = { |path, startTime|
+			var rho = 8;
+			var bsf = BufSndFile( path );
+			var n, totalSpan, startAt;
+			n = bsf.numChannels;
+			#totalSpan, startAt = switch( n,
+				1, { [ 0, 0 ] },
+				2, { [ pi, 0.5pi ] },
+				3, { [ pi, 0.5pi ]  },
+				{ [ 2pi * ((n-1) / n), pi * (1/n) ] }
+			);
+
+			UChain(
+				startTime,
+				if( bsf.duration > 300 ) {
+					[ \diskSoundFile, [ \soundFile, bsf.asDiskSndFile ] ]
+				} {
+					[ \bufSoundFile, [ \soundFile, bsf ] ]
+				},
+				*n.collect({ |i|
+					[ \wfsSource, [
+						'u_i_ar_0_bus', i,
+						\point, Polar( rho,
+							i.linlin( 0, n-1, startAt, startAt - totalSpan ) + 0.5pi
+						).asPoint
+					] ]
+				});
+			).useSndFileDur;
+		};
+
 		UChain.presetManager
 		.putRaw( \dynamicPoint, {
 			UChain(
